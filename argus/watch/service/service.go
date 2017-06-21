@@ -139,7 +139,7 @@ func (w Watcher) makeDeviceObject(service *v1.Service) (device lmv1.RestDevice) 
 	fqdn := service.Name + "." + service.Namespace + ".svc.cluster.local"
 	device = lmv1.RestDevice{
 		Name:                 fqdn,
-		DisplayName:          fqdn,
+		DisplayName:          fqdn + "-" + string(service.UID),
 		DisableAlerting:      w.Config.DisableAlerting,
 		HostGroupIds:         "1",
 		PreferredCollectorId: w.Config.PreferredCollector,
