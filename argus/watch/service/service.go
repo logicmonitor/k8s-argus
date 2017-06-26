@@ -140,7 +140,7 @@ func (w Watcher) makeDeviceObject(service *v1.Service) (device lmv1.RestDevice) 
 	device = lmv1.RestDevice{
 		Name:                 fqdn,
 		DisplayName:          fqdn + "-" + string(service.UID),
-		DisableAlerting:      w.Config.DisableAlerting,
+		DisableAlerting:      true,
 		HostGroupIds:         "1",
 		PreferredCollectorId: w.Config.PreferredCollector,
 		CustomProperties: []lmv1.NameAndValue{
