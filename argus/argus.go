@@ -219,6 +219,25 @@ func createServiceDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGr
 	return
 }
 
+func createServiceDeletedDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup) (clusterDeviceGroup *lmv1.RestDeviceGroup, err error) {
+	name := "_deleted"
+	appliesTo := "hasCategory(\"" + constants.NodeDeletedCategory + "\") && auto.clustername ==\"" + argus.Config.ClusterName + "\""
+
+	clusterDeviceGroup, err = findDeviceGroup(argus.LMClient, parentDeviceGroup.Id, name)
+	if err != nil {
+		return
+	}
+
+	if clusterDeviceGroup == nil {
+		clusterDeviceGroup, err = createDeviceGroup(argus.LMClient, name, appliesTo, argus.Config.DisableAlerting, parentDeviceGroup.Id)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func createNodeDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup) (clusterDeviceGroup *lmv1.RestDeviceGroup, err error) {
 	name := "Nodes"
 	appliesTo := "hasCategory(\"" + constants.NodeCategory + "\") && auto.clustername ==\"" + argus.Config.ClusterName + "\""
@@ -230,6 +249,25 @@ func createNodeDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup
 
 	if clusterDeviceGroup == nil {
 		clusterDeviceGroup, err = createDeviceGroup(argus.LMClient, name, appliesTo, argus.Config.DisableAlerting, parentDeviceGroup.Id)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func createNodeDeletedDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup) (clusterDeviceGroup *lmv1.RestDeviceGroup, err error) {
+	name := "_deleted"
+	appliesTo := "hasCategory(\"" + constants.NodeDeletedCategory + "\") && auto.clustername ==\"" + argus.Config.ClusterName + "\""
+
+	clusterDeviceGroup, err = findDeviceGroup(argus.LMClient, parentDeviceGroup.Id, name)
+	if err != nil {
+		return
+	}
+
+	if clusterDeviceGroup == nil {
+		clusterDeviceGroup, err = createDeviceGroup(argus.LMClient, name, appliesTo, true, parentDeviceGroup.Id)
 		if err != nil {
 			return
 		}
@@ -257,6 +295,25 @@ func createPodDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup)
 	return
 }
 
+func createPodDeletedDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup) (clusterDeviceGroup *lmv1.RestDeviceGroup, err error) {
+	name := "_deleted"
+	appliesTo := "hasCategory(\"" + constants.PodDeletedCategory + "\") && auto.clustername ==\"" + argus.Config.ClusterName + "\""
+
+	clusterDeviceGroup, err = findDeviceGroup(argus.LMClient, parentDeviceGroup.Id, name)
+	if err != nil {
+		return
+	}
+
+	if clusterDeviceGroup == nil {
+		clusterDeviceGroup, err = createDeviceGroup(argus.LMClient, name, appliesTo, true, parentDeviceGroup.Id)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func createDeviceGroups(argus *Argus) (deviceGroups map[string]int32, err error) {
 	deviceGroups = make(map[string]int32)
 	clusterDeviceGroup, err := createClusterDeviceGroup(argus)
@@ -271,12 +328,20 @@ func createDeviceGroups(argus *Argus) (deviceGroups map[string]int32, err error)
 	}
 	deviceGroups["services"] = serviceDeviceGroup.Id
 	log.Infof("Using service device group with id %d", serviceDeviceGroup.Id)
+	_, err = createServiceDeletedDeviceGroup(argus, serviceDeviceGroup)
+	if err != nil {
+		return
+	}
 
 	nodeDeviceGroup, err := createNodeDeviceGroup(argus, clusterDeviceGroup)
 	if err != nil {
 		return
 	}
 	log.Infof("Using node device group with id %d", nodeDeviceGroup.Id)
+	_, err = createNodeDeletedDeviceGroup(argus, nodeDeviceGroup)
+	if err != nil {
+		return
+	}
 
 	podDeviceGroup, err := createPodDeviceGroup(argus, clusterDeviceGroup)
 	if err != nil {
@@ -284,6 +349,10 @@ func createDeviceGroups(argus *Argus) (deviceGroups map[string]int32, err error)
 	}
 	deviceGroups["pods"] = podDeviceGroup.Id
 	log.Infof("Using pod device group with id %d", podDeviceGroup.Id)
+	_, err = createPodDeletedDeviceGroup(argus, podDeviceGroup)
+	if err != nil {
+		return
+	}
 
 	return
 }

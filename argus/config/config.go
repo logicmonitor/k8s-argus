@@ -11,6 +11,7 @@ type Config struct {
 	Key                string
 	Debug              bool
 	DisableAlerting    bool
+	DeleteDevices      bool
 	PreferredCollector int32
 }
 
@@ -25,6 +26,7 @@ func GetConfig() *Config {
 	company := viper.GetString("company")
 	debug := viper.GetBool("debug")
 	disableAlerting := viper.GetBool("disable_alerting")
+	deleteDevices := viper.GetBool("delete_devices")
 	id := viper.GetString("id")
 	key := viper.GetString("key")
 	preferredCollector := int32(viper.GetInt("preferred_collector"))
@@ -35,6 +37,7 @@ func GetConfig() *Config {
 		Company:            company,
 		Debug:              debug,
 		DisableAlerting:    disableAlerting,
+		DeleteDevices:      deleteDevices,
 		ID:                 id,
 		Key:                key,
 		PreferredCollector: preferredCollector,

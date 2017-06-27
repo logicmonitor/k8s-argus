@@ -84,8 +84,32 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 		}
 		if restResponse.Data.Total == 1 {
 			id := restResponse.Data.Items[0].Id
-			log.Infof("Deleting pod %s with id %d", pod.Name, id)
-			w.LMClient.DeleteDevice(id)
+			if w.Config.DeleteDevices {
+				log.Infof("Deleting pod %s with id %d", pod.Name, id)
+				restNullObjectResponse, _, err := w.LMClient.DeleteDevice(id)
+				if err != nil {
+					log.Printf("Failed to delete device with id %q: %s", id, restNullObjectResponse.Errmsg)
+				}
+			} else {
+				log.Infof("Moving pod %s with id %d to deleted group", pod.Name, id)
+				categories := constants.PodDeletedCategory
+				for k, v := range pod.Labels {
+					categories += "," + k + "=" + v
+
+				}
+				device := lmv1.RestDevice{
+					CustomProperties: []lmv1.NameAndValue{
+						{
+							Name:  "system.categories",
+							Value: categories,
+						},
+					},
+				}
+				restResponse, _, err := w.LMClient.PatchDeviceById(device, id, "replace", "customProperties")
+				if err != nil {
+					log.Errorf("Failed to patch pod %s: %s", pod.Name, restResponse.Errmsg)
+				}
+			}
 		}
 	}
 }

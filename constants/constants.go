@@ -1,10 +1,13 @@
 package constants
 
 const (
-	ClusterCategory = "KubernetesCluster"
-	NodeCategory    = "KubernetesNode"
-	ServiceCategory = "KubernetesService"
-	PodCategory     = "KubernetesPod"
+	ClusterCategory        = "KubernetesCluster"
+	NodeCategory           = "KubernetesNode"
+	NodeDeletedCategory    = "KubernetesNodeDeleted"
+	ServiceCategory        = "KubernetesService"
+	ServiceDeletedCategory = "KubernetesServiceDeleted"
+	PodCategory            = "KubernetesPod"
+	PodDeletedCategory     = "KubernetesPodDeleted"
 )
 
 var (

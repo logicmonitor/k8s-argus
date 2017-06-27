@@ -84,10 +84,31 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 		}
 		if restResponse.Data.Total == 1 {
 			id := restResponse.Data.Items[0].Id
-			log.Infof("Deleting node %s with id %d", node.Name, id)
-			restNullObjectResponse, _, err := w.LMClient.DeleteDevice(id)
-			if err != nil {
-				log.Printf("Failed to delete device with id %q: %s", id, restNullObjectResponse.Errmsg)
+			if w.Config.DeleteDevices {
+				log.Infof("Deleting node %s with id %d", node.Name, id)
+				restNullObjectResponse, _, err := w.LMClient.DeleteDevice(id)
+				if err != nil {
+					log.Printf("Failed to delete device with id %q: %s", id, restNullObjectResponse.Errmsg)
+				}
+			} else {
+				log.Infof("Moving node %s with id %d to deleted group", node.Name, id)
+				categories := constants.NodeDeletedCategory
+				for k, v := range node.Labels {
+					categories += "," + k + "=" + v
+
+				}
+				device := lmv1.RestDevice{
+					CustomProperties: []lmv1.NameAndValue{
+						{
+							Name:  "system.categories",
+							Value: categories,
+						},
+					},
+				}
+				restResponse, _, err := w.LMClient.PatchDeviceById(device, id, "replace", "customProperties")
+				if err != nil {
+					log.Errorf("Failed to patch node %s: %s", node.Name, restResponse.Errmsg)
+				}
 			}
 		}
 	}
