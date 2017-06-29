@@ -4,6 +4,7 @@
   <p align="center"><sub> <i>Powered by LogicMonitor</i></sub></p>
   <p align="center">
     <a href="https://godoc.org/github.com/logicmonitor/argus"><img alt="GoDoc" src="http://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"></a>
+    <a href="https://goreportcard.com/report/github.com/logicmonitor/k8s-argus"><img alt="GoDoc" src="https://goreportcard.com/badge/github.com/logicmonitor/k8s-argus?style=flat-square"></a>
   </p>
   <p align="center">
     <a href="https://github.com/logicmonitor/argus/releases/latest"><img alt="Release" src="https://img.shields.io/github/release/logicmonitor/argus.svg?style=flat-square"></a>
@@ -13,10 +14,11 @@
 
 ---
 
-**Argus** is a tool for monitoring of Kubernetes with [LogicMonitor](https://www.logicmonitor.com). Some of the key features of Argus are:
--   **Automated discovery:** Discovers nodes, services, and pods, and adds them to your LogicMonitor account automatically.
--   **Datasources applied to Kubernetes labels:** Resources are added along with all of its' associated tags, allowing for custom datasources to be applied based on Kubernetes labels.
--   **Real-time** By leveraging the Kubernetes API event stream, Argus keeps the monitoring of your cluster up-to-date and accurate.
+**Argus** is a tool for monitoring Kubernetes with [LogicMonitor](https://www.logicmonitor.com). Some of the key features of Argus are:
+-   **Automated discovery:** Discovers nodes, services, and pods, and adds them as devices to your LogicMonitor account automatically.
+-   **Real-time:** By leveraging the Kubernetes API event stream, Argus keeps everything a collector needs to know about your cluster up-to-date and accurate.
+-   **Granular monitoring:** By adding resources as devices, data sources can use an IP address to talk directly to them. And since all Kubernetes labels are added as `system.categories` device properties, data sources can be applied based on lables.
+-   **Organized visual represention:** Clusters are represented in the device tree as a collection of dynamic [Device Groups](https://www.logicmonitor.com/support/devices/device-groups/device-groups-overview/) and organizes the devices by resource type and namespace.
 
 Getting Started
 ---------------
