@@ -2,6 +2,7 @@ package argus
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -63,6 +64,12 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 func NewArgus(config *config.Config) (argus *Argus, err error) {
 	// LogicMonitor API client.
 	lmClient := newLMClient(config.ID, config.Key, config.Company)
+	id, err := discoverCollectorID(lmClient, config.CollectorDescription)
+	if err != nil {
+		return nil, err
+	}
+	config.PreferredCollector = id
+	log.Infof("Using collector %d", config.PreferredCollector)
 
 	// Kubernetes API client.
 	k8sClient, err := newK8sClient()
@@ -355,4 +362,32 @@ func createDeviceGroups(argus *Argus) (deviceGroups map[string]int32, err error)
 	}
 
 	return
+}
+
+func discoverCollectorID(client *lmv1.DefaultApi, description string) (int32, error) {
+	attempts := 0
+	for {
+		restResponse, apiResponse, err := client.GetCollectorList("id", -1, 0, "description:"+description)
+		if err != nil {
+			return -1, err
+		}
+		if apiResponse.StatusCode != http.StatusOK {
+			return -1, fmt.Errorf(apiResponse.Status)
+		}
+		if restResponse.Status != http.StatusOK {
+			return -1, fmt.Errorf(restResponse.Errmsg)
+		}
+		switch restResponse.Data.Total {
+		case 0:
+			if attempts == 6 {
+				return -1, fmt.Errorf("Timeout waiting for collector ID")
+			}
+			log.Infof("No collector found, waiting 10 seconds...")
+			time.Sleep(10 * time.Second)
+		case 1:
+			return restResponse.Data.Items[0].Id, nil
+		default:
+			return -1, fmt.Errorf("Found %d collectors with description %q", restResponse.Data.Total, description)
+		}
+	}
 }
