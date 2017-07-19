@@ -1,18 +1,21 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 // Config represents the application's configuration file.
 type Config struct {
-	ClusterCategory    string
-	ClusterName        string
-	Company            string
-	ID                 string
-	Key                string
-	Debug              bool
-	DisableAlerting    bool
-	DeleteDevices      bool
-	PreferredCollector int32
+	ClusterCategory      string
+	ClusterName          string
+	CollectorDescription string
+	Company              string
+	ID                   string
+	Key                  string
+	Debug                bool
+	DisableAlerting      bool
+	DeleteDevices        bool
+	PreferredCollector   int32
 }
 
 // GetConfig returns the application configuration specified by environment
@@ -29,17 +32,18 @@ func GetConfig() *Config {
 	deleteDevices := viper.GetBool("delete_devices")
 	id := viper.GetString("id")
 	key := viper.GetString("key")
-	preferredCollector := int32(viper.GetInt("preferred_collector"))
+	collectorDescription := viper.GetString("collector_description")
 
 	return &Config{
-		ClusterCategory:    clusterCategory,
-		ClusterName:        clusterName,
-		Company:            company,
-		Debug:              debug,
-		DisableAlerting:    disableAlerting,
-		DeleteDevices:      deleteDevices,
-		ID:                 id,
-		Key:                key,
-		PreferredCollector: preferredCollector,
+		ClusterCategory:      clusterCategory,
+		ClusterName:          clusterName,
+		CollectorDescription: collectorDescription,
+		Company:              company,
+		Debug:                debug,
+		DisableAlerting:      disableAlerting,
+		DeleteDevices:        deleteDevices,
+		ID:                   id,
+		Key:                  key,
+		// PreferredCollector: preferredCollector,
 	}
 }
