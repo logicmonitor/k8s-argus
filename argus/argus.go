@@ -7,13 +7,13 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/logicmonitor/argus/argus/config"
-	"github.com/logicmonitor/argus/argus/watch"
-	"github.com/logicmonitor/argus/argus/watch/namespace"
-	"github.com/logicmonitor/argus/argus/watch/node"
-	"github.com/logicmonitor/argus/argus/watch/pod"
-	"github.com/logicmonitor/argus/argus/watch/service"
-	"github.com/logicmonitor/argus/constants"
+	"github.com/logicmonitor/k8s-argus/argus/config"
+	"github.com/logicmonitor/k8s-argus/argus/constants"
+	"github.com/logicmonitor/k8s-argus/argus/watch"
+	"github.com/logicmonitor/k8s-argus/argus/watch/namespace"
+	"github.com/logicmonitor/k8s-argus/argus/watch/node"
+	"github.com/logicmonitor/k8s-argus/argus/watch/pod"
+	"github.com/logicmonitor/k8s-argus/argus/watch/service"
 	lmv1 "github.com/logicmonitor/lm-sdk-go"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
@@ -33,7 +33,7 @@ type Argus struct {
 func newLMClient(id, key, company string) *lmv1.DefaultApi {
 	config := lmv1.NewConfiguration()
 	config.APIKey = map[string]map[string]string{
-		"Authorization": map[string]string{
+		"Authorization": {
 			"AccessID":  id,
 			"AccessKey": key,
 		},
@@ -227,7 +227,7 @@ func createServiceDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGr
 }
 
 func createServiceDeletedDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup) (clusterDeviceGroup *lmv1.RestDeviceGroup, err error) {
-	name := "_deleted"
+	name := constants.DeletedDeviceGroup
 	appliesTo := "hasCategory(\"" + constants.NodeDeletedCategory + "\") && auto.clustername ==\"" + argus.Config.ClusterName + "\""
 
 	clusterDeviceGroup, err = findDeviceGroup(argus.LMClient, parentDeviceGroup.Id, name)
@@ -265,7 +265,7 @@ func createNodeDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup
 }
 
 func createNodeDeletedDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup) (clusterDeviceGroup *lmv1.RestDeviceGroup, err error) {
-	name := "_deleted"
+	name := constants.DeletedDeviceGroup
 	appliesTo := "hasCategory(\"" + constants.NodeDeletedCategory + "\") && auto.clustername ==\"" + argus.Config.ClusterName + "\""
 
 	clusterDeviceGroup, err = findDeviceGroup(argus.LMClient, parentDeviceGroup.Id, name)
@@ -303,7 +303,7 @@ func createPodDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup)
 }
 
 func createPodDeletedDeviceGroup(argus *Argus, parentDeviceGroup *lmv1.RestDeviceGroup) (clusterDeviceGroup *lmv1.RestDeviceGroup, err error) {
-	name := "_deleted"
+	name := constants.DeletedDeviceGroup
 	appliesTo := "hasCategory(\"" + constants.PodDeletedCategory + "\") && auto.clustername ==\"" + argus.Config.ClusterName + "\""
 
 	clusterDeviceGroup, err = findDeviceGroup(argus.LMClient, parentDeviceGroup.Id, name)

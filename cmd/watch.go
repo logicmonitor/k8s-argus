@@ -4,9 +4,8 @@ import (
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/logicmonitor/argus/argus"
-	"github.com/logicmonitor/argus/argus/config"
-	"github.com/logicmonitor/argus/constants"
+	"github.com/logicmonitor/k8s-argus/argus"
+	"github.com/logicmonitor/k8s-argus/argus/config"
 	"github.com/spf13/cobra"
 )
 
@@ -35,14 +34,10 @@ var watchCmd = &cobra.Command{
 		argus.Watch()
 		// Stay alive
 		// TODO: Expose a monitoring endpoint.
-		http.ListenAndServe(":8080", nil)
+		log.Fatal(http.ListenAndServe(":8080", nil))
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(watchCmd)
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	log.Infof("LogicMonitor Watcher %s", constants.Version)
 }
