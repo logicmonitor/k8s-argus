@@ -1,2 +1,6 @@
 *
-!build
+!argus
+!cmd
+!scripts
+!Gopkg*
+!main.go

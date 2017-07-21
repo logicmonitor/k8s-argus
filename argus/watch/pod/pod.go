@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/logicmonitor/argus/argus/config"
-	"github.com/logicmonitor/argus/constants"
+	"github.com/logicmonitor/k8s-argus/argus/config"
+	"github.com/logicmonitor/k8s-argus/argus/constants"
 	lmv1 "github.com/logicmonitor/lm-sdk-go"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/logicmonitor/argus/argus/config"
-	"github.com/logicmonitor/argus/constants"
+	"github.com/logicmonitor/k8s-argus/argus/config"
+	"github.com/logicmonitor/k8s-argus/argus/constants"
 	lmv1 "github.com/logicmonitor/lm-sdk-go"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
@@ -134,19 +134,6 @@ func (w Watcher) addDevice(service *v1.Service) {
 
 func (w Watcher) updateDevice(service *v1.Service, id int32) {
 	device := w.makeDeviceObject(service)
-	restResponse, _, err := w.LMClient.UpdateDevice(device, id, "")
-	if err != nil {
-		log.Error(restResponse.Errmsg)
-	}
-}
-
-func (w Watcher) moveDevice(service *v1.Service, id int32) {
-	device := w.makeDeviceObject(service)
-	property := lmv1.NameAndValue{
-		Name:  "auto.deleted",
-		Value: "",
-	}
-	device.CustomProperties = append(device.CustomProperties, property)
 	restResponse, _, err := w.LMClient.UpdateDevice(device, id, "")
 	if err != nil {
 		log.Error(restResponse.Errmsg)

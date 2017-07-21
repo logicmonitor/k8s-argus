@@ -98,6 +98,12 @@
   revision = "f3f9494671f93fcff853e3c6e9e948b3eb71e590"
 
 [[projects]]
+  name = "github.com/go-resty/resty"
+  packages = ["."]
+  revision = "cf81ed0a604d373be63b4c036c6b05c06520615f"
+  version = "v0.13"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["proto","sortkeys"]
   revision = "100ba4e885062801d56799d78530b73b178a78f3"
@@ -150,6 +156,12 @@
   name = "github.com/juju/ratelimit"
   packages = ["."]
   revision = "5b9ff866471762aa2ab2dced63c9fb6f53921342"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/logicmonitor/lm-sdk-go"
+  packages = ["."]
+  revision = "1d4cdc64dff27712f79266283a6c788d4af26fd1"
 
 [[projects]]
   branch = "master"
@@ -232,7 +244,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
+  packages = ["context","context/ctxhttp","http2","http2/hpack","idna","internal/timeseries","lex/httplex","publicsuffix","trace"]
   revision = "59a0b19b5533c7977ddeb86b017bf507ed407b12"
 
 [[projects]]
@@ -292,6 +304,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "018862c01e85101e440acd421e7466ac5fdd8752415d116b31868cad01707d44"
+  inputs-digest = "adc916cf9001e6f98f7ba94118d398fd0795e82d0dd9d759a0027256131a5d90"
   solver-name = "gps-cdcl"
   solver-version = 1
