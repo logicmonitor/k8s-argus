@@ -2,6 +2,7 @@ package namespace
 
 import (
 	"fmt"
+	"net/http"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/logicmonitor/k8s-argus/argus/config"
@@ -75,7 +76,31 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// namespace := obj.(*v1.Namespace)
+		namespace := obj.(*v1.Namespace)
+		for name, parentID := range w.DeviceGroups {
+			deviceGroup, err := w.findDeviceGroup(parentID)
+			if err != nil {
+				log.Printf("Failed to find namespace device group in %q: %v", name, err)
+			}
+			for _, subGroup := range deviceGroup.SubGroups {
+				if subGroup.Name == namespace.Name {
+					nullObject, apiResponse, err := w.LMClient.DeleteDeviceGroupById(subGroup.Id, true)
+					if err != nil {
+						log.Printf("Failed to delete device group %v", err)
+					}
+					if nullObject.Status != http.StatusOK {
+						log.Printf("Error: %v", err)
+
+						return
+					}
+					if apiResponse.StatusCode != http.StatusOK {
+						log.Printf("Error: %v", err)
+
+						return
+					}
+				}
+			}
+		}
 	}
 }
 
