@@ -28,4 +28,5 @@ script:
   - travis_wait 30 make
 
 after_success:
+  - docker run --volume=$(pwd):/out --entrypoint=sh logicmonitor/argus:latest cp /coverage.txt /out
   - bash <(curl -s https://codecov.io/bash)
