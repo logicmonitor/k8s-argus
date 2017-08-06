@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/logicmonitor/k8s-argus/argus"
-	"github.com/logicmonitor/k8s-argus/argus/config"
+	"github.com/logicmonitor/k8s-argus/pkg"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
+
+	"github.com/logicmonitor/k8s-argus/pkg/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -20,18 +24,32 @@ var watchCmd = &cobra.Command{
 		// version to the next.
 
 		// Application configuration
-		config := config.GetConfig()
+		config, err := config.GetConfig()
+		if err != nil {
+			fmt.Printf("Failed to open %s: %v", constants.ConfigPath, err)
+			os.Exit(1)
+		}
+
 		// Set the logging level.
 		if config.Debug {
 			log.SetLevel(log.DebugLevel)
 		}
-		// Instantiate the application and add watchers.
-		argus, err := argus.NewArgus(config)
+
+		// Instantiate the base struct.
+		base, err := argus.NewBase(config)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		// Invoke the watcher and store the response.
+
+		// Instantiate the application and add watchers.
+		argus, err := argus.NewArgus(base)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		// Invoke the watcher.
 		argus.Watch()
+
 		// Stay alive
 		// TODO: Expose a monitoring endpoint.
 		log.Fatal(http.ListenAndServe(":8080", nil))

@@ -1,6 +1,7 @@
 *
-!argus
+!pkg
 !cmd
 !scripts
 !Gopkg*
 !main.go
+!vendor

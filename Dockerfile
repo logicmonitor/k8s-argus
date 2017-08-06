@@ -1,8 +1,6 @@
 FROM golang:1.8.3 as build
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
-RUN go get -u github.com/golang/dep/cmd/dep
 COPY ./ ./
-RUN dep ensure
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /argus
 
 FROM golang:1.8.3 as test

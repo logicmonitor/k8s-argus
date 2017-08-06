@@ -1,0 +1,35 @@
+package constants
+
+const (
+	// ClusterCategory is the system.category used to identity the Kubernetes cluster in LogicMonitor.
+	ClusterCategory = "KubernetesCluster"
+	// EtcdCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
+	EtcdCategory = "KubernetesEtcd"
+	// EtcdDeletedCategory is the system.category used to identity a deleted Kubernetes Etcd node in LogicMonitor.
+	EtcdDeletedCategory = "KubernetesNodeDeleted"
+	// NodeCategory is the system.category used to identity the Kubernetes Node resource type in LogicMonitor.
+	NodeCategory = "KubernetesNode"
+	// NodeDeletedCategory is the system.category used to identity a deleted Kubernetes Node resource type in LogicMonitor.
+	NodeDeletedCategory = "KubernetesNodeDeleted"
+	// ServiceCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
+	ServiceCategory = "KubernetesService"
+	// ServiceDeletedCategory is the system.category used to identity a deleted Kubernetes Service resource type in LogicMonitor.
+	ServiceDeletedCategory = "KubernetesServiceDeleted"
+	// PodCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
+	PodCategory = "KubernetesPod"
+	// PodDeletedCategory is the system.category used to identity a deleted Kubernetes Pod resource type in LogicMonitor.
+	PodDeletedCategory = "KubernetesPodDeleted"
+	// DeletedDeviceGroup is the name of the device group where deleted devices are optionally moved to.
+	DeletedDeviceGroup = "_deleted"
+)
+
+const (
+	// ConfigPath is the path used to read the config.yaml file from.
+	ConfigPath = "/etc/argus/config.yaml"
+	// AccessID is the environment variable name to lookup for the LogicMonitor access ID.
+	AccessID = "ARGUS_ACCESS_ID"
+	// AccessKey is the environment variable name to lookup for the LogicMonitor access key.
+	AccessKey = "ARGUS_ACCESS_KEY"
+	// Account is the environment variable name to lookup for the LogicMonitor account.
+	Account = "ARGUS_ACCOUNT"
+)
