@@ -1,11 +1,8 @@
 <p align="center">
-  <h1 align="center">Argus</h1>
   <p align="center">
-    <a href=""><img alt="GoDoc" src="https://s3.amazonaws.com/uploads.hipchat.com/34494/4766310/2ZsnXUwh3AcUMBP/upload.png"></a>
+    <a href=""><img alt="GoDoc" src="./logo.png"></a>
 
   </p>
-  <p align="center">Automated Kubernetes monitoring.</p>
-  <p align="center"><sub> <i>Powered by LogicMonitor</i></sub></p>
   <p align="center">
     <a href="https://godoc.org/github.com/logicmonitor/k8s-argus"><img alt="GoDoc" src="http://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"></a>
 
@@ -31,21 +28,16 @@
 
 Getting Started
 ---------------
-Argus is available as a Helm chart. Please see the installation instructions in the [LogicMonitor charts](https://github.com/logicmonitor/k8s-charts) repository.
+Argus is available as a Helm chart. Please see the installation instructions in the [LogicMonitor charts](https://github.com/logicmonitor/k8s-helm-charts/tree/master/argus) repository.
 > **Note:** Argus opensource software and currently in alpha phase. The LogicMonitor support team will not assist in any issues related to Argus.
 
 Developing Argus
 ----------------
-To compile the binary and build the Docker image, run:
+To build Docker image, run:
 ```
 $ make
 ```
-
-If you would like to run the same tests used in the CI build, run:
-```
-$ make test
-```
-> **Note:** Running tests before submitting a PR is highly recommended.
+> **Note:** The Dockerfile uses multi-stage builds. Docker 17.05.0 or greater is required.
 
 ### License
 [![license](https://img.shields.io/github/license/logicmonitor/k8s-argus.svg?style=flat-square)](https://github.com/logicmonitor/k8s-argus/blob/master/LICENSE)
