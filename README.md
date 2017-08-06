@@ -1,5 +1,9 @@
 <p align="center">
   <h1 align="center">Argus</h1>
+  <p align="center">
+    <a href=""><img alt="GoDoc" src="https://s3.amazonaws.com/uploads.hipchat.com/34494/4766310/2ZsnXUwh3AcUMBP/upload.png"></a>
+
+  </p>
   <p align="center">Automated Kubernetes monitoring.</p>
   <p align="center"><sub> <i>Powered by LogicMonitor</i></sub></p>
   <p align="center">
