@@ -6,7 +6,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	lm "github.com/logicmonitor/lm-sdk-go"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/runtime"
 )
@@ -48,18 +48,18 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 
 			parentDeviceGroup, err := w.findDeviceGroup(parentID)
 			if err != nil {
-				logrus.Errorf("Failed to find namespace: %v", err)
+				log.Errorf("Failed to find namespace: %v", err)
 
 				return
 			}
 			_, err = w.createDeviceGroup(namespace.Name, appliesTo, parentDeviceGroup.Id)
 			if err != nil {
-				logrus.Errorf("Failed to add namespace: %v", err)
+				log.Errorf("Failed to add namespace: %v", err)
 
 				return
 			}
 
-			logrus.Printf("Added namespace %s", namespace.Name)
+			log.Printf("Added namespace %s", namespace.Name)
 		}
 	}
 }
@@ -79,7 +79,7 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 		for name, parentID := range w.DeviceGroups {
 			deviceGroup, err := w.findDeviceGroup(parentID)
 			if err != nil {
-				logrus.Printf("Failed to find namespace %s: %v", name, err)
+				log.Printf("Failed to find namespace %s: %v", name, err)
 
 				return
 			}
@@ -87,7 +87,7 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 				if subGroup.Name == namespace.Name {
 					restResponse, apiResponse, err := w.LMClient.DeleteDeviceGroupById(subGroup.Id, true)
 					if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-						logrus.Errorf("Failed to delete namespace %q: %v", subGroup.Name, _err)
+						log.Errorf("Failed to delete namespace %q: %v", subGroup.Name, _err)
 
 						return
 					}
@@ -100,13 +100,13 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 func (w *Watcher) findDeviceGroup(parentID int32) (deviceGroup *lm.RestDeviceGroup, err error) {
 	restResponse, apiResponse, err := w.LMClient.GetDeviceGroupById(parentID, "")
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		logrus.Errorf("Failed to find namespace: %v", _err)
+		log.Errorf("Failed to find namespace: %v", _err)
 
 		return
 	}
 
 	deviceGroup = &restResponse.Data
-	logrus.Debugf("%#v", restResponse)
+	log.Debugf("%#v", restResponse)
 
 	return
 }
@@ -120,7 +120,7 @@ func (w *Watcher) createDeviceGroup(name, appliesTo string, parentID int32) (dev
 		DisableAlerting: w.Config.DisableAlerting,
 	})
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		logrus.Errorf("Failed to add namespace %q: %v", name, _err)
+		log.Errorf("Failed to add namespace %q: %v", name, _err)
 
 		return
 	}

@@ -2,7 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"log"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -45,7 +44,7 @@ func GetConfig() (*Config, error) {
 
 	err = envconfig.Process("argus", c)
 	if err != nil {
-		log.Fatal(err.Error())
+		return nil, err
 	}
 
 	return c, nil
