@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -16,9 +15,6 @@ import (
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 )
-
-// PublicDiscoveryEndpoint is the official CoreOS discovery service.
-const PublicDiscoveryEndpoint = "discovery.etcd.io"
 
 // Controller is the etcd controller for discovering etcd nodes.
 type Controller struct {
@@ -34,7 +30,7 @@ type Member struct {
 // DiscoverByToken discovers the etcd node IP addresses using the etcd discovery service.
 func (c *Controller) DiscoverByToken() ([]*Member, error) {
 	members := []*Member{}
-	response, err := http.Get("https://" + path.Join(PublicDiscoveryEndpoint, c.Config.EtcdDiscoveryToken))
+	response, err := http.Get(c.Config.EtcdDiscoveryToken)
 	if err != nil {
 		return nil, err
 	}
