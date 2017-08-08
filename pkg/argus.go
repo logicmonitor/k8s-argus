@@ -48,6 +48,8 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO: Specify Argus version.
+	config.UserAgent = "LogicMonitor/1.0 Argus"
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {

@@ -1,13 +1,9 @@
 package tree
 
 import (
-	"fmt"
-	"net/url"
-
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/tree/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
-	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,263 +15,206 @@ type DeviceTree struct {
 // CreateDeviceTree creates the Device tree that will represent the cluster in the LogicMonitor portal.
 func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 	deviceGroups := make(map[string]int32)
-	clusterDeviceGroup, err := d.createClusterDeviceGroup()
+	clusterDeviceGroupID, err := d.createClusterDeviceGroup()
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Using cluster device group with id %d", clusterDeviceGroup.Id)
+	log.Infof("Using cluster device group with id %d", clusterDeviceGroupID)
 
-	serviceDeviceGroup, err := d.createServiceDeviceGroup(clusterDeviceGroup)
+	serviceDeviceGroupID, err := d.createServiceDeviceGroup(clusterDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	deviceGroups["services"] = serviceDeviceGroup.Id
-	_, err = d.createServiceDeletedDeviceGroup(serviceDeviceGroup)
+	deviceGroups["services"] = serviceDeviceGroupID
+	_, err = d.createServiceDeletedDeviceGroup(serviceDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Using service device group with id %d", serviceDeviceGroup.Id)
+	log.Infof("Using service device group with id %d", serviceDeviceGroupID)
 
-	etcdDeviceGroup, err := d.createEtcdDeviceGroup(clusterDeviceGroup)
+	etcdDeviceGroupID, err := d.createEtcdDeviceGroup(clusterDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	_, err = d.createEtcdDeletedDeviceGroup(etcdDeviceGroup)
+	_, err = d.createEtcdDeletedDeviceGroup(etcdDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Using etcd device group with id %d", etcdDeviceGroup.Id)
+	log.Infof("Using etcd device group with id %d", etcdDeviceGroupID)
 
-	nodeDeviceGroup, err := d.createNodeDeviceGroup(clusterDeviceGroup)
+	nodeDeviceGroupID, err := d.createNodeDeviceGroup(clusterDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	_, err = d.createNodeDeletedDeviceGroup(nodeDeviceGroup)
+	_, err = d.createNodeDeletedDeviceGroup(nodeDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Using node device group with id %d", nodeDeviceGroup.Id)
+	log.Infof("Using node device group with id %d", nodeDeviceGroupID)
 
-	podDeviceGroup, err := d.createPodDeviceGroup(clusterDeviceGroup)
+	podDeviceGroupID, err := d.createPodDeviceGroup(clusterDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	deviceGroups["pods"] = podDeviceGroup.Id
-	_, err = d.createPodDeletedDeviceGroup(podDeviceGroup)
+	deviceGroups["pods"] = podDeviceGroupID
+	_, err = d.createPodDeletedDeviceGroup(podDeviceGroupID)
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Using pod device group with id %d", podDeviceGroup.Id)
+	log.Infof("Using pod device group with id %d", podDeviceGroupID)
 
 	return deviceGroups, nil
 }
 
-func (d *DeviceTree) findDeviceGroup(parentID int32, name string) (deviceGroup *lm.RestDeviceGroup, err error) {
-	filter := fmt.Sprintf("name:%s", url.QueryEscape(name))
-	restResponse, apiResponse, err := d.LMClient.GetDeviceGroupList("name,id,parentId", -1, 0, filter)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Errorf("Failed to find device group %q: %v", name, _err)
-	}
-
-	log.Debugf("%#v", restResponse)
-
-	for _, d := range restResponse.Data.Items {
-		if d.ParentId == parentID {
-			log.Infof("Found device group %q with id %d", name, parentID)
-			deviceGroup = &d
-
-			return
-		}
-	}
-
-	return
-}
-
-func (d *DeviceTree) createDeviceGroup(name, appliesTo string, disableAlerting bool, parentID int32) (*lm.RestDeviceGroup, error) {
-	restResponse, apiResponse, err := d.LMClient.AddDeviceGroup(lm.RestDeviceGroup{
-		Name:            name,
-		Description:     "A dynamic device group for Kubernetes.",
-		ParentId:        parentID,
+func (d *DeviceTree) createClusterDeviceGroup() (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName)
+	opts := &devicegroup.Options{
+		Name:            "Kubernetes Cluster: " + d.Config.ClusterName,
+		ParentID:        constants.RootDeviceGroupID,
+		DisableAlerting: d.Config.DisableAlerting,
 		AppliesTo:       appliesTo,
-		DisableAlerting: disableAlerting,
-	})
-	if e := utilities.CheckAllErrors(restResponse, apiResponse, err); e != nil {
-		return nil, fmt.Errorf("Failed to add device group: %v", e)
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
+	if err != nil {
+		return 0, err
 	}
 
-	deviceGroup := &restResponse.Data
-	log.Infof("Created device group with id %d", deviceGroup.Id)
-
-	return deviceGroup, nil
+	return id, nil
 }
 
-func (d *DeviceTree) createClusterDeviceGroup() (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := "Kubernetes Cluster: " + d.Config.ClusterName
-	appliesTo := "hasCategory(\"" + constants.ClusterCategory + "\") && auto.clustername ==\"" + d.Config.ClusterName + "\""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(1, name)
+func (d *DeviceTree) createServiceDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder()
+	opts := &devicegroup.Options{
+		Name:            constants.ServiceDeviceGroupName,
+		ParentID:        parentID,
+		DisableAlerting: d.Config.DisableAlerting,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, d.Config.DisableAlerting, 1)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }
 
-func (d *DeviceTree) createServiceDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := "Services"
-	appliesTo := ""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
+func (d *DeviceTree) createServiceDeletedDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName)
+	opts := &devicegroup.Options{
+		Name:            constants.DeletedDeviceGroup,
+		ParentID:        parentID,
+		DisableAlerting: true,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, d.Config.DisableAlerting, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }
 
-func (d *DeviceTree) createServiceDeletedDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := constants.DeletedDeviceGroup
-	appliesTo := "hasCategory(\"" + constants.NodeDeletedCategory + "\") && auto.clustername ==\"" + d.Config.ClusterName + "\""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
+func (d *DeviceTree) createEtcdDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdCategory).And().Auto("clustername").Equals(d.Config.ClusterName)
+	opts := &devicegroup.Options{
+		Name:            constants.EtcdDeviceGroupName,
+		ParentID:        parentID,
+		DisableAlerting: d.Config.DisableAlerting,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, d.Config.DisableAlerting, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }
 
-func (d *DeviceTree) createEtcdDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := "Etcd"
-	appliesTo := "hasCategory(\"" + constants.EtcdCategory + "\") && auto.clustername ==\"" + d.Config.ClusterName + "\""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
+func (d *DeviceTree) createEtcdDeletedDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName)
+	opts := &devicegroup.Options{
+		Name:            constants.DeletedDeviceGroup,
+		ParentID:        parentID,
+		DisableAlerting: true,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, d.Config.DisableAlerting, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }
 
-func (d *DeviceTree) createEtcdDeletedDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := constants.DeletedDeviceGroup
-	appliesTo := "hasCategory(\"" + constants.EtcdDeletedCategory + "\") && auto.clustername ==\"" + d.Config.ClusterName + "\""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
+func (d *DeviceTree) createNodeDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeCategory).And().Auto("clustername").Equals(d.Config.ClusterName)
+	opts := &devicegroup.Options{
+		Name:            constants.NodeDeviceGroupName,
+		ParentID:        parentID,
+		DisableAlerting: d.Config.DisableAlerting,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, true, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }
 
-func (d *DeviceTree) createNodeDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := "Nodes"
-	appliesTo := "hasCategory(\"" + constants.NodeCategory + "\") && auto.clustername ==\"" + d.Config.ClusterName + "\""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
+func (d *DeviceTree) createNodeDeletedDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName)
+	opts := &devicegroup.Options{
+		Name:            constants.DeletedDeviceGroup,
+		ParentID:        parentID,
+		DisableAlerting: true,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, d.Config.DisableAlerting, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }
 
-func (d *DeviceTree) createNodeDeletedDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := constants.DeletedDeviceGroup
-	appliesTo := "hasCategory(\"" + constants.NodeDeletedCategory + "\") && auto.clustername ==\"" + d.Config.ClusterName + "\""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
+func (d *DeviceTree) createPodDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder()
+	opts := &devicegroup.Options{
+		Name:            constants.PodDeviceGroupName,
+		ParentID:        parentID,
+		DisableAlerting: d.Config.DisableAlerting,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, true, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }
 
-func (d *DeviceTree) createPodDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := "Pods"
-	appliesTo := ""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
+func (d *DeviceTree) createPodDeletedDeviceGroup(parentID int32) (int32, error) {
+	appliesTo := devicegroup.NewAppliesToBuilder().HasCategory(constants.PodDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName)
+	opts := &devicegroup.Options{
+		Name:            constants.DeletedDeviceGroup,
+		ParentID:        parentID,
+		DisableAlerting: true,
+		AppliesTo:       appliesTo,
+		Client:          d.LMClient,
+	}
+	id, err := devicegroup.Create(opts)
 	if err != nil {
-		return
+		return 0, err
 	}
 
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, d.Config.DisableAlerting, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
-}
-
-func (d *DeviceTree) createPodDeletedDeviceGroup(parentDeviceGroup *lm.RestDeviceGroup) (clusterDeviceGroup *lm.RestDeviceGroup, err error) {
-	name := constants.DeletedDeviceGroup
-	appliesTo := "hasCategory(\"" + constants.PodDeletedCategory + "\") && auto.clustername ==\"" + d.Config.ClusterName + "\""
-
-	clusterDeviceGroup, err = d.findDeviceGroup(parentDeviceGroup.Id, name)
-	if err != nil {
-		return
-	}
-
-	if clusterDeviceGroup == nil {
-		clusterDeviceGroup, err = d.createDeviceGroup(name, appliesTo, true, parentDeviceGroup.Id)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return id, nil
 }

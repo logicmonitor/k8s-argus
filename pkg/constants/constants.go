@@ -1,6 +1,18 @@
 package constants
 
 const (
+	// RootDeviceGroupID is the root ID in the device tree.
+	RootDeviceGroupID = 0
+	// EtcdDeviceGroupName is the service device group name in the cluster device group.
+	EtcdDeviceGroupName = "Etcd"
+	// NodeDeviceGroupName is the service device group name in the cluster device group.
+	NodeDeviceGroupName = "Nodes"
+	// PodDeviceGroupName is the service device group name in the cluster device group.
+	PodDeviceGroupName = "Pods"
+	// ServiceDeviceGroupName is the service device group name in the cluster device group.
+	ServiceDeviceGroupName = "Services"
+)
+const (
 	// ClusterCategory is the system.category used to identity the Kubernetes cluster in LogicMonitor.
 	ClusterCategory = "KubernetesCluster"
 	// EtcdCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
