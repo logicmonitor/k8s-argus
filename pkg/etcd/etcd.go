@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/logicmonitor/k8s-argus/pkg/tree/device"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 
 	"github.com/coreos/etcd/client"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -21,7 +21,7 @@ type Controller struct {
 	*types.Base
 }
 
-// Member is a discovered etcd memeber.
+// Member is a discovered etcd member.
 type Member struct {
 	Name string
 	URL  *url.URL
@@ -64,18 +64,29 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 }
 
 func (c *Controller) addDevice(member *Member) {
-	device := c.makeDeviceObject(member)
-	restResponse, apiResponse, err := c.LMClient.AddDevice(device, false)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Errorf("Failed to add etcd host: %v", _err)
+	// Check if the etcd member has already been added.
+	d, err := device.FindByDisplayName(member.Name, c.LMClient)
+	if err != nil {
+		log.Errorf("Failed to find etcd member %q: %v", member.Name, err)
+		return
 	}
+
+	// Add the etcd member.
+	if d == nil {
+		newDevice := c.makeDeviceObject(member)
+		err = device.Add(newDevice, c.LMClient)
+		if err != nil {
+			log.Errorf("Failed to add etcd member %q: %v", newDevice.DisplayName, err)
+		}
+	}
+
 	log.Infof("Added etcd member %q", member.Name)
 }
 
-func (c *Controller) makeDeviceObject(member *Member) (device lm.RestDevice) {
+func (c *Controller) makeDeviceObject(member *Member) *lm.RestDevice {
 	categories := constants.EtcdCategory
 
-	device = lm.RestDevice{
+	d := &lm.RestDevice{
 		Name:                 member.URL.Hostname(),
 		DisplayName:          member.Name + "-" + c.Config.ClusterName,
 		DisableAlerting:      c.Config.DisableAlerting,
@@ -97,5 +108,5 @@ func (c *Controller) makeDeviceObject(member *Member) (device lm.RestDevice) {
 		},
 	}
 
-	return
+	return d
 }

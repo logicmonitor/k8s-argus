@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
+
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
@@ -14,14 +16,16 @@ const hasCategoryClose = ")"
 
 // Options are the options for creating a device group.
 type Options struct {
-	Name            string
-	ParentID        int32
-	DisableAlerting bool
-	AppliesTo       AppliesToBuilder
-	Client          *lm.DefaultApi
+	AppliesTo             AppliesToBuilder
+	DeletedGroupAppliesTo AppliesToBuilder
+	Client                *lm.DefaultApi
+	Name                  string
+	ParentID              int32
+	DisableAlerting       bool
+	CreateDeletedGroup    bool
 }
 
-// AppliesToBuilder is an interface for building and appliesTo string.
+// AppliesToBuilder is an interface for building an appliesTo string.
 type AppliesToBuilder interface {
 	HasCategory(string) AppliesToBuilder
 	Auto(string) AppliesToBuilder
@@ -70,12 +74,13 @@ func (a *appliesToBuilder) String() string {
 
 // Create creates a device group.
 func Create(opts *Options) (int32, error) {
-	clusterDeviceGroup, err := find(opts.ParentID, opts.Name, opts.Client)
+	clusterDeviceGroup, err := Find(opts.ParentID, opts.Name, opts.Client)
 	if err != nil {
 		return 0, err
 	}
 
 	if clusterDeviceGroup == nil {
+		log.Infof("Could not find cluster device group %q", opts.Name)
 		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.Client)
 		if err != nil {
 			return 0, err
@@ -84,14 +89,23 @@ func Create(opts *Options) (int32, error) {
 		clusterDeviceGroup = cdg
 	}
 
+	if opts.CreateDeletedGroup {
+		_, err := create(constants.DeletedDeviceGroup, opts.AppliesTo.String(), true, clusterDeviceGroup.Id, opts.Client)
+		if err != nil {
+			return 0, err
+		}
+
+	}
+
 	return clusterDeviceGroup.Id, nil
 }
 
-func find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGroup, error) {
+// Find searches for a device group identified by the parent ID and name.
+func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGroup, error) {
 	filter := fmt.Sprintf("name:%s", url.QueryEscape(name))
 	restResponse, apiResponse, err := client.GetDeviceGroupList("name,id,parentId", -1, 0, filter)
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Errorf("Failed to find device group %q: %v", name, _err)
+		return nil, fmt.Errorf("Failed to get device group list when searching for %q: %v", name, _err)
 	}
 
 	log.Debugf("%#v", restResponse)
@@ -101,12 +115,11 @@ func find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGro
 		if d.ParentId == parentID {
 			log.Infof("Found device group %q with id %d", name, parentID)
 			deviceGroup = &d
-
-			return deviceGroup, nil
+			break
 		}
 	}
 
-	return nil, fmt.Errorf("Unexpected error when searching for device group %q", name)
+	return deviceGroup, nil
 }
 
 func create(name, appliesTo string, disableAlerting bool, parentID int32, client *lm.DefaultApi) (*lm.RestDeviceGroup, error) {

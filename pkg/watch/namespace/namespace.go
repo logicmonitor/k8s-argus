@@ -1,11 +1,11 @@
 package namespace
 
 import (
+	"github.com/logicmonitor/k8s-argus/pkg/tree/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/runtime"
@@ -36,23 +36,24 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
 		for k, parentID := range w.DeviceGroups {
-			var appliesTo string
+			var appliesTo devicegroup.AppliesToBuilder
+			// Ensure that we are creating namespaces for namespaced resources.
 			switch k {
-			case "services":
-				appliesTo = "hasCategory(\"" + constants.ServiceCategory + "\") && auto.namespace == \"" + namespace.Name + "\" && auto.clustername == \"" + w.Config.ClusterName + "\""
-			case "pods":
-				appliesTo = "hasCategory(\"" + constants.PodCategory + "\") && auto.namespace == \"" + namespace.Name + "\" && auto.clustername == \"" + w.Config.ClusterName + "\""
+			case constants.ServiceCategory:
+				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
+			case constants.PodCategory:
+				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			default:
 				return
 			}
 
-			parentDeviceGroup, err := w.findDeviceGroup(parentID)
-			if err != nil {
-				log.Errorf("Failed to find namespace: %v", err)
-
-				return
+			opts := &devicegroup.Options{
+				Name:            namespace.Name,
+				AppliesTo:       appliesTo,
+				ParentID:        parentID,
+				DisableAlerting: w.Config.DisableAlerting,
 			}
-			_, err = w.createDeviceGroup(namespace.Name, appliesTo, parentDeviceGroup.Id)
+			_, err := devicegroup.Create(opts)
 			if err != nil {
 				log.Errorf("Failed to add namespace: %v", err)
 
@@ -77,7 +78,7 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
 		for name, parentID := range w.DeviceGroups {
-			deviceGroup, err := w.findDeviceGroup(parentID)
+			deviceGroup, err := devicegroup.Find(parentID, name, w.LMClient)
 			if err != nil {
 				log.Printf("Failed to find namespace %s: %v", name, err)
 
@@ -95,37 +96,4 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 			}
 		}
 	}
-}
-
-func (w *Watcher) findDeviceGroup(parentID int32) (deviceGroup *lm.RestDeviceGroup, err error) {
-	restResponse, apiResponse, err := w.LMClient.GetDeviceGroupById(parentID, "")
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Errorf("Failed to find namespace: %v", _err)
-
-		return
-	}
-
-	deviceGroup = &restResponse.Data
-	log.Debugf("%#v", restResponse)
-
-	return
-}
-
-func (w *Watcher) createDeviceGroup(name, appliesTo string, parentID int32) (deviceGroup *lm.RestDeviceGroup, err error) {
-	restResponse, apiResponse, err := w.LMClient.AddDeviceGroup(lm.RestDeviceGroup{
-		Name:            name,
-		Description:     "A dynamic device group for Kubernetes.",
-		ParentId:        parentID,
-		AppliesTo:       appliesTo,
-		DisableAlerting: w.Config.DisableAlerting,
-	})
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Errorf("Failed to add namespace %q: %v", name, _err)
-
-		return
-	}
-
-	deviceGroup = &restResponse.Data
-
-	return
 }
