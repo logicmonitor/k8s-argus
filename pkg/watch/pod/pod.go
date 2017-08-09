@@ -1,11 +1,9 @@
 package pod
 
 import (
-	"fmt"
-
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/tree/device"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/pkg/api/v1"
@@ -32,17 +30,36 @@ func (w Watcher) ObjType() runtime.Object {
 }
 
 // AddFunc is a function that implements the Watcher interface.
+// nolint: dupl
 func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
 
-		if pod.Status.PodIP != "" {
-			w.addDevice(pod)
+		// We need an IP address.
+		if pod.Status.PodIP == "" {
+			return
+		}
+
+		// Check if the pod has already been added.
+		d, err := device.FindByDisplayName(pod.Name, w.LMClient)
+		if err != nil {
+			log.Errorf("Failed to find pod %q: %v", pod.Name, err)
+			return
+		}
+
+		// Add the pod.
+		if d == nil {
+			newDevice := w.makeDeviceObject(pod)
+			err = device.Add(newDevice, w.LMClient)
+			if err != nil {
+				log.Errorf("Failed to add node %q: %v", newDevice.DisplayName, err)
+			}
 		}
 	}
 }
 
 // UpdateFunc is a function that implements the Watcher interface.
+// nolint: dupl
 func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		oldPod := oldObj.(*v1.Pod)
@@ -51,102 +68,89 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		// If the old pod does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new device.
 		if oldPod.Status.PodIP == "" && newPod.Status.PodIP != "" {
-			w.addDevice(newPod)
-		} else if oldPod.Status.PodIP != "" && newPod.Status.PodIP != "" {
-			// Covers the case when a pod has been terminated (new ip doesn't exist)
-			// and if a pod needs to be added.
-			filter := fmt.Sprintf("displayName:%s", oldPod.Name)
-			restResponse, apiResponse, err := w.LMClient.GetDeviceList("", -1, 0, filter)
-			if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-				log.Errorf("Failed to find pod %s: %s", oldPod.Name, _err)
+			d := w.makeDeviceObject(newPod)
+			err := device.Add(d, w.LMClient)
+			if err != nil {
+				log.Errorf("Failed to add pod %s: %s", d.DisplayName, err)
+			}
+			log.Infof("Added pod %s", d.DisplayName)
+			return
+		}
 
+		// Covers the case when a pod has been terminated (new ip doesn't exist)
+		// and if a pod needs to be added.
+		if oldPod.Status.PodIP != "" && newPod.Status.PodIP != "" {
+			oldDevice, err := device.FindByDisplayName(oldPod.Name, w.LMClient)
+			if err != nil {
+				log.Errorf("Failed to find pod %q: %v", oldPod.Name, err)
 				return
 			}
-			if restResponse.Data.Total == 1 {
-				id := restResponse.Data.Items[0].Id
-				w.updateDevice(newPod, id)
+
+			// Update the pod.
+			if oldDevice != nil {
+				newDevice := w.makeDeviceObject(newPod)
+				err := device.UpdateAndReplace(newDevice, oldDevice.Id, w.LMClient)
+				if err != nil {
+					log.Errorf("Failed to update pod %s: %v", oldDevice.DisplayName, err)
+					return
+				}
 			}
+
+			log.Infof("Updated pod %s with id %d", oldDevice.DisplayName, oldDevice.Id)
 		}
 	}
 }
 
 // DeleteFunc is a function that implements the Watcher interface.
+// nolint: dupl
 func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
-		filter := fmt.Sprintf("displayName:%s", pod.Name)
-		restResponse, apiResponse, err := w.LMClient.GetDeviceList("", -1, 0, filter)
-		if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-			log.Errorf("Failed to find pod %s: %s", pod.Name, _err)
-
+		d, err := device.FindByDisplayName(pod.Name, w.LMClient)
+		if err != nil {
+			log.Errorf("Failed to find pod %q: %v", pod.Name, err)
 			return
 		}
-		if restResponse.Data.Total == 1 {
-			id := restResponse.Data.Items[0].Id
-			if w.Config.DeleteDevices {
-				restResponse, apiResponse, err := w.LMClient.DeleteDevice(id)
-				if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-					log.Errorf("Failed to delete device with id %q: %s", id, _err)
 
-					return
-				}
-				log.Infof("Deleted pod %s with id %d", pod.Name, id)
-			} else {
-				categories := constants.PodDeletedCategory
-				for k, v := range pod.Labels {
-					categories += "," + k + "=" + v
-
-				}
-				device := lm.RestDevice{
-					CustomProperties: []lm.NameAndValue{
-						{
-							Name:  "system.categories",
-							Value: categories,
-						},
-					},
-				}
-				restResponse, apiResponse, err := w.LMClient.PatchDeviceById(device, id, "replace", "customProperties")
-				if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-					log.Errorf("Failed to move pod %s: %s", pod.Name, _err)
-
-					return
-				}
-				log.Infof("Moved pod %s with id %d to deleted group", pod.Name, id)
-			}
+		if d == nil {
+			return
 		}
+
+		// Delete the device
+		if w.Config.DeleteDevices {
+			err = device.Delete(d, w.LMClient)
+			if err != nil {
+				log.Errorf("Failed to delete pod: %v", err)
+			}
+			log.Infof("Deleted pod %s with id %d", d.DisplayName, d.Id)
+			return
+		}
+
+		// Move the device
+
+		categories := device.BuildSystemCategoriesFromLabels(constants.PodDeletedCategory, pod.Labels)
+		newDevice := &lm.RestDevice{
+			CustomProperties: []lm.NameAndValue{
+				{
+					Name:  "system.categories",
+					Value: categories,
+				},
+			},
+		}
+		err = device.UpdateAndReplaceField(newDevice, d.Id, constants.CustomPropertiesFieldName, w.LMClient)
+		if err != nil {
+			log.Errorf("Failed to move pod %s: %s", d.DisplayName, err)
+			return
+		}
+
+		log.Infof("Moved pod %s with id %d to deleted group", d.DisplayName, d.Id)
 	}
 }
 
-func (w Watcher) addDevice(pod *v1.Pod) {
-	device := w.makeDeviceObject(pod)
-	restResponse, apiResponse, err := w.LMClient.AddDevice(device, false)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Errorf("Failed to add pod %s: %s", pod.Name, _err)
+func (w Watcher) makeDeviceObject(pod *v1.Pod) *lm.RestDevice {
+	categories := device.BuildSystemCategoriesFromLabels(constants.PodCategory, pod.Labels)
 
-		return
-	}
-	log.Infof("Added pod %s", pod.Name)
-}
-
-func (w Watcher) updateDevice(pod *v1.Pod, id int32) {
-	device := w.makeDeviceObject(pod)
-	restResponse, apiResponse, err := w.LMClient.UpdateDevice(device, id, "replace")
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Errorf("Failed to update pod %s: %s", pod.Name, _err)
-
-		return
-	}
-	log.Infof("Updated pod %s with id %d", pod.Name, id)
-}
-
-func (w Watcher) makeDeviceObject(pod *v1.Pod) (device lm.RestDevice) {
-	categories := constants.PodCategory
-	for k, v := range pod.Labels {
-		categories += "," + k + "=" + v
-
-	}
-
-	device = lm.RestDevice{
+	d := &lm.RestDevice{
 		Name:                 pod.Name,
 		DisplayName:          pod.Name,
 		DisableAlerting:      w.Config.DisableAlerting,
@@ -188,5 +192,5 @@ func (w Watcher) makeDeviceObject(pod *v1.Pod) (device lm.RestDevice) {
 		},
 	}
 
-	return
+	return d
 }

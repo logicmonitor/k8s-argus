@@ -21,7 +21,7 @@ func CheckAllErrors(restResponse interface{}, apiResponse *logicmonitor.APIRespo
 		t = t.Elem()
 	}
 
-	// Ensure that it is a struct, and get the neccessary fields if they are available.
+	// Ensure that it is a struct, and get the necessary fields if they are available.
 	if t.Kind() == reflect.Struct {
 		field := t.FieldByName("Status")
 		if field.IsValid() {
