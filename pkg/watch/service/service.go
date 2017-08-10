@@ -57,7 +57,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 			newDevice := w.makeDeviceObject(service)
 			err = device.Add(newDevice, w.LMClient)
 			if err != nil {
-				log.Errorf("Failed to add node %q: %v", newDevice.DisplayName, err)
+				log.Errorf("Failed to add service %q: %v", newDevice.DisplayName, err)
 			}
 		}
 	}

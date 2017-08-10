@@ -1,11 +1,22 @@
 package constants
 
+var (
+	// Version is the Argus version and is set at build time.
+	Version string
+)
+
+const (
+	// UserAgentBase is the base string for the User-Agent HTTP header.
+	UserAgentBase = "LogicMonitor Argus/"
+)
+
 const (
 	// RootDeviceGroupID is the root ID in the device tree.
 	RootDeviceGroupID = 1
 	// CustomPropertiesFieldName is the field name for a device's custom properties.
 	CustomPropertiesFieldName = "customProperties"
 )
+
 const (
 	// EtcdDeviceGroupName is the service device group name in the cluster device group.
 	EtcdDeviceGroupName = "Etcd"
@@ -16,6 +27,7 @@ const (
 	// ServiceDeviceGroupName is the service device group name in the cluster device group.
 	ServiceDeviceGroupName = "Services"
 )
+
 const (
 	// ClusterCategory is the system.category used to identity the Kubernetes cluster in LogicMonitor.
 	ClusterCategory = "KubernetesCluster"
