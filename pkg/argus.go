@@ -5,6 +5,7 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/collector"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -36,6 +37,7 @@ func newLMClient(id, key, company string) *lm.DefaultApi {
 		},
 	}
 	config.BasePath = "https://" + company + ".logicmonitor.com/santaba/rest"
+	config.UserAgent = constants.UserAgentBase + constants.Version
 
 	api := lm.NewDefaultApi()
 	api.Configuration = config
@@ -48,8 +50,8 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Specify Argus version.
-	config.UserAgent = "LogicMonitor/1.0 Argus"
+
+	config.UserAgent = constants.UserAgentBase + constants.Version
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {

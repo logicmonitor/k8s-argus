@@ -1,7 +1,8 @@
 FROM golang:1.8.3 as build
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
 COPY ./ ./
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /argus
+ARG VERSION
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /argus -ldflags "-X \"github.com/logicmonitor/k8s-argus/pkg/constants.Version=${VERSION}\""
 
 FROM golang:1.8.3 as test
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
