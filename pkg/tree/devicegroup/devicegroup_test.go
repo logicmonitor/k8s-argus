@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-var testAndString = `hasCategory(foo) && auto.bar == baz`
-var testOrString = `hasCategory(foo) || auto.bar == baz`
+var testAndString = `hasCategory("foo") && auto.bar == "baz"`
+var testOrString = `hasCategory("foo") || auto.bar == "baz"`
 
 func TestAppliesToBuilder(t *testing.T) {
 	builder := NewAppliesToBuilder().HasCategory("foo").And().Auto("bar").Equals("baz")
