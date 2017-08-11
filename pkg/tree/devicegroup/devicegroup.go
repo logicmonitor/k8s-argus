@@ -54,12 +54,12 @@ func (a *appliesToBuilder) Or() AppliesToBuilder {
 	return a
 }
 func (a *appliesToBuilder) Equals(val string) AppliesToBuilder {
-	a.value += " == " + val
+	a.value += " == " + fmt.Sprintf(`"%s"`, val)
 	return a
 }
 
 func (a *appliesToBuilder) HasCategory(category string) AppliesToBuilder {
-	a.value += hasCategoryOpen + category + hasCategoryClose
+	a.value += hasCategoryOpen + fmt.Sprintf(`"%s"`, category) + hasCategoryClose
 	return a
 }
 
