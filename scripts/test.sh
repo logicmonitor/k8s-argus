@@ -5,30 +5,40 @@ set -e
 GOPACKAGES=$(go list ./... | grep -v /vendor/)
 GOFILES=$(find . -type f -name '*.go' -not -path "./vendor/*")
 
-COVERAGE_REPORT=coverage.txt
-PROFILE=profile.out
-
-echo "Running tests"
-if [[ -f ${COVERAGE_REPORT} ]]; then
-  rm ${COVERAGE_REPORT}
-fi
-touch ${COVERAGE_REPORT}
-for package in ${GOPACKAGES[@]}; do
-  go test -v -race -coverprofile=${PROFILE} -covermode=atomic $package
-  if [ -f ${PROFILE} ]; then
-    cat ${PROFILE} >> ${COVERAGE_REPORT}
-    rm ${PROFILE}
+test_packages() {
+  echo "Testing packages"
+  local coverage_report="coverage.txt"
+  local profile="profile.out"
+  if [[ -f ${coverage_report} ]]; then
+    rm ${coverage_report}
   fi
-done
+  touch ${coverage_report}
+  for package in ${GOPACKAGES[@]}; do
+    go test -v -race -coverprofile=${profile} -covermode=atomic $package
+    if [ -f ${profile} ]; then
+      cat ${profile} >> ${coverage_report}
+      rm ${profile}
+    fi
+  done
+}
 
-echo "Linting packages"
-gometalinter --vendor --enable-all --disable=gas --disable=gotype --disable=lll --deadline=600s ./...
+lint_packages() {
+  echo "Linting packages"
+  # Use the --debug flag to keep Travis from thinking the build has stalled.
+  gometalinter --debug --vendor --enable-all --disable=gas --disable=gotype --disable=lll --disable=safesql --deadline=600s ./...
+}
 
-echo "Formatting go files"
-GOFMTFILES="$(gofmt -l -d -s ${GOFILES})"
-if [ ! -z "${GOFMTFILES}" ]; then
- echo -e "Failed gofmt files:\n${GOFMTFILES}"
- exit 1
-fi
+format_files() {
+  echo "Formatting files"
+  local gofmtfiles="$(gofmt -l -d -s ${GOFILES})"
+  if [ ! -z "${gofmtfiles}" ]; then
+    echo -e "Failed gofmt files:\n${gofmtfiles}"
+    exit 1
+  fi
+}
+
+test_packages
+lint_packages
+format_files
 
 exit 0
