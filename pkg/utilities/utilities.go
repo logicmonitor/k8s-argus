@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
+
 	"github.com/logicmonitor/lm-sdk-go"
 )
 
@@ -33,12 +35,14 @@ func CheckAllErrors(restResponse interface{}, apiResponse *logicmonitor.APIRespo
 		}
 	}
 
-	if http.StatusOK != restResponseStatus {
-		return fmt.Errorf("[REST] [%d] %s", restResponseStatus, restResponseMessage)
+	if apiResponse.StatusCode != http.StatusOK {
+		metrics.APIError()
+		return fmt.Errorf("[API] [%d] %s", apiResponse.StatusCode, restResponseMessage)
 	}
 
-	if apiResponse.StatusCode != http.StatusOK {
-		return fmt.Errorf("[API] [%d] %s", apiResponse.StatusCode, restResponseMessage)
+	if http.StatusOK != restResponseStatus {
+		metrics.RESTError()
+		return fmt.Errorf("[REST] [%d] %s", restResponseStatus, restResponseMessage)
 	}
 
 	if err != nil {
