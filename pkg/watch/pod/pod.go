@@ -52,8 +52,9 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 			newDevice := w.makeDeviceObject(pod)
 			err = device.Add(newDevice, w.LMClient)
 			if err != nil {
-				log.Errorf("Failed to add node %q: %v", newDevice.DisplayName, err)
+				log.Errorf("Failed to add pod %q: %v", newDevice.DisplayName, err)
 			}
+			log.Infof("Added pod %s", newDevice.DisplayName)
 		}
 	}
 }
@@ -72,6 +73,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 			err := device.Add(d, w.LMClient)
 			if err != nil {
 				log.Errorf("Failed to add pod %s: %s", d.DisplayName, err)
+				return
 			}
 			log.Infof("Added pod %s", d.DisplayName)
 			return
@@ -121,6 +123,7 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 			err = device.Delete(d, w.LMClient)
 			if err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
+				return
 			}
 			log.Infof("Deleted pod %s with id %d", d.DisplayName, d.Id)
 			return

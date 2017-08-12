@@ -34,7 +34,7 @@ const (
 	// EtcdCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
 	EtcdCategory = "KubernetesEtcd"
 	// EtcdDeletedCategory is the system.category used to identity a deleted Kubernetes Etcd node in LogicMonitor.
-	EtcdDeletedCategory = "KubernetesNodeDeleted"
+	EtcdDeletedCategory = "KubernetesEtcdDeleted"
 	// NodeCategory is the system.category used to identity the Kubernetes Node resource type in LogicMonitor.
 	NodeCategory = "KubernetesNode"
 	// NodeDeletedCategory is the system.category used to identity a deleted Kubernetes Node resource type in LogicMonitor.

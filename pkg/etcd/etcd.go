@@ -65,7 +65,7 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 
 func (c *Controller) addDevice(member *Member) {
 	// Check if the etcd member has already been added.
-	d, err := device.FindByDisplayName(member.Name, c.LMClient)
+	d, err := device.FindByName(member.URL.Hostname(), c.LMClient)
 	if err != nil {
 		log.Errorf("Failed to find etcd member %q: %v", member.Name, err)
 		return

@@ -46,7 +46,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 		}
 
 		// Check if the service has already been added.
-		d, err := device.FindByDisplayName(service.Name, w.LMClient)
+		d, err := device.FindByDisplayName(fmtServiceDisplayName(service), w.LMClient)
 		if err != nil {
 			log.Errorf("Failed to find service %q: %v", service.Name, err)
 			return
@@ -59,6 +59,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 			if err != nil {
 				log.Errorf("Failed to add service %q: %v", newDevice.DisplayName, err)
 			}
+			log.Infof("Added service %s", newDevice.DisplayName)
 		}
 	}
 }
@@ -82,6 +83,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 			err := device.Add(d, w.LMClient)
 			if err != nil {
 				log.Errorf("Failed to add service %s: %s", d.DisplayName, err)
+				return
 			}
 			log.Infof("Added service %s", d.DisplayName)
 			return
@@ -90,7 +92,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		// Covers the case when a service has been terminated (new ip doesn't exist)
 		// and if a service needs to be added.
 		if oldService.Spec.ClusterIP != "" && newService.Spec.ClusterIP != "" {
-			oldDevice, err := device.FindByDisplayName(oldService.Name, w.LMClient)
+			oldDevice, err := device.FindByDisplayName(fmtServiceDisplayName(oldService), w.LMClient)
 			if err != nil {
 				log.Errorf("Failed to find service %q: %v", oldService.Name, err)
 				return
@@ -116,7 +118,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
-		d, err := device.FindByDisplayName(service.Name, w.LMClient)
+		d, err := device.FindByDisplayName(fmtServiceDisplayName(service), w.LMClient)
 		if err != nil {
 			log.Errorf("Failed to find service %q: %v", service.Name, err)
 			return
@@ -131,6 +133,7 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 			err = device.Delete(d, w.LMClient)
 			if err != nil {
 				log.Errorf("Failed to delete service: %v", err)
+				return
 			}
 			log.Infof("Deleted service %s with id %d", d.DisplayName, d.Id)
 			return
@@ -160,10 +163,9 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 func (w Watcher) makeDeviceObject(service *v1.Service) *lm.RestDevice {
 	categories := device.BuildSystemCategoriesFromLabels(constants.ServiceCategory, service.Labels)
 
-	fqdn := service.Name + "." + service.Namespace + ".svc.cluster.local"
 	d := &lm.RestDevice{
-		Name:                 fqdn,
-		DisplayName:          fqdn + "-" + string(service.UID),
+		Name:                 fmtServiceName(service),
+		DisplayName:          fmtServiceDisplayName(service),
 		DisableAlerting:      true,
 		HostGroupIds:         "1",
 		PreferredCollectorId: w.Config.PreferredCollector,
@@ -196,4 +198,12 @@ func (w Watcher) makeDeviceObject(service *v1.Service) *lm.RestDevice {
 	}
 
 	return d
+}
+
+func fmtServiceName(service *v1.Service) string {
+	return service.Name + "." + service.Namespace + ".svc.cluster.local"
+}
+
+func fmtServiceDisplayName(service *v1.Service) string {
+	return fmtServiceName(service) + "-" + string(service.UID)
 }

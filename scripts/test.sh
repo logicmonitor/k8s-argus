@@ -24,8 +24,7 @@ test_packages() {
 
 lint_packages() {
   echo "Linting packages"
-  # Use the --debug flag to keep Travis from thinking the build has stalled.
-  gometalinter --debug --vendor --enable-all --disable=gas --disable=gotype --disable=lll --disable=safesql --deadline=600s ./...
+  gometalinter --aggregate --vendor --enable-all --disable=gas --disable=gotype --disable=lll --disable=safesql --deadline=600s ./...
 }
 
 format_files() {
@@ -37,8 +36,8 @@ format_files() {
   fi
 }
 
-test_packages
 lint_packages
 format_files
+test_packages
 
 exit 0

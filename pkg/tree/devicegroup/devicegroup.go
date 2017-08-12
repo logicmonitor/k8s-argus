@@ -17,12 +17,12 @@ const hasCategoryClose = ")"
 // Options are the options for creating a device group.
 type Options struct {
 	AppliesTo             AppliesToBuilder
-	DeletedGroupAppliesTo AppliesToBuilder
+	AppliesToDeletedGroup AppliesToBuilder
 	Client                *lm.DefaultApi
 	Name                  string
 	ParentID              int32
 	DisableAlerting       bool
-	CreateDeletedGroup    bool
+	DeleteDevices         bool
 }
 
 // AppliesToBuilder is an interface for building an appliesTo string.
@@ -80,7 +80,7 @@ func Create(opts *Options) (int32, error) {
 	}
 
 	if clusterDeviceGroup == nil {
-		log.Infof("Could not find cluster device group %q", opts.Name)
+		log.Infof("Could not find device group %q", opts.Name)
 		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.Client)
 		if err != nil {
 			return 0, err
@@ -89,10 +89,16 @@ func Create(opts *Options) (int32, error) {
 		clusterDeviceGroup = cdg
 	}
 
-	if opts.CreateDeletedGroup {
-		_, err := create(constants.DeletedDeviceGroup, opts.AppliesTo.String(), true, clusterDeviceGroup.Id, opts.Client)
+	if !opts.DeleteDevices && opts.AppliesToDeletedGroup != nil {
+		deletedDeviceGroup, err := Find(clusterDeviceGroup.Id, constants.DeletedDeviceGroup, opts.Client)
 		if err != nil {
 			return 0, err
+		}
+		if deletedDeviceGroup == nil {
+			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.Id, opts.Client)
+			if err != nil {
+				return 0, err
+			}
 		}
 
 	}
@@ -113,7 +119,7 @@ func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGro
 	var deviceGroup *lm.RestDeviceGroup
 	for _, d := range restResponse.Data.Items {
 		if d.ParentId == parentID {
-			log.Infof("Found device group %q with id %d", name, parentID)
+			log.Infof("Found device group %q with id %d", name, d.Id)
 			deviceGroup = &d
 			break
 		}
@@ -131,11 +137,11 @@ func create(name, appliesTo string, disableAlerting bool, parentID int32, client
 		DisableAlerting: disableAlerting,
 	})
 	if e := utilities.CheckAllErrors(restResponse, apiResponse, err); e != nil {
-		return nil, fmt.Errorf("Failed to add device group: %v", e)
+		return nil, fmt.Errorf("Failed to add device group %q: %v", name, e)
 	}
 
 	deviceGroup := &restResponse.Data
-	log.Infof("Created device group with id %d", deviceGroup.Id)
+	log.Infof("Created device group %q with id %d", name, deviceGroup.Id)
 
 	return deviceGroup, nil
 }
