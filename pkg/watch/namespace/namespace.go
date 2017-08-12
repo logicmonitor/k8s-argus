@@ -35,32 +35,35 @@ func (w Watcher) ObjType() runtime.Object {
 func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
-		for k, parentID := range w.DeviceGroups {
+		for name, parentID := range w.DeviceGroups {
 			var appliesTo devicegroup.AppliesToBuilder
 			// Ensure that we are creating namespaces for namespaced resources.
-			switch k {
-			case constants.ServiceCategory:
+			switch name {
+			case constants.ServiceDeviceGroupName:
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
-			case constants.PodCategory:
+			case constants.PodDeviceGroupName:
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			default:
-				return
+				continue
 			}
 
 			opts := &devicegroup.Options{
-				Name:            namespace.Name,
 				AppliesTo:       appliesTo,
-				ParentID:        parentID,
+				Client:          w.LMClient,
 				DisableAlerting: w.Config.DisableAlerting,
+				Name:            namespace.Name,
+				ParentID:        parentID,
 			}
+
+			log.Debugf("%v", opts)
+
 			_, err := devicegroup.Create(opts)
 			if err != nil {
-				log.Errorf("Failed to add namespace: %v", err)
-
+				log.Errorf("Failed to add namespace to %q: %v", name, err)
 				return
 			}
 
-			log.Printf("Added namespace %s", namespace.Name)
+			log.Printf("Added namespace %q to %q", namespace.Name, name)
 		}
 	}
 }

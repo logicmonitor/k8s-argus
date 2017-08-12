@@ -4,7 +4,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/tree/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	log "github.com/sirupsen/logrus"
 )
 
 // DeviceTree manages the device tree representation of a Kubernetes cluster in LogicMonitor.
@@ -17,44 +16,44 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 	// The device group at index 0 will be the root device group for all subsequent device groups.
 	return []*devicegroup.Options{
 		{
-			Name:               "Kubernetes Cluster: " + d.Config.ClusterName,
-			ParentID:           constants.RootDeviceGroupID,
-			DisableAlerting:    d.Config.DisableAlerting,
-			AppliesTo:          devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			Client:             d.LMClient,
-			CreateDeletedGroup: d.Config.DeleteDevices,
+			Name:            "Kubernetes Cluster: " + d.Config.ClusterName,
+			ParentID:        constants.RootDeviceGroupID,
+			DisableAlerting: d.Config.DisableAlerting,
+			AppliesTo:       devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			Client:          d.LMClient,
+			DeleteDevices:   d.Config.DeleteDevices,
 		},
 		{
 			Name:                  constants.EtcdDeviceGroupName,
 			DisableAlerting:       d.Config.DisableAlerting,
 			AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:                d.LMClient,
-			CreateDeletedGroup:    d.Config.DeleteDevices,
-			DeletedGroupAppliesTo: devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			DeleteDevices:         d.Config.DeleteDevices,
+			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
 		{
 			Name:                  constants.NodeDeviceGroupName,
 			DisableAlerting:       d.Config.DisableAlerting,
 			AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:                d.LMClient,
-			CreateDeletedGroup:    d.Config.DeleteDevices,
-			DeletedGroupAppliesTo: devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			DeleteDevices:         d.Config.DeleteDevices,
+			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
 		{
 			Name:                  constants.ServiceDeviceGroupName,
 			DisableAlerting:       d.Config.DisableAlerting,
 			AppliesTo:             devicegroup.NewAppliesToBuilder(),
 			Client:                d.LMClient,
-			CreateDeletedGroup:    d.Config.DeleteDevices,
-			DeletedGroupAppliesTo: devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			DeleteDevices:         d.Config.DeleteDevices,
+			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
 		{
 			Name:                  constants.PodDeviceGroupName,
 			DisableAlerting:       d.Config.DisableAlerting,
 			AppliesTo:             devicegroup.NewAppliesToBuilder(),
 			Client:                d.LMClient,
-			CreateDeletedGroup:    d.Config.DeleteDevices,
-			DeletedGroupAppliesTo: devicegroup.NewAppliesToBuilder().HasCategory(constants.PodDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			DeleteDevices:         d.Config.DeleteDevices,
+			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.PodDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
 	}
 }
@@ -71,7 +70,6 @@ func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 			return nil, err
 		}
 		deviceGroups[opts.Name] = id
-		log.Infof("%s has device group id %d", opts.Name, id)
 	}
 
 	return deviceGroups, nil

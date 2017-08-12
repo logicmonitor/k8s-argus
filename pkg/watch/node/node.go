@@ -74,6 +74,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 			err := device.Add(d, w.LMClient)
 			if err != nil {
 				log.Errorf("Failed to add node %s: %s", d.DisplayName, err)
+				return
 			}
 			log.Infof("Added node %s", d.DisplayName)
 			return
@@ -123,6 +124,7 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 			err = device.Delete(d, w.LMClient)
 			if err != nil {
 				log.Errorf("Failed to delete node: %v", err)
+				return
 			}
 			log.Infof("Deleted node %s with id %d", d.DisplayName, d.Id)
 			return

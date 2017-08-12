@@ -7,11 +7,20 @@ import (
 	lm "github.com/logicmonitor/lm-sdk-go"
 )
 
-// FindByDisplayName searches for a device by it's display name. It will only
-// return a device if and only if one device was found, and return nil
-// otherwise.
+// FindByName searches for a device by it's name. It will return a device if and only
+// if one device was found, and return nil otherwise.
+func FindByName(name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
+	return find("name", name, client)
+}
+
+// FindByDisplayName searches for a device by it's display name. It will return a device if and only if
+// one device was found, and return nil otherwise.
 func FindByDisplayName(name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
-	filter := fmt.Sprintf("displayName:%s", name)
+	return find("displayName", name, client)
+}
+
+func find(field, name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
+	filter := fmt.Sprintf("%s:%s", field, name)
 	restResponse, apiResponse, err := client.GetDeviceList("", -1, 0, filter)
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
 		return nil, _err
