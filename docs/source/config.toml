@@ -19,7 +19,7 @@ publishDir = "../../docs"
 	repo_url = "https://github.com/logicmonitor/k8s-argus"
 
 	version = "0.1.0"
-	logo = "images/logo.png"
+	logo = "/images/logo.png"
 	favicon = ""
 
 	permalink = "#"
