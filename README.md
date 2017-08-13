@@ -21,17 +21,17 @@ See the [documentation](https://logicmonitor.github.io/k8s-argus) to discover mo
 
 Developing Argus
 ----------------
-To build Argus, run the following in the root directory:
+To build Argus, run:
 ```
 $ make
 ```
 > **Note:** The Dockerfile uses multi-stage builds. Docker 17.05.0 or greater is required.
 
-To build the documentation, run the following in the `docs` directory:
+To build the documentation, run:
 ```
-$ hugo
+$ make docs
 ```
-
+> **Note:** [Hugo](https://github.com/gohugoio/hugo) is required to generate the documentation.
 
 ### License
 [![license](https://img.shields.io/github/license/logicmonitor/k8s-argus.svg?style=flat-square)](https://github.com/logicmonitor/k8s-argus/blob/master/LICENSE)
