@@ -1,50 +1,35 @@
 package metrics
 
 import (
-	"encoding/json"
-	"net/http"
+	"expvar"
+	"runtime"
 	"sync"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var (
-	m    *metrics
+	m    *expvar.Map
 	once sync.Once
 )
 
-type metrics struct {
-	APIErrors  uint
-	RESTErrors uint
-}
-
 func init() {
 	once.Do(func() {
-		m = &metrics{
-			APIErrors:  0,
-			RESTErrors: 0,
-		}
+		m = expvar.NewMap("errors")
+		m.Add("APIErrors", 0)
+		m.Add("RESTErrors", 0)
 	})
+	expvar.Publish("goroutines", expvar.Func(goroutines))
 }
 
 // APIError increments the API error count by 1.
 func APIError() {
-	m.APIErrors++
+	m.Add("APIErrors", 1)
 }
 
 // RESTError increments the REST error count by 1.
 func RESTError() {
-	m.RESTErrors++
+	m.Add("RESTErrors", 1)
 }
 
-// HandleFunc is an http handler function to expose Argus metrics.
-func HandleFunc(w http.ResponseWriter, req *http.Request) {
-	resp, err := json.Marshal(m)
-	if err != nil {
-		log.Println(err)
-	}
-	_, err = w.Write(resp)
-	if err != nil {
-		log.Errorf("Failed to write metrics: %v", err)
-	}
+func goroutines() interface{} {
+	return runtime.NumGoroutine()
 }
