@@ -1,5 +1,6 @@
 exclude:
 - /vendor/.*
+- /docs/.*
 component_depth: 1
 languages:
 - go

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Argus</title>
+    <link>https://logicmonitor.github.io/k8s-argus/argus/</link>
+    <description>Recent content on Argus</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under Mozilla Public License 2.0</copyright>
+    <lastBuildDate>Sat, 12 Aug 2017 17:16:07 -0700</lastBuildDate>
+    
+	<atom:link href="https://logicmonitor.github.io/k8s-argus/argus/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Argus</title>
+      <link>https://logicmonitor.github.io/k8s-argus/argus/</link>
+      <pubDate>Sat, 12 Aug 2017 17:16:07 -0700</pubDate>
+      
+      <guid>https://logicmonitor.github.io/k8s-argus/argus/</guid>
+      <description>&amp;ldquo;And the goddess stirred in him unwearying strength: sleep never fell upon his eyes; but he kept sure watch always.&amp;rdquo;
+Hesiod or Cercops of Miletus, Aegimius Frag 5.</description>
+    </item>
+    
+  </channel>
+</rss>
