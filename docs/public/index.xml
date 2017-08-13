@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Argus</title>
+    <link>https://logicmonitor.github.io/k8s-argus/</link>
+    <description>Recent content on Argus</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under Mozilla Public License 2.0</copyright>
+    <lastBuildDate>Sat, 12 Aug 2017 17:16:07 -0700</lastBuildDate>
+    
+	<atom:link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Argus</title>
+      <link>https://logicmonitor.github.io/k8s-argus/argus/</link>
+      <pubDate>Sat, 12 Aug 2017 17:16:07 -0700</pubDate>
+      
+      <guid>https://logicmonitor.github.io/k8s-argus/argus/</guid>
+      <description>&amp;ldquo;And the goddess stirred in him unwearying strength: sleep never fell upon his eyes; but he kept sure watch always.&amp;rdquo;
+Hesiod or Cercops of Miletus, Aegimius Frag 5.</description>
+    </item>
+    
+    <item>
+      <title>v0.1.0</title>
+      <link>https://logicmonitor.github.io/k8s-argus/roadmap/v0.1.0/</link>
+      <pubDate>Sat, 12 Aug 2017 16:35:36 -0700</pubDate>
+      
+      <guid>https://logicmonitor.github.io/k8s-argus/roadmap/v0.1.0/</guid>
+      <description>This release focuses on the automated management of the following:
+ Device Tree Devices Device Properties  Device Tree Management In this release, Argus will have an opinionated way of representing a cluster in the LogicMonitor Device Tree. It will first create a top level device group with the name of your cluster as specified in the arguments to the chart. Under this top level device group, four additional device groups will be created for each supported resource type:</description>
+    </item>
+    
+    <item>
+      <title>Roadmap</title>
+      <link>https://logicmonitor.github.io/k8s-argus/roadmap/</link>
+      <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
+      
+      <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Getting Started</title>
+      <link>https://logicmonitor.github.io/k8s-argus/getting-started/</link>
+      <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
+      
+      <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
+      <description>Warning
+Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.
+ Argus can be installed with Helm. A LogicMonitor account is required.
+First, you will need to add the LogicMonitor chart repository using the Helm CLI:
+$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Now, install Argus:
+$ helm upgrade --install \ --debug \ --wait \ --namespace &#39;$NAMESPACE&#39; \ --set accessID=&#39;$ACCESS_ID&#39; \ --set accessKey=&#39;$ACCESS_KEY&#39; \ --set account=&#39;$ACCOUNT&#39; \ --set clusterName=&#39;$CLUSTER_NAME&#39; \ --set collectorDescription=&#39;$COLLECTOR_DESCRIPTION&#39; \ --set collectorImageTag=&#39;$COLLECTOR_IMAGE_TAG&#39; \ --set collectorSize=&#39;$COLLECTOR_SIZE&#39; \ --set collectorVersion=&#39;$COLLECTOR_VERSION&#39; \ --set etcdDiscoveryToken=&#39;$ETCD_DISCOVERY_TOKEN&#39; \ --set imageTag=&#39;$IMAGE_TAG&#39; \ argus logicmonitor/argus  Required Values:</description>
+    </item>
+    
+  </channel>
+</rss>
