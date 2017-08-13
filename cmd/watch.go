@@ -8,7 +8,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
-	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	log "github.com/sirupsen/logrus"
@@ -52,9 +51,8 @@ var watchCmd = &cobra.Command{
 		// Invoke the watcher.
 		argus.Watch()
 
-		// Monitoring metrics.
+		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)
-		http.HandleFunc("/metrics", metrics.HandleFunc)
 
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	},
