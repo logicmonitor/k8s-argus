@@ -1,10 +1,8 @@
 package namespace
 
 import (
-	"github.com/logicmonitor/k8s-argus/pkg/tree/devicegroup"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
-
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/pkg/api/v1"
@@ -18,6 +16,7 @@ const (
 // Watcher represents a watcher type that watches namespaces.
 type Watcher struct {
 	*types.Base
+	// TODO: This should be thread safe.
 	DeviceGroups map[string]int32
 }
 
@@ -84,19 +83,18 @@ func (w Watcher) DeleteFunc() func(obj interface{}) {
 			deviceGroup, err := devicegroup.Find(parentID, name, w.LMClient)
 			if err != nil {
 				log.Printf("Failed to find namespace %s: %v", name, err)
-
 				return
 			}
-			for _, subGroup := range deviceGroup.SubGroups {
-				if subGroup.Name == namespace.Name {
-					restResponse, apiResponse, err := w.LMClient.DeleteDeviceGroupById(subGroup.Id, true)
-					if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-						log.Errorf("Failed to delete namespace %q: %v", subGroup.Name, _err)
-
-						return
-					}
-				}
+			// We should only be returned a device group if it is namespaced.
+			if deviceGroup == nil {
+				continue
+			}
+			err = devicegroup.DeleteSubGroup(deviceGroup, namespace.Name, w.LMClient)
+			if err != nil {
+				log.Errorf("Failed to delete namespace %q: %v", namespace.Name, err)
+				return
 			}
 		}
+
 	}
 }

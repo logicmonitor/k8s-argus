@@ -6,10 +6,10 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/collector"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/device"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/watch"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
@@ -25,7 +25,7 @@ import (
 // Argus represents the Argus cli.
 type Argus struct {
 	*types.Base
-	Watchers []watch.Watcher
+	Watchers []types.Watcher
 }
 
 func newLMClient(id, key, company string) *lm.DefaultApi {
@@ -67,6 +67,10 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		Base: base,
 	}
 
+	deviceManager := &device.Manager{
+		Base: base,
+	}
+
 	deviceTree := &tree.DeviceTree{
 		Base: base,
 	}
@@ -82,26 +86,26 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	}
 
 	etcdController := etcd.Controller{
-		Base: base,
+		DeviceManager: deviceManager,
 	}
 	_, err = etcdController.DiscoverByToken()
 	if err != nil {
 		return nil, err
 	}
 
-	argus.Watchers = []watch.Watcher{
-		namespace.Watcher{
+	argus.Watchers = []types.Watcher{
+		&namespace.Watcher{
 			Base:         base,
 			DeviceGroups: deviceGroups,
 		},
-		node.Watcher{
-			Base: base,
+		&node.Watcher{
+			DeviceManager: deviceManager,
 		},
-		service.Watcher{
-			Base: base,
+		&service.Watcher{
+			DeviceManager: deviceManager,
 		},
-		pod.Watcher{
-			Base: base,
+		&pod.Watcher{
+			DeviceManager: deviceManager,
 		},
 	}
 

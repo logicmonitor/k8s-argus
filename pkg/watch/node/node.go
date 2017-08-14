@@ -1,10 +1,11 @@
+// Package node provides the logic for mapping a Kubernetes Node to a
+// LogicMonitor device.
 package node
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/tree/device"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	lm "github.com/logicmonitor/lm-sdk-go"
+	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/runtime"
@@ -16,179 +17,111 @@ const (
 
 // Watcher represents a watcher type that watches nodes.
 type Watcher struct {
-	*types.Base
+	types.DeviceManager
 }
 
 // Resource is a function that implements the Watcher interface.
-func (w Watcher) Resource() string {
+func (w *Watcher) Resource() string {
 	return resource
 }
 
 // ObjType is a function that implements the Watcher interface.
-func (w Watcher) ObjType() runtime.Object {
+func (w *Watcher) ObjType() runtime.Object {
 	return &v1.Node{}
 }
 
 // AddFunc is a function that implements the Watcher interface.
-// nolint: dupl
-func (w Watcher) AddFunc() func(obj interface{}) {
+func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
-
-		// We need an IP address.
-		if GetInternalAddress(node.Status.Addresses) == nil {
+		// Require an IP address.
+		if getInternalAddress(node.Status.Addresses) == nil {
 			return
 		}
-
-		// Check if the node has already been added.
-		d, err := device.FindByDisplayName(node.Name, w.LMClient)
-		if err != nil {
-			log.Errorf("Failed to find node %q: %v", node.Name, err)
-			return
-		}
-
-		// Add the node.
-		if d == nil {
-			newDevice := w.makeDeviceObject(node)
-			err = device.Add(newDevice, w.LMClient)
-			if err != nil {
-				log.Errorf("Failed to add node %q: %v", newDevice.DisplayName, err)
-			}
-		}
+		w.add(node)
 	}
 }
 
 // UpdateFunc is a function that implements the Watcher interface.
-// nolint: dupl
-func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
+func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
-		oldNode := oldObj.(*v1.Node)
-		newNode := newObj.(*v1.Node)
-
+		old := oldObj.(*v1.Node)
+		new := newObj.(*v1.Node)
 		// If the old node does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new device.
-		oldInternalAddress := GetInternalAddress(oldNode.Status.Addresses)
-		newInternalAddress := GetInternalAddress(oldNode.Status.Addresses)
+		oldInternalAddress := getInternalAddress(old.Status.Addresses)
+		newInternalAddress := getInternalAddress(new.Status.Addresses)
 		if oldInternalAddress == nil && newInternalAddress != nil {
-			d := w.makeDeviceObject(newNode)
-			err := device.Add(d, w.LMClient)
-			if err != nil {
-				log.Errorf("Failed to add node %s: %s", d.DisplayName, err)
-				return
-			}
-			log.Infof("Added node %s", d.DisplayName)
-			return
+			w.add(new)
 		}
-
-		// Covers the case when a node has been terminated (new ip doesn't exist)
-		// and if a node needs to be added.
+		// Covers the case when the old node is in the process of terminating
+		// and the new node is coming up to replace it.
 		if oldInternalAddress.Address != newInternalAddress.Address {
-			oldDevice, err := device.FindByDisplayName(oldNode.Name, w.LMClient)
-			if err != nil {
-				log.Errorf("Failed to find node %q: %v", oldNode.Name, err)
-				return
-			}
-
-			// Update the node.
-			if oldDevice != nil {
-				newDevice := w.makeDeviceObject(newNode)
-				err := device.UpdateAndReplace(newDevice, oldDevice.Id, w.LMClient)
-				if err != nil {
-					log.Errorf("Failed to update node %s: %v", oldDevice.DisplayName, err)
-					return
-				}
-			}
-
-			log.Infof("Updated node %s with id %d", oldDevice.DisplayName, oldDevice.Id)
+			w.update(old, new)
 		}
 	}
 }
 
 // DeleteFunc is a function that implements the Watcher interface.
 // nolint: dupl
-func (w Watcher) DeleteFunc() func(obj interface{}) {
+func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
-		d, err := device.FindByDisplayName(node.Name, w.LMClient)
-		if err != nil {
-			log.Errorf("Failed to find node %q: %v", node.Name, err)
-			return
-		}
 
-		if d == nil {
-			return
-		}
-
-		// Delete the device
-		if w.Config.DeleteDevices {
-			err = device.Delete(d, w.LMClient)
-			if err != nil {
+		// Delete the node.
+		if w.Config().DeleteDevices {
+			if err := w.DeleteByName(node.Name); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
 				return
 			}
-			log.Infof("Deleted node %s with id %d", d.DisplayName, d.Id)
+			log.Infof("Deleted node %s", node.Name)
 			return
 		}
 
-		// Move the device
-
-		categories := device.BuildSystemCategoriesFromLabels(constants.NodeDeletedCategory, node.Labels)
-		newDevice := &lm.RestDevice{
-			CustomProperties: []lm.NameAndValue{
-				{
-					Name:  "system.categories",
-					Value: categories,
-				},
-			},
-		}
-		err = device.UpdateAndReplaceField(newDevice, d.Id, constants.CustomPropertiesFieldName, w.LMClient)
-		if err != nil {
-			log.Errorf("Failed to move node %s: %s", d.DisplayName, err)
-			return
-		}
-
-		log.Infof("Moved node %s with id %d to deleted group", d.DisplayName, d.Id)
+		// Move the node.
+		w.move(node)
 	}
 }
 
-func (w Watcher) makeDeviceObject(node *v1.Node) *lm.RestDevice {
-	categories := device.BuildSystemCategoriesFromLabels(constants.NodeCategory, node.Labels)
-
-	d := &lm.RestDevice{
-		Name:                 GetInternalAddress(node.Status.Addresses).Address,
-		DisplayName:          node.Name,
-		DisableAlerting:      w.Config.DisableAlerting,
-		HostGroupIds:         "1",
-		PreferredCollectorId: w.Config.PreferredCollector,
-		CustomProperties: []lm.NameAndValue{
-			{
-				Name:  "system.categories",
-				Value: categories,
-			},
-			{
-				Name:  "auto.clustername",
-				Value: w.Config.ClusterName,
-			},
-			{
-				Name:  "auto.selflink",
-				Value: node.SelfLink,
-			},
-			{
-				Name:  "auto.name",
-				Value: node.Name,
-			},
-			{
-				Name:  "auto.uid",
-				Value: string(node.UID),
-			},
-		},
+// nolint: dupl
+func (w *Watcher) add(node *v1.Node) {
+	if _, err := w.Add(w.args(node, constants.NodeCategory)...); err != nil {
+		log.Errorf("Failed to add node %q: %v", node.Name, err)
+		return
 	}
-
-	return d
+	log.Infof("Added node %q", node.Name)
 }
 
-// GetInternalAddress finds the node's internal address.
-func GetInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
+func (w *Watcher) update(old, new *v1.Node) {
+	if _, err := w.UpdateAndReplaceByName(old.Name, w.args(new, constants.NodeCategory)...); err != nil {
+		log.Errorf("Failed to update node %q: %v", new.Name, err)
+		return
+	}
+	log.Infof("Updated node %q", old.Name)
+}
+
+func (w *Watcher) move(node *v1.Node) {
+	if _, err := w.UpdateAndReplaceFieldByName(node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
+		log.Errorf("Failed to move node %q: %v", node.Name, err)
+		return
+	}
+	log.Infof("Moved node %q", node.Name)
+}
+
+func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
+	categories := utilities.BuildSystemCategoriesFromLabels(category, node.Labels)
+	return []types.DeviceOption{
+		w.Name(getInternalAddress(node.Status.Addresses).Address),
+		w.DisplayName(node.Name),
+		w.SystemCategories(categories),
+		w.Auto("name", node.Name),
+		w.Auto("selflink", node.SelfLink),
+		w.Auto("uid", string(node.UID)),
+	}
+}
+
+// getInternalAddress finds the node's internal address.
+func getInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
 	for _, address := range addresses {
 		if address.Type == v1.NodeInternalIP {
 			return &address

@@ -7,18 +7,17 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/logicmonitor/k8s-argus/pkg/tree/device"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 
 	"github.com/coreos/etcd/client"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 )
 
 // Controller is the etcd controller for discovering etcd nodes.
 type Controller struct {
-	*types.Base
+	types.DeviceManager
 }
 
 // Member is a discovered etcd member.
@@ -30,7 +29,7 @@ type Member struct {
 // DiscoverByToken discovers the etcd node IP addresses using the etcd discovery service.
 func (c *Controller) DiscoverByToken() ([]*Member, error) {
 	members := []*Member{}
-	response, err := http.Get(c.Config.EtcdDiscoveryToken)
+	response, err := http.Get(c.Config().EtcdDiscoveryToken)
 	if err != nil {
 		return nil, err
 	}
@@ -65,48 +64,38 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 
 func (c *Controller) addDevice(member *Member) {
 	// Check if the etcd member has already been added.
-	d, err := device.FindByName(member.URL.Hostname(), c.LMClient)
+	d, err := c.FindByName(member.URL.Hostname())
 	if err != nil {
 		log.Errorf("Failed to find etcd member %q: %v", member.Name, err)
 		return
 	}
 
+	if d != nil {
+		return
+	}
+
 	// Add the etcd member.
-	if d == nil {
-		newDevice := c.makeDeviceObject(member)
-		err = device.Add(newDevice, c.LMClient)
-		if err != nil {
-			log.Errorf("Failed to add etcd member %q: %v", newDevice.DisplayName, err)
-		}
+	if _, err := c.Add(
+		c.args(member, constants.EtcdCategory)...,
+	); err != nil {
+		log.Errorf("Failed to add etcd member %q: %v", member.URL.Hostname(), err)
+		return
 	}
 
 	log.Infof("Added etcd member %q", member.Name)
 }
 
-func (c *Controller) makeDeviceObject(member *Member) *lm.RestDevice {
-	categories := constants.EtcdCategory
-
-	d := &lm.RestDevice{
-		Name:                 member.URL.Hostname(),
-		DisplayName:          member.Name + "-" + c.Config.ClusterName,
-		DisableAlerting:      c.Config.DisableAlerting,
-		HostGroupIds:         "1",
-		PreferredCollectorId: c.Config.PreferredCollector,
-		CustomProperties: []lm.NameAndValue{
-			{
-				Name:  "system.categories",
-				Value: categories,
-			},
-			{
-				Name:  "auto.clustername",
-				Value: c.Config.ClusterName,
-			},
-			{
-				Name:  "auto.clientport",
-				Value: member.URL.Port(),
-			},
-		},
+// nolint: unparam
+func (c *Controller) args(member *Member, category string) []types.DeviceOption {
+	categories := utilities.BuildSystemCategoriesFromLabels(category, nil)
+	return []types.DeviceOption{
+		c.Name(member.URL.Hostname()),
+		c.DisplayName(fmtMemberDisplayName(member)),
+		c.SystemCategories(categories),
+		c.Auto("clientport", member.URL.Port()),
 	}
+}
 
-	return d
+func fmtMemberDisplayName(member *Member) string {
+	return member.Name + "-" + member.URL.Hostname()
 }

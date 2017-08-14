@@ -36,7 +36,7 @@ publishDir = "../../docs"
     	accent  = "deep-purple"
 
     [params.font]
-    	text = "Roboto"
+    	text = "Brandon Grotesque"
     	code = "Roboto Mono"
 
 

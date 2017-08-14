@@ -128,6 +128,20 @@ func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGro
 	return deviceGroup, nil
 }
 
+// DeleteSubGroup deletes a subgroup from a device group with the specified
+// name.
+func DeleteSubGroup(deviceGroup *lm.RestDeviceGroup, name string, client *lm.DefaultApi) error {
+	for _, subGroup := range deviceGroup.SubGroups {
+		if subGroup.Name != name {
+			continue
+		}
+		restResponse, apiResponse, err := client.DeleteDeviceGroupById(subGroup.Id, true)
+		return utilities.CheckAllErrors(restResponse, apiResponse, err)
+	}
+
+	return nil
+}
+
 func create(name, appliesTo string, disableAlerting bool, parentID int32, client *lm.DefaultApi) (*lm.RestDeviceGroup, error) {
 	restResponse, apiResponse, err := client.AddDeviceGroup(lm.RestDeviceGroup{
 		Name:            name,
