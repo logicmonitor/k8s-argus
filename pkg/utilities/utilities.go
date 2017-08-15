@@ -10,6 +10,16 @@ import (
 	"github.com/logicmonitor/lm-sdk-go"
 )
 
+// BuildSystemCategoriesFromLabels formats a system.categories string.
+func BuildSystemCategoriesFromLabels(categories string, labels map[string]string) string {
+	for k, v := range labels {
+		categories += "," + k + "=" + v
+
+	}
+
+	return categories
+}
+
 // CheckAllErrors is a helper function to deal with the number of possible places that an API call can fail.
 func CheckAllErrors(restResponse interface{}, apiResponse *logicmonitor.APIResponse, err error) error {
 	var restResponseMessage string

@@ -2,7 +2,7 @@ package tree
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/tree/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 )
 
