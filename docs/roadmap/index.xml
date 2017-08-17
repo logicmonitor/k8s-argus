@@ -7,20 +7,10 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under Mozilla Public License 2.0</copyright>
-    <lastBuildDate>Sat, 12 Aug 2017 16:35:36 -0700</lastBuildDate>
+    <lastBuildDate>Sat, 12 Aug 2017 16:31:31 -0700</lastBuildDate>
     
 	<atom:link href="https://logicmonitor.github.io/k8s-argus/roadmap/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>v0.1.0</title>
-      <link>https://logicmonitor.github.io/k8s-argus/roadmap/v0.1.0/</link>
-      <pubDate>Sat, 12 Aug 2017 16:35:36 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/roadmap/v0.1.0/</guid>
-      <description>This release focuses on the automated management of the following:
- Device Tree Devices Device Properties  Device Tree Management In this release, Argus will have an opinionated way of representing a cluster in the LogicMonitor Device Tree. It will first create a top level device group with the name of your cluster as specified in the arguments to the chart. Under this top level device group, four additional device groups will be created for each supported resource type:</description>
-    </item>
     
     <item>
       <title>Roadmap</title>
@@ -28,7 +18,7 @@
       <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description></description>
+      <description> 0.1.x  Automated device group management Automated device management Automated device property management  0.2.x  Automated collector management Support for all etcd discovery methods  0.3.x  Horizontal pod autoscaling based on LogicMonitor metrics.  </description>
     </item>
     
   </channel>

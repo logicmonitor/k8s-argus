@@ -57,9 +57,14 @@ publishDir = "../../docs"
 	weight = 2
 
 [[menu.main]]
+	name   = "Docs"
+	url    = "docs/"
+	weight = 3
+
+[[menu.main]]
 	name   = "Roadmap"
 	url    = "roadmap/"
-	weight = 3
+	weight = 4
 
 
 [blackfriday]
