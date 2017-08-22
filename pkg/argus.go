@@ -85,12 +85,14 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		return nil, err
 	}
 
-	etcdController := etcd.Controller{
-		DeviceManager: deviceManager,
-	}
-	_, err = etcdController.DiscoverByToken()
-	if err != nil {
-		return nil, err
+	if base.Config.EtcdDiscoveryToken != "" {
+		etcdController := etcd.Controller{
+			DeviceManager: deviceManager,
+		}
+		_, err = etcdController.DiscoverByToken()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	argus.Watchers = []types.Watcher{
