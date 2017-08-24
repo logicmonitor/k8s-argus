@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Argus</title>
+    <title>Configuration - Argus</title>
     <meta name="generator" content="Hugo 0.26" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
     
-    <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/">
+    <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">
     
     <meta name="author" content="LogicMonitor, Inc.">
     
 
-    <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/">
+    <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/docs/configuration/">
     <meta property="og:title" content="Argus">
     <meta property="og:image" content="https://logicmonitor.github.io/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Argus">
@@ -69,9 +69,6 @@
     <script src="https://logicmonitor.github.io/k8s-argus/javascripts/modernizr.js"></script>
 
     
-    <link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="alternate" type="application/rss+xml" title="Argus" />
-    <link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="feed" type="application/rss+xml" title="Argus" />
-    
 
   </head>
   <body class="palette-primary-deep-purple palette-accent-deep-purple">
@@ -100,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Argus
+        Configuration
       </div>
     </div>
 
@@ -326,23 +323,64 @@
 
 	<article class="article">
 		<div class="wrapper">
-			
-				<h1>Argus </h1>
-
-				<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.</p>
-</div>
-
-<hr />
-
-<p>Argus is a tool that helps users of <a href="https://www.logicmonitor.com">LogicMonitor</a> keep up with the highly dynamic topology of a Kubernetes cluster.</p>
-
-<!-- __*"And the goddess stirred in him unwearying strength: sleep never fell upon his eyes; but he kept sure watch always."*__
-
-Hesiod or Cercops of Miletus, Aegimius Frag 5. -->
+			<h1>Configuration </h1>
 
 			
+
+<h1 id="configuring-argus-via-the-helm-chart">Configuring Argus via the Helm Chart</h1>
+
+<p>The Helm chart supports the fololowing values:</p>
+
+<p>Required Values:</p>
+
+<ul>
+<li><strong>accessID:</strong> The LogicMonitor API key ID.</li>
+<li><strong>accessKey:</strong> The LogicMonitor API key.</li>
+<li><strong>account:</strong> The LogicMonitor account name.</li>
+<li><strong>clusterName:</strong> A unique name given to the cluster&rsquo;s device group.</li>
+<li><strong>collectorDescription:</strong> A unique collector description used to look up a collector dynamically.</li>
+<li><strong>collectorVersion:</strong> The collector version to install.</li>
+</ul>
+
+<p>Optional Values:</p>
+
+<ul>
+<li><strong>collectorEscalationChainID:</strong> The ID of the escalation chain to use for collector down alerts.</li>
+<li><strong>collectorImageTag (default: <code>&quot;latest&quot;</code>):</strong> The collector image tag.</li>
+<li><strong>collectorSize (default: <code>&quot;small&quot;</code>):</strong> The collector size to install. Can be nano, small, medium, or large.</li>
+<li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
+<li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from LogicMonitor or move the device to the <code>_delted</code> device group.</li>
+<li><strong>disableAlerting (default: <code>false</code>):</strong> Disable alerting for all devices added.</li>
+<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
+<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong></li>
+<li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The respository to use for the Argus docker image.</li>
+<li><strong>imageTag:</strong> The argus container image tag to use.</li>
+</ul>
+
+<h1 id="configuring-argus-manually">Configuring Argus Manually</h1>
+
+<p>In most applications there are generally two types of configuration options available. Options that do not contain sensitive information, and options that do contain sensitive information. Argus retrieves its&rsquo; configuration from two different sources for each of these types.</p>
+
+<p>For non-sensitive configuration options, Arugs will read from a file on disk. For sensitive information, Arugs will read from environment variables.</p>
+
+<p>To configure the non-sensitive information, create a YAML file located at <code>/etc/argus/config.yaml</code>. Here is an example file you can modify to your needs:</p>
+
+<pre><code class="language-yaml">cluster_name:
+collector_description:
+collector_escalation_chain_id:
+debug: false
+delete_devices: true
+disable_alerting: false
+</code></pre>
+
+<p>To configure the sensitive information, export the followin envionment variables:</p>
+
+<pre><code class="language-bash">ACCESS_ID
+ACCESS_KEY
+ACCOUNT
+ETCD_DISCOVERY_TOKEN
+</code></pre>
+
 
 			<aside class="copyright" role="note">
 				
@@ -357,23 +395,37 @@ Hesiod or Cercops of Miletus, Aegimius Frag 5. -->
 			<footer class="footer">
 				
 
-
-
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
+  
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/" title="Device Tree Management">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              Device Tree Management
+            </div>
+          </div>
+        </div>
+      </a>
+  
   </div>
 
-  
-  
   <div class="next">
-      <a href="https://logicmonitor.github.io/k8s-argus/tags/" title="Tags">
+  
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/" title="Docs">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Tags
+              Docs
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">
@@ -381,8 +433,11 @@ Hesiod or Cercops of Miletus, Aegimius Frag 5. -->
           </div>
         </div>
       </a>
+  
   </div>
 </nav>
+
+
 
 
 

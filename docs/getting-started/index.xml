@@ -18,12 +18,9 @@
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>Warning
-Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.
- Argus can be installed with Helm. A LogicMonitor account is required.
-First, you will need to add the LogicMonitor chart repository using the Helm CLI:
+      <description>Quick Start The simplest way to install Argus is to use Helm. First, you will need to add the LogicMonitor chart repository:
 $ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Now, install Argus:
-$ helm upgrade --install \ --debug \ --wait \ --namespace &#39;$NAMESPACE&#39; \ --set accessID=&#39;$ACCESS_ID&#39; \ --set accessKey=&#39;$ACCESS_KEY&#39; \ --set account=&#39;$ACCOUNT&#39; \ --set clusterName=&#39;$CLUSTER_NAME&#39; \ --set collectorDescription=&#39;$COLLECTOR_DESCRIPTION&#39; \ --set collectorImageTag=&#39;$COLLECTOR_IMAGE_TAG&#39; \ --set collectorSize=&#39;$COLLECTOR_SIZE&#39; \ --set collectorVersion=&#39;$COLLECTOR_VERSION&#39; \ --set etcdDiscoveryToken=&#39;$ETCD_DISCOVERY_TOKEN&#39; \ --set imageTag=&#39;$IMAGE_TAG&#39; \ argus logicmonitor/argus  Required Values:</description>
+$ helm upgrade --install \ --debug \ --wait \ --namespace &#39;$NAMESPACE&#39; \ --set accessID=&#39;$ACCESS_ID&#39; \ --set accessKey=&#39;$ACCESS_KEY&#39; \ --set account=&#39;$ACCOUNT&#39; \ --set clusterName=&#39;$CLUSTER_NAME&#39; \ --set collectorDescription=&#39;$COLLECTOR_DESCRIPTION&#39; \ --set collectorImageTag=&#39;$COLLECTOR_IMAGE_TAG&#39; \ --set collectorSize=&#39;$COLLECTOR_SIZE&#39; \ --set collectorVersion=&#39;$COLLECTOR_VERSION&#39; \ --set etcdDiscoveryToken=&#39;$ETCD_DISCOVERY_TOKEN&#39; \ --set imageTag=&#39;$IMAGE_TAG&#39; \ argus logicmonitor/argus   Note: Argus should be installed only once per cluster.</description>
     </item>
     
   </channel>

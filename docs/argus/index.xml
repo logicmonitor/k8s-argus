@@ -18,8 +18,9 @@
       <pubDate>Sat, 12 Aug 2017 17:16:07 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/argus/</guid>
-      <description>&amp;ldquo;And the goddess stirred in him unwearying strength: sleep never fell upon his eyes; but he kept sure watch always.&amp;rdquo;
-Hesiod or Cercops of Miletus, Aegimius Frag 5.</description>
+      <description>Warning
+Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.
+ Argus is a tool that helps users of LogicMonitor keep up with the highly dynamic topology of a Kubernetes cluster.</description>
     </item>
     
   </channel>

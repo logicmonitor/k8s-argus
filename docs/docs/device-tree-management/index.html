@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Argus</title>
+    <title>Device Tree Management - Argus</title>
     <meta name="generator" content="Hugo 0.26" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
     
-    <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/">
+    <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
     
     <meta name="author" content="LogicMonitor, Inc.">
     
 
-    <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/">
+    <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
     <meta property="og:title" content="Argus">
     <meta property="og:image" content="https://logicmonitor.github.io/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Argus">
@@ -69,9 +69,6 @@
     <script src="https://logicmonitor.github.io/k8s-argus/javascripts/modernizr.js"></script>
 
     
-    <link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="alternate" type="application/rss+xml" title="Argus" />
-    <link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="feed" type="application/rss+xml" title="Argus" />
-    
 
   </head>
   <body class="palette-primary-deep-purple palette-accent-deep-purple">
@@ -100,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Argus
+        Device Tree Management
       </div>
     </div>
 
@@ -326,23 +323,36 @@
 
 	<article class="article">
 		<div class="wrapper">
-			
-				<h1>Argus </h1>
-
-				<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.</p>
-</div>
-
-<hr />
-
-<p>Argus is a tool that helps users of <a href="https://www.logicmonitor.com">LogicMonitor</a> keep up with the highly dynamic topology of a Kubernetes cluster.</p>
-
-<!-- __*"And the goddess stirred in him unwearying strength: sleep never fell upon his eyes; but he kept sure watch always."*__
-
-Hesiod or Cercops of Miletus, Aegimius Frag 5. -->
+			<h1>Device Tree Management </h1>
 
 			
+
+<p>One of the main features of Argus is its ability to represent a Kubernetes cluster in LogicMonitor, and to keep that representation up to date and accurate. Argus achieves this by managing the following.</p>
+
+<h2 id="device-groups">Device Groups</h2>
+
+<p>Argus has an opinionated way of representing a cluster in the LogicMonitor Device Tree.
+It will first create a top level device group with the name of your cluster as specified in the arguments to the chart.
+Under this top level device group, three additional device groups will be created for each resource type that Argus supports:</p>
+
+<ul>
+<li><strong>Nodes:</strong> The nodes that the cluster is comprised of.</li>
+<li><strong>Pods:</strong> Pods running in the cluster.</li>
+<li><strong>Services:</strong> Services running in the cluster.</li>
+</ul>
+
+<p>For namespaced resources (Pods, Services), a device group will be created for each namespace and placed inside the respective resource device group.
+For clusters that use an external etcd cluster, an <strong>Etcd</strong> device group will be created in the cluster&rsquo;s root device group.</p>
+
+<h2 id="devices">Devices</h2>
+
+<p>Argus subscribes to the Kubernetes API event stream for each resource type mentioned in <a href="#device-groups">Device Groups</a>. Upon receiving an event, Argus decides on how to represent the event in LogicMonitor. In the case of nodes, pods, and services, Argus will create a device.</p>
+
+<h2 id="device-properties">Device Properties</h2>
+
+<p>Argus will map Kubernetes metadata to device properties.
+This means that <a href="https://www.logicmonitor.com/support/datasources/">Datasources</a> can be applied based on things like <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/">labels</a>.</p>
+
 
 			<aside class="copyright" role="note">
 				
@@ -357,23 +367,37 @@ Hesiod or Cercops of Miletus, Aegimius Frag 5. -->
 			<footer class="footer">
 				
 
-
-
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
+  
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/" title="How It Works">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              How It Works
+            </div>
+          </div>
+        </div>
+      </a>
+  
   </div>
 
-  
-  
   <div class="next">
-      <a href="https://logicmonitor.github.io/k8s-argus/tags/" title="Tags">
+  
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/" title="Configuration">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Tags
+              Configuration
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">
@@ -381,8 +405,11 @@ Hesiod or Cercops of Miletus, Aegimius Frag 5. -->
           </div>
         </div>
       </a>
+  
   </div>
 </nav>
+
+
 
 
 

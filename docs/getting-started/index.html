@@ -219,7 +219,7 @@
 
 <li>
   
-    <span class="section">Roadmap</span>
+    <span class="section">Docs</span>
     <ul>
       
         
@@ -227,15 +227,59 @@
 
 
 
-<a  title="v0.1.0" href="https://logicmonitor.github.io/k8s-argus/roadmap/v0.1.0/">
+<a  title="Configuration" href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">
 	
-	v0.1.0
+	Configuration
+</a>
+
+
+
+      
+        
+        
+
+
+
+<a  title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
+	
+	Device Tree Management
+</a>
+
+
+
+      
+        
+        
+
+
+
+<a  title="How It Works" href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/">
+	
+	How It Works
 </a>
 
 
 
       
     </ul>
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Roadmap" href="https://logicmonitor.github.io/k8s-argus/roadmap/">
+	
+	Roadmap
+</a>
+
+
+
   
 </li>
 
@@ -284,14 +328,11 @@
 		<div class="wrapper">
 			<h1>Getting Started </h1>
 
-			<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.</p>
-</div>
+			
 
-<p><a href="https://github.com/logicmonitor/k8s-argus">Argus</a> can be installed with <a href="https://github.com/kubernetes/helm">Helm</a>. A <a href="https://www.logicmonitor.com">LogicMonitor</a> account is required.</p>
+<h1 id="quick-start">Quick Start</h1>
 
-<p>First, you will need to add the LogicMonitor chart repository using the Helm CLI:</p>
+<p>The simplest way to install Argus is to use <a href="https://github.com/kubernetes/helm">Helm</a>. First, you will need to add the LogicMonitor chart repository:</p>
 
 <pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
 </code></pre>
@@ -299,41 +340,31 @@
 <p>Now, install Argus:</p>
 
 <pre><code class="language-bash">$ helm upgrade
-  --install \
-  --debug \
-  --wait \
-  --namespace '$NAMESPACE' \
-  --set accessID='$ACCESS_ID' \
-  --set accessKey='$ACCESS_KEY' \
-  --set account='$ACCOUNT' \
-  --set clusterName='$CLUSTER_NAME' \
-  --set collectorDescription='$COLLECTOR_DESCRIPTION' \
-  --set collectorImageTag='$COLLECTOR_IMAGE_TAG' \
-  --set collectorSize='$COLLECTOR_SIZE' \
-  --set collectorVersion='$COLLECTOR_VERSION' \
-  --set etcdDiscoveryToken='$ETCD_DISCOVERY_TOKEN' \
-  --set imageTag='$IMAGE_TAG' \
-  argus logicmonitor/argus
+    --install \
+    --debug \
+    --wait \
+    --namespace '$NAMESPACE' \
+    --set accessID='$ACCESS_ID' \
+    --set accessKey='$ACCESS_KEY' \
+    --set account='$ACCOUNT' \
+    --set clusterName='$CLUSTER_NAME' \
+    --set collectorDescription='$COLLECTOR_DESCRIPTION' \
+    --set collectorImageTag='$COLLECTOR_IMAGE_TAG' \
+    --set collectorSize='$COLLECTOR_SIZE' \
+    --set collectorVersion='$COLLECTOR_VERSION' \
+    --set etcdDiscoveryToken='$ETCD_DISCOVERY_TOKEN' \
+    --set imageTag='$IMAGE_TAG' \
+    argus logicmonitor/argus
 </code></pre>
 
-<p>Required Values:</p>
+<blockquote>
+<p>Note: Argus should be installed only once per cluster.</p>
+</blockquote>
+
+<h1 id="community">Community</h1>
 
 <ul>
-<li><strong>accessID:</strong> The LogicMonitor API key ID.</li>
-<li><strong>accessKey:</strong> The LogicMonitor API key.</li>
-<li><strong>account:</strong> The LogicMonitor account name.</li>
-<li><strong>clusterName:</strong> A unique name given to the cluster&rsquo;s device group.</li>
-<li><strong>collectorVersion:</strong> The collector version to install.</li>
-<li><strong>collectorDescription:</strong> A unique collector description used to look up a collector dynamically.</li>
-</ul>
-
-<p>Optional Values:</p>
-
-<ul>
-<li><strong>collectorImageTag:</strong> The collector image tag.</li>
-<li><strong>collectorSize:</strong> The collector size to install. Can be nano, small, medium, or large.</li>
-<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
-<li><strong>imageTag:</strong> The argus image tag to use.</li>
+<li>To report bugs and/or submit feature requests, use <a href="https://github.com/logicmonitor/k8s-argus/issues">GitHub</a>.</li>
 </ul>
 
 
