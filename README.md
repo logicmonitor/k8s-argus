@@ -3,6 +3,7 @@
 ---
 
 <p align="center">
+  <a href="https://gitter.im/k8s-argus/Lobby"><img alt="GoDoc" src="https://img.shields.io/gitter/room/k8s-argus/Lobby.svg?style=flat-square"></a>
   <a href="https://godoc.org/github.com/logicmonitor/k8s-argus"><img alt="GoDoc" src="http://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"></a>
   <a href="https://travis-ci.org/logicmonitor/k8s-argus"><img alt="Travis" src="https://img.shields.io/travis/logicmonitor/k8s-argus.svg?style=flat-square"></a>
   <a href="https://codecov.io/gh/logicmonitor/k8s-argus"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/logicmonitor/k8s-argus.svg?style=flat-square"></a>
