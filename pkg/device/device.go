@@ -2,6 +2,7 @@ package device
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
@@ -77,6 +78,7 @@ func (m *Manager) UpdateAndReplaceByName(name string, options ...types.DeviceOpt
 	}
 
 	if d == nil {
+		log.Printf("Could not find device %q", name)
 		return nil, nil
 	}
 
@@ -108,6 +110,7 @@ func (m *Manager) UpdateAndReplaceFieldByName(name string, field string, options
 	}
 
 	if d == nil {
+		log.Printf("Could not find device %q", name)
 		return nil, nil
 	}
 
@@ -135,6 +138,7 @@ func (m *Manager) DeleteByName(name string) error {
 
 	// TODO: Should this return an error?
 	if d == nil {
+		log.Printf("Could not find device %q", name)
 		return nil
 	}
 
