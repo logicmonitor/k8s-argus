@@ -139,7 +139,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 }
 
 func fmtServiceName(service *v1.Service) string {
-	return service.Name + "." + service.Namespace + ".svc.cluster.local"
+	return service.Name + "." + service.Namespace + ".svc"
 }
 
 func fmtServiceDisplayName(service *v1.Service) string {
