@@ -33,19 +33,23 @@ func (b *Builder) CollectorID(id int32) types.DeviceOption {
 
 // SystemCategories implements types.DeviceBuilder.
 func (b *Builder) SystemCategories(categories string) types.DeviceOption {
-	return func(device *lm.RestDevice) {
-		device.CustomProperties = append(device.CustomProperties, lm.NameAndValue{
-			Name:  "system.categories",
-			Value: categories,
-		})
-	}
+	return setProperty("system.categories", categories)
 }
 
 // Auto implements types.DeviceBuilder.
 func (b *Builder) Auto(name, value string) types.DeviceOption {
+	return setProperty("auto."+name, value)
+}
+
+// System implements types.DeviceBuilder.
+func (b *Builder) System(name, value string) types.DeviceOption {
+	return setProperty("system."+name, value)
+}
+
+func setProperty(name, value string) types.DeviceOption {
 	return func(device *lm.RestDevice) {
 		device.CustomProperties = append(device.CustomProperties, lm.NameAndValue{
-			Name:  "auto." + name,
+			Name:  name,
 			Value: value,
 		})
 	}

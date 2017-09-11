@@ -128,6 +128,6 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("nodename", pod.Spec.NodeName),
 		w.Auto("selflink", pod.SelfLink),
 		w.Auto("uid", string(pod.UID)),
-		w.Auto("ip", pod.Status.PodIP),
+		w.System("ips", pod.Status.PodIP),
 	}
 }
