@@ -74,4 +74,6 @@ type DeviceBuilder interface {
 	SystemCategories(string) DeviceOption
 	// Auto adds an auto property to the device.
 	Auto(string, string) DeviceOption
+	// System adds a system property to the device.
+	System(string, string) DeviceOption
 }
