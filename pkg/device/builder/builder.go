@@ -3,6 +3,7 @@ package builder
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	lm "github.com/logicmonitor/lm-sdk-go"
+	log "github.com/sirupsen/logrus"
 )
 
 // Builder implements types.DeviceBuilder
@@ -48,9 +49,13 @@ func (b *Builder) System(name, value string) types.DeviceOption {
 
 func setProperty(name, value string) types.DeviceOption {
 	return func(device *lm.RestDevice) {
-		device.CustomProperties = append(device.CustomProperties, lm.NameAndValue{
-			Name:  name,
-			Value: value,
-		})
+		if value != "" {
+			device.CustomProperties = append(device.CustomProperties, lm.NameAndValue{
+				Name:  name,
+				Value: value,
+			})
+		} else {
+			log.Warnf("Custom property value is empty for %q, skipping", name)
+		}
 	}
 }

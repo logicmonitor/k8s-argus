@@ -45,14 +45,14 @@ func CheckAllErrors(restResponse interface{}, apiResponse *logicmonitor.APIRespo
 		}
 	}
 
+	if restResponseStatus != http.StatusOK {
+		metrics.RESTError()
+		return fmt.Errorf("[REST] [%d] %s", restResponseStatus, restResponseMessage)
+	}
+
 	if apiResponse.StatusCode != http.StatusOK {
 		metrics.APIError()
 		return fmt.Errorf("[API] [%d] %s", apiResponse.StatusCode, restResponseMessage)
-	}
-
-	if http.StatusOK != restResponseStatus {
-		metrics.RESTError()
-		return fmt.Errorf("[REST] [%d] %s", restResponseStatus, restResponseMessage)
 	}
 
 	if err != nil {

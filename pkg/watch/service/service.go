@@ -114,11 +114,7 @@ func (w *Watcher) update(old, new *v1.Service) {
 }
 
 func (w *Watcher) move(service *v1.Service) {
-	if _, err := w.UpdateAndReplaceFieldByName(
-		service.Name,
-		constants.CustomPropertiesFieldName,
-		w.args(service, constants.ServiceDeletedCategory)...,
-	); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByName(service.Name, constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", service.Name, err)
 		return
 	}
