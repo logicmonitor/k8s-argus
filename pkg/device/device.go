@@ -2,7 +2,6 @@ package device
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	lm "github.com/logicmonitor/lm-sdk-go"
+	log "github.com/sirupsen/logrus"
 )
 
 // Manager implements types.DeviceManager
@@ -51,10 +51,13 @@ func (m *Manager) FindByDisplayName(name string) (*lm.RestDevice, error) {
 // Add implements types.DeviceManager.
 func (m *Manager) Add(options ...types.DeviceOption) (*lm.RestDevice, error) {
 	device := buildDevice(m.Config(), options...)
+	log.Debugf("%#v", device)
+
 	restResponse, apiResponse, err := m.LMClient.AddDevice(*device, false)
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, err
+		return nil, _err
 	}
+	log.Debugf("%#v", restResponse)
 
 	return &restResponse.Data, nil
 }
@@ -62,10 +65,13 @@ func (m *Manager) Add(options ...types.DeviceOption) (*lm.RestDevice, error) {
 // UpdateAndReplaceByID implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) (*lm.RestDevice, error) {
 	device := buildDevice(m.Config(), options...)
+	log.Debugf("%#v", device)
+
 	restResponse, apiResponse, err := m.LMClient.UpdateDevice(*device, id, "replace")
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, err
+		return nil, _err
 	}
+	log.Debugf("%#v", restResponse)
 
 	return &restResponse.Data, nil
 }
@@ -94,10 +100,13 @@ func (m *Manager) UpdateAndReplaceByName(name string, options ...types.DeviceOpt
 // UpdateAndReplaceFieldByID implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...types.DeviceOption) (*lm.RestDevice, error) {
 	device := buildDevice(m.Config(), options...)
+	log.Debugf("%#v", device)
+
 	restResponse, apiResponse, err := m.LMClient.PatchDeviceById(*device, id, "replace", field)
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, err
+		return nil, _err
 	}
+	log.Debugf("%#v", restResponse)
 
 	return &restResponse.Data, nil
 }
@@ -110,7 +119,7 @@ func (m *Manager) UpdateAndReplaceFieldByName(name string, field string, options
 	}
 
 	if d == nil {
-		log.Printf("Could not find device %q", name)
+		log.Infof("Could not find device %q", name)
 		return nil, nil
 	}
 
@@ -138,7 +147,7 @@ func (m *Manager) DeleteByName(name string) error {
 
 	// TODO: Should this return an error?
 	if d == nil {
-		log.Printf("Could not find device %q", name)
+		log.Infof("Could not find device %q", name)
 		return nil
 	}
 
@@ -157,6 +166,7 @@ func find(field, name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
 		return nil, _err
 	}
+	log.Debugf("%#v", restResponse)
 	if restResponse.Data.Total == 1 {
 		return &restResponse.Data.Items[0], nil
 	}
