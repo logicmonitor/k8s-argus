@@ -25,14 +25,15 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/client-go/pkg/api/errors"
-	_ "k8s.io/client-go/pkg/api/install" // To register api.Pod used in tests below
-	"k8s.io/client-go/pkg/api/unversioned"
-	"k8s.io/client-go/pkg/api/v1"
-	k8sruntime "k8s.io/client-go/pkg/runtime"
-	"k8s.io/client-go/pkg/util/clock"
-	"k8s.io/client-go/pkg/util/strategicpatch"
-	"k8s.io/client-go/rest"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8sruntime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
+	"k8s.io/client-go/kubernetes/scheme"
+	restclient "k8s.io/client-go/rest"
+	ref "k8s.io/client-go/tools/reference"
 )
 
 type testEventSink struct {
@@ -103,7 +104,7 @@ func OnPatchFactory(testCache map[string]*v1.Event, patchEvent chan<- *v1.Event)
 
 func TestEventf(t *testing.T) {
 	testPod := &v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			SelfLink:  "/api/version/pods/foo",
 			Name:      "foo",
 			Namespace: "baz",
@@ -111,15 +112,15 @@ func TestEventf(t *testing.T) {
 		},
 	}
 	testPod2 := &v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			SelfLink:  "/api/version/pods/foo",
 			Name:      "foo",
 			Namespace: "baz",
 			UID:       "differentUid",
 		},
 	}
-	testRef, err := v1.GetPartialReference(testPod, "spec.containers[2]")
-	testRef2, err := v1.GetPartialReference(testPod2, "spec.containers[3]")
+	testRef, err := ref.GetPartialReference(scheme.Scheme, testPod, "spec.containers[2]")
+	testRef2, err := ref.GetPartialReference(scheme.Scheme, testPod2, "spec.containers[3]")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +141,7 @@ func TestEventf(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -168,7 +169,7 @@ func TestEventf(t *testing.T) {
 			messageFmt: "some other verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -195,7 +196,7 @@ func TestEventf(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -223,7 +224,7 @@ func TestEventf(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -251,7 +252,7 @@ func TestEventf(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -279,7 +280,7 @@ func TestEventf(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -307,7 +308,7 @@ func TestEventf(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -374,7 +375,7 @@ func TestEventf(t *testing.T) {
 }
 
 func recorderWithFakeClock(eventSource v1.EventSource, eventBroadcaster EventBroadcaster, clock clock.Clock) EventRecorder {
-	return &recorderImpl{eventSource, eventBroadcaster.(*eventBroadcasterImpl).Broadcaster, clock}
+	return &recorderImpl{scheme.Scheme, eventSource, eventBroadcaster.(*eventBroadcasterImpl).Broadcaster, clock}
 }
 
 func TestWriteEventError(t *testing.T) {
@@ -387,7 +388,7 @@ func TestWriteEventError(t *testing.T) {
 		"giveUp1": {
 			timesToSendError: 1000,
 			attemptsWanted:   1,
-			err:              &rest.RequestConstructionError{},
+			err:              &restclient.RequestConstructionError{},
 		},
 		"giveUp2": {
 			timesToSendError: 1000,
@@ -411,7 +412,8 @@ func TestWriteEventError(t *testing.T) {
 		},
 	}
 
-	eventCorrelator := NewEventCorrelator(clock.RealClock{})
+	clock := clock.IntervalClock{Time: time.Now(), Duration: time.Second}
+	eventCorrelator := NewEventCorrelator(&clock)
 	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	for caseName, ent := range table {
@@ -434,7 +436,8 @@ func TestWriteEventError(t *testing.T) {
 }
 
 func TestUpdateExpiredEvent(t *testing.T) {
-	eventCorrelator := NewEventCorrelator(clock.RealClock{})
+	clock := clock.IntervalClock{Time: time.Now(), Duration: time.Second}
+	eventCorrelator := NewEventCorrelator(&clock)
 	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	var createdEvent *v1.Event
@@ -442,9 +445,9 @@ func TestUpdateExpiredEvent(t *testing.T) {
 	sink := &testEventSink{
 		OnPatch: func(*v1.Event, []byte) (*v1.Event, error) {
 			return nil, &errors.StatusError{
-				ErrStatus: unversioned.Status{
+				ErrStatus: metav1.Status{
 					Code:   http.StatusNotFound,
-					Reason: unversioned.StatusReasonNotFound,
+					Reason: metav1.StatusReasonNotFound,
 				}}
 		},
 		OnCreate: func(event *v1.Event) (*v1.Event, error) {
@@ -495,15 +498,16 @@ func TestLotsOfEvents(t *testing.T) {
 	logWatcher := eventBroadcaster.StartLogging(func(formatter string, args ...interface{}) {
 		loggerCalled <- struct{}{}
 	})
-	recorder := eventBroadcaster.NewRecorder(v1.EventSource{Component: "eventTest"})
-	ref := &v1.ObjectReference{
-		Kind:       "Pod",
-		Name:       "foo",
-		Namespace:  "baz",
-		UID:        "bar",
-		APIVersion: "version",
-	}
+	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "eventTest"})
 	for i := 0; i < maxQueuedEvents; i++ {
+		// we want a unique object to stop spam filtering
+		ref := &v1.ObjectReference{
+			Kind:       "Pod",
+			Name:       fmt.Sprintf("foo-%v", i),
+			Namespace:  "baz",
+			UID:        "bar",
+			APIVersion: "version",
+		}
 		// we need to vary the reason to prevent aggregation
 		go recorder.Eventf(ref, v1.EventTypeNormal, "Reason-"+string(i), strconv.Itoa(i))
 	}
@@ -524,13 +528,13 @@ func TestLotsOfEvents(t *testing.T) {
 
 func TestEventfNoNamespace(t *testing.T) {
 	testPod := &v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			SelfLink: "/api/version/pods/foo",
 			Name:     "foo",
 			UID:      "bar",
 		},
 	}
-	testRef, err := v1.GetPartialReference(testPod, "spec.containers[2]")
+	testRef, err := ref.GetPartialReference(scheme.Scheme, testPod, "spec.containers[2]")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -551,7 +555,7 @@ func TestEventfNoNamespace(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
 				},
@@ -621,7 +625,7 @@ func TestEventfNoNamespace(t *testing.T) {
 
 func TestMultiSinkCache(t *testing.T) {
 	testPod := &v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			SelfLink:  "/api/version/pods/foo",
 			Name:      "foo",
 			Namespace: "baz",
@@ -629,15 +633,15 @@ func TestMultiSinkCache(t *testing.T) {
 		},
 	}
 	testPod2 := &v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			SelfLink:  "/api/version/pods/foo",
 			Name:      "foo",
 			Namespace: "baz",
 			UID:       "differentUid",
 		},
 	}
-	testRef, err := v1.GetPartialReference(testPod, "spec.containers[2]")
-	testRef2, err := v1.GetPartialReference(testPod2, "spec.containers[3]")
+	testRef, err := ref.GetPartialReference(scheme.Scheme, testPod, "spec.containers[2]")
+	testRef2, err := ref.GetPartialReference(scheme.Scheme, testPod2, "spec.containers[3]")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -658,7 +662,7 @@ func TestMultiSinkCache(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -686,7 +690,7 @@ func TestMultiSinkCache(t *testing.T) {
 			messageFmt: "some other verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -713,7 +717,7 @@ func TestMultiSinkCache(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -741,7 +745,7 @@ func TestMultiSinkCache(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -769,7 +773,7 @@ func TestMultiSinkCache(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -797,7 +801,7 @@ func TestMultiSinkCache(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},
@@ -825,7 +829,7 @@ func TestMultiSinkCache(t *testing.T) {
 			messageFmt: "some verbose message: %v",
 			elements:   []interface{}{1},
 			expect: &v1.Event{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "baz",
 				},

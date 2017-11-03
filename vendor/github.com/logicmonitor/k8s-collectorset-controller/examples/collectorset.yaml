@@ -1,0 +1,10 @@
+apiVersion: logicmonitor.com/v1alpha1
+kind: CollectorSet
+metadata:
+  name: example
+spec:
+  replicas: 1
+  group: example
+  size: small
+  policy:
+    distributionStrategy: RoundRobin

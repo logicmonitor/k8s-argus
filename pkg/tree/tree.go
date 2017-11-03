@@ -40,8 +40,9 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
 		{
-			Name:                  constants.ServiceDeviceGroupName,
-			DisableAlerting:       d.Config.DisableAlerting,
+			Name: constants.ServiceDeviceGroupName,
+			// Services are a WIP in the product, disable alerting for now,
+			DisableAlerting:       true,
 			AppliesTo:             devicegroup.NewAppliesToBuilder(),
 			Client:                d.LMClient,
 			DeleteDevices:         d.Config.DeleteDevices,

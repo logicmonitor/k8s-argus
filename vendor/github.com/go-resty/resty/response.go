@@ -6,6 +6,7 @@ package resty
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -106,13 +107,25 @@ func (r *Response) Size() int64 {
 	return r.size
 }
 
+// RawBody method exposes the HTTP raw response body. Use this method in-conjunction with `SetDoNotParseResponse`
+// option otherwise you get an error as `read err: http: read on closed response body`.
+//
+// Do not forget to close the body, otherwise you might get into connection leaks, no connection reuse.
+// Basically you have taken over the control of response parsing from `Resty`.
+func (r *Response) RawBody() io.ReadCloser {
+	if r.RawResponse == nil {
+		return nil
+	}
+	return r.RawResponse.Body
+}
+
 func (r *Response) fmtBodyString() string {
 	bodyStr := "***** NO CONTENT *****"
 	if r.body != nil {
 		ct := r.Header().Get(hdrContentTypeKey)
 		if IsJSONType(ct) {
-			out := getBuffer()
-			defer putBuffer(out)
+			out := acquireBuffer()
+			defer releaseBuffer(out)
 			if err := json.Indent(out, r.body, "", "   "); err == nil {
 				bodyStr = string(out.Bytes())
 			}

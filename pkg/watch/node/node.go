@@ -7,8 +7,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/runtime"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
@@ -53,6 +53,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		newInternalAddress := getInternalAddress(new.Status.Addresses)
 		if oldInternalAddress == nil && newInternalAddress != nil {
 			w.add(new)
+			return
 		}
 		// Covers the case when the old node is in the process of terminating
 		// and the new node is coming up to replace it.
@@ -69,12 +70,13 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		node := obj.(*v1.Node)
 
 		// Delete the node.
+		internalAddress := getInternalAddress(node.Status.Addresses).Address
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByName(node.Name); err != nil {
+			if err := w.DeleteByName(internalAddress); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
 				return
 			}
-			log.Infof("Deleted node %s", node.Name)
+			log.Infof("Deleted node %s", internalAddress)
 			return
 		}
 

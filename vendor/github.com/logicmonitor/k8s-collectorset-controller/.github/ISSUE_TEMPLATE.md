@@ -1,0 +1,3 @@
+-   **CollectorSet Controller Version:**
+-   **Kubernetes Version:**
+-   **Docker Version:**

@@ -11,14 +11,12 @@ import (
 // Config represents the application's configuration file.
 type Config struct {
 	*Secrets
-	ClusterCategory            string `yaml:"cluster_category"`
-	ClusterName                string `yaml:"cluster_name"`
-	CollectorDescription       string `yaml:"collector_description"`
-	CollectorEscalationChainID int32  `yaml:"collector_escalation_chain_id"`
-	PreferredCollector         int32
-	Debug                      bool `yaml:"debug"`
-	DeleteDevices              bool `yaml:"delete_devices"`
-	DisableAlerting            bool `yaml:"disable_alerting"`
+	Address         string `yaml:"address"`
+	ClusterCategory string `yaml:"cluster_category"`
+	ClusterName     string `yaml:"cluster_name"`
+	Debug           bool   `yaml:"debug"`
+	DeleteDevices   bool   `yaml:"delete_devices"`
+	DisableAlerting bool   `yaml:"disable_alerting"`
 }
 
 // Secrets represents the application's sensitive configuration file.

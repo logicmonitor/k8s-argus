@@ -1,7 +1,8 @@
 *
-!pkg
-!cmd
-!scripts
 !Gopkg*
+!cmd
+!hack
 !main.go
+!pkg
+!scripts
 !vendor

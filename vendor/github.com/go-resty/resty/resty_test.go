@@ -45,7 +45,7 @@ func TestGet(t *testing.T) {
 	assertError(t, err)
 	assertEqual(t, http.StatusOK, resp.StatusCode())
 	assertEqual(t, "200 OK", resp.Status())
-	assertEqual(t, true, resp.Body() != nil)
+	assertNotNil(t, resp.Body())
 	assertEqual(t, "TestGet: text response", resp.String())
 
 	logResponse(t, resp)
@@ -791,7 +791,7 @@ func TestHostCheckRedirectPolicy(t *testing.T) {
 
 	_, err := c.R().Get(ts.URL + "/redirect-host-check-1")
 
-	assertEqual(t, true, err != nil)
+	assertNotNil(t, err)
 	assertEqual(t, true, strings.Contains(err.Error(), "Redirect is not allowed as per DomainCheckRedirectPolicy"))
 }
 
@@ -850,22 +850,26 @@ func TestRawFileUploadByBody(t *testing.T) {
 func TestProxySetting(t *testing.T) {
 	c := dc()
 
+	transport, err := c.getTransport()
+
+	assertNil(t, err)
+
 	assertEqual(t, false, c.IsProxySet())
-	assertEqual(t, true, (c.transport.Proxy == nil))
+	assertNil(t, transport.Proxy)
 
 	c.SetProxy("http://sampleproxy:8888")
 	assertEqual(t, true, c.IsProxySet())
-	assertEqual(t, false, (c.transport.Proxy == nil))
+	assertNotNil(t, transport.Proxy)
 
 	c.SetProxy("//not.a.user@%66%6f%6f.com:8888")
 	assertEqual(t, false, c.IsProxySet())
-	assertEqual(t, true, (c.transport.Proxy == nil))
+	assertNil(t, transport.Proxy)
 
 	SetProxy("http://sampleproxy:8888")
 	assertEqual(t, true, IsProxySet())
 	RemoveProxy()
-	assertEqual(t, true, (DefaultClient.proxyURL == nil))
-	assertEqual(t, true, (DefaultClient.transport.Proxy == nil))
+	assertNil(t, DefaultClient.proxyURL)
+	assertNil(t, transport.Proxy)
 }
 
 func TestIncorrectURL(t *testing.T) {
@@ -1107,7 +1111,6 @@ func TestContextInternal(t *testing.T) {
 
 	assertError(t, err)
 	assertEqual(t, http.StatusOK, resp.StatusCode())
-
 }
 
 func TestSRV(t *testing.T) {
@@ -1123,7 +1126,10 @@ func TestSRV(t *testing.T) {
 
 	resp, err := r.Get("/")
 	assertError(t, err)
-	assertEqual(t, http.StatusOK, resp.StatusCode())
+	assertNotNil(t, resp)
+	if resp != nil {
+		assertEqual(t, http.StatusOK, resp.StatusCode())
+	}
 }
 
 func TestSRVInvalidService(t *testing.T) {
@@ -1131,9 +1137,86 @@ func TestSRVInvalidService(t *testing.T) {
 		SetSRV(&SRVRecord{"nonexistantservice", "sampledomain"}).
 		Get("/")
 
-	assertEqual(t, true, (err != nil))
+	assertNotNil(t, err)
 	assertEqual(t, true, strings.Contains(err.Error(), "no such host"))
 }
+
+func TestDeprecatedCodeCovergae(t *testing.T) {
+	var user1 User
+	err := Unmarshal("application/json",
+		[]byte(`{"username":"testuser", "password":"testpass"}`), &user1)
+	assertError(t, err)
+	assertEqual(t, "testuser", user1.Username)
+	assertEqual(t, "testpass", user1.Password)
+
+	var user2 User
+	err = Unmarshal("application/xml",
+		[]byte(`<?xml version="1.0" encoding="UTF-8"?><User><Username>testuser</Username><Password>testpass</Password></User>`),
+		&user2)
+	assertError(t, err)
+	assertEqual(t, "testuser", user1.Username)
+	assertEqual(t, "testpass", user1.Password)
+}
+
+func TestRequestDoNotParseResponse(t *testing.T) {
+	ts := createGetServer(t)
+	defer ts.Close()
+
+	resp, err := dc().R().
+		SetDoNotParseResponse(true).
+		SetQueryParam("request_no", strconv.FormatInt(time.Now().Unix(), 10)).
+		Get(ts.URL + "/")
+
+	assertError(t, err)
+
+	buf := acquireBuffer()
+	defer releaseBuffer(buf)
+	_, _ = io.Copy(buf, resp.RawBody())
+
+	assertEqual(t, "TestGet: text response", buf.String())
+	_ = resp.RawBody().Close()
+
+	// Manually setting RawResponse as nil
+	resp, err = dc().R().
+		SetDoNotParseResponse(true).
+		Get(ts.URL + "/")
+
+	assertError(t, err)
+
+	resp.RawResponse = nil
+	assertNil(t, resp.RawBody())
+
+	// just set test part
+	SetDoNotParseResponse(true)
+	assertEqual(t, true, DefaultClient.notParseResponse)
+	SetDoNotParseResponse(false)
+}
+
+type noCtTest struct {
+	Response string `json:"response"`
+}
+
+func TestRequestExpectContentTypeTest(t *testing.T) {
+	ts := createGenServer(t)
+	defer ts.Close()
+
+	c := dc()
+	resp, err := c.R().
+		SetResult(noCtTest{}).
+		ExpectContentType("application/json").
+		Get(ts.URL + "/json-no-set")
+
+	assertError(t, err)
+	assertEqual(t, http.StatusOK, resp.StatusCode())
+	assertNotNil(t, resp.Result())
+	assertEqual(t, "json response no content type set", resp.Result().(*noCtTest).Response)
+
+	assertEqual(t, "", firstNonEmpty("", ""))
+}
+
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// Testing Unexported methods
+//___________________________________
 
 func getTestDataPath() string {
 	pwd, _ := os.Getwd()
@@ -1187,6 +1270,12 @@ func createGetServer(t *testing.T) *httptest.Server {
 				w.Header().Set("Content-Type", "image/png")
 				w.Header().Set("Content-Length", strconv.Itoa(len(fileBytes)))
 				_, _ = w.Write(fileBytes)
+			} else if r.URL.Path == "/get-method-payload-test" {
+				body, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					t.Errorf("Error: could not read get body: %s", err.Error())
+				}
+				_, _ = w.Write(body)
 			}
 		}
 	})
@@ -1473,6 +1562,16 @@ func createGenServer(t *testing.T) *httptest.Server {
 		t.Logf("Method: %v", r.Method)
 		t.Logf("Path: %v", r.URL.Path)
 
+		if r.Method == MethodGet {
+			if r.URL.Path == "/json-no-set" {
+				// Set empty header value for testing, since Go server sets to
+				// text/plain; charset=utf-8
+				w.Header().Set(hdrContentTypeKey, "")
+				_, _ = w.Write([]byte(`{"response":"json response no content type set"}`))
+			}
+			return
+		}
+
 		if r.Method == MethodPut {
 			if r.URL.Path == "/plaintext" {
 				_, _ = w.Write([]byte("TestPut: plain text response"))
@@ -1483,6 +1582,7 @@ func createGenServer(t *testing.T) *httptest.Server {
 				w.Header().Set(hdrContentTypeKey, "application/xml")
 				_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><Response>XML response</Response>`))
 			}
+			return
 		}
 
 		if r.Method == MethodOptions && r.URL.Path == "/options" {
@@ -1490,10 +1590,12 @@ func createGenServer(t *testing.T) *httptest.Server {
 			w.Header().Set("Access-Control-Allow-Methods", "PUT, PATCH")
 			w.Header().Set("Access-Control-Expose-Headers", "x-go-resty-id")
 			w.WriteHeader(http.StatusOK)
+			return
 		}
 
 		if r.Method == MethodPatch && r.URL.Path == "/patch" {
 			w.WriteHeader(http.StatusOK)
+			return
 		}
 	})
 
@@ -1550,6 +1652,18 @@ func dclr() *Request {
 	return c.R()
 }
 
+func assertNil(t *testing.T, v interface{}) {
+	if !isNil(v) {
+		t.Errorf("[%v] was expected to be nil", v)
+	}
+}
+
+func assertNotNil(t *testing.T, v interface{}) {
+	if isNil(v) {
+		t.Errorf("[%v] was expected to be non-nil", v)
+	}
+}
+
 func assertError(t *testing.T, err error) {
 	if err != nil {
 		t.Errorf("Error occurred [%v]", err)
@@ -1557,8 +1671,7 @@ func assertError(t *testing.T, err error) {
 }
 
 func assertEqual(t *testing.T, e, g interface{}) (r bool) {
-	r = compare(e, g)
-	if !r {
+	if !equal(e, g) {
 		t.Errorf("Expected [%v], got [%v]", e, g)
 	}
 
@@ -1566,7 +1679,7 @@ func assertEqual(t *testing.T, e, g interface{}) (r bool) {
 }
 
 func assertNotEqual(t *testing.T, e, g interface{}) (r bool) {
-	if compare(e, g) {
+	if equal(e, g) {
 		t.Errorf("Expected [%v], got [%v]", e, g)
 	} else {
 		r = true
@@ -1575,28 +1688,22 @@ func assertNotEqual(t *testing.T, e, g interface{}) (r bool) {
 	return
 }
 
-func compare(e, g interface{}) (r bool) {
-	ev := reflect.ValueOf(e)
-	gv := reflect.ValueOf(g)
+func equal(expected, got interface{}) bool {
+	return reflect.DeepEqual(expected, got)
+}
 
-	if ev.Kind() != gv.Kind() {
-		return
+func isNil(v interface{}) bool {
+	if v == nil {
+		return true
 	}
 
-	switch ev.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		r = (ev.Int() == gv.Int())
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		r = (ev.Uint() == gv.Uint())
-	case reflect.Float32, reflect.Float64:
-		r = (ev.Float() == gv.Float())
-	case reflect.String:
-		r = (ev.String() == gv.String())
-	case reflect.Bool:
-		r = (ev.Bool() == gv.Bool())
+	rv := reflect.ValueOf(v)
+	kind := rv.Kind()
+	if kind >= reflect.Chan && kind <= reflect.Slice && rv.IsNil() {
+		return true
 	}
 
-	return
+	return false
 }
 
 func logResponse(t *testing.T, resp *Response) {
