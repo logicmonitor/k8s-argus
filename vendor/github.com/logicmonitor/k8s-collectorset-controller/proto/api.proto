@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package api;
+
+// The collectorset service definition.
+service CollectorSetController {
+  // Retrieves a collector ID.
+  rpc CollectorID(CollectorIDRequest) returns (CollectorIDReply) {}
+}
+
+// The request message for a collector ID.
+message CollectorIDRequest {
+  string orchestrator = 2;
+}
+
+// The response message from a collector ID request.
+message CollectorIDReply {
+  int32 id = 1;
+}

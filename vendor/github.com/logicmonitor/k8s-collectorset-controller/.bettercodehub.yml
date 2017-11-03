@@ -1,0 +1,7 @@
+exclude:
+- /api/.*
+- /vendor/.*
+component_depth: 1
+languages:
+- go
+- script

@@ -1,0 +1,10 @@
+*
+!Gopkg*
+!api
+!cmd
+!hack
+!main.go
+!pkg
+!proto
+!scripts
+!vendor

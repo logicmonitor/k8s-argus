@@ -1,0 +1,32 @@
+dist: trusty
+sudo: required
+
+services:
+  - docker
+
+language: generic
+
+install:
+  - mkdir -p $HOME/goroot
+  - curl -L https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz | tar -xz --strip-components=1 -C $HOME/goroot
+  - export GOROOT=$HOME/goroot
+  - export GOPATH=$HOME/gopath
+  - export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+  - mkdir -p $GOPATH/src/github.com/autonomy/conform
+  - rsync -az ${TRAVIS_BUILD_DIR}/ $GOPATH/src/github.com/autonomy/conform/
+  - export TRAVIS_BUILD_DIR=$GOPATH/src/github.com/autonomy/conform
+  - cd $GOPATH/src/github.com/autonomy/conform
+  - sudo apt-get -y remove docker docker-engine
+  - sudo apt-get -y update
+  - sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y install docker-ce
+
+script:
+  - make
+
+after_success:
+  - docker run --volume=$(pwd):/out --entrypoint=cp logicmonitor/argus:latest /coverage.txt /out
+  - bash <(curl -s https://codecov.io/bash)
