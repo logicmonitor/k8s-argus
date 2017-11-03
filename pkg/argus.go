@@ -3,7 +3,6 @@ package argus
 import (
 	"time"
 
-	"github.com/logicmonitor/k8s-argus/pkg/collector"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
@@ -14,10 +13,11 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
+	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	lm "github.com/logicmonitor/lm-sdk-go"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/fields"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
@@ -62,25 +62,20 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 }
 
 // NewArgus instantiates and returns argus.
-func NewArgus(base *types.Base) (*Argus, error) {
+func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus, error) {
 	argus := &Argus{
 		Base: base,
 	}
 
 	deviceManager := &device.Manager{
-		Base: base,
+		Base:             base,
+		ControllerClient: client,
 	}
 
 	deviceTree := &tree.DeviceTree{
 		Base: base,
 	}
 	deviceGroups, err := deviceTree.CreateDeviceTree()
-	if err != nil {
-		return nil, err
-	}
-
-	collectorController := collector.NewController(base)
-	err = collectorController.Init()
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +137,7 @@ func (a *Argus) Watch() {
 		_, controller := cache.NewInformer(
 			watchlist,
 			w.ObjType(),
-			time.Second*0,
+			time.Minute*10,
 			cache.ResourceEventHandlerFuncs{
 				AddFunc:    w.AddFunc(),
 				DeleteFunc: w.DeleteFunc(),

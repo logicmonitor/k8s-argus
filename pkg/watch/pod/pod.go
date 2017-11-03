@@ -7,8 +7,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/runtime"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
@@ -52,11 +52,10 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		// have added it to LogicMonitor. Therefore, it must be a new w.
 		if old.Status.PodIP == "" && new.Status.PodIP != "" {
 			w.add(new)
+			return
 		}
 
-		// Covers the case when the old pod is in the process of terminating
-		// and the new pod is coming up to replace it.
-		if old.Status.PodIP != "" && new.Status.PodIP != "" {
+		if old.Status.PodIP != new.Status.PodIP {
 			w.update(old, new)
 		}
 	}

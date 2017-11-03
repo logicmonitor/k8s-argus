@@ -7,8 +7,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/runtime"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
@@ -61,11 +61,12 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		// have added it to LogicMonitor. Therefore, it must be a new w.
 		if old.Spec.ClusterIP == "" && new.Spec.ClusterIP != "" {
 			w.add(new)
+			return
 		}
 
 		// Covers the case when the old service is in the process of terminating
 		// and the new service is coming up to replace it.
-		if old.Spec.ClusterIP != "" && new.Spec.ClusterIP != "" {
+		if old.Spec.ClusterIP != new.Spec.ClusterIP {
 			w.update(old, new)
 		}
 	}
@@ -99,26 +100,26 @@ func (w *Watcher) add(service *v1.Service) {
 		log.Errorf("Failed to add service %q: %v", service.Name, err)
 		return
 	}
-	log.Infof("Added service %q", service.Name)
+	log.Infof("Added service %q", fmtServiceName(service))
 }
 
 func (w *Watcher) update(old, new *v1.Service) {
 	if _, err := w.UpdateAndReplaceByName(
-		old.Name,
+		fmtServiceName(old),
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
-		log.Errorf("Failed to update service %q: %v", new.Name, err)
+		log.Errorf("Failed to update service %q: %v", fmtServiceName(new), err)
 		return
 	}
 	log.Infof("Updated service %q", old.Name)
 }
 
 func (w *Watcher) move(service *v1.Service) {
-	if _, err := w.UpdateAndReplaceFieldByName(service.Name, constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
-		log.Errorf("Failed to move service %q: %v", service.Name, err)
+	if _, err := w.UpdateAndReplaceFieldByName(fmtServiceName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+		log.Errorf("Failed to move service %q: %v", fmtServiceName(service), err)
 		return
 	}
-	log.Infof("Moved service %q", service.Name)
+	log.Infof("Moved service %q", fmtServiceName(service))
 }
 
 func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOption {

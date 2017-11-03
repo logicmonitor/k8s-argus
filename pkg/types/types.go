@@ -3,8 +3,8 @@ package types
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	lm "github.com/logicmonitor/lm-sdk-go"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/runtime"
 )
 
 // Base is a struct for embedding
