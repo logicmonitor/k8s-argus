@@ -131,7 +131,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 
 // Watch watches the API for events.
 func (a *Argus) Watch() {
-	getter := a.K8sClient.Core().RESTClient()
+	getter := a.K8sClient.CoreV1().RESTClient()
 	for _, w := range a.Watchers {
 		watchlist := cache.NewListWatchFromClient(getter, w.Resource(), v1.NamespaceAll, fields.Everything())
 		_, controller := cache.NewInformer(
