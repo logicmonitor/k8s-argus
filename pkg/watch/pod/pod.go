@@ -58,6 +58,14 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		if old.Status.PodIP != new.Status.PodIP {
 			w.update(old, new)
 		}
+
+		if new.Status.Phase == v1.PodSucceeded {
+			if err := w.DeleteByName(old.Name); err != nil {
+				log.Errorf("Failed to delete pod: %v", err)
+				return
+			}
+			log.Infof("Deleted pod %s", old.Name)
+		}
 	}
 }
 
