@@ -3,6 +3,9 @@
 package pod
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -56,12 +59,11 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		}
 
 		if new.Status.Phase == v1.PodSucceeded {
-			if err := w.DeleteByName(old.Name); err != nil {
+			if err := w.DeleteByName(podDNS(old)); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
 			log.Infof("Deleted pod %s", old.Name)
-			return
 		}
 
 		if old.Status.PodIP != new.Status.PodIP {
@@ -78,7 +80,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the pod.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByName(pod.Name); err != nil {
+			if err := w.DeleteByName(podDNS(pod)); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
@@ -104,7 +106,7 @@ func (w *Watcher) add(pod *v1.Pod) {
 
 func (w *Watcher) update(old, new *v1.Pod) {
 	if _, err := w.UpdateAndReplaceByName(
-		old.Name,
+		podDNS(old),
 		w.args(new, constants.PodCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update pod %q: %v", new.Name, err)
@@ -114,7 +116,7 @@ func (w *Watcher) update(old, new *v1.Pod) {
 }
 
 func (w *Watcher) move(pod *v1.Pod) {
-	if _, err := w.UpdateAndReplaceFieldByName(pod.Name, constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByName(podDNS(pod), constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", pod.Name, err)
 		return
 	}
@@ -124,7 +126,7 @@ func (w *Watcher) move(pod *v1.Pod) {
 func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, pod.Labels)
 	return []types.DeviceOption{
-		w.Name(pod.Name),
+		w.Name(podDNS(pod)),
 		w.DisplayName(pod.Name),
 		w.SystemCategories(categories),
 		w.Auto("name", pod.Name),
@@ -134,4 +136,9 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 	}
+}
+
+func podDNS(pod *v1.Pod) string {
+	ipFmt := strings.Replace(pod.Status.PodIP, ".", "-", -1)
+	return fmt.Sprintf("%s.%s.pod.cluster.local", ipFmt, pod.Namespace)
 }
