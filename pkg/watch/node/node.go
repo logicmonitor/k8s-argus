@@ -34,6 +34,9 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
+
+		log.Debugf("received ADD event: %s", node.Name)
+
 		// Require an IP address.
 		if getInternalAddress(node.Status.Addresses) == nil {
 			return
@@ -47,6 +50,9 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Node)
 		new := newObj.(*v1.Node)
+
+		log.Debugf("received UPDATE event: %s", old.Name)
+
 		// If the old node does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new device.
 		oldInternalAddress := getInternalAddress(old.Status.Addresses)
@@ -68,6 +74,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
+
+		log.Debugf("received DELETE event: %s", node.Name)
 
 		// Delete the node.
 		internalAddress := getInternalAddress(node.Status.Addresses).Address

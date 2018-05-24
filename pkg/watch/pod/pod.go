@@ -34,6 +34,9 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
+
+		log.Debugf("received ADD event: %s", pod.Name)
+
 		// Require an IP address.
 		if pod.Status.PodIP == "" {
 			return
@@ -47,6 +50,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Pod)
 		new := newObj.(*v1.Pod)
+
+		log.Debugf("received UPDATE event: %s", old.Name)
 
 		// If the old pod does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
@@ -75,6 +80,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
+
+		log.Debugf("received DELETE event: %s", pod.Name)
 
 		// Delete the pod.
 		if w.Config().DeleteDevices {
