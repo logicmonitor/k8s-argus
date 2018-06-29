@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.1.0</span></strong>
+        <strong>Argus</strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -330,9 +330,53 @@
 
 			
 
-<h1 id="quick-start">Quick Start</h1>
+<h1 id="quick-start">Quick Start - v0.2.0-alpha.0</h1>
 
-<p>The simplest way to install Argus is to use <a href="https://github.com/kubernetes/helm">Helm</a>. First, you will need to add the LogicMonitor chart repository:</p>
+<p>Version 0.2.0-alpha.0 of Argus will install dockerized LogicMonitor Collectors in your cluster, and add pods, nodes and services into your LogicMonitor account to be monitored. Version 0.2.0-argus.0 requires Kubernetes RBAC. The simplest way to install Argus version 0.2.0-alpha.0 is to use <a href="https://github.com/kubernetes/helm">Helm</a>. First, you will need to create a cluster admin serviceaccount for tiller, and then run helm init with that serviceaccount:
+
+<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace kube-system
+$ kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+$ helm init --service-account=tiller</code></pre>
+
+<p>Next, you will need to add the LogicMonitor chart repository:</p>
+
+<pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
+</code></pre>
+
+<p>Now, install Argus:</p>
+<pre><code class="language-bash">$ helm upgrade --debug --install --version 0.2.0 \
+    --set collectorset-controller.imageTag=0.1.0-alpha.0 \
+    --set global.accessID='$ACCESS_ID' \
+    --set global.accessKey='$ACCESS_KEY' \
+    --set global.account='$ACCOUNT' \
+    --set enableRBAC="true"  \
+    --set collectorset-controller.enableRBAC="true" \
+    --set clusterName='$CLUSTER_NAME' \
+    --set imageTag=0.2.0-alpha.0 \
+    argus logicmonitor/argus
+</code></pre>
+
+<p>Next, create a yaml file for your collectorset:</p>
+<pre><code class="language-bash">apiVersion: logicmonitor.com/v1alpha1
+  kind: CollectorSet
+  metadata:
+    name: $CLUSTER_NAME
+    namespace: $NAMESPACE
+  spec:
+    policy:
+      distributionStrategy: RoundRobin
+      orchestrator: Kubernetes
+    replicas: 2
+    size: $COLLECTOR_SIZE
+</code></pre>
+
+<p> And apply that file using kubectl:</p>
+
+<pre><code class="language-bash">$ kubectl apply -f collectorset.yaml</code></pre>
+
+<h1 id="quick-start">Quick Start - v0.1.0</h1>
+
+<p>Version 0.1.0 of Argus will install a dockerized version of the LogicMonitor Collector in your cluster, and add pods, nodes and services into your LogicMonitor account to be monitored. As such, you'll need to ensure that the Collector size specified in installation is large enough. You may alternatively choose to use version 0.2.0-alpha.0 (instructions in the section above), which includes more automated Collector management for your cluster. Should you choose to proceed with version 0.1.0, the simplest way to install Argus is to use <a href="https://github.com/kubernetes/helm">Helm</a>. First, you will need to add the LogicMonitor chart repository:</p>
 
 <pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
 </code></pre>
@@ -356,6 +400,7 @@
     --set imageTag='$IMAGE_TAG' \
     argus logicmonitor/argus
 </code></pre>
+
 
 <blockquote>
 <p>Note: Argus should be installed only once per cluster.</p>
