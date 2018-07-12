@@ -3,9 +3,13 @@
 package node
 
 import (
+	"strings"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
+	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,6 +22,8 @@ const (
 // Watcher represents a watcher type that watches nodes.
 type Watcher struct {
 	types.DeviceManager
+	DeviceGroups map[string]int32
+	LMClient     *lm.DefaultApi
 }
 
 // Resource is a function that implements the Watcher interface.
@@ -97,17 +103,26 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 func (w *Watcher) add(node *v1.Node) {
 	if _, err := w.Add(w.args(node, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to add node %q: %v", node.Name, err)
-		return
+	} else {
+		log.Infof("Added node %q", node.Name)
 	}
-	log.Infof("Added node %q", node.Name)
+
+	w.createRoleDeviceGroup(node.Labels)
 }
 
 func (w *Watcher) update(old, new *v1.Node) {
 	if _, err := w.UpdateAndReplaceByName(old.Name, w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", new.Name, err)
-		return
+	} else {
+		log.Infof("Updated node %q", old.Name)
 	}
-	log.Infof("Updated node %q", old.Name)
+
+	// determine if we need to add a new node role device group
+	oldLabel, _ := utilities.GetLabelByPrefix(constants.LabelNodeRole, old.Labels)
+	newLabel, _ := utilities.GetLabelByPrefix(constants.LabelNodeRole, new.Labels)
+	if oldLabel != newLabel {
+		w.createRoleDeviceGroup(new.Labels)
+	}
 }
 
 func (w *Watcher) move(node *v1.Node) {
@@ -120,6 +135,7 @@ func (w *Watcher) move(node *v1.Node) {
 
 func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, node.Labels)
+
 	return []types.DeviceOption{
 		w.Name(getInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
@@ -140,4 +156,37 @@ func getInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
 	}
 
 	return nil
+}
+
+func (w *Watcher) createRoleDeviceGroup(labels map[string]string) {
+	label, _ := utilities.GetLabelByPrefix(constants.LabelNodeRole, labels)
+	if label == "" {
+		return
+	}
+	role := strings.Replace(label, constants.LabelNodeRole, "", -1)
+
+	if devicegroup.Exists(w.DeviceGroups[constants.ClusterDeviceGroupPrefix+w.Config().ClusterName], role, w.LMClient) {
+		log.Infof("Device group for node role %q already exists", role)
+		return
+	}
+
+	opts := &devicegroup.Options{
+		ParentID:              w.DeviceGroups[constants.NodeDeviceGroupName],
+		Name:                  role,
+		DisableAlerting:       true,
+		AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(label + "=").And().Auto("clustername").Equals(w.Config().ClusterName),
+		Client:                w.LMClient,
+		DeleteDevices:         w.Config().DeleteDevices,
+		AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(label + "=").And().Auto("clustername").Equals(w.Config().ClusterName),
+	}
+
+	log.Debugf("%v", opts)
+
+	_, err := devicegroup.Create(opts)
+	if err != nil {
+		log.Errorf("Failed to add device group for node role to %q: %v", role, err)
+		return
+	}
+
+	log.Printf("Added device group for node role %q", role)
 }

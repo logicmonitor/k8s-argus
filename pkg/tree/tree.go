@@ -16,7 +16,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 	// The device group at index 0 will be the root device group for all subsequent device groups.
 	return []*devicegroup.Options{
 		{
-			Name:            "Kubernetes Cluster: " + d.Config.ClusterName,
+			Name:            constants.ClusterDeviceGroupPrefix + d.Config.ClusterName,
 			ParentID:        constants.RootDeviceGroupID,
 			DisableAlerting: d.Config.DisableAlerting,
 			AppliesTo:       devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
@@ -31,14 +31,23 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			DeleteDevices:         d.Config.DeleteDevices,
 			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
+
 		{
-			Name:                  constants.NodeDeviceGroupName,
+			Name:            constants.NodeDeviceGroupName,
+			DisableAlerting: d.Config.DisableAlerting,
+			AppliesTo:       devicegroup.NewAppliesToBuilder(),
+			Client:          d.LMClient,
+			DeleteDevices:   d.Config.DeleteDevices,
+		},
+		{
+			Name:                  constants.AllNodeDeviceGroupName,
 			DisableAlerting:       d.Config.DisableAlerting,
 			AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:                d.LMClient,
 			DeleteDevices:         d.Config.DeleteDevices,
 			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
+
 		{
 			Name: constants.ServiceDeviceGroupName,
 			// Services are a WIP in the product, disable alerting for now,
@@ -63,9 +72,17 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 	deviceGroups := make(map[string]int32)
 	for _, opts := range d.buildOptsSlice() {
-		if opts.Name != "Kubernetes Cluster: "+d.Config.ClusterName {
-			opts.ParentID = deviceGroups["Kubernetes Cluster: "+d.Config.ClusterName]
+		switch opts.Name {
+		case constants.AllNodeDeviceGroupName:
+			// the all nodes group should be nested in 'Nodes'
+			opts.ParentID = deviceGroups[constants.NodeDeviceGroupName]
+		case constants.ClusterDeviceGroupPrefix + d.Config.ClusterName:
+			// don't do anything for the root cluster group
+			break
+		default:
+			opts.ParentID = deviceGroups[constants.ClusterDeviceGroupPrefix+d.Config.ClusterName]
 		}
+
 		id, err := devicegroup.Create(opts)
 		if err != nil {
 			return nil, err

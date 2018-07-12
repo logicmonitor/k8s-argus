@@ -97,6 +97,8 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 		},
 		&node.Watcher{
 			DeviceManager: deviceManager,
+			DeviceGroups:  deviceGroups,
+			LMClient:      base.LMClient,
 		},
 		&service.Watcher{
 			DeviceManager: deviceManager,
