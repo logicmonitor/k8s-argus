@@ -132,6 +132,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, pod.Labels)
 	return []types.DeviceOption{
 		w.Name(pod.Name),
+		w.ResourceLabels(pod.Labels),
 		w.DisplayName(pod.Name),
 		w.SystemCategories(categories),
 		w.Auto("name", pod.Name),

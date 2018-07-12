@@ -19,6 +19,8 @@ const (
 
 const (
 	// EtcdDeviceGroupName is the service device group name in the cluster device group.
+	// LabelCustomPropertyPrefix is the prefix to use for custom properties based of labels
+	LabelCustomPropertyPrefix = "kubernetes.label."
 	EtcdDeviceGroupName = "Etcd"
 	// NodeDeviceGroupName is the service device group name in the cluster device group.
 	NodeDeviceGroupName = "Nodes"

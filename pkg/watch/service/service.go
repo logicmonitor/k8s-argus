@@ -126,6 +126,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 	categories := utilities.BuildSystemCategoriesFromLabels(category, service.Labels)
 	return []types.DeviceOption{
 		w.Name(fmtServiceName(service)),
+		w.ResourceLabels(service.Labels),
 		w.DisplayName(fmtServiceDisplayName(service)),
 		w.SystemCategories(categories),
 		w.Auto("name", service.Name),

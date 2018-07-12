@@ -122,6 +122,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, node.Labels)
 	return []types.DeviceOption{
 		w.Name(getInternalAddress(node.Status.Addresses).Address),
+		w.ResourceLabels(node.Labels),
 		w.DisplayName(node.Name),
 		w.SystemCategories(categories),
 		w.Auto("name", node.Name),
