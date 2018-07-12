@@ -120,6 +120,7 @@ func (w *Watcher) update(old, new *v1.Pod) {
 	log.Infof("Updated pod %q", old.Name)
 }
 
+// nolint: dupl
 func (w *Watcher) move(pod *v1.Pod) {
 	if _, err := w.UpdateAndReplaceFieldByName(pod.Name, constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", pod.Name, err)

@@ -78,7 +78,6 @@ func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 			opts.ParentID = deviceGroups[constants.NodeDeviceGroupName]
 		case constants.ClusterDeviceGroupPrefix + d.Config.ClusterName:
 			// don't do anything for the root cluster group
-			break
 		default:
 			opts.ParentID = deviceGroups[constants.ClusterDeviceGroupPrefix+d.Config.ClusterName]
 		}

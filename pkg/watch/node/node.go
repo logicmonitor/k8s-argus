@@ -125,6 +125,7 @@ func (w *Watcher) update(old, new *v1.Node) {
 	}
 }
 
+// nolint: dupl
 func (w *Watcher) move(node *v1.Node) {
 	if _, err := w.UpdateAndReplaceFieldByName(node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", node.Name, err)
