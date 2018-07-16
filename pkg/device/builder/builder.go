@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
@@ -32,12 +33,24 @@ func (b *Builder) CollectorID(id int32) types.DeviceOption {
 	}
 }
 
-// SystemCategories implements types.DeviceBuilder.
+// SystemCategories implements types.DeviceBuilder
 func (b *Builder) SystemCategories(categories string) types.DeviceOption {
 	return setProperty("system.categories", categories)
 }
 
-// Auto implements types.DeviceBuilder.
+// ResourceLabels implements types.DeviceBuilder
+func (b *Builder) ResourceLabels(properties map[string]string) types.DeviceOption {
+	return func(device *lm.RestDevice) {
+		for name, value := range properties {
+			device.CustomProperties = append(device.CustomProperties, lm.NameAndValue{
+				Name:  constants.LabelCustomPropertyPrefix + name,
+				Value: value,
+			})
+		}
+	}
+}
+
+// Auto implements types.DeviceBuilder
 func (b *Builder) Auto(name, value string) types.DeviceOption {
 	return setProperty("auto."+name, value)
 }

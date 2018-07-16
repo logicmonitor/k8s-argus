@@ -128,6 +128,19 @@ func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGro
 	return deviceGroup, nil
 }
 
+// Exists returns true if the specified device group exists in the account
+func Exists(parentID int32, name string, client *lm.DefaultApi) bool {
+	deviceGroup, err := Find(parentID, name, client)
+	if err != nil {
+		log.Warnf("Failed looking up device group for node role %q: %v", name, err)
+	}
+
+	if deviceGroup != nil {
+		return true
+	}
+	return false
+}
+
 // DeleteSubGroup deletes a subgroup from a device group with the specified
 // name.
 func DeleteSubGroup(deviceGroup *lm.RestDeviceGroup, name string, client *lm.DefaultApi) error {
