@@ -22,6 +22,8 @@ const (
 	LabelNodeRole = "node-role.kubernetes.io/"
 	// LabelCustomPropertyPrefix is the prefix to use for custom properties based of labels
 	LabelCustomPropertyPrefix = "kubernetes.label."
+	// LabelNullPlaceholder is the string used to represent null values in custom properties
+	LabelNullPlaceholder = "null"
 )
 
 const (

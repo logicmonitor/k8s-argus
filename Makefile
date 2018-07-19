@@ -1,6 +1,6 @@
 NAMESPACE  := logicmonitor
 REPOSITORY := argus
-VERSION    := 0.2.0-alpha.1
+VERSION    := 0.2.0-alpha.2
 
 all:
 	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):latest .
