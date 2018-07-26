@@ -72,6 +72,8 @@ type DeviceBuilder interface {
 	CollectorID(int32) DeviceOption
 	// SystemCategories sets the system.categories property on the device.
 	SystemCategories(string) DeviceOption
+	// ResourceLabels sets custom properties for the device
+	ResourceLabels(map[string]string) DeviceOption
 	// Auto adds an auto property to the device.
 	Auto(string, string) DeviceOption
 	// System adds a system property to the device.

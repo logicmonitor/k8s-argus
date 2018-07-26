@@ -18,11 +18,22 @@ const (
 )
 
 const (
-	// EtcdDeviceGroupName is the service device group name in the cluster device group.
+	// LabelNodeRole is the label name used to specify a node's role in the cluster
+	LabelNodeRole = "node-role.kubernetes.io/"
+	// LabelCustomPropertyPrefix is the prefix to use for custom properties based of labels
+	LabelCustomPropertyPrefix = "kubernetes.label."
+	// LabelNullPlaceholder is the string used to represent null values in custom properties
+	LabelNullPlaceholder = "null"
+)
+
+const (
+	// AllNodeDeviceGroupName is the service device group name in the cluster device group.
+	AllNodeDeviceGroupName = "All"
+	// EtcdDeviceGroupName is the etcd device group name in the cluster device group.
 	EtcdDeviceGroupName = "Etcd"
-	// NodeDeviceGroupName is the service device group name in the cluster device group.
+	// NodeDeviceGroupName is the top-level device group name in the cluster device group.
 	NodeDeviceGroupName = "Nodes"
-	// PodDeviceGroupName is the service device group name in the cluster device group.
+	// PodDeviceGroupName is the pod device group name in the cluster device group.
 	PodDeviceGroupName = "Pods"
 	// ServiceDeviceGroupName is the service device group name in the cluster device group.
 	ServiceDeviceGroupName = "Services"
@@ -49,6 +60,8 @@ const (
 	PodDeletedCategory = "KubernetesPodDeleted"
 	// DeletedDeviceGroup is the name of the device group where deleted devices are optionally moved to.
 	DeletedDeviceGroup = "_deleted"
+	// ClusterDeviceGroupPrefix is the prefix for the top level cluster device group
+	ClusterDeviceGroupPrefix = "Kubernetes Cluster: "
 )
 
 const (
