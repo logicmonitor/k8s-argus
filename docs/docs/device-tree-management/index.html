@@ -142,7 +142,7 @@
         </div>
 
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.0</span></strong>
+        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
 
           <br>
           logicmonitor/k8s-argus
@@ -341,7 +341,7 @@ Under this top level device group, three additional device groups will be create
 <li><strong>Services:</strong> Services running in the cluster.</li>
 </ul>
 
-<p>For namespaced resources (Pods, Services), a device group will be created for each namespace and placed inside the respective resource device group.
+<p>Underneath the Nodes group, sub-groups will be created for each node role and an additional sub-group will be created that includes all nodes. For namespaced resources (Pods, Services), sub-groups will be created for each namespace.
 For clusters that use an external etcd cluster, an <strong>Etcd</strong> device group will be created in the cluster&rsquo;s root device group.</p>
 
 <h2 id="devices">Devices</h2>
