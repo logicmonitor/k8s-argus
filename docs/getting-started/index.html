@@ -356,21 +356,23 @@ $ helm init --service-account=tiller</code></pre>
     argus logicmonitor/argus
 </code></pre>
 
+<p>Where $ACCOUNT should correspond to your logicmonitor account name (without the .logicmonitor.com), and $ACCESS_ID and $ACCESS_KEY should be LogicMonitor API token credentials that Argus will use to add devices and Collectors.</p>
+
 <p>Next, create a yaml file for your collectorset:</p>
 <pre><code class="language-bash">apiVersion: logicmonitor.com/v1alpha1
-  kind: CollectorSet
-  metadata:
-    name: $CLUSTER_NAME
-    namespace: $NAMESPACE
-  spec:
-    policy:
-      distributionStrategy: RoundRobin
-      orchestrator: Kubernetes
-    replicas: 2
-    size: $COLLECTOR_SIZE
+kind: CollectorSet
+metadata:
+  name: $CLUSTER_NAME
+  namespace: $NAMESPACE
+spec:
+  policy:
+    distributionStrategy: RoundRobin
+    orchestrator: Kubernetes
+  replicas: $REPLICAS
+  size: $COLLECTOR_SIZE
 </code></pre>
 
-<p> And apply that file using kubectl:</p>
+<p>  Where $NAMESPACE should be the namespace the collectorset and controller pods will run in, $REPLICAS should be the number of Collectors desired (must not be greater than the number of nodes in the cluster), and $COLLECTOR_SIZE should be the Collector size (nano, small, medium, large). The next step is to apply your collectorset yaml file using kubectl:</p>
 
 <pre><code class="language-bash">$ kubectl apply -f collectorset.yaml</code></pre>
 

@@ -336,7 +336,7 @@
 <ul>
 <li><strong>accessID:</strong> The LogicMonitor API key ID.</li>
 <li><strong>accessKey:</strong> The LogicMonitor API key.</li>
-<li><strong>account:</strong> The LogicMonitor account name.</li>
+<li><strong>account:</strong> The LogicMonitor account name (without the '.logicmonitor.com').</li>
 </ul>
 
 <p>Optional Values:</p>
@@ -357,7 +357,7 @@
 <li><strong>name:</strong> The cluster name.</li>
 <li><strong>size:</strong> The size of the collector to install. Can be nano, small, medium, or large.</li>
 <li><strong>namespace:</strong> The namespace in which the collectorset and controller pod should run.</li>
-<li><strong>replicas:</strong> The number of collectors desired.</li>
+<li><strong>replicas:</strong> The number of collectors desired (cannot be greater than the number of nodes).</li>
 </ul>
 
 <h1 id="configuring-argus-manually">Configuring Argus Manually</h1>
