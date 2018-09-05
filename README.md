@@ -12,7 +12,7 @@
   <a href="https://github.com/logicmonitor/k8s-argus/releases/latest"><img alt="GitHub (pre-)release" src="https://img.shields.io/github/release/logicmonitor/argus/all.svg?style=flat-square"></a>
 </p>
 
-> **Note:** Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.
+> **Note:** Argus is a community driven project in an alpha state. LogicMonitor support will not be able to assist with any issues related to Argus.
 
 **Argus** is a tool for monitoring Kubernetes with [LogicMonitor](https://www.logicmonitor.com). Some of the key features of Argus are:
 -   **Automated Device Group Management:** Leverages Kubernetes events to provide real-time accuracy of a cluster's resources in LogicMonitor, and organizes them by resource type and namespace in the [Device Tree](https://www.logicmonitor.com/support/devices/devices-page-overview/navigating-devices/).
