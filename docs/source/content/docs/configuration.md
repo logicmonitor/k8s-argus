@@ -9,9 +9,28 @@ menu:
     weight: 1
 ---
 
+# Configuring the Collecorset Controller via the Helm Chart
+
+The Collectorset controller Helm chart supports the fololowing values:
+
+Required Values:
+
+- **accessID:** The LogicMonitor API key ID.
+- **accessKey:** The LogicMonitor API key.
+- **account:** The LogicMonitor account name.
+- **clusterName:** A unique name given to the cluster's device group.
+
+Optional Values:
+
+- **enableRBAC (default: `true`):** Enable RBAC.
+- **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts to the cluster device group.
+- **imagePullPolicy (default: `"Always"`):**
+- **imageRepository (default: `"logicmonitor/argus"`):** The respository to use for the Argus docker image.
+- **imageTag:** The collectorset-controller image tag to use.
+
 # Configuring Argus via the Helm Chart
 
-The Helm chart supports the fololowing values:
+The Argus Helm chart supports the fololowing values:
 
 Required Values:
 
@@ -21,13 +40,13 @@ Required Values:
 - **clusterName:** A unique name given to the cluster's device group.
 - **collector.replicas:** The number of collectors to create and use with Argus.
 - **collector.size:** The collector size to install. Can be nano, small, medium, or large.
-- **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts to the cluster device group.
 
 Optional Values:
 
 - **debug (default: `false`):** Enable debug logging.
 - **deleteDevices (default: `true`):** On a delete event, either delete from LogicMonitor or move the device to the `_delted` device group.
 - **disableAlerting (default: `false`):** Disable alerting for all devices added.
+- **enableRBAC (default: `true`):** Enable RBAC.
 - **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts to the cluster device group.
 - **imagePullPolicy (default: `"Always"`):**
 - **imageRepository (default: `"logicmonitor/argus"`):** The respository to use for the Argus docker image.
