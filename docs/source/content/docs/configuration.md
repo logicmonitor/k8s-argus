@@ -19,14 +19,12 @@ Required Values:
 - **accessKey:** The LogicMonitor API key.
 - **account:** The LogicMonitor account name.
 - **clusterName:** A unique name given to the cluster's device group.
-- **collectorDescription:** A unique collector description used to look up a collector dynamically.
-- **collectorVersion:** The collector version to install.
+- **collector.replicas:** The number of collectors to create and use with Argus.
+- **collector.size:** The collector size to install. Can be nano, small, medium, or large.
+- **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts to the cluster device group.
 
 Optional Values:
 
-- **collectorEscalationChainID:** The ID of the escalation chain to use for collector down alerts.
-- **collectorImageTag (default: `"latest"`):** The collector image tag.
-- **collectorSize (default: `"small"`):** The collector size to install. Can be nano, small, medium, or large.
 - **debug (default: `false`):** Enable debug logging.
 - **deleteDevices (default: `true`):** On a delete event, either delete from LogicMonitor or move the device to the `_delted` device group.
 - **disableAlerting (default: `false`):** Disable alerting for all devices added.
@@ -45,8 +43,6 @@ To configure the non-sensitive information, create a YAML file located at `/etc/
 
 ```yaml
 cluster_name:
-collector_description:
-collector_escalation_chain_id:
 debug: false
 delete_devices: true
 disable_alerting: false
