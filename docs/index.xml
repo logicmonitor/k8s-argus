@@ -6,7 +6,6 @@
     <description>Recent content on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>Released under Mozilla Public License 2.0</copyright>
     <lastBuildDate>Thu, 17 Aug 2017 16:31:45 -0700</lastBuildDate>
     
 	<atom:link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="self" type="application/rss+xml" />
@@ -38,50 +37,10 @@ Device Groups Argus has an opinionated way of representing a cluster in the Logi
       <pubDate>Wed, 16 Aug 2017 17:54:55 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/docs/configuration/</guid>
-      <description>Configuring Argus via the Helm Chart The Helm chart supports the fololowing values:
+      <description>Configuring the Collecorset Controller via the Helm Chart The Collectorset controller Helm chart supports the fololowing values:
 Required Values:
- accessID: The LogicMonitor API key ID. accessKey: The LogicMonitor API key. account: The LogicMonitor account name. clusterName: A unique name given to the cluster&amp;rsquo;s device group. collectorDescription: A unique collector description used to look up a collector dynamically. collectorVersion: The collector version to install.  Optional Values:
- collectorEscalationChainID: The ID of the escalation chain to use for collector down alerts.</description>
-    </item>
-    
-    <item>
-      <title>Docs</title>
-      <link>https://logicmonitor.github.io/k8s-argus/docs/</link>
-      <pubDate>Wed, 16 Aug 2017 16:29:26 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/docs/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Argus</title>
-      <link>https://logicmonitor.github.io/k8s-argus/argus/</link>
-      <pubDate>Sat, 12 Aug 2017 17:16:07 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/argus/</guid>
-      <description>Warning
-Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.
- Argus is a tool that helps users of LogicMonitor keep up with the highly dynamic topology of a Kubernetes cluster.</description>
-    </item>
-    
-    <item>
-      <title>Roadmap</title>
-      <link>https://logicmonitor.github.io/k8s-argus/roadmap/</link>
-      <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description> 0.1.x  Automated device group management Automated device management Automated device property management  0.2.x  Automated collector management Support for all etcd discovery methods  0.3.x  Horizontal pod autoscaling based on LogicMonitor metrics.  </description>
-    </item>
-    
-    <item>
-      <title>Getting Started</title>
-      <link>https://logicmonitor.github.io/k8s-argus/getting-started/</link>
-      <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>Quick Start The simplest way to install Argus is to use Helm. First, you will need to add the LogicMonitor chart repository:
-$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Now, install Argus:
-$ helm upgrade --install \ --debug \ --wait \ --namespace &#39;$NAMESPACE&#39; \ --set accessID=&#39;$ACCESS_ID&#39; \ --set accessKey=&#39;$ACCESS_KEY&#39; \ --set account=&#39;$ACCOUNT&#39; \ --set clusterName=&#39;$CLUSTER_NAME&#39; \ --set collectorDescription=&#39;$COLLECTOR_DESCRIPTION&#39; \ --set collectorImageTag=&#39;$COLLECTOR_IMAGE_TAG&#39; \ --set collectorSize=&#39;$COLLECTOR_SIZE&#39; \ --set collectorVersion=&#39;$COLLECTOR_VERSION&#39; \ --set etcdDiscoveryToken=&#39;$ETCD_DISCOVERY_TOKEN&#39; \ --set imageTag=&#39;$IMAGE_TAG&#39; \ argus logicmonitor/argus   Note: Argus should be installed only once per cluster.</description>
+ accessID: The LogicMonitor API key ID. accessKey: The LogicMonitor API key. account: The LogicMonitor account name. clusterName: A unique name given to the cluster&amp;rsquo;s device group.  Optional Values:
+ enableRBAC (default: true): Enable RBAC. etcdDiscoveryToken: The public etcd discovery token used to add etcd hosts to the cluster device group.</description>
     </item>
     
   </channel>

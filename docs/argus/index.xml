@@ -6,22 +6,10 @@
     <description>Recent content on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>Released under Mozilla Public License 2.0</copyright>
     <lastBuildDate>Sat, 12 Aug 2017 17:16:07 -0700</lastBuildDate>
     
 	<atom:link href="https://logicmonitor.github.io/k8s-argus/argus/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Argus</title>
-      <link>https://logicmonitor.github.io/k8s-argus/argus/</link>
-      <pubDate>Sat, 12 Aug 2017 17:16:07 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/argus/</guid>
-      <description>Warning
-Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.
- Argus is a tool that helps users of LogicMonitor keep up with the highly dynamic topology of a Kubernetes cluster.</description>
-    </item>
     
   </channel>
 </rss>

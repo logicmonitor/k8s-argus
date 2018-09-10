@@ -6,7 +6,7 @@ type: index
 ---
 
 {{< warning title="Warning" >}}
-Argus is a community driven project. LogicMonitor support will not assist in any issues related to Argus.
+Argus is a community driven project in an alpha state. LogicMonitor support will not be able to assist with any issues related to Argus.
 {{< /warning >}}
 
 ---

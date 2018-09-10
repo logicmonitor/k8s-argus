@@ -1,25 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Roadmaps on Argus</title>
+    <title>Roadmap on Argus</title>
     <link>https://logicmonitor.github.io/k8s-argus/roadmap/</link>
-    <description>Recent content in Roadmaps on Argus</description>
+    <description>Recent content in Roadmap on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>Released under Mozilla Public License 2.0</copyright>
     <lastBuildDate>Sat, 12 Aug 2017 16:31:31 -0700</lastBuildDate>
     
 	<atom:link href="https://logicmonitor.github.io/k8s-argus/roadmap/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Roadmap</title>
-      <link>https://logicmonitor.github.io/k8s-argus/roadmap/</link>
-      <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description> 0.1.x  Automated device group management Automated device management Automated device property management  0.2.x  Automated collector management Support for all etcd discovery methods  0.3.x  Horizontal pod autoscaling based on LogicMonitor metrics.  </description>
-    </item>
     
   </channel>
 </rss>
