@@ -25,7 +25,7 @@ Optional Values:
 - **enableRBAC (default: `true`):** Enable RBAC.
 - **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts to the cluster device group.
 - **imagePullPolicy (default: `"Always"`):**
-- **imageRepository (default: `"logicmonitor/argus"`):** The respository to use for the Argus docker image.
+- **imageRepository (default: `"logicmonitor/collectorset-controller"`):** The respository to use for the collectorset-controller docker image.
 - **imageTag:** The collectorset-controller image tag to use.
 
 # Configuring Argus via the Helm Chart
