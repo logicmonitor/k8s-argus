@@ -1,15 +1,26 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Getting Started on Argus</title>
+    <title>Argus</title>
     <link>https://logicmonitor.github.io/k8s-argus/getting-started/</link>
-    <description>Recent content in Getting Started on Argus</description>
+    <description>Recent content on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 12 Aug 2017 16:20:39 -0700</lastBuildDate>
     
 	<atom:link href="https://logicmonitor.github.io/k8s-argus/getting-started/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Getting Started</title>
+      <link>https://logicmonitor.github.io/k8s-argus/getting-started/</link>
+      <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
+      
+      <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
+      <description>Quick Start The simplest way to install Argus is to use Helm. First, you will need to add the LogicMonitor chart repository:
+$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts &amp;quot;logicmonitor&amp;quot; has been added to your repositories  Next, install the LogicMonitor Collectorset controller:
+$ helm upgrade \ --install \ --debug \ --wait \ --tiller-namespace=&amp;quot;$NAMESPACE&amp;quot; \ --set accessID=&amp;quot;$ACCESS_ID&amp;quot; \ --set accessKey=&amp;quot;$ACCESS_KEY&amp;quot; \ --set account=&amp;quot;$ACCOUNT&amp;quot; \ --set clusterName=&amp;quot;$CLUSTER_NAME&amp;quot; \ --set etcdDiscoveryToken=&amp;quot;$ETCD_DISCOVERY_TOKEN&amp;quot; \ --set imageTag=&amp;quot;$IMAGE_TAG&amp;quot; \ collectorset-controller logicmonitor/collectorset-controller   Note: The Collectorset controller should be installed only once per cluster.</description>
+    </item>
     
   </channel>
 </rss>
