@@ -1,491 +1,501 @@
 <!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Getting Started - Argus</title>
+    <meta name="generator" content="Hugo 0.48" />
+
+    
+    <meta name="description" content="Automated Kubernetes monitoring.">
+    
+    <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/getting-started/">
+    
+    <meta name="author" content="LogicMonitor, Inc.">
+    
+
+    <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/getting-started/">
+    <meta property="og:title" content="Argus">
+    <meta property="og:image" content="https://logicmonitor.github.io/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Argus">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://logicmonitor.github.io/k8s-argus/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://logicmonitor.github.io/k8s-argus/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://logicmonitor.github.io/k8s-argus/fonts/icon.eot');
+        src: url('https://logicmonitor.github.io/k8s-argus/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://logicmonitor.github.io/k8s-argus/fonts/icon.woff')
+               format('woff'),
+             url('https://logicmonitor.github.io/k8s-argus/fonts/icon.ttf')
+               format('truetype'),
+             url('https://logicmonitor.github.io/k8s-argus/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/application.css">
+    <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Brandon%20Grotesque:400,700|Roboto&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Brandon Grotesque', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Roboto Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://logicmonitor.github.io/k8s-argus/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-deep-purple palette-accent-deep-purple">
 
 
 
-
-<html class="no-js">
-
-<head lang="en-us">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="IE=10" />
-  <title>Getting Started - Argus</title>
-  <meta name="generator" content="Hugo 0.26" />
+	
+	
 
 
-  <meta name="description" content="Automated Kubernetes monitoring.">
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
 
-  <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/getting-started/">
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
 
-  <meta name="author" content="LogicMonitor, Inc.">
-
-
-  <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/getting-started/">
-  <meta property="og:title" content="Argus">
-  <meta property="og:image" content="https://logicmonitor.github.io/images/logo.png">
-  <meta name="apple-mobile-web-app-title" content="Argus">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <link rel="shortcut icon" type="image/x-icon" href="https://logicmonitor.github.io/k8s-argus/images/favicon.ico">
-  <link rel="icon" type="image/x-icon" href="https://logicmonitor.github.io/k8s-argus/images/favicon.ico">
-
-  <style>
-    @font-face {
-      font-family: 'Icon';
-      src: url('https://logicmonitor.github.io/k8s-argus/fonts/icon.eot');
-      src: url('https://logicmonitor.github.io/k8s-argus/fonts/icon.eot') format('embedded-opentype'),
-      url('https://logicmonitor.github.io/k8s-argus/fonts/icon.woff') format('woff'),
-      url('https://logicmonitor.github.io/k8s-argus/fonts/icon.ttf') format('truetype'),
-      url('https://logicmonitor.github.io/k8s-argus/fonts/icon.svg') format('svg');
-      font-weight: normal;
-      font-style: normal;
-    }
-  </style>
-
-  <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/application.css">
-  <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/temporary.css">
-  <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/palettes.css">
-  <link rel="stylesheet" href="https://logicmonitor.github.io/k8s-argus/stylesheets/highlight/highlight.css">
-
-
-
-
-  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Brandon%20Grotesque:400,700|Roboto&#43;Mono">
-  <style>
-    body,
-    input {
-      font-family: 'Brandon Grotesque', Helvetica, Arial, sans-serif;
-    }
-
-    pre,
-    code {
-      font-family: 'Roboto Mono', 'Courier New', 'Courier', monospace;
-    }
-  </style>
-
-
-  <script src="https://logicmonitor.github.io/k8s-argus/javascripts/modernizr.js"></script>
-
-
-
-</head>
-
-<body class="palette-primary-deep-purple palette-accent-deep-purple">
-
-
-
-
-
-
-
-  <div class="backdrop">
-    <div class="backdrop-paper"></div>
-  </div>
-
-  <input class="toggle" type="checkbox" id="toggle-drawer">
-  <input class="toggle" type="checkbox" id="toggle-search">
-  <label class="toggle-button overlay" for="toggle-drawer"></label>
-
-  <header class="header">
-    <nav aria-label="Header">
-      <div class="bar default">
-        <div class="button button-menu" role="button" aria-label="Menu">
-          <label class="toggle-button icon icon-menu" for="toggle-drawer">
-            <span></span>
-          </label>
-        </div>
-        <div class="stretch">
-          <div class="title">
-            Getting Started
-          </div>
-        </div>
-
-
-        <div class="button button-twitter" role="button" aria-label="Twitter">
-          <a href="https://twitter.com/LogicMonitor" title="@LogicMonitor on Twitter" target="_blank" class="toggle-button icon icon-twitter"></a>
-        </div>
-
-
-
-        <div class="button button-github" role="button" aria-label="GitHub">
-          <a href="https://github.com/LogicMonitor" title="@LogicMonitor on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
-        </div>
-
-
-
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Getting Started
       </div>
-      <div class="bar search">
-        <div class="button button-close" role="button" aria-label="Close">
-          <label class="toggle-button icon icon-back" for="toggle-search"></label>
-        </div>
-        <div class="stretch">
-          <div class="field">
-            <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
-          </div>
-        </div>
-        <div class="button button-reset" role="button" aria-label="Search">
-          <button class="toggle-button icon icon-close" id="reset-search"></button>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <main class="main">
-    <div class="drawer">
-      <nav aria-label="Navigation">
-        <a href="https://github.com/logicmonitor/k8s-argus" class="project">
-          <div class="banner">
-
-            <div class="logo">
-              <img src="https://logicmonitor.github.io/k8s-argus/images/logo.png">
-            </div>
-
-            <div class="name">
-              <strong>Argus
-                <span class="version">0.2.0-alpha.1</span>
-              </strong>
-
-              <br> logicmonitor/k8s-argus
-
-            </div>
-          </div>
-        </a>
-
-        <div class="scrollable">
-          <div class="wrapper">
-
-            <ul class="repo">
-              <li class="repo-download">
-                <a href="https://github.com/logicmonitor/k8s-argus/archive/master.zip" target="_blank" title="Download" data-action="download">
-                  <i class="icon icon-download"></i> Download
-                </a>
-              </li>
-              <li class="repo-stars">
-                <a href="https://github.com/logicmonitor/k8s-argus/stargazers" target="_blank" title="Stargazers" data-action="star">
-                  <i class="icon icon-star"></i> Stars
-                  <span class="count">&ndash;</span>
-                </a>
-              </li>
-            </ul>
-            <hr>
-
-
-            <div class="toc">
-
-              <ul>
-
-
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Argus" href="https://logicmonitor.github.io/k8s-argus/">
-
-                    Argus
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a class="current" title="Getting started" href="https://logicmonitor.github.io/k8s-argus/getting-started/">
-
-                    Getting started
-                  </a>
-
-
-                  <ul id="scrollspy">
-                  </ul>
-
-
-
-                </li>
-
-
-
-                <li>
-
-                  <span class="section">Docs</span>
-                  <ul>
-
-
-
-
-
-
-                    <a title="Configuration" href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">
-
-                      Configuration
-                    </a>
-
-
-
-
-
-
-
-
-
-                    <a title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
-
-                      Device Tree Management
-                    </a>
-
-
-
-
-
-
-
-
-
-                    <a title="How It Works" href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/">
-
-                      How It Works
-                    </a>
-
-
-
-
-                  </ul>
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Roadmap" href="https://logicmonitor.github.io/k8s-argus/roadmap/">
-
-                    Roadmap
-                  </a>
-
-
-
-
-                </li>
-
-
-              </ul>
-
-
-
-              <hr>
-              <span class="section">The author</span>
-
-              <ul>
-
-                <li>
-                  <a href="https://twitter.com/LogicMonitor" target="_blank" title="@LogicMonitor on Twitter">
-                    @LogicMonitor on Twitter
-                  </a>
-                </li>
-
-
-
-                <li>
-                  <a href="https://github.com/LogicMonitor" target="_blank" title="@LogicMonitor on GitHub">
-                    @LogicMonitor on GitHub
-                  </a>
-                </li>
-
-
-
-                <li>
-                  <a href="mailto:argus@logicmonitor.com" title="Email of argus@logicmonitor.com">
-                    Contact via email
-                  </a>
-                </li>
-
-              </ul>
-
-            </div>
-          </div>
-        </div>
-      </nav>
-
     </div>
 
-    <article class="article">
-      <div class="wrapper">
-        <h1>Getting Started </h1>
+    
+    <div class="button button-twitter" role="button" aria-label="Twitter">
+       <a href="https://twitter.com/LogicMonitor" title="@LogicMonitor on Twitter" target="_blank" class="toggle-button icon icon-twitter"></a>
+    </div>
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/LogicMonitor" title="@LogicMonitor on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/logicmonitor/k8s-argus" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="https://logicmonitor.github.io/k8s-argus/images/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        
+          <br>
+          logicmonitor/k8s-argus
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/logicmonitor/k8s-argus/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/logicmonitor/k8s-argus/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+        <ul>
+          
 
 
 
-        <h1 id="quick-start">Quick Start</h1>
 
-        <p>Argus will install multiple dockerized LogicMonitor Collectors (a collectorset) in your cluster, and add pods, nodes
-          and services into your LogicMonitor account to be monitored. Kubernetes RBAC is required. The simplest way to install
-          Argus is to use
-          <a href="https://github.com/kubernetes/helm">Helm</a>. First, you will need to create a cluster admin serviceaccount for tiller:
+<li>
+  
+    
 
-          <pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace kube-system
-$ kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-$ helm init --service-account=tiller</code></pre>
 
-          <p>Next, you will need to add the LogicMonitor chart repository:</p>
 
-          <pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
+<a  title="Argus" href="https://logicmonitor.github.io/k8s-argus/">
+	
+	Argus
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="Getting started" href="https://logicmonitor.github.io/k8s-argus/getting-started/">
+	
+	Getting started
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    <span class="section">Docs</span>
+    <ul>
+      
+        
+        
+
+
+
+<a  title="Configuration" href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">
+	
+	Configuration
+</a>
+
+
+
+      
+        
+        
+
+
+
+<a  title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
+	
+	Device Tree Management
+</a>
+
+
+
+      
+        
+        
+
+
+
+<a  title="How It Works" href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/">
+	
+	How It Works
+</a>
+
+
+
+      
+    </ul>
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Roadmap" href="https://logicmonitor.github.io/k8s-argus/roadmap/">
+	
+	Roadmap
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+        
+
+        
+        <hr>
+        <span class="section">The author</span>
+        
+        <ul>
+          
+          <li>
+            <a href="https://twitter.com/LogicMonitor" target="_blank" title="@LogicMonitor on Twitter">
+              @LogicMonitor on Twitter
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="https://github.com/LogicMonitor" target="_blank" title="@LogicMonitor on GitHub">
+              @LogicMonitor on GitHub
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="mailto:argus@logicmonitor.com" title="Email of argus@logicmonitor.com">
+              Contact via email
+            </a>
+          </li>
+          
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Getting Started </h1>
+
+			
+
+<h1 id="quick-start">Quick Start</h1>
+
+<p>The simplest way to install Argus is to use <a href="https://github.com/kubernetes/helm">Helm</a>. First, you will need to add the LogicMonitor chart repository:</p>
+
+<pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
+&quot;logicmonitor&quot; has been added to your repositories
 </code></pre>
 
-          <p>Now, install Argus:</p>
-          <pre><code class="language-bash">$ helm upgrade --debug --install --version 0.2.0 \
-    --set collectorset-controller.imageTag=0.1.0-alpha.0 \
-    --set global.accessID="$ACCESS_ID" \
-    --set global.accessKey="$ACCESS_KEY" \
-    --set global.account="$ACCOUNT" \
-    --set enableRBAC="true"  \
-    --set collectorset-controller.enableRBAC="true" \
-    --set clusterName="$CLUSTER_NAME" \
-    --set imageTag=0.2.0-alpha.0 \
-    --set collector.replicas="$COLLECTOR_REPLICAS" \
-    --set collector.size="$COLLECTOR_SIZE" \
+<p>Next, install the LogicMonitor Collectorset controller:</p>
+
+<pre><code class="language-bash">$ helm upgrade \
+  --install \
+  --debug \
+  --wait \
+  --tiller-namespace=&quot;$NAMESPACE&quot; \
+  --set accessID=&quot;$ACCESS_ID&quot; \
+  --set accessKey=&quot;$ACCESS_KEY&quot; \
+  --set account=&quot;$ACCOUNT&quot; \
+  --set clusterName=&quot;$CLUSTER_NAME&quot; \
+  --set etcdDiscoveryToken=&quot;$ETCD_DISCOVERY_TOKEN&quot; \
+  --set imageTag=&quot;$IMAGE_TAG&quot; \
+  collectorset-controller logicmonitor/collectorset-controller
+</code></pre>
+
+<blockquote>
+<p>Note: The Collectorset controller should be installed only once per cluster.</p>
+</blockquote>
+
+<p>Now, install Argus:</p>
+
+<pre><code class="language-bash">    $ helm upgrade \
+    --install \
+    --debug \
+    --wait \
+    --tiller-namespace=&quot;$NAMESPACE&quot; \
+    --set accessID=&quot;$ACCESS_ID&quot; \
+    --set accessKey=&quot;$ACCESS_KEY&quot; \
+    --set account=&quot;$ACCOUNT&quot; \
+    --set clusterName=&quot;$CLUSTER_NAME&quot; \
+    --set etcdDiscoveryToken=&quot;$ETCD_DISCOVERY_TOKEN&quot; \
+    --set imageTag=&quot;$IMAGE_TAG&quot; \
+    --set collector.replicas=&quot;$COLLECTOR_REPLICAS&quot; \
+    --set collector.size=&quot;$COLLECTOR_SIZE&quot; \
     argus logicmonitor/argus
 </code></pre>
 
-<pre><code class="language-bash">$ kubectl apply -f collectorset.yaml</code></pre>
+<blockquote>
+<p>Note: Argus should be installed only once per cluster.</p>
+</blockquote>
 
-          <p> $COLLECTOR_REPLICAS should be the number of Collectors desired (must not be greater than the number of nodes in
-            the cluster), and $COLLECTOR_SIZE should be the Collector size (nano, small, medium, large).</p>
+<h1 id="community">Community</h1>
 
-          <blockquote>
-            <p>Note: Argus should be installed only once per cluster.</p>
-          </blockquote>
-
-          <h1 id="community">Community</h1>
-
-          <ul>
-            <li>To report bugs and/or submit feature requests, use
-              <a href="https://github.com/logicmonitor/k8s-argus/issues">GitHub</a>.</li>
-          </ul>
+<ul>
+<li>To report bugs and/or submit feature requests, use <a href="https://github.com/logicmonitor/k8s-argus/issues">GitHub</a>.</li>
+</ul>
 
 
-          <aside class="copyright" role="note">
+			<aside class="copyright" role="note">
+				
+				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				
+				Documentation built with
+				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
+				using the
+				<a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
+			</aside>
 
-            &copy; 2018 Released under Mozilla Public License 2.0 &ndash; Documentation built with
-            <a href="https://www.gohugo.io" target="_blank">Hugo</a>
-            using the
-            <a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
-          </aside>
+			<footer class="footer">
+				
 
-          <footer class="footer">
-
-
-            <nav class="pagination" aria-label="Footer">
-              <div class="previous">
-
-                <a href="https://logicmonitor.github.io/k8s-argus/roadmap/" title="Roadmap">
-                  <span class="direction">
-                    Previous
-                  </span>
-                  <div class="page">
-                    <div class="button button-previous" role="button" aria-label="Previous">
-                      <i class="icon icon-back"></i>
-                    </div>
-                    <div class="stretch">
-                      <div class="title">
-                        Roadmap
-                      </div>
-                    </div>
-                  </div>
-                </a>
-
-              </div>
-
-              <div class="next">
-
-              </div>
-            </nav>
-
-
-
-
-
-          </footer>
-      </div>
-    </article>
-
-    <div class="results" role="status" aria-live="polite">
-      <div class="scrollable">
-        <div class="wrapper">
-          <div class="meta"></div>
-          <div class="list"></div>
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  
+      <a href="https://logicmonitor.github.io/k8s-argus/roadmap/" title="Roadmap">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              Roadmap
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </main>
+      </a>
+  
+  </div>
 
-  <script>
-    var base_url = 'https:\/\/logicmonitor.github.io\/k8s-argus';
-    var repo_id = 'logicmonitor\/k8s-argus';
-  </script>
-
-  <script src="https://logicmonitor.github.io/k8s-argus/javascripts/application.js"></script>
+  <div class="next">
+  
+  </div>
+</nav>
 
 
-  <script>
-    /* Add headers to scrollspy */
-    var headers = document.getElementsByTagName("h2");
-    var scrollspy = document.getElementById('scrollspy');
 
-    if (scrollspy) {
-      if (headers.length > 0) {
-        for (var i = 0; i < headers.length; i++) {
-          var li = document.createElement("li");
-          li.setAttribute("class", "anchor");
 
-          var a = document.createElement("a");
-          a.setAttribute("href", "#" + headers[i].id);
-          a.setAttribute("title", headers[i].innerHTML);
-          a.innerHTML = headers[i].innerHTML;
 
-          li.appendChild(a)
-          scrollspy.appendChild(li);
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/logicmonitor.github.io\/k8s-argus';
+      var repo_id  = 'logicmonitor\/k8s-argus';
+    
+    </script>
+
+    <script src="https://logicmonitor.github.io/k8s-argus/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
         }
-      } else {
-        scrollspy.parentElement.removeChild(scrollspy)
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
       }
+    </script>
 
+    
 
-      /* Add permanent link next to the headers */
-      var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-
-      for (var i = 0; i < headers.length; i++) {
-        var a = document.createElement("a");
-        a.setAttribute("class", "headerlink");
-        a.setAttribute("href", "#" + headers[i].id);
-        a.setAttribute("title", "Permanent link")
-        a.innerHTML = "#";
-        headers[i].appendChild(a);
-      }
-    }
-  </script>
-
-
-
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-  <script>
-    hljs.initHighlightingOnLoad();
-  </script>
-</body>
-
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
 </html>
+
