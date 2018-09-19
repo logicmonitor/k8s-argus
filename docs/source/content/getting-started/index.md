@@ -4,23 +4,29 @@ date: 2017-08-12T16:20:39-07:00
 draft: false
 ---
 
-# Quick Start
+The simplest way to get started with Argus is to install it using [Helm]
+(https://github.com/kubernetes/helm). Prior to installation, you will need a
+cluster-admin serviceaccount for tiller:
+```bash
+$ kubectl create serviceaccount tiller --namespace $NAMESPACE
+$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=$NAMESPACE:tiller
+$ helm init --service-account=tiller
+```
 
-The simplest way to install Argus is to use [Helm](https://github.com/kubernetes/helm). First, you will need to add the LogicMonitor chart repository:
+You'll also need to add the LogicMonitor chart repository:
 
 ```bash
 $ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
 "logicmonitor" has been added to your repositories
 ```
 
-Next, install the LogicMonitor Collectorset controller:
+Now you can install the LogicMonitor Collectorset controller:
 
 ```bash
 $ helm upgrade \
   --install \
   --debug \
   --wait \
-  --tiller-namespace="$NAMESPACE" \
   --set accessID="$ACCESS_ID" \
   --set accessKey="$ACCESS_KEY" \
   --set account="$ACCOUNT" \
@@ -32,14 +38,13 @@ $ helm upgrade \
 
 > Note: The Collectorset controller should be installed only once per cluster.
 
-Now, install Argus:
+Next, install Argus:
 
 ```bash
     $ helm upgrade \
     --install \
     --debug \
     --wait \
-    --tiller-namespace="$NAMESPACE" \
     --set accessID="$ACCESS_ID" \
     --set accessKey="$ACCESS_KEY" \
     --set account="$ACCOUNT" \
@@ -53,6 +58,11 @@ Now, install Argus:
 
 > Note: Argus should be installed only once per cluster.
 
+After installation is complete, you should make sure you have [DataSources]
+(https://logicmonitor.github.io/k8s-argus/docs/monitoring/) in your account
+that will start monitoring the resources in your cluster.
+
 # Community
 
-- To report bugs and/or submit feature requests, use [GitHub](https://github.com/logicmonitor/k8s-argus/issues).
+- To report bugs and/or submit feature requests, use [GitHub]
+(https://github.com/logicmonitor/k8s-argus/issues).

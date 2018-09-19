@@ -240,6 +240,19 @@
 
 
 
+<a  title="Monitoring" href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/">
+	
+	Monitoring
+</a>
+
+
+
+      
+        
+        
+
+
+
 <a  title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
 	
 	Device Tree Management
@@ -330,21 +343,26 @@
 
 			
 
-<h1 id="quick-start">Quick Start</h1>
+<p>The simplest way to get started with Argus is to install it using <a href="https://github.com/kubernetes/helm">Helm</a>. Prior to installation, you will need a
+cluster-admin serviceaccount for tiller:</p>
 
-<p>The simplest way to install Argus is to use <a href="https://github.com/kubernetes/helm">Helm</a>. First, you will need to add the LogicMonitor chart repository:</p>
+<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace $NAMESPACE
+$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=$NAMESPACE:tiller
+$ helm init --service-account=tiller
+</code></pre>
+
+<p>You&rsquo;ll also need to add the LogicMonitor chart repository:</p>
 
 <pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
 &quot;logicmonitor&quot; has been added to your repositories
 </code></pre>
 
-<p>Next, install the LogicMonitor Collectorset controller:</p>
+<p>Now you can install the LogicMonitor Collectorset controller:</p>
 
 <pre><code class="language-bash">$ helm upgrade \
   --install \
   --debug \
   --wait \
-  --tiller-namespace=&quot;$NAMESPACE&quot; \
   --set accessID=&quot;$ACCESS_ID&quot; \
   --set accessKey=&quot;$ACCESS_KEY&quot; \
   --set account=&quot;$ACCOUNT&quot; \
@@ -358,13 +376,12 @@
 <p>Note: The Collectorset controller should be installed only once per cluster.</p>
 </blockquote>
 
-<p>Now, install Argus:</p>
+<p>Next, install Argus:</p>
 
 <pre><code class="language-bash">    $ helm upgrade \
     --install \
     --debug \
     --wait \
-    --tiller-namespace=&quot;$NAMESPACE&quot; \
     --set accessID=&quot;$ACCESS_ID&quot; \
     --set accessKey=&quot;$ACCESS_KEY&quot; \
     --set account=&quot;$ACCOUNT&quot; \
@@ -379,6 +396,9 @@
 <blockquote>
 <p>Note: Argus should be installed only once per cluster.</p>
 </blockquote>
+
+<p>After installation is complete, you should make sure you have <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/">DataSources</a> in your account
+that will start monitoring the resources in your cluster.</p>
 
 <h1 id="community">Community</h1>
 
@@ -422,6 +442,22 @@
   </div>
 
   <div class="next">
+  
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/" title="Monitoring">
+        <span class="direction">
+          Next
+        </span>
+        <div class="page">
+          <div class="stretch">
+            <div class="title">
+              Monitoring
+            </div>
+          </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
+        </div>
+      </a>
   
   </div>
 </nav>

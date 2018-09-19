@@ -79,9 +79,19 @@ Argus is a community driven project in an alpha state. LogicMonitor support will
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>Quick Start The simplest way to install Argus is to use Helm. First, you will need to add the LogicMonitor chart repository:
-$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts &amp;quot;logicmonitor&amp;quot; has been added to your repositories  Next, install the LogicMonitor Collectorset controller:
-$ helm upgrade \ --install \ --debug \ --wait \ --tiller-namespace=&amp;quot;$NAMESPACE&amp;quot; \ --set accessID=&amp;quot;$ACCESS_ID&amp;quot; \ --set accessKey=&amp;quot;$ACCESS_KEY&amp;quot; \ --set account=&amp;quot;$ACCOUNT&amp;quot; \ --set clusterName=&amp;quot;$CLUSTER_NAME&amp;quot; \ --set etcdDiscoveryToken=&amp;quot;$ETCD_DISCOVERY_TOKEN&amp;quot; \ --set imageTag=&amp;quot;$IMAGE_TAG&amp;quot; \ collectorset-controller logicmonitor/collectorset-controller   Note: The Collectorset controller should be installed only once per cluster.</description>
+      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a cluster-admin serviceaccount for tiller:
+$ kubectl create serviceaccount tiller --namespace $NAMESPACE $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=$NAMESPACE:tiller $ helm init --service-account=tiller  You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
+$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts &amp;quot;logicmonitor&amp;quot; has been added to your repositories  Now you can install the LogicMonitor Collectorset controller:</description>
+    </item>
+    
+    <item>
+      <title>Monitoring</title>
+      <link>https://logicmonitor.github.io/k8s-argus/docs/monitoring/</link>
+      <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
+      
+      <guid>https://logicmonitor.github.io/k8s-argus/docs/monitoring/</guid>
+      <description>Argus adds Kubernetes resources into LogicMonitor, but the DataSources that apply to those resources are responsible for monitoring. LogicMonitor has a set of developed modules for monitoring Kubernetes, which you can import via the LM Exchange (Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator Code) with these locator codes:
+ Kubernetes_Nodes: PR4F33 Kubernetes_Node: 267H63 Kubernetes_Healthz: KZ463J Kubernetes_ControlPlane: N3GZNX Kubernetes_Service: HPJPRT Kubernetes_Scheduler: FCPJNH Kubernetes_Pod: P9TT2W Kubernetes_Container: 3AAJZX Kubernetes_PingK8s: 4N99FE  Once you&amp;rsquo;ve imported the DataSources, you should see monitoring for the health and performance of your Kubernetes Cluster in LogicMonitor.</description>
     </item>
     
   </channel>
