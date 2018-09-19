@@ -67,7 +67,7 @@ delete_devices: true
 disable_alerting: false
 ```
 
-To configure the sensitive information, export the followin envionment variables:
+To configure the sensitive information, export the following environment variables:
 
 ```bash
 ACCESS_ID

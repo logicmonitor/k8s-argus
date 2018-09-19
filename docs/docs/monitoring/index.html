@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Device Tree Management - Argus</title>
+    <title>Monitoring - Argus</title>
     <meta name="generator" content="Hugo 0.48" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
     
-    <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
+    <link rel="canonical" href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/">
     
     <meta name="author" content="LogicMonitor, Inc.">
     
 
-    <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
+    <meta property="og:url" content="https://logicmonitor.github.io/k8s-argus/docs/monitoring/">
     <meta property="og:title" content="Argus">
     <meta property="og:image" content="https://logicmonitor.github.io/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Argus">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Device Tree Management
+        Monitoring
       </div>
     </div>
 
@@ -336,35 +336,57 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Device Tree Management </h1>
+			<h1>Monitoring </h1>
 
-			
-
-<p>One of the main features of Argus is its ability to represent a Kubernetes cluster in LogicMonitor, and to keep that representation up to date and accurate. Argus achieves this by managing the following.</p>
-
-<h1 id="device-groups">Device Groups</h1>
-
-<p>Argus has an opinionated way of representing a cluster in the LogicMonitor Device Tree.
-It will first create a top level device group with the name of your cluster as specified in the arguments to the chart.
-Under this top level device group, three additional device groups will be created for each resource type that Argus supports:</p>
+			<p>Argus adds Kubernetes resources into LogicMonitor, but the DataSources that
+apply to those resources are responsible for monitoring. LogicMonitor has a set
+ of developed modules for monitoring Kubernetes, which you can import via the
+ <a href="https://www.logicmonitor.com/support/settings/logicmodules/lm-exchange/">LM Exchange</a>
+ (Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator
+   Code) with these locator codes:</p>
 
 <ul>
-<li><strong>Nodes:</strong> The nodes that the cluster is comprised of.</li>
-<li><strong>Pods:</strong> Pods running in the cluster.</li>
-<li><strong>Services:</strong> Services running in the cluster.</li>
+<li>Kubernetes_Nodes: PR4F33</li>
+<li>Kubernetes_Node: 267H63</li>
+<li>Kubernetes_Healthz: KZ463J</li>
+<li>Kubernetes_ControlPlane: N3GZNX</li>
+<li>Kubernetes_Service: HPJPRT</li>
+<li>Kubernetes_Scheduler: FCPJNH</li>
+<li>Kubernetes_Pod: P9TT2W</li>
+<li>Kubernetes_Container: 3AAJZX</li>
+<li>Kubernetes_PingK8s: 4N99FE</li>
 </ul>
 
-<p>For namespaced resources (Pods, Services), a device group will be created for each namespace and placed inside the respective resource device group.
-For clusters that use an external etcd cluster, an <strong>Etcd</strong> device group will be created in the cluster&rsquo;s root device group.</p>
+<p>Once you&rsquo;ve imported the DataSources, you should see monitoring for the health
+and performance of your Kubernetes Cluster in LogicMonitor.</p>
 
-<h1 id="devices">Devices</h1>
+<p>Beyond the health and performance of your Kubernetes Cluster resources, you can
+ use LogicMonitor DataSources to monitor your applications running in
+ Kubernetes. If it&rsquo;s a standard application, LogicMonitor likely already has a
+ DataSource that can be used. For custom applications, you should
+ <a href="https://www.logicmonitor.com/support/datasources/creating-managing-datasources">create your own DataSource</a> that is specific to your application. Either way, there are a few
+  requirements to ensure that these DataSources will work well for applications
+   running in Kubernetes.</p>
 
-<p>Argus subscribes to the Kubernetes API event stream for each resource type mentioned in <a href="#device-groups">Device Groups</a>. Upon receiving an event, Argus decides on how to represent the event in LogicMonitor. In the case of nodes, pods, and services, Argus will create a device.</p>
+<ol>
+<li><p><strong>Applies To:</strong>
+DataSources usually apply based on property values, such as a
+system.categories or system.sysinfo value. For applications running in
+Kubernetes, the best option is to have Datasources apply based on labels.
+Argus adds labels as resource properties (prepended with Kubernetes.label.),
+and you can reference these labels in the Applies To field for any
+DataSources. For example, you may use a label app=shoppingcart, and have a
+DataSource that monitors shopping cart performance with an Applies To of
+&lsquo;kubernetes.label.app==&ldquo;shoppingcart&rdquo;&rsquo;.</p></li>
 
-<h2 id="device-properties">Device Properties</h2>
-
-<p>Argus will map Kubernetes metadata to device properties.
-This means that <a href="https://www.logicmonitor.com/support/datasources/">Datasources</a> can be applied based on things like <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/">labels</a>.</p>
+<li><p><strong>Referencing hostname and IP addresses:</strong>
+Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or
+system name for data collection. This leverages the system.hostname property
+value in LogicMonitor. Argus sets system.hostname for Pods to the name of the
+Pod, but sets system.ips to the IP of the Pod. As such, DataSources that
+monitor applications running in Kubernetes should use ##system.ips## instead
+of ##HOSTNAME##.</p></li>
+</ol>
 
 
 			<aside class="copyright" role="note">
@@ -383,7 +405,7 @@ This means that <a href="https://www.logicmonitor.com/support/datasources/">Data
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/" title="How It Works">
+      <a href="https://logicmonitor.github.io/k8s-argus/getting-started/" title="Getting Started">
         <span class="direction">
           Previous
         </span>
@@ -393,7 +415,7 @@ This means that <a href="https://www.logicmonitor.com/support/datasources/">Data
           </div>
           <div class="stretch">
             <div class="title">
-              How It Works
+              Getting Started
             </div>
           </div>
         </div>
@@ -402,22 +424,6 @@ This means that <a href="https://www.logicmonitor.com/support/datasources/">Data
   </div>
 
   <div class="next">
-  
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/" title="Configuration">
-        <span class="direction">
-          Next
-        </span>
-        <div class="page">
-          <div class="stretch">
-            <div class="title">
-              Configuration
-            </div>
-          </div>
-          <div class="button button-next" role="button" aria-label="Next">
-            <i class="icon icon-forward"></i>
-          </div>
-        </div>
-      </a>
   
   </div>
 </nav>
