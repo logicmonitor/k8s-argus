@@ -44,7 +44,7 @@ Beyond the health and performance of your Kubernetes Cluster resources, you can
   DataSources usually apply based on property values, such as a
   system.categories or system.sysinfo value. For applications running in
   Kubernetes, the best option is to have Datasources apply based on labels.
-  Argus adds labels as resource properties (prepended with Kubernetes.label.),
+  Argus adds labels as resource properties (prepended with kubernetes.label.),
   and you can reference these labels in the Applies To field for any
   DataSources. For example, you may use a label app=shoppingcart, and have a
   DataSource that monitors shopping cart performance with an Applies To of
