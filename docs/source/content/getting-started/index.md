@@ -8,8 +8,8 @@ The simplest way to get started with Argus is to install it using [Helm]
 (https://github.com/kubernetes/helm). Prior to installation, you will need a
 cluster-admin serviceaccount for tiller:
 ```bash
-$ kubectl create serviceaccount tiller --namespace $NAMESPACE
-$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=$NAMESPACE:tiller
+$ kubectl create serviceaccount tiller --namespace kube-system
+$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 $ helm init --service-account=tiller
 ```
 
@@ -17,7 +17,6 @@ You'll also need to add the LogicMonitor chart repository:
 
 ```bash
 $ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
-"logicmonitor" has been added to your repositories
 ```
 
 Now you can install the LogicMonitor Collectorset controller:
@@ -31,10 +30,14 @@ $ helm upgrade \
   --set accessKey="$ACCESS_KEY" \
   --set account="$ACCOUNT" \
   --set clusterName="$CLUSTER_NAME" \
-  --set etcdDiscoveryToken="$ETCD_DISCOVERY_TOKEN" \
   --set imageTag="$IMAGE_TAG" \
   collectorset-controller logicmonitor/collectorset-controller
 ```
+
+See the [configuration page]
+(https://logicmonitor.github.io/k8s-argus/docs/configuration/) for a complete
+list of values the Collectorset Controller helm chart supports, and their
+descriptions.
 
 > Note: The Collectorset controller should be installed only once per cluster.
 
@@ -49,12 +52,14 @@ Next, install Argus:
     --set accessKey="$ACCESS_KEY" \
     --set account="$ACCOUNT" \
     --set clusterName="$CLUSTER_NAME" \
-    --set etcdDiscoveryToken="$ETCD_DISCOVERY_TOKEN" \
     --set imageTag="$IMAGE_TAG" \
     --set collector.replicas="$COLLECTOR_REPLICAS" \
     --set collector.size="$COLLECTOR_SIZE" \
     argus logicmonitor/argus
 ```
+See the [configuration page]
+(https://logicmonitor.github.io/k8s-argus/docs/configuration/) for a complete
+list of values the Argus helm chart supports, and their descriptions.
 
 > Note: Argus should be installed only once per cluster.
 
