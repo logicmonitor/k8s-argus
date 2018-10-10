@@ -346,7 +346,7 @@
 <p>The simplest way to get started with Argus is to install it using <a href="https://github.com/kubernetes/helm">Helm</a>. Prior to installation, you will need a
 cluster-admin serviceaccount for tiller:</p>
 
-<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace kube-system
+<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace=&quot;kube-system&quot;
 $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 $ helm init --service-account=tiller
 </code></pre>
