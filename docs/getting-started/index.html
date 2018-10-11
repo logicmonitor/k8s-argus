@@ -346,15 +346,14 @@
 <p>The simplest way to get started with Argus is to install it using <a href="https://github.com/kubernetes/helm">Helm</a>. Prior to installation, you will need a
 cluster-admin serviceaccount for tiller:</p>
 
-<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace $NAMESPACE
-$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=$NAMESPACE:tiller
+<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace=&quot;kube-system&quot;
+$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 $ helm init --service-account=tiller
 </code></pre>
 
 <p>You&rsquo;ll also need to add the LogicMonitor chart repository:</p>
 
 <pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
-&quot;logicmonitor&quot; has been added to your repositories
 </code></pre>
 
 <p>Now you can install the LogicMonitor Collectorset controller:</p>
@@ -367,10 +366,13 @@ $ helm init --service-account=tiller
   --set accessKey=&quot;$ACCESS_KEY&quot; \
   --set account=&quot;$ACCOUNT&quot; \
   --set clusterName=&quot;$CLUSTER_NAME&quot; \
-  --set etcdDiscoveryToken=&quot;$ETCD_DISCOVERY_TOKEN&quot; \
   --set imageTag=&quot;$IMAGE_TAG&quot; \
   collectorset-controller logicmonitor/collectorset-controller
 </code></pre>
+
+<p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a complete
+list of values the Collectorset Controller helm chart supports, and their
+descriptions.</p>
 
 <blockquote>
 <p>Note: The Collectorset controller should be installed only once per cluster.</p>
@@ -386,12 +388,14 @@ $ helm init --service-account=tiller
     --set accessKey=&quot;$ACCESS_KEY&quot; \
     --set account=&quot;$ACCOUNT&quot; \
     --set clusterName=&quot;$CLUSTER_NAME&quot; \
-    --set etcdDiscoveryToken=&quot;$ETCD_DISCOVERY_TOKEN&quot; \
     --set imageTag=&quot;$IMAGE_TAG&quot; \
     --set collector.replicas=&quot;$COLLECTOR_REPLICAS&quot; \
     --set collector.size=&quot;$COLLECTOR_SIZE&quot; \
     argus logicmonitor/argus
 </code></pre>
+
+<p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a complete
+list of values the Argus helm chart supports, and their descriptions.</p>
 
 <blockquote>
 <p>Note: Argus should be installed only once per cluster.</p>

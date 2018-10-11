@@ -340,9 +340,9 @@
 
 			
 
-<h1 id="configuring-the-collecorset-controller-via-the-helm-chart">Configuring the Collecorset Controller via the Helm Chart</h1>
+<h1 id="configuring-the-collectorset-controller-via-the-helm-chart">Configuring the Collectorset Controller via the Helm Chart</h1>
 
-<p>The Collectorset controller Helm chart supports the fololowing values:</p>
+<p>The Collectorset controller Helm chart supports the following values:</p>
 
 <p>Required Values:</p>
 
@@ -356,11 +356,14 @@
 <p>Optional Values:</p>
 
 <ul>
-<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC.</li>
-<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
+<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have
+RBAC enabled, this value should be set to false.</li>
+<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts
+to the cluster device group.</li>
 <li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong></li>
-<li><strong>imageRepository (default: <code>&quot;logicmonitor/collectorset-controller&quot;</code>):</strong> The respository to use for the collectorset-controller docker image.</li>
-<li><strong>imageTag:</strong> The collectorset-controller image tag to use.</li>
+<li><strong>imageRepository (default: <code>&quot;logicmonitor/collectorset-controller&quot;</code>):</strong> The
+respository to use for the collectorset-controller docker image.</li>
+<li><strong>imageTag:</strong> The collectorset-controller <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/">image tag</a> to use.</li>
 </ul>
 
 <h1 id="configuring-argus-via-the-helm-chart">Configuring Argus via the Helm Chart</h1>
@@ -375,29 +378,39 @@
 <li><strong>account:</strong> The LogicMonitor account name.</li>
 <li><strong>clusterName:</strong> A unique name given to the cluster&rsquo;s device group.</li>
 <li><strong>collector.replicas:</strong> The number of collectors to create and use with Argus.</li>
-<li><strong>collector.size:</strong> The collector size to install. Can be nano, small, medium, or large.</li>
+<li><strong>collector.size:</strong> The collector size to install. Can be nano, small, medium,
+or large.</li>
 </ul>
 
 <p>Optional Values:</p>
 
 <ul>
 <li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
-<li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from LogicMonitor or move the device to the <code>_delted</code> device group.</li>
+<li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from
+LogicMonitor or move the device to the <code>_delted</code> device group.</li>
 <li><strong>disableAlerting (default: <code>false</code>):</strong> Disable alerting for all devices added.</li>
-<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC.</li>
-<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
+<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have
+RBAC enabled, this value should be set to false.</li>
+<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts
+to the cluster device group.</li>
 <li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong></li>
-<li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The respository to use for the Argus docker image.</li>
-<li><strong>imageTag:</strong> The argus container image tag to use.</li>
+<li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The respository to use
+for the Argus docker image.</li>
+<li><strong>imageTag:</strong> The argus container <a href="https://hub.docker.com/r/logicmonitor/argus/tags/">image tag</a> to use.</li>
 </ul>
 
 <h1 id="configuring-argus-manually">Configuring Argus Manually</h1>
 
-<p>In most applications there are generally two types of configuration options available. Options that do not contain sensitive information, and options that do contain sensitive information. Argus retrieves its&rsquo; configuration from two different sources for each of these types.</p>
+<p>In most applications there are generally two types of configuration options
+available. Options that do not contain sensitive information, and options that
+do contain sensitive information. Argus retrieves its&rsquo; configuration from two
+different sources for each of these types.</p>
 
-<p>For non-sensitive configuration options, Arugs will read from a file on disk. For sensitive information, Arugs will read from environment variables.</p>
+<p>For non-sensitive configuration options, Argus will read from a file on disk.
+ For sensitive information, Argus will read from environment variables.</p>
 
-<p>To configure the non-sensitive information, create a YAML file located at <code>/etc/argus/config.yaml</code>. Here is an example file you can modify to your needs:</p>
+<p>To configure the non-sensitive information, create a YAML file located at
+<code>/etc/argus/config.yaml</code>. Here is an example file you can modify to your needs:</p>
 
 <pre><code class="language-yaml">cluster_name:
 debug: false
@@ -405,7 +418,8 @@ delete_devices: true
 disable_alerting: false
 </code></pre>
 
-<p>To configure the sensitive information, export the following environment variables:</p>
+<p>To configure the sensitive information, export the following environment
+variables:</p>
 
 <pre><code class="language-bash">ACCESS_ID
 ACCESS_KEY
