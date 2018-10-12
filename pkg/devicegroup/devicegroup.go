@@ -141,6 +141,22 @@ func Exists(parentID int32, name string, client *lm.DefaultApi) bool {
 	return false
 }
 
+// ExistsByID returns true if we could get the group by id
+func ExistsByID(groupID int32, client *lm.DefaultApi) bool {
+	restResponse, apiResponse, err := client.GetDeviceGroupById(groupID, "name,id")
+	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
+		log.Warnf("Failed to get device group (id=%v): %v", groupID, _err)
+	}
+
+	log.Debugf("%#v", restResponse)
+
+	if &restResponse.Data != nil && restResponse.Data.Id == groupID {
+		return true
+	}
+
+	return false
+}
+
 // DeleteSubGroup deletes a subgroup from a device group with the specified
 // name.
 func DeleteSubGroup(deviceGroup *lm.RestDeviceGroup, name string, client *lm.DefaultApi) error {

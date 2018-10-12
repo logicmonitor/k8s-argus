@@ -48,6 +48,7 @@ Next, install Argus:
     --set accessID="$ACCESS_ID" \
     --set accessKey="$ACCESS_KEY" \
     --set account="$ACCOUNT" \
+    --set clusterGroupID="$CLUSTER_GROUP_ID" \
     --set clusterName="$CLUSTER_NAME" \
     --set etcdDiscoveryToken="$ETCD_DISCOVERY_TOKEN" \
     --set imageTag="$IMAGE_TAG" \
