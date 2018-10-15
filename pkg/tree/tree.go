@@ -4,6 +4,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	log "github.com/sirupsen/logrus"
 )
 
 // DeviceTree manages the device tree representation of a Kubernetes cluster in LogicMonitor.
@@ -17,7 +18,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 	return []*devicegroup.Options{
 		{
 			Name:            constants.ClusterDeviceGroupPrefix + d.Config.ClusterName,
-			ParentID:        constants.RootDeviceGroupID,
+			ParentID:        d.Config.ClusterGroupID,
 			DisableAlerting: d.Config.DisableAlerting,
 			AppliesTo:       devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:          d.LMClient,
@@ -70,6 +71,9 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 
 // CreateDeviceTree creates the Device tree that will represent the cluster in LogicMonitor.
 func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
+	// create the parent cluster group first
+	d.checkAndUpdateClusterGroup()
+
 	deviceGroups := make(map[string]int32)
 	for _, opts := range d.buildOptsSlice() {
 		switch opts.Name {
@@ -90,4 +94,18 @@ func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 	}
 
 	return deviceGroups, nil
+}
+
+func (d *DeviceTree) checkAndUpdateClusterGroup() {
+	// do not need to check the root group
+	if d.Config.ClusterGroupID == constants.RootDeviceGroupID {
+		return
+	}
+
+	// if the group does not exist anymore, we will add the cluster to the root group
+	if !devicegroup.ExistsByID(d.Config.ClusterGroupID, d.LMClient) {
+		log.Warnf("The device group (id=%v) does not exist, the cluster will be added to the root group", d.Config.ClusterGroupID)
+		d.Config.ClusterGroupID = constants.RootDeviceGroupID
+	}
+	return
 }
