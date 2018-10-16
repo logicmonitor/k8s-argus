@@ -1,10 +1,11 @@
 package config
 
 import (
+	"io/ioutil"
+
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 // Config represents the application's configuration file.
@@ -12,11 +13,11 @@ type Config struct {
 	*Secrets
 	Address         string `yaml:"address"`
 	ClusterCategory string `yaml:"cluster_category"`
-	ClusterGroupID  int32  `yaml:"cluster_group_id"`
 	ClusterName     string `yaml:"cluster_name"`
 	Debug           bool   `yaml:"debug"`
 	DeleteDevices   bool   `yaml:"delete_devices"`
 	DisableAlerting bool   `yaml:"disable_alerting"`
+	ClusterGroupID  int32  `yaml:"cluster_group_id"`
 }
 
 // Secrets represents the application's sensitive configuration file.
