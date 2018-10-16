@@ -107,5 +107,4 @@ func (d *DeviceTree) checkAndUpdateClusterGroup() {
 		log.Warnf("The device group (id=%v) does not exist, the cluster will be added to the root group", d.Config.ClusterGroupID)
 		d.Config.ClusterGroupID = constants.RootDeviceGroupID
 	}
-	return
 }
