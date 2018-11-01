@@ -44,7 +44,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 		log.Debugf("received ADD event: %s", node.Name)
 
 		// Require an IP address.
-		if getInternalAddress(node.Status.Addresses) == nil {
+		if GetInternalAddress(node.Status.Addresses) == nil {
 			return
 		}
 		w.add(node)
@@ -61,8 +61,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 
 		// If the old node does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new device.
-		oldInternalAddress := getInternalAddress(old.Status.Addresses)
-		newInternalAddress := getInternalAddress(new.Status.Addresses)
+		oldInternalAddress := GetInternalAddress(old.Status.Addresses)
+		newInternalAddress := GetInternalAddress(new.Status.Addresses)
 		if oldInternalAddress == nil && newInternalAddress != nil {
 			w.add(new)
 			return
@@ -84,7 +84,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log.Debugf("received DELETE event: %s", node.Name)
 
 		// Delete the node.
-		internalAddress := getInternalAddress(node.Status.Addresses).Address
+		internalAddress := GetInternalAddress(node.Status.Addresses).Address
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByName(internalAddress); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
@@ -138,7 +138,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, node.Labels)
 
 	return []types.DeviceOption{
-		w.Name(getInternalAddress(node.Status.Addresses).Address),
+		w.Name(GetInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
 		w.DisplayName(node.Name),
 		w.SystemCategories(categories),
@@ -148,8 +148,8 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	}
 }
 
-// getInternalAddress finds the node's internal address.
-func getInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
+// GetInternalAddress finds the node's internal address.
+func GetInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
 	for _, address := range addresses {
 		if address.Type == v1.NodeInternalIP {
 			return &address

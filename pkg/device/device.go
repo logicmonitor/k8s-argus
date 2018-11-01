@@ -183,3 +183,13 @@ func find(field, name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
 
 	return nil, nil
 }
+
+// GetListByGroupID implements getting all the devices belongs to the group directly
+func (m *Manager) GetListByGroupID(groupID int32) ([]lm.RestDevice, error) {
+	restResponse, apiResponse, err := m.LMClient.GetImmediateDeviceListByDeviceGroupId(groupID, "id,name,displayName", -1, 0, "")
+	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
+		return nil, _err
+	}
+	log.Debugf("%#v", restResponse)
+	return restResponse.Data.Items, nil
+}

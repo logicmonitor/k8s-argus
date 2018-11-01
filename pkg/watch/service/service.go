@@ -79,7 +79,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the service.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByName(fmtServiceName(service)); err != nil {
+			if err := w.DeleteByName(FmtServiceName(service)); err != nil {
 				log.Errorf("Failed to delete service: %v", err)
 				return
 			}
@@ -100,34 +100,34 @@ func (w *Watcher) add(service *v1.Service) {
 		log.Errorf("Failed to add service %q: %v", service.Name, err)
 		return
 	}
-	log.Infof("Added service %q", fmtServiceName(service))
+	log.Infof("Added service %q", FmtServiceName(service))
 }
 
 func (w *Watcher) update(old, new *v1.Service) {
 	if _, err := w.UpdateAndReplaceByName(
-		fmtServiceName(old),
+		FmtServiceName(old),
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
-		log.Errorf("Failed to update service %q: %v", fmtServiceName(new), err)
+		log.Errorf("Failed to update service %q: %v", FmtServiceName(new), err)
 		return
 	}
 	log.Infof("Updated service %q", old.Name)
 }
 
 func (w *Watcher) move(service *v1.Service) {
-	if _, err := w.UpdateAndReplaceFieldByName(fmtServiceName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
-		log.Errorf("Failed to move service %q: %v", fmtServiceName(service), err)
+	if _, err := w.UpdateAndReplaceFieldByName(FmtServiceName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+		log.Errorf("Failed to move service %q: %v", FmtServiceName(service), err)
 		return
 	}
-	log.Infof("Moved service %q", fmtServiceName(service))
+	log.Infof("Moved service %q", FmtServiceName(service))
 }
 
 func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, service.Labels)
 	return []types.DeviceOption{
-		w.Name(fmtServiceName(service)),
+		w.Name(FmtServiceName(service)),
 		w.ResourceLabels(service.Labels),
-		w.DisplayName(fmtServiceDisplayName(service)),
+		w.DisplayName(FmtServiceDisplayName(service)),
 		w.SystemCategories(categories),
 		w.Auto("name", service.Name),
 		w.Auto("namespace", service.Namespace),
@@ -136,10 +136,12 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 	}
 }
 
-func fmtServiceName(service *v1.Service) string {
+// FmtServiceName implements the conversion for the service name
+func FmtServiceName(service *v1.Service) string {
 	return service.Name + "." + service.Namespace + ".svc"
 }
 
-func fmtServiceDisplayName(service *v1.Service) string {
-	return fmtServiceName(service) + "-" + string(service.UID)
+// FmtServiceDisplayName implements the conversion for the service display name
+func FmtServiceDisplayName(service *v1.Service) string {
+	return FmtServiceName(service) + "-" + string(service.UID)
 }

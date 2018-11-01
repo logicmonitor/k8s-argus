@@ -6,7 +6,9 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
+	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
+	"github.com/logicmonitor/k8s-argus/pkg/sync"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
@@ -15,6 +17,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	lm "github.com/logicmonitor/lm-sdk-go"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
@@ -75,6 +78,13 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 	deviceTree := &tree.DeviceTree{
 		Base: base,
 	}
+
+	// init sync with santaba to delete the non-exist resource devices
+	initSyncer := sync.InitSyncer{
+		DeviceManager: deviceManager,
+	}
+	initSyncer.InitSync()
+
 	deviceGroups, err := deviceTree.CreateDeviceTree()
 	if err != nil {
 		return nil, err
@@ -116,6 +126,9 @@ func NewBase(config *config.Config) (*types.Base, error) {
 	// LogicMonitor API client.
 	lmClient := newLMClient(config.ID, config.Key, config.Account)
 
+	// check and update the params
+	checkAndUpdateClusterGroup(config, lmClient)
+
 	// Kubernetes API client.
 	k8sClient, err := newK8sClient()
 	if err != nil {
@@ -148,5 +161,19 @@ func (a *Argus) Watch() {
 		)
 		stop := make(chan struct{})
 		go controller.Run(stop)
+	}
+}
+
+// check the cluster group ID, if the group does not exist, just use the root group
+func checkAndUpdateClusterGroup(config *config.Config, lmClient *lm.DefaultApi) {
+	// do not need to check the root group
+	if config.ClusterGroupID == constants.RootDeviceGroupID {
+		return
+	}
+
+	// if the group does not exist anymore, we will add the cluster to the root group
+	if !devicegroup.ExistsByID(config.ClusterGroupID, lmClient) {
+		log.Warnf("The device group (id=%v) does not exist, the cluster will be added to the root group", config.ClusterGroupID)
+		config.ClusterGroupID = constants.RootDeviceGroupID
 	}
 }
