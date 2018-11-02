@@ -8,7 +8,9 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -143,4 +145,19 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 	}
+}
+
+// GetPodsMap implements the getting pods map info from k8s
+func GetPodsMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+	podsMap := make(map[string]string)
+	podList, err := k8sClient.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	if err != nil || podList == nil {
+		return nil, err
+	}
+	for _, podInfo := range podList.Items {
+		// TODO: we should improve the value of the map to the ip of the pod when changing the name of the device to the ip
+		podsMap[podInfo.Name] = podInfo.Name
+	}
+
+	return podsMap, nil
 }

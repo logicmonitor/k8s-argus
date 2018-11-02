@@ -12,7 +12,9 @@ import (
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -44,7 +46,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 		log.Debugf("received ADD event: %s", node.Name)
 
 		// Require an IP address.
-		if GetInternalAddress(node.Status.Addresses) == nil {
+		if getInternalAddress(node.Status.Addresses) == nil {
 			return
 		}
 		w.add(node)
@@ -61,8 +63,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 
 		// If the old node does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new device.
-		oldInternalAddress := GetInternalAddress(old.Status.Addresses)
-		newInternalAddress := GetInternalAddress(new.Status.Addresses)
+		oldInternalAddress := getInternalAddress(old.Status.Addresses)
+		newInternalAddress := getInternalAddress(new.Status.Addresses)
 		if oldInternalAddress == nil && newInternalAddress != nil {
 			w.add(new)
 			return
@@ -84,7 +86,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log.Debugf("received DELETE event: %s", node.Name)
 
 		// Delete the node.
-		internalAddress := GetInternalAddress(node.Status.Addresses).Address
+		internalAddress := getInternalAddress(node.Status.Addresses).Address
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByName(internalAddress); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
@@ -138,7 +140,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, node.Labels)
 
 	return []types.DeviceOption{
-		w.Name(GetInternalAddress(node.Status.Addresses).Address),
+		w.Name(getInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
 		w.DisplayName(node.Name),
 		w.SystemCategories(categories),
@@ -148,8 +150,8 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	}
 }
 
-// GetInternalAddress finds the node's internal address.
-func GetInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
+// getInternalAddress finds the node's internal address.
+func getInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
 	for _, address := range addresses {
 		if address.Type == v1.NodeInternalIP {
 			return &address
@@ -190,4 +192,18 @@ func (w *Watcher) createRoleDeviceGroup(labels map[string]string) {
 	}
 
 	log.Printf("Added device group for node role %q", role)
+}
+
+// GetNodesMap implements the getting nodes map info from k8s
+func GetNodesMap(k8sClient *kubernetes.Clientset) (map[string]string, error) {
+	nodesMap := make(map[string]string)
+	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil || nodeList == nil {
+		return nil, err
+	}
+	for _, nodeInfo := range nodeList.Items {
+		nodesMap[nodeInfo.Name] = getInternalAddress(nodeInfo.Status.Addresses).Address
+	}
+
+	return nodesMap, nil
 }

@@ -79,7 +79,7 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 		Base: base,
 	}
 
-	// init sync with santaba to delete the non-exist resource devices
+	// init sync to delete the non-exist resource devices through logicmonitor API
 	initSyncer := sync.InitSyncer{
 		DeviceManager: deviceManager,
 	}

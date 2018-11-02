@@ -1,22 +1,24 @@
 package sync
 
 import (
+	"sync"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// InitSyncer implements the initial sync with Santaba
+// InitSyncer implements the initial sync through logicmonitor API
 type InitSyncer struct {
 	DeviceManager *device.Manager
 }
 
-// InitSync implements the initial sync with Santaba
+// InitSync implements the initial sync through logicmonitor API
 func (i *InitSyncer) InitSync() {
 	log.Infof("Start to sync the resource devices")
 	clusterName := i.DeviceManager.Base.Config.ClusterName
@@ -30,34 +32,45 @@ func (i *InitSyncer) InitSync() {
 	}
 
 	// get the node, pod, service info
-	if rest.SubGroups != nil {
-		c := make(chan string, 3)
-		syncNum := 0
+	if rest.SubGroups != nil && len(rest.SubGroups) != 0 {
+		wg := sync.WaitGroup{}
+		wg.Add(len(rest.SubGroups))
 		for _, subgroup := range rest.SubGroups {
 			switch subgroup.Name {
 			case constants.NodeDeviceGroupName:
-				go i.intSyncNodes(rest.Id, c)
-				syncNum++
+				go func() {
+					defer wg.Done()
+					i.intSyncNodes(rest.Id)
+					log.Infof("Finish syncing %v", constants.NodeDeviceGroupName)
+				}()
 			case constants.PodDeviceGroupName:
-				go i.initSyncPods(rest.Id, c)
-				syncNum++
+				go func() {
+					defer wg.Done()
+					i.initSyncPods(rest.Id)
+					log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
+				}()
 			case constants.ServiceDeviceGroupName:
-				go i.initSyncServices(rest.Id, c)
-				syncNum++
+				go func() {
+					defer wg.Done()
+					i.initSyncServices(rest.Id)
+					log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
+				}()
 			default:
-				log.Infof("Unsupported group to sync, ignore it: %v", subgroup.Name)
+				func() {
+					defer wg.Done()
+					log.Infof("Unsupported group to sync, ignore it: %v", subgroup.Name)
+				}()
+
 			}
 		}
 
-		for i := 0; i < syncNum; i++ {
-			log.Infof("Finish syncing %v", <-c)
-		}
+		// wait the init sync processes finishing
+		wg.Wait()
+		log.Infof("Finish syncing the resource devices")
 	}
 }
 
-func (i *InitSyncer) intSyncNodes(parentGroupID int32, c chan string) {
-	defer i.sendInfoToChan(constants.NodeDeviceGroupName, c)
-
+func (i *InitSyncer) intSyncNodes(parentGroupID int32) {
 	rest, err := devicegroup.Find(parentGroupID, constants.NodeDeviceGroupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Warnf("Failed to get the node group")
@@ -68,14 +81,10 @@ func (i *InitSyncer) intSyncNodes(parentGroupID int32, c chan string) {
 	}
 
 	//get node info from k8s
-	nodesMap := make(map[string]string)
-	nodeList, err := i.DeviceManager.K8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
-	if err != nil || nodeList == nil {
-		log.Warnf("Failed to get the nodes from k8s")
+	nodesMap, err := node.GetNodesMap(i.DeviceManager.K8sClient)
+	if err != nil || nodesMap == nil {
+		log.Warnf("Failed to get the nodes from k8s, err: %v", err)
 		return
-	}
-	for _, nodeInfo := range nodeList.Items {
-		nodesMap[nodeInfo.Name] = node.GetInternalAddress(nodeInfo.Status.Addresses).Address
 	}
 
 	for _, subGroup := range rest.SubGroups {
@@ -85,12 +94,9 @@ func (i *InitSyncer) intSyncNodes(parentGroupID int32, c chan string) {
 		}
 		i.syncDevices(constants.NodeDeviceGroupName, nodesMap, subGroup)
 	}
-
 }
 
-func (i *InitSyncer) initSyncPods(parentGroupID int32, c chan string) {
-	defer i.sendInfoToChan(constants.PodDeviceGroupName, c)
-
+func (i *InitSyncer) initSyncPods(parentGroupID int32) {
 	rest, err := devicegroup.Find(parentGroupID, constants.PodDeviceGroupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Warnf("Failed to get the pod group")
@@ -100,18 +106,13 @@ func (i *InitSyncer) initSyncPods(parentGroupID int32, c chan string) {
 		return
 	}
 
-	// loop every namesplace
+	// loop every namespace
 	for _, subGroup := range rest.SubGroups {
 		//get pod info from k8s
-		podsMap := make(map[string]string)
-		podList, err := i.DeviceManager.K8sClient.CoreV1().Pods(subGroup.Name).List(metav1.ListOptions{})
-		if err != nil || podList == nil {
-			log.Warnf("Failed to get the pods from k8s")
-			return
-		}
-		for _, podInfo := range podList.Items {
-			// TODO: we should improve the value of the map to the ip of the pod when changing the name of the device to the ip
-			podsMap[podInfo.Name] = podInfo.Name
+		podsMap, err := pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name)
+		if err != nil || podsMap == nil {
+			log.Warnf("Failed to get the pods from k8s, namespace: %v, err: %v", subGroup.Name, err)
+			continue
 		}
 
 		// get and check all the devices in the group
@@ -119,9 +120,7 @@ func (i *InitSyncer) initSyncPods(parentGroupID int32, c chan string) {
 	}
 }
 
-func (i *InitSyncer) initSyncServices(parentGroupID int32, c chan string) {
-	defer i.sendInfoToChan(constants.ServiceDeviceGroupName, c)
-
+func (i *InitSyncer) initSyncServices(parentGroupID int32) {
 	rest, err := devicegroup.Find(parentGroupID, constants.ServiceDeviceGroupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Warnf("Failed to get the pod group")
@@ -134,23 +133,15 @@ func (i *InitSyncer) initSyncServices(parentGroupID int32, c chan string) {
 	// loop every namesplace
 	for _, subGroup := range rest.SubGroups {
 		//get service info from k8s
-		servicesMap := make(map[string]string)
-		serviceList, err := i.DeviceManager.K8sClient.CoreV1().Services(subGroup.Name).List(metav1.ListOptions{})
-		if err != nil || serviceList == nil {
-			log.Warnf("Failed to get the services from k8s")
-			return
-		}
-		for _, serviceInfo := range serviceList.Items {
-			servicesMap[service.FmtServiceDisplayName(&serviceInfo)] = service.FmtServiceName(&serviceInfo)
+		servicesMap, err := service.GetServicesMap(i.DeviceManager.K8sClient, subGroup.Name)
+		if err != nil || servicesMap == nil {
+			log.Warnf("Failed to get the services from k8s, namespace: %v, err: %v", subGroup.Name, err)
+			continue
 		}
 
 		// get and check all the devices in the group
 		i.syncDevices(constants.ServiceDeviceGroupName, servicesMap, subGroup)
 	}
-}
-
-func (i *InitSyncer) sendInfoToChan(info string, c chan string) {
-	c <- info
 }
 
 func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]string, subGroup logicmonitor.GroupData) {

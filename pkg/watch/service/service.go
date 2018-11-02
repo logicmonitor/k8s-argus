@@ -8,7 +8,9 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -79,7 +81,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the service.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByName(FmtServiceName(service)); err != nil {
+			if err := w.DeleteByName(fmtServiceName(service)); err != nil {
 				log.Errorf("Failed to delete service: %v", err)
 				return
 			}
@@ -100,32 +102,32 @@ func (w *Watcher) add(service *v1.Service) {
 		log.Errorf("Failed to add service %q: %v", service.Name, err)
 		return
 	}
-	log.Infof("Added service %q", FmtServiceName(service))
+	log.Infof("Added service %q", fmtServiceName(service))
 }
 
 func (w *Watcher) update(old, new *v1.Service) {
 	if _, err := w.UpdateAndReplaceByName(
-		FmtServiceName(old),
+		fmtServiceName(old),
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
-		log.Errorf("Failed to update service %q: %v", FmtServiceName(new), err)
+		log.Errorf("Failed to update service %q: %v", fmtServiceName(new), err)
 		return
 	}
 	log.Infof("Updated service %q", old.Name)
 }
 
 func (w *Watcher) move(service *v1.Service) {
-	if _, err := w.UpdateAndReplaceFieldByName(FmtServiceName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
-		log.Errorf("Failed to move service %q: %v", FmtServiceName(service), err)
+	if _, err := w.UpdateAndReplaceFieldByName(fmtServiceName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+		log.Errorf("Failed to move service %q: %v", fmtServiceName(service), err)
 		return
 	}
-	log.Infof("Moved service %q", FmtServiceName(service))
+	log.Infof("Moved service %q", fmtServiceName(service))
 }
 
 func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, service.Labels)
 	return []types.DeviceOption{
-		w.Name(FmtServiceName(service)),
+		w.Name(fmtServiceName(service)),
 		w.ResourceLabels(service.Labels),
 		w.DisplayName(FmtServiceDisplayName(service)),
 		w.SystemCategories(categories),
@@ -136,12 +138,27 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 	}
 }
 
-// FmtServiceName implements the conversion for the service name
-func FmtServiceName(service *v1.Service) string {
+// fmtServiceName implements the conversion for the service name
+func fmtServiceName(service *v1.Service) string {
 	return service.Name + "." + service.Namespace + ".svc"
 }
 
 // FmtServiceDisplayName implements the conversion for the service display name
 func FmtServiceDisplayName(service *v1.Service) string {
-	return FmtServiceName(service) + "-" + string(service.UID)
+	return fmtServiceName(service) + "-" + string(service.UID)
+}
+
+// GetServicesMap implements the getting services map info from k8s
+func GetServicesMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+	servicesMap := make(map[string]string)
+	serviceList, err := k8sClient.CoreV1().Services(namespace).List(metav1.ListOptions{})
+	if err != nil || serviceList == nil {
+		log.Warnf("Failed to get the services from k8s")
+		return nil, err
+	}
+	for _, serviceInfo := range serviceList.Items {
+		servicesMap[FmtServiceDisplayName(&serviceInfo)] = fmtServiceName(&serviceInfo)
+	}
+
+	return servicesMap, nil
 }
