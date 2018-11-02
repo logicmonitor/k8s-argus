@@ -174,7 +174,7 @@ func (w *Watcher) createRoleDeviceGroup(labels map[string]string) {
 	opts := &devicegroup.Options{
 		ParentID:              w.DeviceGroups[constants.NodeDeviceGroupName],
 		Name:                  role,
-		DisableAlerting:       true,
+		DisableAlerting:       w.Config().DisableAlerting,
 		AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(label + "=").And().Auto("clustername").Equals(w.Config().ClusterName),
 		Client:                w.LMClient,
 		DeleteDevices:         w.Config().DeleteDevices,
