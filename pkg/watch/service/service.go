@@ -8,7 +8,9 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -127,7 +129,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 	return []types.DeviceOption{
 		w.Name(fmtServiceName(service)),
 		w.ResourceLabels(service.Labels),
-		w.DisplayName(fmtServiceDisplayName(service)),
+		w.DisplayName(FmtServiceDisplayName(service)),
 		w.SystemCategories(categories),
 		w.Auto("name", service.Name),
 		w.Auto("namespace", service.Namespace),
@@ -136,10 +138,27 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 	}
 }
 
+// fmtServiceName implements the conversion for the service name
 func fmtServiceName(service *v1.Service) string {
 	return service.Name + "." + service.Namespace + ".svc"
 }
 
-func fmtServiceDisplayName(service *v1.Service) string {
+// FmtServiceDisplayName implements the conversion for the service display name
+func FmtServiceDisplayName(service *v1.Service) string {
 	return fmtServiceName(service) + "-" + string(service.UID)
+}
+
+// GetServicesMap implements the getting services map info from k8s
+func GetServicesMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+	servicesMap := make(map[string]string)
+	serviceList, err := k8sClient.CoreV1().Services(namespace).List(metav1.ListOptions{})
+	if err != nil || serviceList == nil {
+		log.Warnf("Failed to get the services from k8s")
+		return nil, err
+	}
+	for _, serviceInfo := range serviceList.Items {
+		servicesMap[FmtServiceDisplayName(&serviceInfo)] = fmtServiceName(&serviceInfo)
+	}
+
+	return servicesMap, nil
 }
