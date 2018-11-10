@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-collectorset-controller/api"
-
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
+	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -25,7 +25,7 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	device := &lm.RestDevice{
 		CustomProperties: []lm.NameAndValue{
 			{
-				Name:  "auto.clustername",
+				Name:  constants.K8sClusterNamePropertyKey,
 				Value: c.ClusterName,
 			},
 		},
@@ -186,7 +186,7 @@ func find(field, name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
 
 // GetListByGroupID implements getting all the devices belongs to the group directly
 func (m *Manager) GetListByGroupID(groupID int32) ([]lm.RestDevice, error) {
-	restResponse, apiResponse, err := m.LMClient.GetImmediateDeviceListByDeviceGroupId(groupID, "id,name,displayName", -1, 0, "")
+	restResponse, apiResponse, err := m.LMClient.GetImmediateDeviceListByDeviceGroupId(groupID, "id,name,displayName,customProperties", -1, 0, "")
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
 		return nil, _err
 	}
