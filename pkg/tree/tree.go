@@ -49,9 +49,8 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 		},
 
 		{
-			Name: constants.ServiceDeviceGroupName,
-			// Services are a WIP in the product, disable alerting for now,
-			DisableAlerting:       true,
+			Name:                  constants.ServiceDeviceGroupName,
+			DisableAlerting:       d.Config.DisableAlerting,
 			AppliesTo:             devicegroup.NewAppliesToBuilder(),
 			Client:                d.LMClient,
 			DeleteDevices:         d.Config.DeleteDevices,
