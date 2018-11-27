@@ -22,7 +22,7 @@ LogicMonitor's API to provide real-time accuracy of a cluster's resources in
 LogicMonitor. Discovers etcd members, cluster Nodes, Services, and Pods, and
 automates the management of their lifecycle as
 [Resources](https://www.logicmonitor.com/support/devices/) in LogicMonitor.
--   **Comprehensive Metrics:** Dockerized LogicMonitor Collectors running in a
+-   **Comprehensive Monitoring:** Dockerized LogicMonitor Collectors running in a
 Stateful Set and managed by Argus collect data via the Kubernetes API for Nodes,
  Pods, Services, and Containers. Additionally, you can leverage LogicMonitor
  DataSources to monitor your applications running within the cluster.
