@@ -3,6 +3,7 @@
 package pod
 
 import (
+	"fmt"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -11,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	"strings"
 )
 
 const (
@@ -134,7 +136,7 @@ func (w *Watcher) move(pod *v1.Pod) {
 func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, pod.Labels)
 	return []types.DeviceOption{
-		w.Name(pod.Name),
+		w.Name(getPodDNSName(pod)),
 		w.ResourceLabels(pod.Labels),
 		w.DisplayName(pod.Name),
 		w.SystemCategories(categories),
@@ -145,6 +147,18 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 	}
+}
+
+func getPodDNSName(pod *v1.Pod) string {
+	// if the pod is configured as "hostnetwork=true", we will use the pod name as the IP/DNS name of the pod device
+	if pod.Spec.HostNetwork {
+		return pod.Name
+	}
+
+	// get the dns name as the format: "pod-ip-address.my-namespace.pod.cluster.local"
+	podIP := pod.Status.PodIP
+	podIP = strings.Replace(podIP, ".", "-", -1)
+	return fmt.Sprintf("%s.%s.pod.cluster.local", podIP, pod.Namespace)
 }
 
 // GetPodsMap implements the getting pods map info from k8s

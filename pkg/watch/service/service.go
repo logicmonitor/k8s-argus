@@ -3,6 +3,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -129,7 +130,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 	return []types.DeviceOption{
 		w.Name(fmtServiceName(service)),
 		w.ResourceLabels(service.Labels),
-		w.DisplayName(FmtServiceDisplayName(service)),
+		w.DisplayName(fmtServiceDisplayName(service)),
 		w.SystemCategories(categories),
 		w.Auto("name", service.Name),
 		w.Auto("namespace", service.Namespace),
@@ -140,12 +141,12 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 
 // fmtServiceName implements the conversion for the service name
 func fmtServiceName(service *v1.Service) string {
-	return service.Name + "." + service.Namespace + ".svc"
+	return fmt.Sprintf("%s.%s.svc.cluster.local", service.Name, service.Namespace)
 }
 
 // FmtServiceDisplayName implements the conversion for the service display name
-func FmtServiceDisplayName(service *v1.Service) string {
-	return fmtServiceName(service) + "-" + string(service.UID)
+func fmtServiceDisplayName(service *v1.Service) string {
+	return fmt.Sprintf("%s-%s", service.Name, string(service.UID))
 }
 
 // GetServicesMap implements the getting services map info from k8s
@@ -157,7 +158,7 @@ func GetServicesMap(k8sClient *kubernetes.Clientset, namespace string) (map[stri
 		return nil, err
 	}
 	for _, serviceInfo := range serviceList.Items {
-		servicesMap[FmtServiceDisplayName(&serviceInfo)] = fmtServiceName(&serviceInfo)
+		servicesMap[fmtServiceDisplayName(&serviceInfo)] = fmtServiceName(&serviceInfo)
 	}
 
 	return servicesMap, nil
