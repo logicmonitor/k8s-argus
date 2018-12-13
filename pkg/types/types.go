@@ -35,9 +35,6 @@ type DeviceManager interface {
 type DeviceMapper interface {
 	// Config returns the Argus config.
 	Config() *config.Config
-	// FindByName searches for a device by it's name. It will return a device if and only
-	// if one device was found, and return nil otherwise.
-	FindByName(string) (*lm.RestDevice, error)
 	// FindByDisplayName searches for a device by it's display name. It will return a device if and only if
 	// one device was found, and return nil otherwise.
 	FindByDisplayName(string) (*lm.RestDevice, error)
@@ -45,18 +42,18 @@ type DeviceMapper interface {
 	Add(...DeviceOption) (*lm.RestDevice, error)
 	// UpdateAndReplaceByID updates a device using the 'replace' OpType.
 	UpdateAndReplaceByID(int32, ...DeviceOption) (*lm.RestDevice, error)
-	// UpdateAndReplaceByName updates a device using the 'replace' OpType if and onlt if it does not already exist.
-	UpdateAndReplaceByName(string, ...DeviceOption) (*lm.RestDevice, error)
+	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
+	UpdateAndReplaceByDisplayName(string, ...DeviceOption) (*lm.RestDevice, error)
 	// UpdateAndReplaceFieldByID updates a device using the 'replace' OpType for a
 	// specific field of a device.
 	UpdateAndReplaceFieldByID(int32, string, ...DeviceOption) (*lm.RestDevice, error)
-	// UpdateAndReplaceFieldByName updates a device using the 'replace' OpType for a
+	// UpdateAndReplaceFieldByDisplayName updates a device using the 'replace' OpType for a
 	// specific field of a device.
-	UpdateAndReplaceFieldByName(string, string, ...DeviceOption) (*lm.RestDevice, error)
+	UpdateAndReplaceFieldByDisplayName(string, string, ...DeviceOption) (*lm.RestDevice, error)
 	// DeleteByID deletes a device by device ID.
 	DeleteByID(int32) error
-	// DeleteByName deletes a device by device name.
-	DeleteByName(string) error
+	// DeleteByDisplayName deletes a device by device display name.
+	DeleteByDisplayName(string) error
 }
 
 // DeviceOption is the function definition for the functional options pattern.

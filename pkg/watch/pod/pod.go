@@ -3,7 +3,6 @@
 package pod
 
 import (
-	"fmt"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -12,7 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"strings"
 )
 
 const (
@@ -65,7 +63,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		}
 
 		if new.Status.Phase == v1.PodSucceeded {
-			if err := w.DeleteByName(old.Name); err != nil {
+			if err := w.DeleteByDisplayName(old.Name); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
@@ -89,7 +87,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the pod.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByName(pod.Name); err != nil {
+			if err := w.DeleteByDisplayName(pod.Name); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
@@ -114,7 +112,7 @@ func (w *Watcher) add(pod *v1.Pod) {
 }
 
 func (w *Watcher) update(old, new *v1.Pod) {
-	if _, err := w.UpdateAndReplaceByName(
+	if _, err := w.UpdateAndReplaceByDisplayName(
 		old.Name,
 		w.args(new, constants.PodCategory)...,
 	); err != nil {
@@ -126,7 +124,7 @@ func (w *Watcher) update(old, new *v1.Pod) {
 
 // nolint: dupl
 func (w *Watcher) move(pod *v1.Pod) {
-	if _, err := w.UpdateAndReplaceFieldByName(pod.Name, constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(pod.Name, constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", pod.Name, err)
 		return
 	}
@@ -154,11 +152,7 @@ func getPodDNSName(pod *v1.Pod) string {
 	if pod.Spec.HostNetwork {
 		return pod.Name
 	}
-
-	// get the dns name as the format: "pod-ip-address.my-namespace.pod.cluster.local"
-	podIP := pod.Status.PodIP
-	podIP = strings.Replace(podIP, ".", "-", -1)
-	return fmt.Sprintf("%s.%s.pod.cluster.local", podIP, pod.Namespace)
+	return pod.Status.PodIP
 }
 
 // GetPodsMap implements the getting pods map info from k8s
@@ -170,7 +164,7 @@ func GetPodsMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]s
 	}
 	for _, podInfo := range podList.Items {
 		// TODO: we should improve the value of the map to the ip of the pod when changing the name of the device to the ip
-		podsMap[podInfo.Name] = podInfo.Name
+		podsMap[podInfo.Name] = getPodDNSName(&podInfo)
 	}
 
 	return podsMap, nil

@@ -48,11 +48,6 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	return device
 }
 
-// FindByName implements types.DeviceManager.
-func (m *Manager) FindByName(name string) (*lm.RestDevice, error) {
-	return find("name", name, m.LMClient)
-}
-
 // FindByDisplayName implements types.DeviceManager.
 func (m *Manager) FindByDisplayName(name string) (*lm.RestDevice, error) {
 	return find("displayName", name, m.LMClient)
@@ -86,9 +81,9 @@ func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) 
 	return &restResponse.Data, nil
 }
 
-// UpdateAndReplaceByName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByName(name string, options ...types.DeviceOption) (*lm.RestDevice, error) {
-	d, err := m.FindByName(name)
+// UpdateAndReplaceByDisplayName implements types.DeviceManager.
+func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.DeviceOption) (*lm.RestDevice, error) {
+	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return nil, err
 	}
@@ -121,9 +116,9 @@ func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...t
 	return &restResponse.Data, nil
 }
 
-// UpdateAndReplaceFieldByName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByName(name string, field string, options ...types.DeviceOption) (*lm.RestDevice, error) {
-	d, err := m.FindByName(name)
+// UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
+func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, options ...types.DeviceOption) (*lm.RestDevice, error) {
+	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return nil, err
 	}
@@ -148,9 +143,9 @@ func (m *Manager) DeleteByID(id int32) error {
 	return utilities.CheckAllErrors(restResponse, apiResponse, err)
 }
 
-// DeleteByName implements types.DeviceManager.
-func (m *Manager) DeleteByName(name string) error {
-	d, err := m.FindByName(name)
+// DeleteByDisplayName implements types.DeviceManager.
+func (m *Manager) DeleteByDisplayName(name string) error {
+	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return err
 	}

@@ -86,13 +86,12 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log.Debugf("received DELETE event: %s", node.Name)
 
 		// Delete the node.
-		internalAddress := getInternalAddress(node.Status.Addresses).Address
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByName(internalAddress); err != nil {
+			if err := w.DeleteByDisplayName(node.Name); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
 				return
 			}
-			log.Infof("Deleted node %s", internalAddress)
+			log.Infof("Deleted node %s", node.Name)
 			return
 		}
 
@@ -113,7 +112,7 @@ func (w *Watcher) add(node *v1.Node) {
 }
 
 func (w *Watcher) update(old, new *v1.Node) {
-	if _, err := w.UpdateAndReplaceByName(old.Name, w.args(new, constants.NodeCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceByDisplayName(old.Name, w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", new.Name, err)
 	} else {
 		log.Infof("Updated node %q", old.Name)
@@ -129,7 +128,7 @@ func (w *Watcher) update(old, new *v1.Node) {
 
 // nolint: dupl
 func (w *Watcher) move(node *v1.Node) {
-	if _, err := w.UpdateAndReplaceFieldByName(node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", node.Name, err)
 		return
 	}
