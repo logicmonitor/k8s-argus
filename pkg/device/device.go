@@ -31,6 +31,7 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 		},
 		DisableAlerting: c.DisableAlerting,
 		HostGroupIds:    "1",
+		DeviceType:      constants.K8sDeviceType,
 	}
 
 	for _, option := range options {
