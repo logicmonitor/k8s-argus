@@ -82,7 +82,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the service.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(service.Spec.ClusterIP); err != nil {
+			if err := w.DeleteByDisplayName(fmtServiceDisplayName(service)); err != nil {
 				log.Errorf("Failed to delete service: %v", err)
 				return
 			}
@@ -108,7 +108,7 @@ func (w *Watcher) add(service *v1.Service) {
 
 func (w *Watcher) update(old, new *v1.Service) {
 	if _, err := w.UpdateAndReplaceByDisplayName(
-		old.Spec.ClusterIP,
+		fmtServiceDisplayName(old),
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update service %q: %v", fmtServiceDisplayName(new), err)
@@ -118,7 +118,7 @@ func (w *Watcher) update(old, new *v1.Service) {
 }
 
 func (w *Watcher) move(service *v1.Service) {
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(service.Spec.ClusterIP, constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(fmtServiceDisplayName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", fmtServiceDisplayName(service), err)
 		return
 	}
@@ -141,7 +141,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 
 // FmtServiceDisplayName implements the conversion for the service display name
 func fmtServiceDisplayName(service *v1.Service) string {
-	return fmt.Sprintf("%s-%s", service.Name, string(service.UID))
+	return fmt.Sprintf("%s.%s.svc-%s", service.Name, service.Namespace, string(service.UID))
 }
 
 // GetServicesMap implements the getting services map info from k8s
