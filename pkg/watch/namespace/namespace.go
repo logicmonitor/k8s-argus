@@ -34,6 +34,7 @@ func (w Watcher) ObjType() runtime.Object {
 func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
+		log.Debugf("Handle adding namespace event: %s", namespace.Name)
 		for name, parentID := range w.DeviceGroups {
 			var appliesTo devicegroup.AppliesToBuilder
 			// Ensure that we are creating namespaces for namespaced resources.
@@ -62,7 +63,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 				return
 			}
 
-			log.Printf("Added namespace %q to %q", namespace.Name, name)
+			log.Infof("Added namespace %q to %q", namespace.Name, name)
 		}
 	}
 }
@@ -70,6 +71,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
+		log.Debugf("Ignore updating namespace event")
 		// oldNamespace := oldObj.(*v1.Namespace)
 		// newNamespace := newObj.(*v1.Namespace)
 	}
@@ -79,10 +81,12 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
+		log.Debugf("Handle deleting namespace event: %s", namespace.Name)
+
 		for name, parentID := range w.DeviceGroups {
 			deviceGroup, err := devicegroup.Find(parentID, name, w.LMClient)
 			if err != nil {
-				log.Printf("Failed to find namespace %s: %v", name, err)
+				log.Warnf("Failed to find namespace %s: %v", name, err)
 				return
 			}
 			// We should only be returned a device group if it is namespaced.

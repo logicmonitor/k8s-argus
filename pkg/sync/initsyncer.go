@@ -66,8 +66,8 @@ func (i *InitSyncer) InitSync() {
 
 		// wait the init sync processes finishing
 		wg.Wait()
-		log.Infof("Finish syncing the resource devices")
 	}
+	log.Infof("Finish syncing the resource devices")
 }
 
 func (i *InitSyncer) intSyncNodes(parentGroupID int32) {

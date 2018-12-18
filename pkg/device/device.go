@@ -40,9 +40,9 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 
 	reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
 	if err != nil {
-		log.Printf("Failed to get collector ID: %v", err)
+		log.Errorf("Failed to get collector ID: %v", err)
 	} else {
-		log.Printf("Using collector ID %d for %q", reply.Id, device.DisplayName)
+		log.Infof("Using collector ID %d for %q", reply.Id, device.DisplayName)
 		device.PreferredCollectorId = reply.Id
 	}
 
@@ -90,7 +90,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 	}
 
 	if d == nil {
-		log.Printf("Could not find device %q", name)
+		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
 
