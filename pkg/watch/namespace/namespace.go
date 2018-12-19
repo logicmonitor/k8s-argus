@@ -34,7 +34,7 @@ func (w Watcher) ObjType() runtime.Object {
 func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
-		log.Debugf("Handle adding namespace event: %s", namespace.Name)
+		log.Debugf("Handling add namespace event: %s", namespace.Name)
 		for name, parentID := range w.DeviceGroups {
 			var appliesTo devicegroup.AppliesToBuilder
 			// Ensure that we are creating namespaces for namespaced resources.
@@ -71,7 +71,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
-		log.Debugf("Ignore updating namespace event")
+		log.Debugf("Ignoring update namespace event")
 		// oldNamespace := oldObj.(*v1.Namespace)
 		// newNamespace := newObj.(*v1.Namespace)
 	}

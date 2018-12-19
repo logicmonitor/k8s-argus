@@ -113,7 +113,7 @@ func pollCollectorSetStatus(conn *grpc.ClientConn) (bool, error) {
 		case <-timeout:
 			return false, fmt.Errorf("Timeout waiting for collectors to become available")
 		case <-ticker.C:
-			log.Debugf("Start to check the collectors status")
+			log.Debugf("Checking collectors status")
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*500)
 			defer cancel()
 			req := &healthpb.HealthCheckRequest{
@@ -127,7 +127,7 @@ func pollCollectorSetStatus(conn *grpc.ClientConn) (bool, error) {
 			if healthCheckResponse.GetStatus() == healthpb.HealthCheckResponse_SERVING {
 				return true, nil
 			}
-			log.Debugf("The collectors is not ready: %d", healthCheckResponse.GetStatus())
+			log.Debugf("The collectors are not ready: %d", healthCheckResponse.GetStatus())
 		}
 	}
 }

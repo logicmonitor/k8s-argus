@@ -37,7 +37,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
 
-		log.Debugf("Handle adding pod event: %s", pod.Name)
+		log.Debugf("Handling add pod event: %s", pod.Name)
 
 		// Require an IP address.
 		if pod.Status.PodIP == "" {
@@ -53,7 +53,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Pod)
 		new := newObj.(*v1.Pod)
 
-		log.Debugf("Handle updating pod event: %s", old.Name)
+		log.Debugf("Handling update pod event: %s", old.Name)
 
 		// If the old pod does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
@@ -83,7 +83,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
 
-		log.Debugf("Handle deleting pod event: %s", pod.Name)
+		log.Debugf("Handling delete pod event: %s", pod.Name)
 
 		// Delete the pod.
 		if w.Config().DeleteDevices {
