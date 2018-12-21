@@ -12,7 +12,9 @@ import (
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -84,13 +86,12 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log.Debugf("received DELETE event: %s", node.Name)
 
 		// Delete the node.
-		internalAddress := getInternalAddress(node.Status.Addresses).Address
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByName(internalAddress); err != nil {
+			if err := w.DeleteByDisplayName(node.Name); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
 				return
 			}
-			log.Infof("Deleted node %s", internalAddress)
+			log.Infof("Deleted node %s", node.Name)
 			return
 		}
 
@@ -111,7 +112,7 @@ func (w *Watcher) add(node *v1.Node) {
 }
 
 func (w *Watcher) update(old, new *v1.Node) {
-	if _, err := w.UpdateAndReplaceByName(old.Name, w.args(new, constants.NodeCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceByDisplayName(old.Name, w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", new.Name, err)
 	} else {
 		log.Infof("Updated node %q", old.Name)
@@ -127,7 +128,7 @@ func (w *Watcher) update(old, new *v1.Node) {
 
 // nolint: dupl
 func (w *Watcher) move(node *v1.Node) {
-	if _, err := w.UpdateAndReplaceFieldByName(node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", node.Name, err)
 		return
 	}
@@ -174,7 +175,7 @@ func (w *Watcher) createRoleDeviceGroup(labels map[string]string) {
 	opts := &devicegroup.Options{
 		ParentID:              w.DeviceGroups[constants.NodeDeviceGroupName],
 		Name:                  role,
-		DisableAlerting:       true,
+		DisableAlerting:       w.Config().DisableAlerting,
 		AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(label + "=").And().Auto("clustername").Equals(w.Config().ClusterName),
 		Client:                w.LMClient,
 		DeleteDevices:         w.Config().DeleteDevices,
@@ -190,4 +191,18 @@ func (w *Watcher) createRoleDeviceGroup(labels map[string]string) {
 	}
 
 	log.Printf("Added device group for node role %q", role)
+}
+
+// GetNodesMap implements the getting nodes map info from k8s
+func GetNodesMap(k8sClient *kubernetes.Clientset) (map[string]string, error) {
+	nodesMap := make(map[string]string)
+	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil || nodeList == nil {
+		return nil, err
+	}
+	for _, nodeInfo := range nodeList.Items {
+		nodesMap[nodeInfo.Name] = getInternalAddress(nodeInfo.Status.Addresses).Address
+	}
+
+	return nodesMap, nil
 }

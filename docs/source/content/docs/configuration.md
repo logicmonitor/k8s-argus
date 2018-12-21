@@ -40,6 +40,7 @@ Required Values:
 - **accessID:** The LogicMonitor API key ID.
 - **accessKey:** The LogicMonitor API key.
 - **account:** The LogicMonitor account name.
+- **clusterGroupID:** A parent group id of the cluster's device group.
 - **clusterName:** A unique name given to the cluster's device group.
 - **collector.replicas:** The number of collectors to create and use with Argus.
 - **collector.size:** The collector size to install. Can be nano, small, medium,
@@ -74,6 +75,7 @@ To configure the non-sensitive information, create a YAML file located at
 `/etc/argus/config.yaml`. Here is an example file you can modify to your needs:
 
 ```yaml
+cluster_group_id:
 cluster_name:
 debug: false
 delete_devices: true

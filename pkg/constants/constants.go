@@ -74,3 +74,10 @@ const (
 	// Account is the environment variable name to lookup for the LogicMonitor account.
 	Account = "ARGUS_ACCOUNT"
 )
+
+const (
+	// K8sClusterNamePropertyKey is the key of the unique auto property kubernetes cluster name
+	K8sClusterNamePropertyKey = "auto.clustername"
+	// K8sDeviceType is the type value of the k8s device
+	K8sDeviceType = 8
+)

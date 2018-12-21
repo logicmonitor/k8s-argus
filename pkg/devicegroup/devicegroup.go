@@ -5,7 +5,6 @@ import (
 	"net/url"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
@@ -109,7 +108,7 @@ func Create(opts *Options) (int32, error) {
 // Find searches for a device group identified by the parent ID and name.
 func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGroup, error) {
 	filter := fmt.Sprintf("name:%s", url.QueryEscape(name))
-	restResponse, apiResponse, err := client.GetDeviceGroupList("name,id,parentId", -1, 0, filter)
+	restResponse, apiResponse, err := client.GetDeviceGroupList("name,id,parentId,subGroups", -1, 0, filter)
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
 		return nil, fmt.Errorf("Failed to get device group list when searching for %q: %v", name, _err)
 	}
@@ -138,6 +137,22 @@ func Exists(parentID int32, name string, client *lm.DefaultApi) bool {
 	if deviceGroup != nil {
 		return true
 	}
+	return false
+}
+
+// ExistsByID returns true if we could get the group by id
+func ExistsByID(groupID int32, client *lm.DefaultApi) bool {
+	restResponse, apiResponse, err := client.GetDeviceGroupById(groupID, "name,id")
+	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
+		log.Warnf("Failed to get device group (id=%v): %v", groupID, _err)
+	}
+
+	log.Debugf("%#v", restResponse)
+
+	if &restResponse.Data != nil && restResponse.Data.Id == groupID {
+		return true
+	}
+
 	return false
 }
 
