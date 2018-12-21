@@ -51,7 +51,17 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 
 // FindByDisplayName implements types.DeviceManager.
 func (m *Manager) FindByDisplayName(name string) (*lm.RestDevice, error) {
-	return find("displayName", name, m.LMClient)
+	filter := fmt.Sprintf("displayName:%s", name)
+	restResponse, apiResponse, err := m.LMClient.GetDeviceList("", -1, 0, filter)
+	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
+		return nil, _err
+	}
+	log.Debugf("%#v", restResponse)
+	if restResponse.Data.Total == 1 {
+		return &restResponse.Data.Items[0], nil
+	}
+
+	return nil, nil
 }
 
 // Add implements types.DeviceManager.
@@ -164,20 +174,6 @@ func (m *Manager) DeleteByDisplayName(name string) error {
 // Config implements types.DeviceManager.
 func (m *Manager) Config() *config.Config {
 	return m.Base.Config
-}
-
-func find(field, name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
-	filter := fmt.Sprintf("%s:%s", field, name)
-	restResponse, apiResponse, err := client.GetDeviceList("", -1, 0, filter)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, _err
-	}
-	log.Debugf("%#v", restResponse)
-	if restResponse.Data.Total == 1 {
-		return &restResponse.Data.Items[0], nil
-	}
-
-	return nil, nil
 }
 
 // GetListByGroupID implements getting all the devices belongs to the group directly
