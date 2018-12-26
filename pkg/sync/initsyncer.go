@@ -46,13 +46,13 @@ func (i *InitSyncer) InitSync() {
 			case constants.PodDeviceGroupName:
 				go func() {
 					defer wg.Done()
-					i.initSyncPods(rest.Id)
+					i.initSyncPodsOrServices(constants.PodDeviceGroupName, rest.Id)
 					log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
 				}()
 			case constants.ServiceDeviceGroupName:
 				go func() {
 					defer wg.Done()
-					i.initSyncServices(rest.Id)
+					i.initSyncPodsOrServices(constants.ServiceDeviceGroupName, rest.Id)
 					log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
 				}()
 			default:
@@ -96,10 +96,10 @@ func (i *InitSyncer) intSyncNodes(parentGroupID int32) {
 	}
 }
 
-func (i *InitSyncer) initSyncPods(parentGroupID int32) {
-	rest, err := devicegroup.Find(parentGroupID, constants.PodDeviceGroupName, i.DeviceManager.LMClient)
+func (i *InitSyncer) initSyncPodsOrServices(deviceType string, parentGroupID int32) {
+	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
-		log.Warnf("Failed to get the pod group")
+		log.Warnf("Failed to get the %s group", deviceType)
 		return
 	}
 	if rest.SubGroups == nil {
@@ -108,39 +108,22 @@ func (i *InitSyncer) initSyncPods(parentGroupID int32) {
 
 	// loop every namespace
 	for _, subGroup := range rest.SubGroups {
-		//get pod info from k8s
-		podsMap, err := pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name)
-		if err != nil || podsMap == nil {
-			log.Warnf("Failed to get the pods from k8s, namespace: %v, err: %v", subGroup.Name, err)
+		//get pod/service info from k8s
+		var deviceMap map[string]string
+		if deviceType == constants.PodDeviceGroupName {
+			deviceMap, err = pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name)
+		} else if deviceType == constants.ServiceDeviceGroupName {
+			deviceMap, err = service.GetServicesMap(i.DeviceManager.K8sClient, subGroup.Name)
+		} else {
+			return
+		}
+		if err != nil || deviceMap == nil {
+			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)
 			continue
 		}
 
 		// get and check all the devices in the group
-		i.syncDevices(constants.PodDeviceGroupName, podsMap, subGroup)
-	}
-}
-
-func (i *InitSyncer) initSyncServices(parentGroupID int32) {
-	rest, err := devicegroup.Find(parentGroupID, constants.ServiceDeviceGroupName, i.DeviceManager.LMClient)
-	if err != nil || rest == nil {
-		log.Warnf("Failed to get the pod group")
-		return
-	}
-	if rest.SubGroups == nil {
-		return
-	}
-
-	// loop every namesplace
-	for _, subGroup := range rest.SubGroups {
-		//get service info from k8s
-		servicesMap, err := service.GetServicesMap(i.DeviceManager.K8sClient, subGroup.Name)
-		if err != nil || servicesMap == nil {
-			log.Warnf("Failed to get the services from k8s, namespace: %v, err: %v", subGroup.Name, err)
-			continue
-		}
-
-		// get and check all the devices in the group
-		i.syncDevices(constants.ServiceDeviceGroupName, servicesMap, subGroup)
+		i.syncDevices(deviceType, deviceMap, subGroup)
 	}
 }
 
