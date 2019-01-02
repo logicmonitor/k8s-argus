@@ -206,17 +206,3 @@ func GetNodesMap(k8sClient *kubernetes.Clientset) (map[string]string, error) {
 
 	return nodesMap, nil
 }
-
-// GetNodesMap implements the getting nodes map info from k8s
-func GetNodesMap(k8sClient *kubernetes.Clientset) (map[string]string, error) {
-	nodesMap := make(map[string]string)
-	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
-	if err != nil || nodeList == nil {
-		return nil, err
-	}
-	for _, nodeInfo := range nodeList.Items {
-		nodesMap[nodeInfo.Name] = getInternalAddress(nodeInfo.Status.Addresses).Address
-	}
-
-	return nodesMap, nil
-}
