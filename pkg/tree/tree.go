@@ -17,7 +17,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 	return []*devicegroup.Options{
 		{
 			Name:            constants.ClusterDeviceGroupPrefix + d.Config.ClusterName,
-			ParentID:        constants.RootDeviceGroupID,
+			ParentID:        d.Config.ClusterGroupID,
 			DisableAlerting: d.Config.DisableAlerting,
 			AppliesTo:       devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:          d.LMClient,
@@ -49,9 +49,8 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 		},
 
 		{
-			Name: constants.ServiceDeviceGroupName,
-			// Services are a WIP in the product, disable alerting for now,
-			DisableAlerting:       true,
+			Name:                  constants.ServiceDeviceGroupName,
+			DisableAlerting:       d.Config.DisableAlerting,
 			AppliesTo:             devicegroup.NewAppliesToBuilder(),
 			Client:                d.LMClient,
 			DeleteDevices:         d.Config.DeleteDevices,
@@ -70,6 +69,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 
 // CreateDeviceTree creates the Device tree that will represent the cluster in LogicMonitor.
 func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
+
 	deviceGroups := make(map[string]int32)
 	for _, opts := range d.buildOptsSlice() {
 		switch opts.Name {
