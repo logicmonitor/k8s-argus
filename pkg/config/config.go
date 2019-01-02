@@ -5,7 +5,7 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 // Config represents the application's configuration file.
@@ -17,6 +17,7 @@ type Config struct {
 	Debug           bool   `yaml:"debug"`
 	DeleteDevices   bool   `yaml:"delete_devices"`
 	DisableAlerting bool   `yaml:"disable_alerting"`
+	ClusterGroupID  int32  `yaml:"cluster_group_id"`
 }
 
 // Secrets represents the application's sensitive configuration file.

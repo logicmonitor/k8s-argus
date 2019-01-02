@@ -51,6 +51,7 @@ Next, install Argus:
     --set accessID="$ACCESS_ID" \
     --set accessKey="$ACCESS_KEY" \
     --set account="$ACCOUNT" \
+    --set clusterGroupID="$CLUSTER_GROUP_ID" \
     --set clusterName="$CLUSTER_NAME" \
     --set imageTag="$IMAGE_TAG" \
     --set collector.replicas="$COLLECTOR_REPLICAS" \

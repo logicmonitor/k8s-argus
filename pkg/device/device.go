@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-collectorset-controller/api"
-
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
+	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -25,12 +25,13 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	device := &lm.RestDevice{
 		CustomProperties: []lm.NameAndValue{
 			{
-				Name:  "auto.clustername",
+				Name:  constants.K8sClusterNamePropertyKey,
 				Value: c.ClusterName,
 			},
 		},
 		DisableAlerting: c.DisableAlerting,
 		HostGroupIds:    "1",
+		DeviceType:      constants.K8sDeviceType,
 	}
 
 	for _, option := range options {
@@ -39,23 +40,28 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 
 	reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
 	if err != nil {
-		log.Printf("Failed to get collector ID: %v", err)
+		log.Errorf("Failed to get collector ID: %v", err)
 	} else {
-		log.Printf("Using collector ID %d for %q", reply.Id, device.DisplayName)
+		log.Infof("Using collector ID %d for %q", reply.Id, device.DisplayName)
 		device.PreferredCollectorId = reply.Id
 	}
 
 	return device
 }
 
-// FindByName implements types.DeviceManager.
-func (m *Manager) FindByName(name string) (*lm.RestDevice, error) {
-	return find("name", name, m.LMClient)
-}
-
 // FindByDisplayName implements types.DeviceManager.
 func (m *Manager) FindByDisplayName(name string) (*lm.RestDevice, error) {
-	return find("displayName", name, m.LMClient)
+	filter := fmt.Sprintf("displayName:%s", name)
+	restResponse, apiResponse, err := m.LMClient.GetDeviceList("", -1, 0, filter)
+	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
+		return nil, _err
+	}
+	log.Debugf("%#v", restResponse)
+	if restResponse.Data.Total == 1 {
+		return &restResponse.Data.Items[0], nil
+	}
+
+	return nil, nil
 }
 
 // Add implements types.DeviceManager.
@@ -86,15 +92,15 @@ func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) 
 	return &restResponse.Data, nil
 }
 
-// UpdateAndReplaceByName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByName(name string, options ...types.DeviceOption) (*lm.RestDevice, error) {
-	d, err := m.FindByName(name)
+// UpdateAndReplaceByDisplayName implements types.DeviceManager.
+func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.DeviceOption) (*lm.RestDevice, error) {
+	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return nil, err
 	}
 
 	if d == nil {
-		log.Printf("Could not find device %q", name)
+		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
 
@@ -121,9 +127,9 @@ func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...t
 	return &restResponse.Data, nil
 }
 
-// UpdateAndReplaceFieldByName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByName(name string, field string, options ...types.DeviceOption) (*lm.RestDevice, error) {
-	d, err := m.FindByName(name)
+// UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
+func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, options ...types.DeviceOption) (*lm.RestDevice, error) {
+	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return nil, err
 	}
@@ -148,9 +154,9 @@ func (m *Manager) DeleteByID(id int32) error {
 	return utilities.CheckAllErrors(restResponse, apiResponse, err)
 }
 
-// DeleteByName implements types.DeviceManager.
-func (m *Manager) DeleteByName(name string) error {
-	d, err := m.FindByName(name)
+// DeleteByDisplayName implements types.DeviceManager.
+func (m *Manager) DeleteByDisplayName(name string) error {
+	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return err
 	}
@@ -170,16 +176,12 @@ func (m *Manager) Config() *config.Config {
 	return m.Base.Config
 }
 
-func find(field, name string, client *lm.DefaultApi) (*lm.RestDevice, error) {
-	filter := fmt.Sprintf("%s:%s", field, name)
-	restResponse, apiResponse, err := client.GetDeviceList("", -1, 0, filter)
+// GetListByGroupID implements getting all the devices belongs to the group directly
+func (m *Manager) GetListByGroupID(groupID int32) ([]lm.RestDevice, error) {
+	restResponse, apiResponse, err := m.LMClient.GetImmediateDeviceListByDeviceGroupId(groupID, "id,name,displayName,customProperties", -1, 0, "")
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
 		return nil, _err
 	}
 	log.Debugf("%#v", restResponse)
-	if restResponse.Data.Total == 1 {
-		return &restResponse.Data.Items[0], nil
-	}
-
-	return nil, nil
+	return restResponse.Data.Items, nil
 }
