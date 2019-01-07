@@ -12,8 +12,6 @@
   <a href="https://github.com/logicmonitor/k8s-argus/releases/latest"><img alt="GitHub (pre-)release" src="https://img.shields.io/github/release/logicmonitor/argus/all.svg?style=flat-square"></a>
 </p>
 
-> **Note:** Argus is currently in beta.
-
 **Argus** is a tool for monitoring Kubernetes with
 [LogicMonitor](https://www.logicmonitor.com). Some of the key features of Argus
 are:
