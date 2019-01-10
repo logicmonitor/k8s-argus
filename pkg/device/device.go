@@ -61,7 +61,7 @@ func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevi
 
 	// the device which is not changed will be ignored
 	if device.Name == oldDevice.Name {
-		log.Infof("the device (%s) does not change, ignore the updating", device.DisplayName)
+		log.Infof("No changes to device (%s). Ignoring update", device.DisplayName)
 		return device, nil
 	}
 
@@ -75,7 +75,7 @@ func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevi
 		}
 	}
 	if oldClusterName != m.Config().ClusterName {
-		log.Infof("the device (%s) belongs to the other cluster %s, ignore the updating", device.DisplayName, oldClusterName)
+		log.Infof("Device (%s) belongs to a different cluster (%s). Ignoring update", device.DisplayName, oldClusterName)
 		return device, nil
 	}
 
