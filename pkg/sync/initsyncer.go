@@ -150,8 +150,8 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 			continue
 		}
 
-		name, exist := resourcesMap[device.DisplayName]
-		if !exist || name != device.Name {
+		_, exist := resourcesMap[device.DisplayName]
+		if !exist {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, device.DisplayName)
 			err := i.DeviceManager.DeleteByID(device.Id)
 			if err != nil {

@@ -49,6 +49,55 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	return device
 }
 
+// checkAndUpdateExistDevice tries to find and update the devices which needs to be changed
+func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevice, error) {
+	oldDevice, err := m.FindByDisplayName(device.DisplayName)
+	if err != nil {
+		return nil, err
+	}
+	if oldDevice == nil {
+		return nil, fmt.Errorf("can not find the device: %s", device.DisplayName)
+	}
+
+	// the device which is not changed will be ignored
+	if device.Name == oldDevice.Name {
+		log.Infof("No changes to device (%s). Ignoring update", device.DisplayName)
+		return device, nil
+	}
+
+	// the device of the other cluster will be ignored
+	oldClusterName := ""
+	if oldDevice.CustomProperties != nil && len(oldDevice.CustomProperties) > 0 {
+		for _, cp := range oldDevice.CustomProperties {
+			if cp.Name == constants.K8sClusterNamePropertyKey {
+				oldClusterName = cp.Value
+			}
+		}
+	}
+	if oldClusterName != m.Config().ClusterName {
+		log.Infof("Device (%s) belongs to a different cluster (%s). Ignoring update", device.DisplayName, oldClusterName)
+		return device, nil
+	}
+
+	newDevice, err := m.updateAndReplace(oldDevice.Id, device)
+	if err != nil {
+		return nil, err
+	}
+	log.Infof("Finished updating the device: %s", newDevice.DisplayName)
+	return newDevice, nil
+}
+
+func (m *Manager) updateAndReplace(id int32, device *lm.RestDevice) (*lm.RestDevice, error) {
+
+	restResponse, apiResponse, err := m.LMClient.UpdateDevice(*device, id, "replace")
+	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
+		return nil, _err
+	}
+	log.Debugf("%#v", restResponse)
+
+	return &restResponse.Data, nil
+}
+
 // FindByDisplayName implements types.DeviceManager.
 func (m *Manager) FindByDisplayName(name string) (*lm.RestDevice, error) {
 	filter := fmt.Sprintf("displayName:%s", name)
@@ -71,6 +120,15 @@ func (m *Manager) Add(options ...types.DeviceOption) (*lm.RestDevice, error) {
 
 	restResponse, apiResponse, err := m.LMClient.AddDevice(*device, false)
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
+		if restResponse != nil && restResponse.Status == 600 {
+			log.Infof("Check and Update the existing device: %s", device.DisplayName)
+			newDevice, err := m.checkAndUpdateExistDevice(device)
+			if err != nil {
+				return nil, err
+			}
+			return newDevice, nil
+		}
+
 		return nil, _err
 	}
 	log.Debugf("%#v", restResponse)
@@ -83,13 +141,7 @@ func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) 
 	device := buildDevice(m.Config(), m.ControllerClient, options...)
 	log.Debugf("%#v", device)
 
-	restResponse, apiResponse, err := m.LMClient.UpdateDevice(*device, id, "replace")
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, _err
-	}
-	log.Debugf("%#v", restResponse)
-
-	return &restResponse.Data, nil
+	return m.updateAndReplace(id, device)
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
