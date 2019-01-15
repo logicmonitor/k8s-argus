@@ -37,10 +37,10 @@ Device Groups Argus has an opinionated way of representing a cluster in the Logi
       <pubDate>Wed, 16 Aug 2017 17:54:55 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/docs/configuration/</guid>
-      <description>Configuring the Collecorset Controller via the Helm Chart The Collectorset controller Helm chart supports the fololowing values:
+      <description>Configuring the Collectorset Controller via the Helm Chart The Collectorset controller Helm chart supports the following values:
 Required Values:
  accessID: The LogicMonitor API key ID. accessKey: The LogicMonitor API key. account: The LogicMonitor account name. clusterName: A unique name given to the cluster&amp;rsquo;s device group.  Optional Values:
- enableRBAC (default: true): Enable RBAC. etcdDiscoveryToken: The public etcd discovery token used to add etcd hosts to the cluster device group.</description>
+ enableRBAC (default: true): Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</description>
     </item>
     
     <item>

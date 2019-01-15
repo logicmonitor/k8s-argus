@@ -17,9 +17,7 @@
       <pubDate>Sat, 12 Aug 2017 17:16:07 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/argus/</guid>
-      <description>Warning
-Argus is a community driven project in an alpha state. LogicMonitor support will not be able to assist with any issues related to Argus.
- Argus is a tool that helps users of LogicMonitor keep up with the highly dynamic topology of a Kubernetes cluster.</description>
+      <description>Argus is a tool that helps users of LogicMonitor keep up with the highly dynamic nature of a Kubernetes cluster. Argus runs as a Pod in your cluster, and uses LogicMonitor&amp;rsquo;s API to add Nodes, Pods, and Services into monitoring. Once in monitoring, data collection starts automatically. Data is collected for Nodes, Pods, Containers, and Services via the Kubernetes API. Additionally, you can leverage LogicMonitor DataSources to monitor your applications running within the cluster.</description>
     </item>
     
   </channel>

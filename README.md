@@ -12,12 +12,18 @@
   <a href="https://github.com/logicmonitor/k8s-argus/releases/latest"><img alt="GitHub (pre-)release" src="https://img.shields.io/github/release/logicmonitor/argus/all.svg?style=flat-square"></a>
 </p>
 
-> **Note:** Argus is a community driven project in an alpha state. LogicMonitor support will not be able to assist with any issues related to Argus.
-
-**Argus** is a tool for monitoring Kubernetes with [LogicMonitor](https://www.logicmonitor.com). Some of the key features of Argus are:
--   **Automated Device Group Management:** Leverages Kubernetes events to provide real-time accuracy of a cluster's resources in LogicMonitor, and organizes them by resource type and namespace in the [Device Tree](https://www.logicmonitor.com/support/devices/devices-page-overview/navigating-devices/).
--   **Automated Device Management:** Discovers etcd members, cluster nodes, services, and pods, and automates the management of their lifecycle as [Devices](https://www.logicmonitor.com/support/devices/) in LogicMonitor.
--   **Automated Device Property Management:** Discovers Kubernetes resource metadata and maps them to [Device Properties](https://www.logicmonitor.com/support/devices/adding-managing-devices/device-properties/).
+**Argus** is a tool for monitoring Kubernetes with
+[LogicMonitor](https://www.logicmonitor.com). Some of the key features of Argus
+are:
+-   **Automated Resource Discovery:** Leverages Kubernetes events and
+LogicMonitor's API to provide real-time accuracy of a cluster's resources in
+LogicMonitor. Discovers etcd members, cluster Nodes, Services, and Pods, and
+automates the management of their lifecycle as
+[Resources](https://www.logicmonitor.com/support/devices/) in LogicMonitor.
+-   **Comprehensive Monitoring:** Dockerized LogicMonitor Collectors running in a
+Stateful Set and managed by Argus collect data via the Kubernetes API for Nodes,
+ Pods, Services, and Containers. Additionally, you can leverage LogicMonitor
+ DataSources to monitor your applications running within the cluster.
 
 See the [documentation](https://logicmonitor.github.io/k8s-argus) to discover more about Argus.
 
