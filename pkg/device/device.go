@@ -122,7 +122,7 @@ func (m *Manager) Add(options ...types.DeviceOption) (*lm.RestDevice, error) {
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
 		if restResponse != nil && restResponse.Status == 600 {
 			log.Infof("Check and Update the existing device: %s", device.DisplayName)
-			newDevice, err := m.checkAndUpdateExistDevice(device)
+			newDevice, err := m.checkAndUpdateExistingDevice(device)
 			if err != nil {
 				return nil, err
 			}
