@@ -49,8 +49,8 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	return device
 }
 
-// checkAndUpdateExistDevice tries to find and update the devices which needs to be changed
-func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevice, error) {
+// checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
+func (m *Manager) checkAndUpdateExistingDevice(device *lm.RestDevice) (*lm.RestDevice, error) {
 	oldDevice, err := m.FindByDisplayName(device.DisplayName)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (m *Manager) Add(options ...types.DeviceOption) (*lm.RestDevice, error) {
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
 		if restResponse != nil && restResponse.Status == 600 {
 			log.Infof("Check and Update the existing device: %s", device.DisplayName)
-			newDevice, err := m.checkAndUpdateExistDevice(device)
+			newDevice, err := m.checkAndUpdateExistingDevice(device)
 			if err != nil {
 				return nil, err
 			}
