@@ -151,13 +151,17 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 
 // getInternalAddress finds the node's internal address.
 func getInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
+	var hostname v1.NodeAddress
 	for _, address := range addresses {
 		if address.Type == v1.NodeInternalIP {
 			return &address
 		}
+		if address.Type == v1.NodeHostName {
+			hostname = address
+		}
 	}
-
-	return nil
+	//if there is no internal IP for this node, the host name will be used
+	return &hostname
 }
 
 func (w *Watcher) createRoleDeviceGroup(labels map[string]string) {
@@ -201,7 +205,11 @@ func GetNodesMap(k8sClient *kubernetes.Clientset) (map[string]string, error) {
 		return nil, err
 	}
 	for _, nodeInfo := range nodeList.Items {
-		nodesMap[nodeInfo.Name] = getInternalAddress(nodeInfo.Status.Addresses).Address
+		address := getInternalAddress(nodeInfo.Status.Addresses)
+		if address == nil {
+			continue
+		}
+		nodesMap[nodeInfo.Name] = address.Address
 	}
 
 	return nodesMap, nil

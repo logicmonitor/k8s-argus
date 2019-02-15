@@ -133,7 +133,7 @@ func (w *Watcher) move(pod *v1.Pod) {
 
 func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, pod.Labels)
-	return []types.DeviceOption{
+	options := []types.DeviceOption{
 		w.Name(getPodDNSName(pod)),
 		w.ResourceLabels(pod.Labels),
 		w.DisplayName(pod.Name),
@@ -145,6 +145,10 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 	}
+	if pod.Spec.HostNetwork {
+		options = append(options, w.Custom("kubernetes.pod.hostNetwork", "true"))
+	}
+	return options
 }
 
 func getPodDNSName(pod *v1.Pod) string {
