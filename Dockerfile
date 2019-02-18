@@ -1,10 +1,10 @@
-FROM golang:1.9 as build
+FROM golang:1.11 as build
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
 ARG VERSION
 COPY ./ ./
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /argus -ldflags "-X \"github.com/logicmonitor/k8s-argus/pkg/constants.Version=${VERSION}\""
 
-FROM golang:1.9 as test
+FROM golang:1.11 as test
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
 RUN go get -u github.com/alecthomas/gometalinter
 RUN gometalinter --install

@@ -1,8 +1,9 @@
 package node
 
 import (
-	"k8s.io/api/core/v1"
 	"testing"
+
+	"k8s.io/api/core/v1"
 )
 
 func TestGetInternalAddress(t *testing.T) {
