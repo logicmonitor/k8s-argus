@@ -63,6 +63,11 @@ func (b *Builder) System(name, value string) types.DeviceOption {
 	return setProperty("system."+name, value)
 }
 
+// Custom implements types.DeviceBuilder.
+func (b *Builder) Custom(name, value string) types.DeviceOption {
+	return setProperty(name, value)
+}
+
 func setProperty(name, value string) types.DeviceOption {
 	return func(device *lm.RestDevice) {
 		if value != "" {
