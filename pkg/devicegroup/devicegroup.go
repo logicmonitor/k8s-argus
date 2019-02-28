@@ -110,7 +110,7 @@ func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGro
 	filter := fmt.Sprintf("name:%s", url.QueryEscape(name))
 	restResponse, apiResponse, err := client.GetDeviceGroupList("name,id,parentId,subGroups", -1, 0, filter)
 	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, fmt.Errorf("Failed to get device group list when searching for %q: %v", name, _err)
+		return nil, fmt.Errorf("failed to get device group list when searching for %q: %v", name, _err)
 	}
 
 	log.Debugf("%#v", restResponse)
@@ -179,7 +179,7 @@ func create(name, appliesTo string, disableAlerting bool, parentID int32, client
 		DisableAlerting: disableAlerting,
 	})
 	if e := utilities.CheckAllErrors(restResponse, apiResponse, err); e != nil {
-		return nil, fmt.Errorf("Failed to add device group %q: %v", name, e)
+		return nil, fmt.Errorf("failed to add device group %q: %v", name, e)
 	}
 
 	deviceGroup := &restResponse.Data
