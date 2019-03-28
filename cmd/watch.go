@@ -111,7 +111,7 @@ func pollCollectorSetStatus(conn *grpc.ClientConn) (bool, error) {
 	for {
 		select {
 		case <-timeout:
-			return false, fmt.Errorf("Timeout waiting for collectors to become available")
+			return false, fmt.Errorf("timeout waiting for collectors to become available")
 		case <-ticker.C:
 			log.Debugf("Checking collectors status")
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*500)
