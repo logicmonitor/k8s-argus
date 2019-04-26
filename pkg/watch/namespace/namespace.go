@@ -3,6 +3,7 @@ package namespace
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/err"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -33,6 +34,7 @@ func (w Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		defer err.RecoverError("add namespace")
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handling add namespace event: %s", namespace.Name)
 		for name, parentID := range w.DeviceGroups {
@@ -71,6 +73,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
+		defer err.RecoverError("update namespace")
 		log.Debugf("Ignoring update namespace event")
 		// oldNamespace := oldObj.(*v1.Namespace)
 		// newNamespace := newObj.(*v1.Namespace)
@@ -80,6 +83,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		defer err.RecoverError("delete namespace")
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handle deleting namespace event: %s", namespace.Name)
 

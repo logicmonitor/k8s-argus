@@ -4,6 +4,7 @@ package pod
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/err"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
@@ -35,6 +36,7 @@ func (w *Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		defer err.RecoverError("add pod")
 		pod := obj.(*v1.Pod)
 
 		log.Debugf("Handling add pod event: %s", pod.Name)
@@ -50,6 +52,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
+		defer err.RecoverError("update pod")
 		old := oldObj.(*v1.Pod)
 		new := newObj.(*v1.Pod)
 
@@ -81,6 +84,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // nolint: dupl
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		defer err.RecoverError("delete pod")
 		pod := obj.(*v1.Pod)
 
 		log.Debugf("Handling delete pod event: %s", pod.Name)
