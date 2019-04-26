@@ -38,12 +38,12 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
-		// Only add the service if it is has a ClusterIP.
-		if service.Spec.Type != v1.ServiceTypeClusterIP {
-			return
-		}
+
+		log.Infof("service type is %s", service.Spec.Type)
+
 		// Require an IP address.
 		if service.Spec.ClusterIP == "" {
+			log.Warningf("service clusterIP is empty, serviceType : %s.", service.Spec.Type)
 			return
 		}
 		w.add(service)
