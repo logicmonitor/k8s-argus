@@ -22,7 +22,7 @@
 
 
 [[constraint]]
-  branch = "v1"
+  branch = "v2"
   name = "github.com/logicmonitor/lm-sdk-go"
 
 [[constraint]]

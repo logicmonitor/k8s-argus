@@ -2,14 +2,15 @@ package types
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
-	lm "github.com/logicmonitor/lm-sdk-go"
+	"github.com/logicmonitor/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 )
 
 // Base is a struct for embedding
 type Base struct {
-	LMClient  *lm.DefaultApi
+	LMClient  *client.LMSdkGo
 	K8sClient *kubernetes.Clientset
 	Config    *config.Config
 }
@@ -37,19 +38,19 @@ type DeviceMapper interface {
 	Config() *config.Config
 	// FindByDisplayName searches for a device by it's display name. It will return a device if and only if
 	// one device was found, and return nil otherwise.
-	FindByDisplayName(string) (*lm.RestDevice, error)
+	FindByDisplayName(string) (*models.Device, error)
 	// Add adds a device to a LogicMonitor account.
-	Add(...DeviceOption) (*lm.RestDevice, error)
+	Add(...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByID updates a device using the 'replace' OpType.
-	UpdateAndReplaceByID(int32, ...DeviceOption) (*lm.RestDevice, error)
+	UpdateAndReplaceByID(int32, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
-	UpdateAndReplaceByDisplayName(string, ...DeviceOption) (*lm.RestDevice, error)
+	UpdateAndReplaceByDisplayName(string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceFieldByID updates a device using the 'replace' OpType for a
 	// specific field of a device.
-	UpdateAndReplaceFieldByID(int32, string, ...DeviceOption) (*lm.RestDevice, error)
+	UpdateAndReplaceFieldByID(int32, string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceFieldByDisplayName updates a device using the 'replace' OpType for a
 	// specific field of a device.
-	UpdateAndReplaceFieldByDisplayName(string, string, ...DeviceOption) (*lm.RestDevice, error)
+	UpdateAndReplaceFieldByDisplayName(string, string, ...DeviceOption) (*models.Device, error)
 	// DeleteByID deletes a device by device ID.
 	DeleteByID(int32) error
 	// DeleteByDisplayName deletes a device by device display name.
@@ -57,7 +58,7 @@ type DeviceMapper interface {
 }
 
 // DeviceOption is the function definition for the functional options pattern.
-type DeviceOption func(*lm.RestDevice)
+type DeviceOption func(*models.Device)
 
 // DeviceBuilder is the interface responsible for building a device struct.
 type DeviceBuilder interface {

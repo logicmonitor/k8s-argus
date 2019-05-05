@@ -9,7 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
-	lm "github.com/logicmonitor/lm-sdk-go"
+	"github.com/logicmonitor/lm-sdk-go/client"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +25,7 @@ const (
 type Watcher struct {
 	types.DeviceManager
 	DeviceGroups map[string]int32
-	LMClient     *lm.DefaultApi
+	LMClient     *client.LMSdkGo
 }
 
 // Resource is a function that implements the Watcher interface.
