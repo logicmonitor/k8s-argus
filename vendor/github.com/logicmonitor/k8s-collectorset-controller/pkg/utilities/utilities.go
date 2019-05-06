@@ -6,12 +6,20 @@ import (
 	"reflect"
 
 	"github.com/logicmonitor/k8s-collectorset-controller/pkg/metrics"
-
 	"github.com/logicmonitor/lm-sdk-go"
 )
 
 // CheckAllErrors is a helper function to deal with the number of possible places that an API call can fail.
 func CheckAllErrors(restResponse interface{}, apiResponse *logicmonitor.APIResponse, err error) error {
+	if err != nil {
+		return fmt.Errorf("[ERROR] %v", err)
+	}
+
+	if apiResponse.Response != nil && apiResponse.StatusCode != http.StatusOK {
+		metrics.APIError()
+		return fmt.Errorf("[API] [%d] %s", apiResponse.StatusCode, apiResponse.Message)
+	}
+
 	var restResponseMessage string
 	var restResponseStatus int64
 
@@ -38,15 +46,6 @@ func CheckAllErrors(restResponse interface{}, apiResponse *logicmonitor.APIRespo
 	if restResponseStatus != http.StatusOK {
 		metrics.RESTError()
 		return fmt.Errorf("[REST] [%d] %s", restResponseStatus, restResponseMessage)
-	}
-
-	if apiResponse.StatusCode != http.StatusOK {
-		metrics.APIError()
-		return fmt.Errorf("[API] [%d] %s", apiResponse.StatusCode, restResponseMessage)
-	}
-
-	if err != nil {
-		return fmt.Errorf("[ERROR] %v", err)
 	}
 
 	return nil

@@ -1,6 +1,6 @@
 // +build go1.7
 
-// Copyright (c) 2015-2016 Jeevanandam M (jeeva@myjeeva.com)
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com)
 // 2016 Andrew Grigorev (https://github.com/ei-grad)
 // All rights reserved.
 // resty source code and usage is governed by a MIT style
@@ -113,7 +113,7 @@ func TestSetContextCancelRetry(t *testing.T) {
 
 	c := dc()
 	c.SetHTTPMode().
-		SetTimeout(time.Duration(time.Second * 3)).
+		SetTimeout(time.Second * 3).
 		SetRetryCount(3)
 
 	_, err := c.R().
@@ -188,7 +188,7 @@ func TestClientRetryWithSetContext(t *testing.T) {
 
 	c := dc()
 	c.SetHTTPMode().
-		SetTimeout(time.Duration(time.Second * 1)).
+		SetTimeout(time.Second * 1).
 		SetRetryCount(3)
 
 	_, err := c.R().

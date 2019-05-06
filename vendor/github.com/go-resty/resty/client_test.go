@@ -1,15 +1,17 @@
-// Copyright (c) 2015-2017 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
 package resty
 
 import (
+	"bytes"
 	"crypto/tls"
 	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -59,7 +61,7 @@ func TestOnAfterMiddleware(t *testing.T) {
 	c := dc()
 	c.OnAfterResponse(func(c *Client, res *Response) error {
 		t.Logf("Request sent at: %v", res.Request.Time)
-		t.Logf("Response Recevied at: %v", res.ReceivedAt())
+		t.Logf("Response Received at: %v", res.ReceivedAt())
 
 		return nil
 	})
@@ -83,7 +85,7 @@ func TestClientRedirectPolicy(t *testing.T) {
 
 	_, err := c.R().Get(ts.URL + "/redirect-1")
 
-	assertEqual(t, "Get /redirect-21: Stopped after 20 redirects", err.Error())
+	assertEqual(t, "Get /redirect-21: stopped after 20 redirects", err.Error())
 }
 
 func TestClientTimeout(t *testing.T) {
@@ -92,7 +94,7 @@ func TestClientTimeout(t *testing.T) {
 
 	c := dc()
 	c.SetHTTPMode().
-		SetTimeout(time.Duration(time.Second * 3))
+		SetTimeout(time.Second * 3)
 
 	_, err := c.R().Get(ts.URL + "/set-timeout-test")
 	assertEqual(t, true, strings.Contains(strings.ToLower(err.Error()), "timeout"))
@@ -104,7 +106,7 @@ func TestClientTimeoutWithinThreshold(t *testing.T) {
 
 	c := dc()
 	c.SetHTTPMode().
-		SetTimeout(time.Duration(time.Second * 3))
+		SetTimeout(time.Second * 3)
 
 	resp, err := c.R().Get(ts.URL + "/set-timeout-test-with-sequence")
 	assertError(t, err)
@@ -122,7 +124,7 @@ func TestClientTimeoutWithinThreshold(t *testing.T) {
 func TestClientTimeoutInternalError(t *testing.T) {
 	c := dc()
 	c.SetHTTPMode()
-	c.SetTimeout(time.Duration(time.Second * 1))
+	c.SetTimeout(time.Second * 1)
 
 	_, _ = c.R().Get("http://localhost:9000/set-timeout-test")
 }
@@ -160,7 +162,7 @@ func TestClientSetCertificates(t *testing.T) {
 
 func TestClientSetRootCertificate(t *testing.T) {
 	DefaultClient = dc()
-	SetRootCertificate(getTestDataPath() + "/sample-root.pem")
+	SetRootCertificate(filepath.Join(getTestDataPath(), "sample-root.pem"))
 
 	transport, err := DefaultClient.getTransport()
 
@@ -170,7 +172,7 @@ func TestClientSetRootCertificate(t *testing.T) {
 
 func TestClientSetRootCertificateNotExists(t *testing.T) {
 	DefaultClient = dc()
-	SetRootCertificate(getTestDataPath() + "/not-exists-sample-root.pem")
+	SetRootCertificate(filepath.Join(getTestDataPath(), "not-exists-sample-root.pem"))
 
 	transport, err := DefaultClient.getTransport()
 
@@ -331,7 +333,7 @@ func TestClientOptions(t *testing.T) {
 		return nil // if it success
 	})
 
-	SetTimeout(time.Duration(5 * time.Second))
+	SetTimeout(5 * time.Second)
 	SetRedirectPolicy(FlexibleRedirectPolicy(10), func(req *http.Request, via []*http.Request) error {
 		return errors.New("sample test redirect")
 	})
@@ -339,6 +341,10 @@ func TestClientOptions(t *testing.T) {
 
 	SetDebug(true)
 	assertEqual(t, DefaultClient.Debug, true)
+
+	var sl int64 = 1000000
+	SetDebugBodyLimit(sl)
+	assertEqual(t, DefaultClient.debugBodySizeLimit, sl)
 
 	SetAllowGetMethodPayload(true)
 	assertEqual(t, DefaultClient.AllowGetMethodPayload, true)
@@ -381,7 +387,8 @@ func TestClientAllowsGetMethodPayload(t *testing.T) {
 }
 
 func TestClientRoundTripper(t *testing.T) {
-	c := New()
+	c := NewWithClient(&http.Client{})
+	c.SetLogger(ioutil.Discard)
 
 	rt := &CustomRoundTripper{}
 	c.SetTransport(rt)
@@ -395,7 +402,7 @@ func TestClientRoundTripper(t *testing.T) {
 	c.SetProxy("http://localhost:9090")
 	c.RemoveProxy()
 	c.SetCertificates(tls.Certificate{})
-	c.SetRootCertificate(getTestDataPath() + "/sample-root.pem")
+	c.SetRootCertificate(filepath.Join(getTestDataPath(), "sample-root.pem"))
 }
 
 func TestClientNewRequest(t *testing.T) {
@@ -411,6 +418,42 @@ func TestNewRequest(t *testing.T) {
 	assertNotNil(t, request)
 }
 
+func TestDebugBodySizeLimit(t *testing.T) {
+	ts := createGetServer(t)
+	defer ts.Close()
+
+	var lgr bytes.Buffer
+	c := dc()
+	c.SetDebug(true)
+	c.SetLogger(&lgr)
+	c.SetDebugBodyLimit(30)
+
+	testcases := []struct{ url, want string }{
+		// Text, does not exceed limit.
+		{ts.URL, "TestGet: text response"},
+		// Empty response.
+		{ts.URL + "/no-content", "***** NO CONTENT *****"},
+		// JSON, does not exceed limit.
+		{ts.URL + "/json", "{\n   \"TestGet\": \"JSON response\"\n}"},
+		// Invalid JSON, does not exceed limit.
+		{ts.URL + "/json-invalid", "TestGet: Invalid JSON"},
+		// Text, exceeds limit.
+		{ts.URL + "/long-text", "RESPONSE TOO LARGE"},
+		// JSON, exceeds limit.
+		{ts.URL + "/long-json", "RESPONSE TOO LARGE"},
+	}
+
+	for _, tc := range testcases {
+		_, err := c.R().Get(tc.url)
+		assertError(t, err)
+		debugLog := lgr.String()
+		if !strings.Contains(debugLog, tc.want) {
+			t.Errorf("Expected logs to contain [%v], got [\n%v]", tc.want, debugLog)
+		}
+		lgr.Reset()
+	}
+}
+
 // CustomRoundTripper just for test
 type CustomRoundTripper struct {
 }
@@ -418,4 +461,94 @@ type CustomRoundTripper struct {
 // RoundTrip just for test
 func (rt *CustomRoundTripper) RoundTrip(_ *http.Request) (*http.Response, error) {
 	return &http.Response{}, nil
+}
+
+func TestSetLogPrefix(t *testing.T) {
+	c := New()
+	c.SetLogPrefix("CUSTOM ")
+	assertEqual(t, "CUSTOM ", c.logPrefix)
+	assertEqual(t, "CUSTOM ", c.Log.Prefix())
+
+	c.disableLogPrefix()
+	c.enableLogPrefix()
+	assertEqual(t, "CUSTOM ", c.logPrefix)
+	assertEqual(t, "CUSTOM ", c.Log.Prefix())
+}
+
+func TestAutoGzip(t *testing.T) {
+	ts := createGenServer(t)
+	defer ts.Close()
+
+	c := New()
+	testcases := []struct{ url, want string }{
+		{ts.URL + "/gzip-test", "This is Gzip response testing"},
+		{ts.URL + "/gzip-test-gziped-empty-body", ""},
+		{ts.URL + "/gzip-test-no-gziped-body", ""},
+	}
+	for _, tc := range testcases {
+		resp, err := c.R().
+			SetHeader("Accept-Encoding", "gzip").
+			Get(tc.url)
+
+		assertError(t, err)
+		assertEqual(t, http.StatusOK, resp.StatusCode())
+		assertEqual(t, "200 OK", resp.Status())
+		assertNotNil(t, resp.Body())
+		assertEqual(t, tc.want, resp.String())
+
+		logResponse(t, resp)
+	}
+}
+
+func TestLogCallbacks(t *testing.T) {
+	ts := createAuthServer(t)
+	defer ts.Close()
+
+	c := New().SetDebug(true)
+
+	var lgr bytes.Buffer
+	c.SetLogger(&lgr)
+
+	c.OnRequestLog(func(r *RequestLog) error {
+		// masking authorzation header
+		r.Header.Set("Authorization", "Bearer *******************************")
+		return nil
+	})
+	c.OnResponseLog(func(r *ResponseLog) error {
+		r.Header.Add("X-Debug-Resposne-Log", "Modified :)")
+		r.Body += "\nModified the response body content"
+		return nil
+	})
+
+	c.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true}).
+		SetAuthToken("004DDB79-6801-4587-B976-F093E6AC44FF")
+
+	resp, err := c.R().
+		SetAuthToken("004DDB79-6801-4587-B976-F093E6AC44FF-Request").
+		Get(ts.URL + "/profile")
+
+	assertError(t, err)
+	assertEqual(t, http.StatusOK, resp.StatusCode())
+
+	// Validating debug log updates
+	logInfo := lgr.String()
+	assertEqual(t, true, strings.Contains(logInfo, "Bearer *******************************"))
+	assertEqual(t, true, strings.Contains(logInfo, "X-Debug-Resposne-Log"))
+	assertEqual(t, true, strings.Contains(logInfo, "Modified the response body content"))
+
+	// Error scenario
+	c.OnRequestLog(func(r *RequestLog) error { return errors.New("request test error") })
+	resp, err = c.R().
+		SetAuthToken("004DDB79-6801-4587-B976-F093E6AC44FF-Request").
+		Get(ts.URL + "/profile")
+	assertEqual(t, errors.New("request test error"), err)
+	assertNil(t, resp)
+
+	c.OnRequestLog(nil)
+	c.OnResponseLog(func(r *ResponseLog) error { return errors.New("response test error") })
+	resp, err = c.R().
+		SetAuthToken("004DDB79-6801-4587-B976-F093E6AC44FF-Request").
+		Get(ts.URL + "/profile")
+	assertEqual(t, errors.New("response test error"), err)
+	assertNotNil(t, resp)
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -25,16 +25,29 @@ import (
 //___________________________________
 
 func parseRequestURL(c *Client, r *Request) error {
+	// GitHub #103 Path Params
+	if len(r.pathParams) > 0 {
+		for p, v := range r.pathParams {
+			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
+		}
+	}
+	if len(c.pathParams) > 0 {
+		for p, v := range c.pathParams {
+			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
+		}
+	}
+
 	// Parsing request URL
 	reqURL, err := url.Parse(r.URL)
 	if err != nil {
 		return err
 	}
 
-	// If Request.Url is relative path then added c.HostUrl into
-	// the request URL otherwise Request.Url will be used as-is
+	// If Request.URL is relative path then added c.HostURL into
+	// the request URL otherwise Request.URL will be used as-is
 	if !reqURL.IsAbs() {
-		if !strings.HasPrefix(r.URL, "/") {
+		r.URL = reqURL.String()
+		if len(r.URL) > 0 && r.URL[0] != '/' {
 			r.URL = "/" + r.URL
 		}
 
@@ -45,7 +58,7 @@ func parseRequestURL(c *Client, r *Request) error {
 	}
 
 	// Adding Query Param
-	query := reqURL.Query()
+	query := make(url.Values)
 	for k, v := range c.QueryParam {
 		for _, iv := range v {
 			query.Add(k, iv)
@@ -62,18 +75,31 @@ func parseRequestURL(c *Client, r *Request) error {
 		}
 	}
 
-	reqURL.RawQuery = query.Encode()
+	// GitHub #123 Preserve query string order partially.
+	// Since not feasible in `SetQuery*` resty methods, because
+	// standard package `url.Encode(...)` sorts the query params
+	// alphabetically
+	if len(query) > 0 {
+		if IsStringEmpty(reqURL.RawQuery) {
+			reqURL.RawQuery = query.Encode()
+		} else {
+			reqURL.RawQuery = reqURL.RawQuery + "&" + query.Encode()
+		}
+	}
+
 	r.URL = reqURL.String()
 
 	return nil
 }
 
 func parseRequestHeader(c *Client, r *Request) error {
-	hdr := http.Header{}
+	hdr := make(http.Header)
 	for k := range c.Header {
 		hdr[k] = append(hdr[k], c.Header[k]...)
 	}
+
 	for k := range r.Header {
+		hdr.Del(k)
 		hdr[k] = append(hdr[k], r.Header[k]...)
 	}
 
@@ -81,7 +107,9 @@ func parseRequestHeader(c *Client, r *Request) error {
 		hdr.Set(hdrUserAgentKey, fmt.Sprintf(hdrUserAgentValue, Version))
 	}
 
-	if IsStringEmpty(hdr.Get(hdrAcceptKey)) && !IsStringEmpty(hdr.Get(hdrContentTypeKey)) {
+	ct := hdr.Get(hdrContentTypeKey)
+	if IsStringEmpty(hdr.Get(hdrAcceptKey)) && !IsStringEmpty(ct) &&
+		(IsJSONType(ct) || IsXMLType(ct)) {
 		hdr.Set(hdrAcceptKey, hdr.Get(hdrContentTypeKey))
 	}
 
@@ -129,7 +157,11 @@ CL:
 
 func createHTTPRequest(c *Client, r *Request) (err error) {
 	if r.bodyBuf == nil {
-		r.RawRequest, err = http.NewRequest(r.Method, r.URL, nil)
+		if reader, ok := r.Body.(io.Reader); ok {
+			r.RawRequest, err = http.NewRequest(r.Method, r.URL, reader)
+		} else {
+			r.RawRequest, err = http.NewRequest(r.Method, r.URL, nil)
+		}
 	} else {
 		r.RawRequest, err = http.NewRequest(r.Method, r.URL, r.bodyBuf)
 	}
@@ -191,18 +223,22 @@ func addCredentials(c *Client, r *Request) error {
 func requestLogger(c *Client, r *Request) error {
 	if c.Debug {
 		rr := r.RawRequest
-		c.Log.Println()
-		c.disableLogPrefix()
-		c.Log.Println("---------------------- REQUEST LOG -----------------------")
-		c.Log.Printf("%s  %s  %s\n", r.Method, rr.URL.RequestURI(), rr.Proto)
-		c.Log.Printf("HOST   : %s", rr.URL.Host)
-		c.Log.Println("HEADERS:")
-		for h, v := range rr.Header {
-			c.Log.Printf("%25s: %v", h, strings.Join(v, ", "))
+		rl := &RequestLog{Header: copyHeaders(rr.Header), Body: r.fmtBodyString()}
+		if c.requestLog != nil {
+			if err := c.requestLog(rl); err != nil {
+				return err
+			}
 		}
-		c.Log.Printf("BODY   :\n%v", r.fmtBodyString())
-		c.Log.Println("----------------------------------------------------------")
-		c.enableLogPrefix()
+
+		reqLog := "\n---------------------- REQUEST LOG -----------------------\n" +
+			fmt.Sprintf("%s  %s  %s\n", r.Method, rr.URL.RequestURI(), rr.Proto) +
+			fmt.Sprintf("HOST   : %s\n", rr.URL.Host) +
+			fmt.Sprintf("HEADERS:\n") +
+			composeHeaders(rl.Header) + "\n" +
+			fmt.Sprintf("BODY   :\n%v\n", rl.Body) +
+			"----------------------------------------------------------\n"
+
+		c.Log.Print(reqLog)
 	}
 
 	return nil
@@ -214,42 +250,49 @@ func requestLogger(c *Client, r *Request) error {
 
 func responseLogger(c *Client, res *Response) error {
 	if c.Debug {
-		c.Log.Println()
-		c.disableLogPrefix()
-		c.Log.Println("---------------------- RESPONSE LOG -----------------------")
-		c.Log.Printf("STATUS 		: %s", res.Status())
-		c.Log.Printf("RECEIVED AT	: %v", res.ReceivedAt().Format(time.RFC3339Nano))
-		c.Log.Printf("RESPONSE TIME	: %v", res.Time())
-		c.Log.Println("HEADERS:")
-		for h, v := range res.Header() {
-			c.Log.Printf("%30s: %v", h, strings.Join(v, ", "))
+		rl := &ResponseLog{Header: copyHeaders(res.Header()), Body: res.fmtBodyString(c.debugBodySizeLimit)}
+		if c.responseLog != nil {
+			if err := c.responseLog(rl); err != nil {
+				return err
+			}
 		}
+
+		resLog := "\n---------------------- RESPONSE LOG -----------------------\n" +
+			fmt.Sprintf("STATUS 		: %s\n", res.Status()) +
+			fmt.Sprintf("RECEIVED AT	: %v\n", res.ReceivedAt().Format(time.RFC3339Nano)) +
+			fmt.Sprintf("RESPONSE TIME	: %v\n", res.Time()) +
+			"HEADERS:\n" +
+			composeHeaders(rl.Header) + "\n"
 		if res.Request.isSaveResponse {
-			c.Log.Printf("BODY   :\n***** RESPONSE WRITTEN INTO FILE *****")
+			resLog += fmt.Sprintf("BODY   :\n***** RESPONSE WRITTEN INTO FILE *****\n")
 		} else {
-			c.Log.Printf("BODY   :\n%v", res.fmtBodyString())
+			resLog += fmt.Sprintf("BODY   :\n%v\n", rl.Body)
 		}
-		c.Log.Println("----------------------------------------------------------")
-		c.enableLogPrefix()
+		resLog += "----------------------------------------------------------\n"
+
+		c.Log.Print(resLog)
 	}
 
 	return nil
 }
 
 func parseResponseBody(c *Client, res *Response) (err error) {
+	if res.StatusCode() == http.StatusNoContent {
+		return
+	}
 	// Handles only JSON or XML content type
 	ct := firstNonEmpty(res.Header().Get(hdrContentTypeKey), res.Request.fallbackContentType)
 	if IsJSONType(ct) || IsXMLType(ct) {
-		// Considered as Result
-		if res.StatusCode() > 199 && res.StatusCode() < 300 {
+		// HTTP status code > 199 and < 300, considered as Result
+		if res.IsSuccess() {
 			if res.Request.Result != nil {
 				err = Unmarshalc(c, ct, res.body, res.Request.Result)
 				return
 			}
 		}
 
-		// Considered as Error
-		if res.StatusCode() > 399 {
+		// HTTP status code > 399, considered as Error
+		if res.IsError() {
 			// global error interface
 			if res.Request.Error == nil && c.Error != nil {
 				res.Request.Error = reflect.New(c.Error).Interface()
@@ -301,6 +344,15 @@ func handleMultipart(c *Client, r *Request) (err error) {
 		}
 	}
 
+	// GitHub #130 adding multipart field support with content type
+	if len(r.multipartFields) > 0 {
+		for _, mf := range r.multipartFields {
+			if err = addMultipartFormField(w, mf); err != nil {
+				return
+			}
+		}
+	}
+
 	r.Header.Set(hdrContentTypeKey, w.FormDataContentType())
 	err = w.Close()
 
@@ -346,21 +398,27 @@ func handleRequestBody(c *Client, r *Request) (err error) {
 	r.bodyBuf = nil
 
 	if reader, ok := r.Body.(io.Reader); ok {
-		r.bodyBuf = acquireBuffer()
-		_, err = r.bodyBuf.ReadFrom(reader)
+		if c.setContentLength || r.setContentLength { // keep backward compability
+			r.bodyBuf = acquireBuffer()
+			_, err = r.bodyBuf.ReadFrom(reader)
+			r.Body = nil
+		} else {
+			// Otherwise buffer less processing for `io.Reader`, sounds good.
+			return
+		}
 	} else if b, ok := r.Body.([]byte); ok {
 		bodyBytes = b
 	} else if s, ok := r.Body.(string); ok {
 		bodyBytes = []byte(s)
 	} else if IsJSONType(contentType) &&
 		(kind == reflect.Struct || kind == reflect.Map || kind == reflect.Slice) {
-		bodyBytes, err = c.JSONMarshal(r.Body)
+		bodyBytes, err = jsonMarshal(c, r, r.Body)
 	} else if IsXMLType(contentType) && (kind == reflect.Struct) {
 		bodyBytes, err = xml.Marshal(r.Body)
 	}
 
 	if bodyBytes == nil && r.bodyBuf == nil {
-		err = errors.New("Unsupported 'Body' type/value")
+		err = errors.New("unsupported 'Body' type/value")
 	}
 
 	// if any errors during body bytes handling, return it
@@ -394,14 +452,11 @@ func saveResponseIntoFile(c *Client, res *Response) error {
 		if err != nil {
 			return err
 		}
-		defer func() {
-			_ = outFile.Close()
-		}()
+		defer closeq(outFile)
 
 		// io.Copy reads maximum 32kb size, it is perfect for large file download too
-		defer func() {
-			_ = res.RawResponse.Body.Close()
-		}()
+		defer closeq(res.RawResponse.Body)
+
 		written, err := io.Copy(outFile, res.RawResponse.Body)
 		if err != nil {
 			return err

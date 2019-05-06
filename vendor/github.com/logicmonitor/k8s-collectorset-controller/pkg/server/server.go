@@ -49,7 +49,7 @@ func (srv *Server) Run() {
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
-	s.Serve(lis) // nolint: errcheck
+	s.Serve(lis) // nolint: errcheck, gosec
 }
 
 // CollectorID implements api.CollectorSetControllerServer. It returns the

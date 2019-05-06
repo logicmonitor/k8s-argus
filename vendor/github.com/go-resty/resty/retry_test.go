@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -68,7 +68,7 @@ func TestConditionalBackoffConditionError(t *testing.T) {
 	counter := 0
 	check := RetryConditionFunc(func(*Response) (bool, error) {
 		if attempts != counter {
-			return false, errors.New("Attempts not equal Counter")
+			return false, errors.New("attempts not equal Counter")
 		}
 		return false, nil
 	})
@@ -107,7 +107,7 @@ func TestConditionalGet(t *testing.T) {
 	check := RetryConditionFunc(func(*Response) (bool, error) {
 		externalCounter++
 		if attemptCount != externalCounter {
-			return false, errors.New("Attempts not equal Counter")
+			return false, errors.New("attempts not equal Counter")
 		}
 		return false, nil
 	})
@@ -138,7 +138,7 @@ func TestConditionalGetDefaultClient(t *testing.T) {
 	check := RetryConditionFunc(func(*Response) (bool, error) {
 		externalCounter++
 		if attemptCount != externalCounter {
-			return false, errors.New("Attempts not equal Counter")
+			return false, errors.New("attempts not equal Counter")
 		}
 		return false, nil
 	})
@@ -167,7 +167,7 @@ func TestClientRetryGet(t *testing.T) {
 
 	c := dc()
 	c.SetHTTPMode().
-		SetTimeout(time.Duration(time.Second * 3)).
+		SetTimeout(time.Second * 3).
 		SetRetryCount(3)
 
 	resp, err := c.R().Get(ts.URL + "/set-retrycount-test")

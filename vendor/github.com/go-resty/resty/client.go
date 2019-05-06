@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -6,6 +6,7 @@ package resty
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -46,20 +47,21 @@ const (
 )
 
 var (
-	hdrUserAgentKey     = http.CanonicalHeaderKey("User-Agent")
-	hdrAcceptKey        = http.CanonicalHeaderKey("Accept")
-	hdrContentTypeKey   = http.CanonicalHeaderKey("Content-Type")
-	hdrContentLengthKey = http.CanonicalHeaderKey("Content-Length")
-	hdrAuthorizationKey = http.CanonicalHeaderKey("Authorization")
+	hdrUserAgentKey       = http.CanonicalHeaderKey("User-Agent")
+	hdrAcceptKey          = http.CanonicalHeaderKey("Accept")
+	hdrContentTypeKey     = http.CanonicalHeaderKey("Content-Type")
+	hdrContentLengthKey   = http.CanonicalHeaderKey("Content-Length")
+	hdrContentEncodingKey = http.CanonicalHeaderKey("Content-Encoding")
+	hdrAuthorizationKey   = http.CanonicalHeaderKey("Authorization")
 
 	plainTextType   = "text/plain; charset=utf-8"
 	jsonContentType = "application/json; charset=utf-8"
 	formContentType = "application/x-www-form-urlencoded"
 
-	jsonCheck = regexp.MustCompile("(?i:[application|text]/json)")
-	xmlCheck  = regexp.MustCompile("(?i:[application|text]/xml)")
+	jsonCheck = regexp.MustCompile(`(?i:(application|text)/(json|.*\+json|json\-.*)(;|$))`)
+	xmlCheck  = regexp.MustCompile(`(?i:(application|text)/(xml|.*\+xml)(;|$))`)
 
-	hdrUserAgentValue = "go-resty v%s - https://github.com/go-resty/resty"
+	hdrUserAgentValue = "go-resty/%s (https://github.com/go-resty/resty)"
 	bufPool           = &sync.Pool{New: func() interface{} { return &bytes.Buffer{} }}
 )
 
@@ -85,18 +87,24 @@ type Client struct {
 	JSONMarshal           func(v interface{}) ([]byte, error)
 	JSONUnmarshal         func(data []byte, v interface{}) error
 
-	httpClient       *http.Client
-	setContentLength bool
-	isHTTPMode       bool
-	outputDirectory  string
-	scheme           string
-	proxyURL         *url.URL
-	closeConnection  bool
-	notParseResponse bool
-	beforeRequest    []func(*Client, *Request) error
-	udBeforeRequest  []func(*Client, *Request) error
-	preReqHook       func(*Client, *Request) error
-	afterResponse    []func(*Client, *Response) error
+	jsonEscapeHTML     bool
+	httpClient         *http.Client
+	setContentLength   bool
+	isHTTPMode         bool
+	outputDirectory    string
+	scheme             string
+	proxyURL           *url.URL
+	closeConnection    bool
+	notParseResponse   bool
+	debugBodySizeLimit int64
+	logPrefix          string
+	pathParams         map[string]string
+	beforeRequest      []func(*Client, *Request) error
+	udBeforeRequest    []func(*Client, *Request) error
+	preReqHook         func(*Client, *Request) error
+	afterResponse      []func(*Client, *Response) error
+	requestLog         func(*RequestLog) error
+	responseLog        func(*ResponseLog) error
 }
 
 // User type is to hold an username and password information
@@ -297,18 +305,15 @@ func (c *Client) SetAuthToken(token string) *Client {
 // R method creates a request instance, its used for Get, Post, Put, Delete, Patch, Head and Options.
 func (c *Client) R() *Request {
 	r := &Request{
-		URL:            "",
-		Method:         "",
-		QueryParam:     url.Values{},
-		FormData:       url.Values{},
-		Header:         http.Header{},
-		Body:           nil,
-		Result:         nil,
-		Error:          nil,
-		RawRequest:     nil,
-		client:         c,
-		bodyBuf:        nil,
-		multipartFiles: []*File{},
+		QueryParam: url.Values{},
+		FormData:   url.Values{},
+		Header:     http.Header{},
+
+		client:          c,
+		multipartFiles:  []*File{},
+		multipartFields: []*MultipartField{},
+		pathParams:      map[string]string{},
+		jsonEscapeHTML:  true,
 	}
 
 	return r
@@ -369,6 +374,34 @@ func (c *Client) SetPreRequestHook(h func(*Client, *Request) error) *Client {
 //
 func (c *Client) SetDebug(d bool) *Client {
 	c.Debug = d
+	return c
+}
+
+// SetDebugBodyLimit sets the maximum size for which the response body will be logged in debug mode.
+//		resty.SetDebugBodyLimit(1000000)
+//
+func (c *Client) SetDebugBodyLimit(sl int64) *Client {
+	c.debugBodySizeLimit = sl
+	return c
+}
+
+// OnRequestLog method used to set request log callback into resty. Registered callback gets
+// called before the resty actually logs the information.
+func (c *Client) OnRequestLog(rl func(*RequestLog) error) *Client {
+	if c.requestLog != nil {
+		c.Log.Printf("Overwriting an existing on-request-log callback from=%s to=%s", functionName(c.requestLog), functionName(rl))
+	}
+	c.requestLog = rl
+	return c
+}
+
+// OnResponseLog method used to set response log callback into resty. Registered callback gets
+// called before the resty actually logs the information.
+func (c *Client) OnResponseLog(rl func(*ResponseLog) error) *Client {
+	if c.responseLog != nil {
+		c.Log.Printf("Overwriting an existing on-response-log callback from=%s to=%s", functionName(c.responseLog), functionName(rl))
+	}
+	c.responseLog = rl
 	return c
 }
 
@@ -491,21 +524,21 @@ func (c *Client) AddRetryCondition(condition RetryConditionFunc) *Client {
 	return c
 }
 
-// SetHTTPMode method sets go-resty mode into HTTP
+// SetHTTPMode method sets go-resty mode to 'http'
 func (c *Client) SetHTTPMode() *Client {
 	return c.SetMode("http")
 }
 
-// SetRESTMode method sets go-resty mode into RESTful
+// SetRESTMode method sets go-resty mode to 'rest'
 func (c *Client) SetRESTMode() *Client {
 	return c.SetMode("rest")
 }
 
 // SetMode method sets go-resty client mode to given value such as 'http' & 'rest'.
-// 	RESTful:
+//	'rest':
 //		- No Redirect
 //		- Automatic response unmarshal if it is JSON or XML
-//	HTML:
+//	'http':
 //		- Up to 10 Redirects
 //		- No automatic unmarshall. Response will be treated as `response.String()`
 //
@@ -557,7 +590,7 @@ func (c *Client) Mode() string {
 func (c *Client) SetTLSClientConfig(config *tls.Config) *Client {
 	transport, err := c.getTransport()
 	if err != nil {
-		c.Log.Printf("ERROR [%v]", err)
+		c.Log.Printf("ERROR %v", err)
 		return c
 	}
 	transport.TLSClientConfig = config
@@ -573,17 +606,17 @@ func (c *Client) SetTLSClientConfig(config *tls.Config) *Client {
 func (c *Client) SetProxy(proxyURL string) *Client {
 	transport, err := c.getTransport()
 	if err != nil {
-		c.Log.Printf("ERROR [%v]", err)
+		c.Log.Printf("ERROR %v", err)
 		return c
 	}
+
 	if pURL, err := url.Parse(proxyURL); err == nil {
 		c.proxyURL = pURL
 		transport.Proxy = http.ProxyURL(c.proxyURL)
 	} else {
-		c.Log.Printf("ERROR [%v]", err)
+		c.Log.Printf("ERROR %v", err)
 		c.RemoveProxy()
 	}
-
 	return c
 }
 
@@ -593,7 +626,7 @@ func (c *Client) SetProxy(proxyURL string) *Client {
 func (c *Client) RemoveProxy() *Client {
 	transport, err := c.getTransport()
 	if err != nil {
-		c.Log.Printf("ERROR [%v]", err)
+		c.Log.Printf("ERROR %v", err)
 		return c
 	}
 	c.proxyURL = nil
@@ -606,7 +639,7 @@ func (c *Client) RemoveProxy() *Client {
 func (c *Client) SetCertificates(certs ...tls.Certificate) *Client {
 	config, err := c.getTLSConfig()
 	if err != nil {
-		c.Log.Printf("ERROR [%v]", err)
+		c.Log.Printf("ERROR %v", err)
 		return c
 	}
 	config.Certificates = append(config.Certificates, certs...)
@@ -619,13 +652,13 @@ func (c *Client) SetCertificates(certs ...tls.Certificate) *Client {
 func (c *Client) SetRootCertificate(pemFilePath string) *Client {
 	rootPemData, err := ioutil.ReadFile(pemFilePath)
 	if err != nil {
-		c.Log.Printf("ERROR [%v]", err)
+		c.Log.Printf("ERROR %v", err)
 		return c
 	}
 
 	config, err := c.getTLSConfig()
 	if err != nil {
-		c.Log.Printf("ERROR [%v]", err)
+		c.Log.Printf("ERROR %v", err)
 		return c
 	}
 	if config.RootCAs == nil {
@@ -650,7 +683,7 @@ func (c *Client) SetOutputDirectory(dirPath string) *Client {
 // SetTransport method sets custom `*http.Transport` or any `http.RoundTripper`
 // compatible interface implementation in the resty client.
 //
-// Please Note:
+// NOTE:
 //
 // - If transport is not type of `*http.Transport` then you may not be able to
 // take advantage of some of the `resty` client settings.
@@ -702,9 +735,48 @@ func (c *Client) SetDoNotParseResponse(parse bool) *Client {
 	return c
 }
 
+// SetLogPrefix method sets the Resty logger prefix value.
+func (c *Client) SetLogPrefix(prefix string) *Client {
+	c.logPrefix = prefix
+	c.Log.SetPrefix(prefix)
+	return c
+}
+
+// SetPathParams method sets multiple URL path key-value pairs at one go in the
+// resty client instance.
+// 		resty.SetPathParams(map[string]string{
+// 		   "userId": "sample@sample.com",
+// 		   "subAccountId": "100002",
+// 		})
+//
+// 		Result:
+// 		   URL - /v1/users/{userId}/{subAccountId}/details
+// 		   Composed URL - /v1/users/sample@sample.com/100002/details
+// It replace the value of the key while composing request URL. Also it can be
+// overridden at request level Path Params options, see `Request.SetPathParams`.
+func (c *Client) SetPathParams(params map[string]string) *Client {
+	for p, v := range params {
+		c.pathParams[p] = v
+	}
+	return c
+}
+
+// SetJSONEscapeHTML method is to enable/disable the HTML escape on JSON marshal.
+//
+// NOTE: This option only applicable to standard JSON Marshaller.
+func (c *Client) SetJSONEscapeHTML(b bool) *Client {
+	c.jsonEscapeHTML = b
+	return c
+}
+
 // IsProxySet method returns the true if proxy is set on client otherwise false.
 func (c *Client) IsProxySet() bool {
 	return c.proxyURL != nil
+}
+
+// GetClient method returns the current http.Client used by the resty client.
+func (c *Client) GetClient() *http.Client {
+	return c.httpClient
 }
 
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -739,6 +811,14 @@ func (c *Client) execute(req *Request) (*Response, error) {
 		}
 	}
 
+	if hostHeader := req.Header.Get("Host"); hostHeader != "" {
+		req.RawRequest.Host = hostHeader
+	}
+
+	if err = requestLogger(c, req); err != nil {
+		return nil, err
+	}
+
 	req.Time = time.Now()
 	resp, err := c.httpClient.Do(req.RawRequest)
 
@@ -753,11 +833,21 @@ func (c *Client) execute(req *Request) (*Response, error) {
 	}
 
 	if !req.isSaveResponse {
-		defer func() {
-			_ = resp.Body.Close()
-		}()
+		defer closeq(resp.Body)
+		body := resp.Body
 
-		if response.body, err = ioutil.ReadAll(resp.Body); err != nil {
+		// GitHub #142 & #187
+		if strings.EqualFold(resp.Header.Get(hdrContentEncodingKey), "gzip") && resp.ContentLength != 0 {
+			if _, ok := body.(*gzip.Reader); !ok {
+				body, err = gzip.NewReader(body)
+				if err != nil {
+					return response, err
+				}
+				defer closeq(body)
+			}
+		}
+
+		if response.body, err = ioutil.ReadAll(body); err != nil {
 			return response, err
 		}
 
@@ -777,7 +867,7 @@ func (c *Client) execute(req *Request) (*Response, error) {
 // enables a log prefix
 func (c *Client) enableLogPrefix() {
 	c.Log.SetFlags(log.LstdFlags)
-	c.Log.SetPrefix("RESTY ")
+	c.Log.SetPrefix(c.logPrefix)
 }
 
 // disables a log prefix
@@ -801,6 +891,10 @@ func (c *Client) getTLSConfig() (*tls.Config, error) {
 // returns `*http.Transport` currently in use or error
 // in case currently used `transport` is not an `*http.Transport`
 func (c *Client) getTransport() (*http.Transport, error) {
+	if c.httpClient.Transport == nil {
+		c.SetTransport(new(http.Transport))
+	}
+
 	if transport, ok := c.httpClient.Transport.(*http.Transport); ok {
 		return transport, nil
 	}
@@ -821,4 +915,12 @@ type File struct {
 // String returns string value of current file details
 func (f *File) String() string {
 	return fmt.Sprintf("ParamName: %v; FileName: %v", f.ParamName, f.Name)
+}
+
+// MultipartField represent custom data part for multipart request
+type MultipartField struct {
+	Param       string
+	FileName    string
+	ContentType string
+	io.Reader
 }
