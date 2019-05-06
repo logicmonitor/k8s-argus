@@ -56,11 +56,6 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Service)
 		new := newObj.(*v1.Service)
 
-		// Only add the service if it is has a ClusterIP.
-		if new.Spec.Type != v1.ServiceTypeClusterIP {
-			return
-		}
-
 		// If the old service does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
 		if old.Spec.ClusterIP == "" && new.Spec.ClusterIP != "" {
