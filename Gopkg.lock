@@ -194,14 +194,6 @@
   version = "v0.19.0"
 
 [[projects]]
-  digest = "1:218d6d3952eb109dd9001ef0249e2e5f7881e5b06b5700a072f9649dc6df2778"
-  name = "github.com/go-resty/resty"
-  packages = ["."]
-  pruneopts = ""
-  revision = "fa5875c0caa5c260ab78acec5a244215a730247f"
-  version = "v1.12.0"
-
-[[projects]]
   digest = "1:fd53b471edb4c28c7d297f617f4da0d33402755f58d6301e7ca1197ef0a90937"
   name = "github.com/gogo/protobuf"
   packages = [
@@ -304,14 +296,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:229359b0678d697bda20b8c904536bfdd2a3155a04386f52d2086710166784fa"
-  name = "github.com/howardchn/argus-cli"
-  packages = ["pkg/conf"]
-  pruneopts = ""
-  revision = "e90f3e7dad24979d32fa3268847667e8b926ac30"
-  version = "0.2.2-alpha"
-
-[[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
@@ -367,7 +351,6 @@
   digest = "1:0aeefec0684a18cecbb7b661ec53d8b2b7d66313eb79145d6b84a4ab2923c1e0"
   name = "github.com/logicmonitor/lm-sdk-go"
   packages = [
-    ".",
     "client",
     "client/lm",
     "models",
@@ -514,7 +497,6 @@
     "http2/hpack",
     "idna",
     "internal/timeseries",
-    "publicsuffix",
     "trace",
   ]
   pruneopts = ""
@@ -763,12 +745,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/coreos/etcd/client",
-    "github.com/go-resty/resty",
-    "github.com/howardchn/argus-cli/pkg/conf",
     "github.com/kelseyhightower/envconfig",
     "github.com/logicmonitor/k8s-collectorset-controller/api",
     "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants",
-    "github.com/logicmonitor/lm-sdk-go",
     "github.com/logicmonitor/lm-sdk-go/client",
     "github.com/logicmonitor/lm-sdk-go/client/lm",
     "github.com/logicmonitor/lm-sdk-go/models",
