@@ -17,11 +17,10 @@ package cmd
 import (
 	"context"
 
-	"github.com/logicmonitor/k8s-collectorset-controller/pkg/storage/inmem"
-
 	"github.com/logicmonitor/k8s-collectorset-controller/pkg/config"
 	"github.com/logicmonitor/k8s-collectorset-controller/pkg/controller"
 	"github.com/logicmonitor/k8s-collectorset-controller/pkg/server"
+	"github.com/logicmonitor/k8s-collectorset-controller/pkg/storage/inmem"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

@@ -2,11 +2,11 @@ package devicegroup
 
 import (
 	"fmt"
-	"net/url"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
-	lm "github.com/logicmonitor/lm-sdk-go"
+	"github.com/logicmonitor/lm-sdk-go/client"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ const hasCategoryClose = ")"
 type Options struct {
 	AppliesTo             AppliesToBuilder
 	AppliesToDeletedGroup AppliesToBuilder
-	Client                *lm.DefaultApi
+	Client                *client.LMSdkGo
 	Name                  string
 	ParentID              int32
 	DisableAlerting       bool
@@ -89,12 +89,12 @@ func Create(opts *Options) (int32, error) {
 	}
 
 	if !opts.DeleteDevices && opts.AppliesToDeletedGroup != nil {
-		deletedDeviceGroup, err := Find(clusterDeviceGroup.Id, constants.DeletedDeviceGroup, opts.Client)
+		deletedDeviceGroup, err := Find(clusterDeviceGroup.ID, constants.DeletedDeviceGroup, opts.Client)
 		if err != nil {
 			return 0, err
 		}
 		if deletedDeviceGroup == nil {
-			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.Id, opts.Client)
+			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, opts.Client)
 			if err != nil {
 				return 0, err
 			}
@@ -102,24 +102,28 @@ func Create(opts *Options) (int32, error) {
 
 	}
 
-	return clusterDeviceGroup.Id, nil
+	return clusterDeviceGroup.ID, nil
 }
 
 // Find searches for a device group identified by the parent ID and name.
-func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGroup, error) {
-	filter := fmt.Sprintf("name:%s", url.QueryEscape(name))
-	restResponse, apiResponse, err := client.GetDeviceGroupList("name,id,parentId,subGroups", -1, 0, filter)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, fmt.Errorf("Failed to get device group list when searching for %q: %v", name, _err)
+func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGroup, error) {
+	params := lm.NewGetDeviceGroupListParams()
+	fileds := "name,id,parentId,subGroups"
+	params.SetFields(&fileds)
+	filter := fmt.Sprintf("name:\"%s\"", name)
+	params.SetFilter(&filter)
+	restResponse, err := client.LM.GetDeviceGroupList(params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get device group list when searching for %q: %v", name, err)
 	}
 
 	log.Debugf("%#v", restResponse)
 
-	var deviceGroup *lm.RestDeviceGroup
-	for _, d := range restResponse.Data.Items {
-		if d.ParentId == parentID {
-			log.Infof("Found device group %q with id %d", name, d.Id)
-			deviceGroup = &d
+	var deviceGroup *models.DeviceGroup
+	for _, d := range restResponse.Payload.Items {
+		if d.ParentID == parentID {
+			log.Infof("Found device group %q with id %d", name, d.ID)
+			deviceGroup = d
 			break
 		}
 	}
@@ -128,7 +132,7 @@ func Find(parentID int32, name string, client *lm.DefaultApi) (*lm.RestDeviceGro
 }
 
 // Exists returns true if the specified device group exists in the account
-func Exists(parentID int32, name string, client *lm.DefaultApi) bool {
+func Exists(parentID int32, name string, client *client.LMSdkGo) bool {
 	deviceGroup, err := Find(parentID, name, client)
 	if err != nil {
 		log.Warnf("Failed looking up device group for node role %q: %v", name, err)
@@ -141,15 +145,20 @@ func Exists(parentID int32, name string, client *lm.DefaultApi) bool {
 }
 
 // ExistsByID returns true if we could get the group by id
-func ExistsByID(groupID int32, client *lm.DefaultApi) bool {
-	restResponse, apiResponse, err := client.GetDeviceGroupById(groupID, "name,id")
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		log.Warnf("Failed to get device group (id=%v): %v", groupID, _err)
+func ExistsByID(groupID int32, client *client.LMSdkGo) bool {
+	params := lm.NewGetDeviceGroupByIDParams()
+	params.SetID(groupID)
+	fileds := "name,id"
+	params.SetFields(&fileds)
+	restResponse, err := client.LM.GetDeviceGroupByID(params)
+	if err != nil {
+		log.Warnf("Failed to get device group (id=%v): %v", groupID, err)
+		return false
 	}
 
 	log.Debugf("%#v", restResponse)
 
-	if &restResponse.Data != nil && restResponse.Data.Id == groupID {
+	if restResponse.Payload != nil && restResponse.Payload.ID == groupID {
 		return true
 	}
 
@@ -158,32 +167,40 @@ func ExistsByID(groupID int32, client *lm.DefaultApi) bool {
 
 // DeleteSubGroup deletes a subgroup from a device group with the specified
 // name.
-func DeleteSubGroup(deviceGroup *lm.RestDeviceGroup, name string, client *lm.DefaultApi) error {
+func DeleteSubGroup(deviceGroup *models.DeviceGroup, name string, client *client.LMSdkGo) error {
 	for _, subGroup := range deviceGroup.SubGroups {
 		if subGroup.Name != name {
 			continue
 		}
-		restResponse, apiResponse, err := client.DeleteDeviceGroupById(subGroup.Id, true)
-		return utilities.CheckAllErrors(restResponse, apiResponse, err)
+		params := lm.NewDeleteDeviceGroupByIDParams()
+		params.ID = subGroup.ID
+		deleteChildren := true
+		params.SetDeleteChildren(&deleteChildren)
+		deleteHard := true
+		params.SetDeleteHard(&deleteHard)
+		_, err := client.LM.DeleteDeviceGroupByID(params)
+		return err
 	}
 
 	return nil
 }
 
-func create(name, appliesTo string, disableAlerting bool, parentID int32, client *lm.DefaultApi) (*lm.RestDeviceGroup, error) {
-	restResponse, apiResponse, err := client.AddDeviceGroup(lm.RestDeviceGroup{
-		Name:            name,
+func create(name, appliesTo string, disableAlerting bool, parentID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {
+	params := lm.NewAddDeviceGroupParams()
+	params.SetBody(&models.DeviceGroup{
+		Name:            &name,
 		Description:     "A dynamic device group for Kubernetes.",
-		ParentId:        parentID,
+		ParentID:        parentID,
 		AppliesTo:       appliesTo,
 		DisableAlerting: disableAlerting,
 	})
-	if e := utilities.CheckAllErrors(restResponse, apiResponse, err); e != nil {
-		return nil, fmt.Errorf("Failed to add device group %q: %v", name, e)
+	restResponse, err := client.LM.AddDeviceGroup(params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add device group %q: %v", name, err)
 	}
 
-	deviceGroup := &restResponse.Data
-	log.Infof("Created device group %q with id %d", name, deviceGroup.Id)
+	deviceGroup := restResponse.Payload
+	log.Infof("Created device group %q with id %d", name, deviceGroup.ID)
 
 	return deviceGroup, nil
 }

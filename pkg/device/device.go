@@ -3,14 +3,14 @@ package device
 import (
 	"context"
 	"fmt"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
-	lm "github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -21,16 +21,20 @@ type Manager struct {
 	ControllerClient api.CollectorSetControllerClient
 }
 
-func buildDevice(c *config.Config, client api.CollectorSetControllerClient, options ...types.DeviceOption) *lm.RestDevice {
-	device := &lm.RestDevice{
-		CustomProperties: []lm.NameAndValue{
+func buildDevice(c *config.Config, client api.CollectorSetControllerClient, options ...types.DeviceOption) *models.Device {
+	hostGroupIds := "1"
+	propertyName := constants.K8sClusterNamePropertyKey
+	// use the copy value
+	clusterName := c.ClusterName
+	device := &models.Device{
+		CustomProperties: []*models.NameAndValue{
 			{
-				Name:  constants.K8sClusterNamePropertyKey,
-				Value: c.ClusterName,
+				Name:  &propertyName,
+				Value: &clusterName,
 			},
 		},
 		DisableAlerting: c.DisableAlerting,
-		HostGroupIds:    "1",
+		HostGroupIds:    &hostGroupIds,
 		DeviceType:      constants.K8sDeviceType,
 	}
 
@@ -43,15 +47,15 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 		log.Errorf("Failed to get collector ID: %v", err)
 	} else {
 		log.Infof("Using collector ID %d for %q", reply.Id, device.DisplayName)
-		device.PreferredCollectorId = reply.Id
+		device.PreferredCollectorID = &reply.Id
 	}
 
 	return device
 }
 
-// checkAndUpdateExistDevice tries to find and update the devices which needs to be changed
-func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevice, error) {
-	oldDevice, err := m.FindByDisplayName(device.DisplayName)
+// checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
+func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.Device, error) {
+	oldDevice, err := m.FindByDisplayName(*device.DisplayName)
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +73,8 @@ func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevi
 	oldClusterName := ""
 	if oldDevice.CustomProperties != nil && len(oldDevice.CustomProperties) > 0 {
 		for _, cp := range oldDevice.CustomProperties {
-			if cp.Name == constants.K8sClusterNamePropertyKey {
-				oldClusterName = cp.Value
+			if *cp.Name == constants.K8sClusterNamePropertyKey {
+				oldClusterName = *cp.Value
 			}
 		}
 	}
@@ -79,7 +83,7 @@ func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevi
 		return device, nil
 	}
 
-	newDevice, err := m.updateAndReplace(oldDevice.Id, device)
+	newDevice, err := m.updateAndReplace(oldDevice.ID, device)
 	if err != nil {
 		return nil, err
 	}
@@ -87,57 +91,73 @@ func (m *Manager) checkAndUpdateExistDevice(device *lm.RestDevice) (*lm.RestDevi
 	return newDevice, nil
 }
 
-func (m *Manager) updateAndReplace(id int32, device *lm.RestDevice) (*lm.RestDevice, error) {
+func (m *Manager) updateAndReplace(id int32, device *models.Device) (*models.Device, error) {
+	opType := "replace"
+	params := lm.NewUpdateDeviceParams()
+	params.SetID(id)
+	params.SetBody(device)
+	params.SetOpType(&opType)
 
-	restResponse, apiResponse, err := m.LMClient.UpdateDevice(*device, id, "replace")
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, _err
+	restResponse, err := m.LMClient.LM.UpdateDevice(params)
+	if err != nil {
+		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
 
-	return &restResponse.Data, nil
+	return restResponse.Payload, nil
 }
 
 // FindByDisplayName implements types.DeviceManager.
-func (m *Manager) FindByDisplayName(name string) (*lm.RestDevice, error) {
-	filter := fmt.Sprintf("displayName:%s", name)
-	restResponse, apiResponse, err := m.LMClient.GetDeviceList("", -1, 0, filter)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, _err
+func (m *Manager) FindByDisplayName(name string) (*models.Device, error) {
+	filter := fmt.Sprintf("displayName:\"%s\"", name)
+	params := lm.NewGetDeviceListParams()
+	params.SetFilter(&filter)
+	restResponse, err := m.LMClient.LM.GetDeviceList(params)
+	if err != nil {
+		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
-	if restResponse.Data.Total == 1 {
-		return &restResponse.Data.Items[0], nil
+	if restResponse.Payload.Total == 1 {
+		return restResponse.Payload.Items[0], nil
 	}
 
 	return nil, nil
 }
 
 // Add implements types.DeviceManager.
-func (m *Manager) Add(options ...types.DeviceOption) (*lm.RestDevice, error) {
+func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, options...)
 	log.Debugf("%#v", device)
 
-	restResponse, apiResponse, err := m.LMClient.AddDevice(*device, false)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		if restResponse != nil && restResponse.Status == 600 {
+	params := lm.NewAddDeviceParams()
+	addFromWizard := false
+	params.SetAddFromWizard(&addFromWizard)
+	params.SetBody(device)
+	restResponse, err := m.LMClient.LM.AddDevice(params)
+	if err != nil {
+		deviceDefault, ok := err.(*lm.AddDeviceDefault)
+		if !ok {
+			return nil, err
+		}
+		// handle the device existing case
+		if deviceDefault != nil && deviceDefault.Code() == 409 {
 			log.Infof("Check and Update the existing device: %s", device.DisplayName)
-			newDevice, err := m.checkAndUpdateExistDevice(device)
+			newDevice, err := m.checkAndUpdateExistingDevice(device)
 			if err != nil {
 				return nil, err
 			}
 			return newDevice, nil
 		}
 
-		return nil, _err
+		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
 
-	return &restResponse.Data, nil
+	return restResponse.Payload, nil
 }
 
 // UpdateAndReplaceByID implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) (*lm.RestDevice, error) {
+func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, options...)
 	log.Debugf("%#v", device)
 
@@ -145,7 +165,7 @@ func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) 
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.DeviceOption) (*lm.RestDevice, error) {
+func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.DeviceOption) (*models.Device, error) {
 	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return nil, err
@@ -157,7 +177,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 	}
 
 	// Update the device.
-	device, err := m.UpdateAndReplaceByID(d.Id, options...)
+	device, err := m.UpdateAndReplaceByID(d.ID, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,22 +185,29 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 	return device, nil
 }
 
+// TODO: this method needs to be removed in DEV-50496
 // UpdateAndReplaceFieldByID implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...types.DeviceOption) (*lm.RestDevice, error) {
+func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, options...)
 	log.Debugf("%#v", device)
 
-	restResponse, apiResponse, err := m.LMClient.PatchDeviceById(*device, id, "replace", field)
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, _err
+	params := lm.NewPatchDeviceParams()
+	params.SetID(id)
+	params.SetBody(device)
+	opType := "replace"
+	params.SetOpType(&opType)
+	restResponse, err := m.LMClient.LM.PatchDevice(params)
+	if err != nil {
+		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
 
-	return &restResponse.Data, nil
+	return restResponse.Payload, nil
 }
 
+// TODO: this method needs to be removed in DEV-50496
 // UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, options ...types.DeviceOption) (*lm.RestDevice, error) {
+func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, options ...types.DeviceOption) (*models.Device, error) {
 	d, err := m.FindByDisplayName(name)
 	if err != nil {
 		return nil, err
@@ -192,7 +219,7 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, 
 	}
 
 	// Update the device.
-	device, err := m.UpdateAndReplaceFieldByID(d.Id, field, options...)
+	device, err := m.UpdateAndReplaceFieldByID(d.ID, field, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +229,10 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, 
 
 // DeleteByID implements types.DeviceManager.
 func (m *Manager) DeleteByID(id int32) error {
-	restResponse, apiResponse, err := m.LMClient.DeleteDevice(id)
-	return utilities.CheckAllErrors(restResponse, apiResponse, err)
+	params := lm.NewDeleteDeviceByIDParams()
+	params.SetID(id)
+	_, err := m.LMClient.LM.DeleteDeviceByID(params)
+	return err
 }
 
 // DeleteByDisplayName implements types.DeviceManager.
@@ -219,8 +248,10 @@ func (m *Manager) DeleteByDisplayName(name string) error {
 		return nil
 	}
 
-	restResponse, apiResponse, err := m.LMClient.DeleteDevice(d.Id)
-	return utilities.CheckAllErrors(restResponse, apiResponse, err)
+	params := lm.NewDeleteDeviceByIDParams()
+	params.SetID(d.ID)
+	_, err = m.LMClient.LM.DeleteDeviceByID(params)
+	return err
 }
 
 // Config implements types.DeviceManager.
@@ -229,11 +260,17 @@ func (m *Manager) Config() *config.Config {
 }
 
 // GetListByGroupID implements getting all the devices belongs to the group directly
-func (m *Manager) GetListByGroupID(groupID int32) ([]lm.RestDevice, error) {
-	restResponse, apiResponse, err := m.LMClient.GetImmediateDeviceListByDeviceGroupId(groupID, "id,name,displayName,customProperties", -1, 0, "")
-	if _err := utilities.CheckAllErrors(restResponse, apiResponse, err); _err != nil {
-		return nil, _err
+func (m *Manager) GetListByGroupID(groupID int32) ([]*models.Device, error) {
+	params := lm.NewGetImmediateDeviceListByDeviceGroupIDParams()
+	params.SetID(groupID)
+	fields := "id,name,displayName,customProperties"
+	params.SetFields(&fields)
+	size := int32(-1)
+	params.SetSize(&size)
+	restResponse, err := m.LMClient.LM.GetImmediateDeviceListByDeviceGroupID(params)
+	if err != nil {
+		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
-	return restResponse.Data.Items, nil
+	return restResponse.Payload.Items, nil
 }

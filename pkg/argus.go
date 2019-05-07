@@ -16,7 +16,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
-	lm "github.com/logicmonitor/lm-sdk-go"
+	"github.com/logicmonitor/lm-sdk-go/client"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -31,20 +31,14 @@ type Argus struct {
 	Watchers []types.Watcher
 }
 
-func newLMClient(id, key, company string) *lm.DefaultApi {
-	config := lm.NewConfiguration()
-	config.APIKey = map[string]map[string]string{
-		"Authorization": {
-			"AccessID":  id,
-			"AccessKey": key,
-		},
-	}
-	config.BasePath = "https://" + company + ".logicmonitor.com/santaba/rest"
-	config.UserAgent = constants.UserAgentBase + constants.Version
-
-	api := lm.NewDefaultApi()
-	api.Configuration = config
-
+func newLMClient(id, key, company string) *client.LMSdkGo {
+	config := client.NewConfig()
+	config.SetAccessID(&id)
+	config.SetAccessKey(&key)
+	domain := company + ".logicmonitor.com"
+	config.SetAccountDomain(&domain)
+	//config.UserAgent = constants.UserAgentBase + constants.Version
+	api := client.New(config)
 	return api
 }
 
@@ -165,7 +159,7 @@ func (a *Argus) Watch() {
 }
 
 // check the cluster group ID, if the group does not exist, just use the root group
-func checkAndUpdateClusterGroup(config *config.Config, lmClient *lm.DefaultApi) {
+func checkAndUpdateClusterGroup(config *config.Config, lmClient *client.LMSdkGo) {
 	// do not need to check the root group
 	if config.ClusterGroupID == constants.RootDeviceGroupID {
 		return
