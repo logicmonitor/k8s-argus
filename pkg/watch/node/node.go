@@ -29,7 +29,7 @@ type Watcher struct {
 }
 
 // ApiVersion is a function that implements the Watcher interface.
-func (w Watcher) ApiVersion() string {
+func (w *Watcher) ApiVersion() string {
 	return constants.K8sApiVersion_v1
 }
 

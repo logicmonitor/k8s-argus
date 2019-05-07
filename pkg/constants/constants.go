@@ -89,8 +89,10 @@ const (
 )
 
 const (
-	// K8sApiVersion is the k8s api version
-	K8sApiVersion_v1           = "v1"
+	// K8sApiVersion_v1 is the version 'v1' of k8s api
+	K8sApiVersion_v1 = "v1"
+	// K8sApiVersion_apps_v1beta1 is the version 'apps/v1beta1' of k8s api
 	K8sApiVersion_apps_v1beta1 = "apps/v1beta1"
+	// K8sApiVersion_apps_v1beta2 is the version 'apps/v1beta2' of k8s api
 	K8sApiVersion_apps_v1beta2 = "apps/v1beta2"
 )

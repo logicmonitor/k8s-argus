@@ -66,7 +66,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 		},
 		{
 			Name:                  constants.DeploymentDeviceGroupName,
-			DisableAlerting:       d.Config.DisableAlerting,
+			DisableAlerting:       true,
 			AppliesTo:             devicegroup.NewAppliesToBuilder(),
 			Client:                d.LMClient,
 			DeleteDevices:         d.Config.DeleteDevices,
