@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"github.com/logicmonitor/lm-sdk-go/models"
 	"sync"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -10,6 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
 )
 
