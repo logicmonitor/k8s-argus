@@ -7,8 +7,10 @@ import (
 func RecoverError(msg string) {
 	if err := recover(); err != nil {
 		if msg != "" {
+			log.Errorf("%s recover error: %s", msg, err)
 			msg += ", "
+		} else {
+			log.Errorf("Recover error: %s", err)
 		}
-		log.Errorf("%srecover error: %s", msg, err)
 	}
 }

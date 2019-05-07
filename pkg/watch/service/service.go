@@ -38,7 +38,7 @@ func (w *Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		defer err.RecoverError("add service")
+		defer err.RecoverError("Add service")
 		service := obj.(*v1.Service)
 		// Only add the service if it is has a ClusterIP.
 		if service.Spec.Type != v1.ServiceTypeClusterIP {
@@ -55,7 +55,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
-		defer err.RecoverError("update service")
+		defer err.RecoverError("Update service")
 		old := oldObj.(*v1.Service)
 		new := newObj.(*v1.Service)
 
@@ -82,7 +82,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		defer err.RecoverError("delete service")
+		defer err.RecoverError("Delete service")
 		service := obj.(*v1.Service)
 
 		// Delete the service.

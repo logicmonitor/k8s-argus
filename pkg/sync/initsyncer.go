@@ -1,16 +1,16 @@
 package sync
 
 import (
-	"sync"
-
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/err"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/lm-sdk-go"
 	log "github.com/sirupsen/logrus"
+	"sync"
 )
 
 // InitSyncer implements the initial sync through logicmonitor API
@@ -25,8 +25,8 @@ func (i *InitSyncer) InitSync() {
 	// get the cluster info
 	parentGroupID := i.DeviceManager.Config().ClusterGroupID
 	groupName := constants.ClusterDeviceGroupPrefix + clusterName
-	rest, err := devicegroup.Find(parentGroupID, groupName, i.DeviceManager.LMClient)
-	if err != nil || rest == nil {
+	rest, error := devicegroup.Find(parentGroupID, groupName, i.DeviceManager.LMClient)
+	if error != nil || rest == nil {
 		log.Infof("Failed to get the cluster group: %v, parentID: %v", groupName, parentGroupID)
 		return
 	}
@@ -39,24 +39,28 @@ func (i *InitSyncer) InitSync() {
 			switch subgroup.Name {
 			case constants.NodeDeviceGroupName:
 				go func() {
+					defer err.RecoverError("Sync nodes")
 					defer wg.Done()
 					i.intSyncNodes(rest.Id)
 					log.Infof("Finish syncing %v", constants.NodeDeviceGroupName)
 				}()
 			case constants.PodDeviceGroupName:
 				go func() {
+					defer err.RecoverError("Sync pods")
 					defer wg.Done()
 					i.initSyncPodsOrServices(constants.PodDeviceGroupName, rest.Id)
 					log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
 				}()
 			case constants.ServiceDeviceGroupName:
 				go func() {
+					defer err.RecoverError("Sync services")
 					defer wg.Done()
 					i.initSyncPodsOrServices(constants.ServiceDeviceGroupName, rest.Id)
 					log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
 				}()
 			default:
 				func() {
+					defer err.RecoverError("Unsupported group to sync")
 					defer wg.Done()
 					log.Infof("Unsupported group to sync, ignore it: %v", subgroup.Name)
 				}()

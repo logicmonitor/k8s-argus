@@ -7,13 +7,13 @@ import (
 
 func TestRecoverError(t *testing.T) {
 	run(t)
-	t.Logf("test success")
+	t.Logf("Test success")
 
 }
 
 func run(t *testing.T) {
-	defer RecoverError("test msg")
-	t.Logf("test run start...")
+	defer RecoverError("Test msg")
+	t.Logf("Test run start...")
 	panic(fmt.Errorf("test panic"))
-	t.Logf("test run end...")
+	t.Logf("Test run end...")
 }
