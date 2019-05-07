@@ -3,14 +3,14 @@ package device
 import (
 	"context"
 	"fmt"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -186,6 +186,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 }
 
 // TODO: this method needs to be removed in DEV-50496
+
 // UpdateAndReplaceFieldByID implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, options...)
@@ -206,6 +207,7 @@ func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...t
 }
 
 // TODO: this method needs to be removed in DEV-50496
+
 // UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, options ...types.DeviceOption) (*models.Device, error) {
 	d, err := m.FindByDisplayName(name)
