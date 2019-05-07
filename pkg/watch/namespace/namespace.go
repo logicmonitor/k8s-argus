@@ -20,6 +20,11 @@ type Watcher struct {
 	DeviceGroups map[string]int32
 }
 
+// ApiVersion is a function that implements the Watcher interface.
+func (w Watcher) ApiVersion() string {
+	return constants.K8sApiVersion_v1
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w Watcher) Resource() string {
 	return resource
@@ -43,6 +48,8 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			case constants.PodDeviceGroupName:
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
+			case constants.DeploymentDeviceGroupName:
+				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			default:
 				continue
 			}

@@ -16,6 +16,7 @@ type Base struct {
 
 // Watcher is the LogicMonitor Watcher interface.
 type Watcher interface {
+	ApiVersion() string
 	Resource() string
 	ObjType() runtime.Object
 	AddFunc() func(obj interface{})
