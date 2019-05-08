@@ -37,6 +37,8 @@ const (
 	PodDeviceGroupName = "Pods"
 	// ServiceDeviceGroupName is the service device group name in the cluster device group.
 	ServiceDeviceGroupName = "Services"
+	// DeploymentDeviceGroupName is the deployment device group name in the cluster device group.
+	DeploymentDeviceGroupName = "Deployments"
 )
 
 const (
@@ -54,6 +56,10 @@ const (
 	ServiceCategory = "KubernetesService"
 	// ServiceDeletedCategory is the system.category used to identity a deleted Kubernetes Service resource type in LogicMonitor.
 	ServiceDeletedCategory = "KubernetesServiceDeleted"
+	// DeploymentCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
+	DeploymentCategory = "KubernetesDeployment"
+	// DeploymentDeletedCategory is the system.category used to identity a deleted Kubernetes Service resource type in LogicMonitor.
+	DeploymentDeletedCategory = "KubernetesDeploymentDeleted"
 	// PodCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
 	PodCategory = "KubernetesPod"
 	// PodDeletedCategory is the system.category used to identity a deleted Kubernetes Pod resource type in LogicMonitor.
@@ -80,4 +86,13 @@ const (
 	K8sClusterNamePropertyKey = "auto.clustername"
 	// K8sDeviceType is the type value of the k8s device
 	K8sDeviceType = 8
+)
+
+const (
+	// K8sApiVersion_v1 is the version 'v1' of k8s api
+	K8sApiVersion_v1 = "v1"
+	// K8sApiVersion_apps_v1beta1 is the version 'apps/v1beta1' of k8s api
+	K8sApiVersion_apps_v1beta1 = "apps/v1beta1"
+	// K8sApiVersion_apps_v1beta2 is the version 'apps/v1beta2' of k8s api
+	K8sApiVersion_apps_v1beta2 = "apps/v1beta2"
 )

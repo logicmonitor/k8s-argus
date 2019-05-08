@@ -28,6 +28,11 @@ type Watcher struct {
 	LMClient     *client.LMSdkGo
 }
 
+// ApiVersion is a function that implements the Watcher interface.
+func (w *Watcher) ApiVersion() string {
+	return constants.K8sApiVersion_v1
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource

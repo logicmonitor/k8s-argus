@@ -20,18 +20,23 @@ type Watcher struct {
 	DeviceGroups map[string]int32
 }
 
+// ApiVersion is a function that implements the Watcher interface.
+func (w *Watcher) ApiVersion() string {
+	return constants.K8sApiVersion_v1
+}
+
 // Resource is a function that implements the Watcher interface.
-func (w Watcher) Resource() string {
+func (w *Watcher) Resource() string {
 	return resource
 }
 
 // ObjType is a function that implements the Watcher interface.
-func (w Watcher) ObjType() runtime.Object {
+func (w *Watcher) ObjType() runtime.Object {
 	return &v1.Namespace{}
 }
 
 // AddFunc is a function that implements the Watcher interface.
-func (w Watcher) AddFunc() func(obj interface{}) {
+func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handling add namespace event: %s", namespace.Name)
@@ -43,6 +48,8 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			case constants.PodDeviceGroupName:
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
+			case constants.DeploymentDeviceGroupName:
+				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			default:
 				continue
 			}
@@ -69,7 +76,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 }
 
 // UpdateFunc is a function that implements the Watcher interface.
-func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
+func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		log.Debugf("Ignoring update namespace event")
 		// oldNamespace := oldObj.(*v1.Namespace)
@@ -78,7 +85,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 }
 
 // DeleteFunc is a function that implements the Watcher interface.
-func (w Watcher) DeleteFunc() func(obj interface{}) {
+func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handle deleting namespace event: %s", namespace.Name)

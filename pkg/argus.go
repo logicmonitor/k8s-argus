@@ -1,6 +1,7 @@
 package argus
 
 import (
+	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -110,6 +111,9 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 		&pod.Watcher{
 			DeviceManager: deviceManager,
 		},
+		&deployment.Watcher{
+			DeviceManager: deviceManager,
+		},
 	}
 
 	return argus, nil
@@ -140,9 +144,8 @@ func NewBase(config *config.Config) (*types.Base, error) {
 
 // Watch watches the API for events.
 func (a *Argus) Watch() {
-	getter := a.K8sClient.CoreV1().RESTClient()
 	for _, w := range a.Watchers {
-		watchlist := cache.NewListWatchFromClient(getter, w.Resource(), v1.NamespaceAll, fields.Everything())
+		watchlist := cache.NewListWatchFromClient(getK8sRESTClient(a.K8sClient, w.ApiVersion()), w.Resource(), v1.NamespaceAll, fields.Everything())
 		_, controller := cache.NewInformer(
 			watchlist,
 			w.ObjType(),
@@ -155,6 +158,18 @@ func (a *Argus) Watch() {
 		)
 		stop := make(chan struct{})
 		go controller.Run(stop)
+	}
+}
+
+// get the K8s RESTClient by apiVersion, use the default V1 version if there is no match
+func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.Interface {
+	switch apiVersion {
+	case constants.K8sApiVersion_v1:
+		return clientset.CoreV1().RESTClient()
+	case constants.K8sApiVersion_apps_v1beta2:
+		return clientset.AppsV1beta2().RESTClient()
+	default:
+		return clientset.CoreV1().RESTClient()
 	}
 }
 
