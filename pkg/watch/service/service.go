@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/err"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
@@ -42,6 +43,7 @@ func (w *Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		defer err.RecoverError("Add service")
 		service := obj.(*v1.Service)
 
 		log.Infof("service type is %s", service.Spec.Type)
@@ -58,6 +60,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
+		defer err.RecoverError("Update service")
 		old := oldObj.(*v1.Service)
 		new := newObj.(*v1.Service)
 
@@ -79,6 +82,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		defer err.RecoverError("Delete service")
 		service := obj.(*v1.Service)
 
 		// Delete the service.
