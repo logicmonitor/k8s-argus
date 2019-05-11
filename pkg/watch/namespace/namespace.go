@@ -34,6 +34,7 @@ func (w Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		// There may be unexpected panic. We need to recover so that the application doesn't crash.
 		defer err.RecoverError("Add namespace")
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handling add namespace event: %s", namespace.Name)
@@ -73,6 +74,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
+		// There may be unexpected panic. We need to recover so that the application doesn't crash.
 		defer err.RecoverError("Update namespace")
 		log.Debugf("Ignoring update namespace event")
 		// oldNamespace := oldObj.(*v1.Namespace)
@@ -83,6 +85,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		// There may be unexpected panic. We need to recover so that the application doesn't crash.
 		defer err.RecoverError("Delete namespace")
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handle deleting namespace event: %s", namespace.Name)
