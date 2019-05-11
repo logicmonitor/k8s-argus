@@ -39,11 +39,11 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
 
-		log.Infof("service type is %s", service.Spec.Type)
+		log.Infof("Service type is %s", service.Spec.Type)
 
 		// Require an IP address.
 		if service.Spec.ClusterIP == "" {
-			log.Warningf("service clusterIP is empty, serviceType : %s.", service.Spec.Type)
+			log.Warningf("Service clusterIP is empty, service name : %s", service.Name)
 			return
 		}
 		w.add(service)
