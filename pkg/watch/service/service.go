@@ -10,7 +10,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -38,7 +38,7 @@ func (w *Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// There may be unexpected panic. We need to recover so that the application doesn't crash.
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 		defer err.RecoverError("Add service")
 		service := obj.(*v1.Service)
 
@@ -56,7 +56,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
-		// There may be unexpected panic. We need to recover so that the application doesn't crash.
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 		defer err.RecoverError("Update service")
 		old := oldObj.(*v1.Service)
 		new := newObj.(*v1.Service)
@@ -79,7 +79,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// There may be unexpected panic. We need to recover so that the application doesn't crash.
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 		defer err.RecoverError("Delete service")
 		service := obj.(*v1.Service)
 

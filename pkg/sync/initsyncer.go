@@ -40,7 +40,7 @@ func (i *InitSyncer) InitSync() {
 			switch subgroup.Name {
 			case constants.NodeDeviceGroupName:
 				go func() {
-					// There may be unexpected panic. We need to recover so that the application doesn't crash.
+					// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 					defer err.RecoverError("Sync nodes")
 					defer wg.Done()
 					i.intSyncNodes(rest.ID)
@@ -48,7 +48,7 @@ func (i *InitSyncer) InitSync() {
 				}()
 			case constants.PodDeviceGroupName:
 				go func() {
-					// There may be unexpected panic. We need to recover so that the application doesn't crash.
+					// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 					defer err.RecoverError("Sync pods")
 					defer wg.Done()
 					i.initSyncPodsOrServices(constants.PodDeviceGroupName, rest.ID)
@@ -56,7 +56,7 @@ func (i *InitSyncer) InitSync() {
 				}()
 			case constants.ServiceDeviceGroupName:
 				go func() {
-					// There may be unexpected panic. We need to recover so that the application doesn't crash.
+					// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 					defer err.RecoverError("Sync services")
 					defer wg.Done()
 					i.initSyncPodsOrServices(constants.ServiceDeviceGroupName, rest.ID)
@@ -64,7 +64,7 @@ func (i *InitSyncer) InitSync() {
 				}()
 			default:
 				func() {
-					// There may be unexpected panic. We need to recover so that the application doesn't crash.
+					// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 					defer err.RecoverError("Unsupported group to sync")
 					defer wg.Done()
 					log.Infof("Unsupported group to sync, ignore it: %v", subgroup.Name)
