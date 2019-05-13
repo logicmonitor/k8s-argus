@@ -6,7 +6,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/err"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -34,7 +34,7 @@ func (w Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// There may be unexpected panic. We need to recover so that the application doesn't crash.
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 		defer err.RecoverError("Add namespace")
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handling add namespace event: %s", namespace.Name)
@@ -74,7 +74,7 @@ func (w Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
-		// There may be unexpected panic. We need to recover so that the application doesn't crash.
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 		defer err.RecoverError("Update namespace")
 		log.Debugf("Ignoring update namespace event")
 		// oldNamespace := oldObj.(*v1.Namespace)
@@ -85,7 +85,7 @@ func (w Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// There may be unexpected panic. We need to recover so that the application doesn't crash.
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
 		defer err.RecoverError("Delete namespace")
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handle deleting namespace event: %s", namespace.Name)
