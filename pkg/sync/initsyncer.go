@@ -159,16 +159,16 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 		}
 		if autoClusterName != i.DeviceManager.Config().ClusterName {
 			log.Infof("Ignore the device (%v) which does not have property %v:%v",
-				device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
+				*device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
 			continue
 		}
 
 		_, exist := resourcesMap[*device.DisplayName]
 		if !exist {
-			log.Infof("Delete the non-exist %v device: %v", resourceType, device.DisplayName)
+			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
 			err := i.DeviceManager.DeleteByID(device.ID)
 			if err != nil {
-				log.Warnf("Failed to delete the device: %v", device.DisplayName)
+				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
 			}
 		}
 	}

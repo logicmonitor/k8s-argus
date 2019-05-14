@@ -46,7 +46,7 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	if err != nil {
 		log.Errorf("Failed to get collector ID: %v", err)
 	} else {
-		log.Infof("Using collector ID %d for %q", reply.Id, device.DisplayName)
+		log.Infof("Using collector ID %d for %q", reply.Id, *device.DisplayName)
 		device.PreferredCollectorID = &reply.Id
 	}
 
@@ -60,12 +60,12 @@ func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.D
 		return nil, err
 	}
 	if oldDevice == nil {
-		return nil, fmt.Errorf("can not find the device: %s", device.DisplayName)
+		return nil, fmt.Errorf("can not find the device: %s", *device.DisplayName)
 	}
 
 	// the device which is not changed will be ignored
-	if device.Name == oldDevice.Name {
-		log.Infof("No changes to device (%s). Ignoring update", device.DisplayName)
+	if *device.Name == *oldDevice.Name {
+		log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
 		return device, nil
 	}
 
@@ -79,7 +79,7 @@ func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.D
 		}
 	}
 	if oldClusterName != m.Config().ClusterName {
-		log.Infof("Device (%s) belongs to a different cluster (%s). Ignoring update", device.DisplayName, oldClusterName)
+		log.Infof("Device (%s) belongs to a different cluster (%s). Ignoring update", *device.DisplayName, oldClusterName)
 		return device, nil
 	}
 
@@ -87,7 +87,7 @@ func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.D
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Finished updating the device: %s", newDevice.DisplayName)
+	log.Infof("Finished updating the device: %s", *newDevice.DisplayName)
 	return newDevice, nil
 }
 
@@ -141,7 +141,7 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 		}
 		// handle the device existing case
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
-			log.Infof("Check and Update the existing device: %s", device.DisplayName)
+			log.Infof("Check and Update the existing device: %s", *device.DisplayName)
 			newDevice, err := m.checkAndUpdateExistingDevice(device)
 			if err != nil {
 				return nil, err
