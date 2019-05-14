@@ -42,13 +42,14 @@ func (b *Builder) SystemCategories(categories string) types.DeviceOption {
 func (b *Builder) ResourceLabels(properties map[string]string) types.DeviceOption {
 	return func(device *models.Device) {
 		for name, value := range properties {
-			if value == "" {
-				value = constants.LabelNullPlaceholder
-			}
 			propName := constants.LabelCustomPropertyPrefix + name
+			propValue := value
+			if propValue == "" {
+				propValue = constants.LabelNullPlaceholder
+			}
 			device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
 				Name:  &propName,
-				Value: &value,
+				Value: &propValue,
 			})
 		}
 	}
