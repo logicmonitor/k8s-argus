@@ -65,6 +65,8 @@ func (i *InitSyncer) InitSync() {
 				}()
 			case constants.DeploymentDeviceGroupName:
 				go func() {
+					// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
+					defer err.RecoverError("Sync deployments")
 					defer wg.Done()
 					i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)
 					log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)

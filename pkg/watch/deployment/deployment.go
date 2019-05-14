@@ -5,6 +5,8 @@ package deployment
 import (
 	"fmt"
 
+	"github.com/logicmonitor/k8s-argus/pkg/err"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -42,6 +44,8 @@ func (w *Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
+		defer err.RecoverError("Add deployment")
 		deployment := obj.(*v1beta2.Deployment)
 
 		log.Infof("Handling add deployment event: %s", deployment.Name)
@@ -53,6 +57,8 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
+		defer err.RecoverError("Update deployment")
 		old := oldObj.(*v1beta2.Deployment)
 		new := newObj.(*v1beta2.Deployment)
 
@@ -63,6 +69,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
+		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
+		defer err.RecoverError("Delete deployment")
 		deployment := obj.(*v1beta2.Deployment)
 
 		// Delete the deployment.
