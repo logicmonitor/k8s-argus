@@ -142,7 +142,7 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 		log.Warnf("Failed to get the devices in the group: %v", subGroup.FullPath)
 		return
 	}
-	if devices == nil || len(devices) == 0 {
+	if len(devices) == 0 {
 		log.Warnf("There is no device in the group: %v", subGroup.FullPath)
 		return
 	}
