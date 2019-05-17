@@ -108,8 +108,8 @@ func Create(opts *Options) (int32, error) {
 // Find searches for a device group identified by the parent ID and name.
 func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGroup, error) {
 	params := lm.NewGetDeviceGroupListParams()
-	fileds := "name,id,parentId,subGroups"
-	params.SetFields(&fileds)
+	fields := "name,id,parentId,subGroups"
+	params.SetFields(&fields)
 	filter := fmt.Sprintf("name:\"%s\"", name)
 	params.SetFilter(&filter)
 	restResponse, err := client.LM.GetDeviceGroupList(params)
@@ -148,8 +148,8 @@ func Exists(parentID int32, name string, client *client.LMSdkGo) bool {
 func ExistsByID(groupID int32, client *client.LMSdkGo) bool {
 	params := lm.NewGetDeviceGroupByIDParams()
 	params.SetID(groupID)
-	fileds := "name,id"
-	params.SetFields(&fileds)
+	fields := "name,id"
+	params.SetFields(&fields)
 	restResponse, err := client.LM.GetDeviceGroupByID(params)
 	if err != nil {
 		log.Warnf("Failed to get device group (id=%v): %v", groupID, err)
