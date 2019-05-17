@@ -7,7 +7,6 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
-	"github.com/logicmonitor/k8s-argus/pkg/err"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client"
@@ -42,8 +41,6 @@ func (w *Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
-		defer err.RecoverError("Add node")
 		node := obj.(*v1.Node)
 
 		log.Debugf("Handling add node event: %s", node.Name)
@@ -59,8 +56,6 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
-		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
-		defer err.RecoverError("Update node")
 		old := oldObj.(*v1.Node)
 		new := newObj.(*v1.Node)
 
@@ -86,8 +81,6 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // nolint: dupl
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
-		defer err.RecoverError("Delete node")
 		node := obj.(*v1.Node)
 
 		log.Debugf("Handling delete node event: %s", node.Name)
