@@ -7,26 +7,27 @@ Getting Started
 ```go
 package main
 
-import lmv1 "github.com/logicmonitor/lm-sdk-go"
+import (
+    "fmt"
+    "github.com/logicmonitor/lm-sdk-go/client"
+    "github.com/logicmonitor/lm-sdk-go/client/lm"
+)
 
-func NewLMClient(id, key, company string) *lmv1.DefaultApi {
-	config := lmv1.NewConfiguration()
-	config.APIKey = map[string]map[string]string{
-		"Authorization": map[string]string{
-			"AccessID":  id,
-			"AccessKey": key,
-		},
-	}
-	config.BasePath = "https://" + company + ".logicmonitor.com/santaba/rest"
+func NewLMClient() *client.LMSdkGo {
+    domain := "YOUR_COMPANY.logicmonitor.com"
+    accessID := "YOUR_ACCESS_ID"
+    accessKey := "YOUR_ACCESS_KEY"
 
-	api := lmv1.NewDefaultApi()
-	api.Configuration = config
+    config := client.NewConfig()
+    config.SetAccountDomain(&domain)
+    config.SetAccessID(&accessID)
+    config.SetAccessKey(&accessKey)
 
-	return api
+    return client.New(config)
 }
 
 func main() {
-  client := NewLMClient("foo", "bar", "baz")
+    client := NewLMClient()
 }
 ```
 

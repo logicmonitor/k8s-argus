@@ -3,7 +3,7 @@ package builder
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	lm "github.com/logicmonitor/lm-sdk-go"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -14,22 +14,22 @@ type Builder struct {
 
 // Name implements types.DeviceBuilder.
 func (b *Builder) Name(name string) types.DeviceOption {
-	return func(device *lm.RestDevice) {
-		device.Name = name
+	return func(device *models.Device) {
+		device.Name = &name
 	}
 }
 
 // DisplayName implements types.DeviceBuilder.
 func (b *Builder) DisplayName(name string) types.DeviceOption {
-	return func(device *lm.RestDevice) {
-		device.DisplayName = name
+	return func(device *models.Device) {
+		device.DisplayName = &name
 	}
 }
 
 // CollectorID implements types.DeviceBuilder.
 func (b *Builder) CollectorID(id int32) types.DeviceOption {
-	return func(device *lm.RestDevice) {
-		device.PreferredCollectorId = id
+	return func(device *models.Device) {
+		device.PreferredCollectorID = &id
 	}
 }
 
@@ -40,14 +40,16 @@ func (b *Builder) SystemCategories(categories string) types.DeviceOption {
 
 // ResourceLabels implements types.DeviceBuilder
 func (b *Builder) ResourceLabels(properties map[string]string) types.DeviceOption {
-	return func(device *lm.RestDevice) {
+	return func(device *models.Device) {
 		for name, value := range properties {
-			if value == "" {
-				value = constants.LabelNullPlaceholder
+			propName := constants.LabelCustomPropertyPrefix + name
+			propValue := value
+			if propValue == "" {
+				propValue = constants.LabelNullPlaceholder
 			}
-			device.CustomProperties = append(device.CustomProperties, lm.NameAndValue{
-				Name:  constants.LabelCustomPropertyPrefix + name,
-				Value: value,
+			device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
+				Name:  &propName,
+				Value: &propValue,
 			})
 		}
 	}
@@ -69,11 +71,11 @@ func (b *Builder) Custom(name, value string) types.DeviceOption {
 }
 
 func setProperty(name, value string) types.DeviceOption {
-	return func(device *lm.RestDevice) {
+	return func(device *models.Device) {
 		if value != "" {
-			device.CustomProperties = append(device.CustomProperties, lm.NameAndValue{
-				Name:  name,
-				Value: value,
+			device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
+				Name:  &name,
+				Value: &value,
 			})
 		} else {
 			log.Warnf("Custom property value is empty for %q, skipping", name)

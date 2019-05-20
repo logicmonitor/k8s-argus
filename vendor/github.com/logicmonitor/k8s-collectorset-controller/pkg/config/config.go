@@ -19,7 +19,7 @@ type Secrets struct {
 // New returns the application configuration specified by the config file.
 func New() (*Config, error) {
 	c := &Config{}
-	err := envconfig.Process("argus", c)
+	err := envconfig.Process("collectorset-controller", c)
 	if err != nil {
 		return nil, err
 	}

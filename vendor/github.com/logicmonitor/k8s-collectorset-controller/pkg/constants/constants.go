@@ -27,3 +27,8 @@ const (
 	// HealthServerServiceName is the gRPC service name for the health checks.
 	HealthServerServiceName = "grpc.health.v1.Health"
 )
+
+const (
+	// ClusterCollectorGroupPrefix is the prefix for the collector group of the cluster
+	ClusterCollectorGroupPrefix = "Kubernetes Cluster: "
+)

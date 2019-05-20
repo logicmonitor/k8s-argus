@@ -90,18 +90,20 @@ func (c *Controller) watch(ctx context.Context) error {
 
 func (c *Controller) addFunc(obj interface{}) {
 	collectorset := obj.(*crv1alpha1.CollectorSet)
+	log.Infof("Starting to create collectorset: %s", collectorset.Name)
+
 	ids, err := CreateOrUpdateCollectorSet(collectorset, c.LogicmonitorClient, c.Clientset)
 	if err != nil {
 		log.Errorf("Failed to create collectorset: %v", err)
 		return
 	}
+	log.Infof("CollectorSet %q has collectors %v", collectorset.Name, ids)
 
+	log.Infof("Waiting for the collectors to register: %v", ids)
 	if err = waitForCollectorsToRegister(c.LogicmonitorClient, ids); err != nil {
 		log.Errorf("Failed to verify that collectors %v are registered: %v", ids, err)
 		return
 	}
-
-	log.Infof("CollectorSet %q has collectors %v", collectorset.Name, ids)
 
 	collectorsetCopy, err := c.updateCollectorSetStatus(collectorset, ids)
 	if err != nil {
@@ -115,7 +117,7 @@ func (c *Controller) addFunc(obj interface{}) {
 		log.Errorf("Failed to save policy: %v", err)
 	}
 
-	log.Infof("Created CollectorSet: %s", collectorsetCopy.Name)
+	log.Infof("Finished creating CollectorSet: %s", collectorsetCopy.Name)
 }
 
 // TODO: updating the collectorset ids in the add func will trigger this. We
@@ -124,6 +126,7 @@ func (c *Controller) updateFunc(oldObj, newObj interface{}) {
 	_ = oldObj.(*crv1alpha1.CollectorSet)
 	newcollectorset := newObj.(*crv1alpha1.CollectorSet)
 
+	log.Infof("Starting to update collectorset: %s", newcollectorset.Name)
 	_, err := CreateOrUpdateCollectorSet(newcollectorset, c.LogicmonitorClient, c.Clientset)
 	if err != nil {
 		log.Errorf("Failed to update collectorset: %v", err)
@@ -136,12 +139,13 @@ func (c *Controller) updateFunc(oldObj, newObj interface{}) {
 		log.Errorf("Failed to update policy: %v", err)
 	}
 
-	log.Infof("Updated CollectorSet: %s", collectorsetCopy.Name)
+	log.Infof("Finished updating CollectorSet: %s", collectorsetCopy.Name)
 }
 
 func (c *Controller) deleteFunc(obj interface{}) {
 	collectorset := obj.(*crv1alpha1.CollectorSet)
 
+	log.Infof("Starting to delete collectorset: %s", collectorset.Name)
 	if err := DeleteCollectorSet(collectorset, c.Clientset); err != nil {
 		log.Errorf("Failed to delete collectorset: %v", err)
 		return
@@ -151,7 +155,7 @@ func (c *Controller) deleteFunc(obj interface{}) {
 		log.Errorf("Failed to remove policy: %v", err)
 	}
 
-	log.Infof("Deleted CollectorSet: %s", collectorset.Name)
+	log.Infof("Finished deleting CollectorSet: %s", collectorset.Name)
 }
 
 // func (c *Controller) listCollectorSets() (*crv1alpha1.CollectorSetList, error) {

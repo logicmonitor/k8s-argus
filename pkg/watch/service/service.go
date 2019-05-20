@@ -9,7 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -38,12 +38,12 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
-		// Only add the service if it is has a ClusterIP.
-		if service.Spec.Type != v1.ServiceTypeClusterIP {
-			return
-		}
+
+		log.Infof("Service type is %s", service.Spec.Type)
+
 		// Require an IP address.
 		if service.Spec.ClusterIP == "" {
+			log.Warningf("Service clusterIP is empty, service name : %s", service.Name)
 			return
 		}
 		w.add(service)
@@ -55,11 +55,6 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Service)
 		new := newObj.(*v1.Service)
-
-		// Only add the service if it is has a ClusterIP.
-		if new.Spec.Type != v1.ServiceTypeClusterIP {
-			return
-		}
 
 		// If the old service does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
