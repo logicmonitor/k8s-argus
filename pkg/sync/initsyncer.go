@@ -9,7 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
-	"github.com/logicmonitor/lm-sdk-go"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,19 +40,19 @@ func (i *InitSyncer) InitSync() {
 			case constants.NodeDeviceGroupName:
 				go func() {
 					defer wg.Done()
-					i.intSyncNodes(rest.Id)
+					i.initSyncNodes(rest.ID)
 					log.Infof("Finish syncing %v", constants.NodeDeviceGroupName)
 				}()
 			case constants.PodDeviceGroupName:
 				go func() {
 					defer wg.Done()
-					i.initSyncPodsOrServices(constants.PodDeviceGroupName, rest.Id)
+					i.initSyncPodsOrServices(constants.PodDeviceGroupName, rest.ID)
 					log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
 				}()
 			case constants.ServiceDeviceGroupName:
 				go func() {
 					defer wg.Done()
-					i.initSyncPodsOrServices(constants.ServiceDeviceGroupName, rest.Id)
+					i.initSyncPodsOrServices(constants.ServiceDeviceGroupName, rest.ID)
 					log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
 				}()
 			default:
@@ -70,7 +70,7 @@ func (i *InitSyncer) InitSync() {
 	log.Infof("Finished syncing the resource devices")
 }
 
-func (i *InitSyncer) intSyncNodes(parentGroupID int32) {
+func (i *InitSyncer) initSyncNodes(parentGroupID int32) {
 	rest, err := devicegroup.Find(parentGroupID, constants.NodeDeviceGroupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Warnf("Failed to get the node group")
@@ -127,10 +127,14 @@ func (i *InitSyncer) initSyncPodsOrServices(deviceType string, parentGroupID int
 	}
 }
 
-func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]string, subGroup logicmonitor.GroupData) {
-	devices, err := i.DeviceManager.GetListByGroupID(subGroup.Id)
-	if err != nil || devices == nil {
+func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData) {
+	devices, err := i.DeviceManager.GetListByGroupID(subGroup.ID)
+	if err != nil {
 		log.Warnf("Failed to get the devices in the group: %v", subGroup.FullPath)
+		return
+	}
+	if len(devices) == 0 {
+		log.Warnf("There is no device in the group: %v", subGroup.FullPath)
 		return
 	}
 	for _, device := range devices {
@@ -139,23 +143,23 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 		cps := device.CustomProperties
 		autoClusterName := ""
 		for _, cp := range cps {
-			if cp.Name == constants.K8sClusterNamePropertyKey {
-				autoClusterName = cp.Value
+			if *cp.Name == constants.K8sClusterNamePropertyKey {
+				autoClusterName = *cp.Value
 				break
 			}
 		}
 		if autoClusterName != i.DeviceManager.Config().ClusterName {
 			log.Infof("Ignore the device (%v) which does not have property %v:%v",
-				device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
+				*device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
 			continue
 		}
 
-		_, exist := resourcesMap[device.DisplayName]
+		_, exist := resourcesMap[*device.DisplayName]
 		if !exist {
-			log.Infof("Delete the non-exist %v device: %v", resourceType, device.DisplayName)
-			err := i.DeviceManager.DeleteByID(device.Id)
+			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
+			err := i.DeviceManager.DeleteByID(device.ID)
 			if err != nil {
-				log.Warnf("Failed to delete the device: %v", device.DisplayName)
+				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
 			}
 		}
 	}
