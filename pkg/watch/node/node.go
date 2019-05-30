@@ -3,6 +3,7 @@
 package node
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -137,7 +138,6 @@ func (w *Watcher) move(node *v1.Node) {
 
 func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, node.Labels)
-
 	return []types.DeviceOption{
 		w.Name(getInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
@@ -146,6 +146,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.Auto("name", node.Name),
 		w.Auto("selflink", node.SelfLink),
 		w.Auto("uid", string(node.UID)),
+		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
 	}
 }
 
