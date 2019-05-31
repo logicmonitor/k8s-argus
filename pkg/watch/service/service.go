@@ -4,6 +4,7 @@ package service
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -132,6 +133,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 		w.Auto("namespace", service.Namespace),
 		w.Auto("selflink", service.SelfLink),
 		w.Auto("uid", string(service.UID)),
+		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(service.CreationTimestamp.Unix(), 10)),
 	}
 }
 
