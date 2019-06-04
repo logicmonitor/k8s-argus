@@ -142,9 +142,9 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 		// handle the device existing case
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
 			log.Infof("Check and Update the existing device: %s", *device.DisplayName)
-			newDevice, err := m.checkAndUpdateExistingDevice(device)
-			if err != nil {
-				return nil, err
+			newDevice, err2 := m.checkAndUpdateExistingDevice(device)
+			if err2 != nil {
+				return nil, err2
 			}
 			return newDevice, nil
 		}

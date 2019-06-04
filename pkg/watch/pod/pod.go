@@ -3,8 +3,9 @@
 package pod
 
 import (
+	"strconv"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/err"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
@@ -41,8 +42,6 @@ func (w *Watcher) ObjType() runtime.Object {
 // AddFunc is a function that implements the Watcher interface.
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
-		defer err.RecoverError("Add pod")
 		pod := obj.(*v1.Pod)
 
 		log.Debugf("Handling add pod event: %s", pod.Name)
@@ -58,8 +57,6 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 // UpdateFunc is a function that implements the Watcher interface.
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
-		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
-		defer err.RecoverError("Update pod")
 		old := oldObj.(*v1.Pod)
 		new := newObj.(*v1.Pod)
 
@@ -91,8 +88,6 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // nolint: dupl
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		// Due to panic error in this call stack will crash the application; recovering those panics here could make our application robust.
-		defer err.RecoverError("Delete pod")
 		pod := obj.(*v1.Pod)
 
 		log.Debugf("Handling delete pod event: %s", pod.Name)
@@ -156,6 +151,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("selflink", pod.SelfLink),
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
+		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
 	}
 	if pod.Spec.HostNetwork {
 		options = append(options, w.Custom("kubernetes.pod.hostNetwork", "true"))

@@ -84,6 +84,8 @@ const (
 const (
 	// K8sClusterNamePropertyKey is the key of the unique auto property kubernetes cluster name
 	K8sClusterNamePropertyKey = "auto.clustername"
+	// K8sResourceCreatedOnPropertyKey is the key of the custom property used to record resource create timestamp
+	K8sResourceCreatedOnPropertyKey = "kubernetes.resourceCreatedOn"
 	// K8sDeviceType is the type value of the k8s device
 	K8sDeviceType = 8
 )
