@@ -3,6 +3,8 @@ package argus
 import (
 	"time"
 
+	"github.com/logicmonitor/k8s-argus/pkg/utilities"
+
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -21,6 +23,7 @@ import (
 	"github.com/logicmonitor/lm-sdk-go/client"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -62,6 +65,7 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 
 // NewArgus instantiates and returns argus.
 func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus, error) {
+
 	argus := &Argus{
 		Base: base,
 	}
@@ -75,11 +79,14 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 		Base: base,
 	}
 
+	hasDeploymentRbac := checkHasDeploymentRbac(base)
+	log.Infof("Has deployment rbac privilege: %+v", hasDeploymentRbac)
+
 	// init sync to delete the non-exist resource devices through logicmonitor API
 	initSyncer := sync.InitSyncer{
 		DeviceManager: deviceManager,
 	}
-	initSyncer.InitSync()
+	initSyncer.InitSync(hasDeploymentRbac)
 
 	deviceGroups, err := deviceTree.CreateDeviceTree()
 	if err != nil {
@@ -112,12 +119,36 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 		&pod.Watcher{
 			DeviceManager: deviceManager,
 		},
-		&deployment.Watcher{
+	}
+
+	if hasDeploymentRbac {
+		argus.Watchers = append(argus.Watchers, &deployment.Watcher{
 			DeviceManager: deviceManager,
-		},
+		})
 	}
 
 	return argus, nil
+}
+
+func checkHasDeploymentRbac(base *types.Base) bool {
+	clusterRole, err := base.K8sClient.RbacV1beta1().ClusterRoles().Get("argus", metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("Get clusterRoles failed: %+v", err)
+	} else {
+		for _, rule := range clusterRole.Rules {
+			if len(rule.APIGroups) == 0 {
+				continue
+			}
+			hasApps, _ := utilities.Contains("apps", rule.APIGroups)
+			if hasApps {
+				hasDeployment, _ := utilities.Contains("deployments", rule.Resources)
+				if hasDeployment {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // NewBase instantiates and returns the base structure used throughout Argus.

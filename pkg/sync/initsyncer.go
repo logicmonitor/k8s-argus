@@ -20,7 +20,7 @@ type InitSyncer struct {
 }
 
 // InitSync implements the initial sync through logicmonitor API
-func (i *InitSyncer) InitSync() {
+func (i *InitSyncer) InitSync(hasDeploymentRbac bool) {
 	log.Infof("Start to sync the resource devices")
 	rest := i.getDeviceGroups()
 	if rest == nil {
@@ -54,6 +54,9 @@ func (i *InitSyncer) InitSync() {
 			case constants.DeploymentDeviceGroupName:
 				go func() {
 					defer wg.Done()
+					if !hasDeploymentRbac {
+						return
+					}
 					i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)
 					log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 				}()
