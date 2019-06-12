@@ -80,7 +80,7 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 	}
 
 	hasDeploymentRbac := checkHasDeploymentRbac(base)
-	log.Infof("Has deployment rbac privilege: %+v", hasDeploymentRbac)
+	log.Infof("Has deployment rbac: %+v", hasDeploymentRbac)
 
 	// init sync to delete the non-exist resource devices through logicmonitor API
 	initSyncer := sync.InitSyncer{
@@ -139,12 +139,8 @@ func checkHasDeploymentRbac(base *types.Base) bool {
 			if len(rule.APIGroups) == 0 {
 				continue
 			}
-			hasApps, _ := utilities.Contains("apps", rule.APIGroups)
-			if hasApps {
-				hasDeployment, _ := utilities.Contains("deployments", rule.Resources)
-				if hasDeployment {
-					return true
-				}
+			if utilities.Contains("apps", rule.APIGroups) && utilities.Contains("deployments", rule.Resources) {
+				return true
 			}
 		}
 	}
