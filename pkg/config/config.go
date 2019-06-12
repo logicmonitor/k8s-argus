@@ -18,6 +18,7 @@ type Config struct {
 	DeleteDevices   bool   `yaml:"delete_devices"`
 	DisableAlerting bool   `yaml:"disable_alerting"`
 	ClusterGroupID  int32  `yaml:"cluster_group_id"`
+	ProxyUrl        string `yaml:"proxy_url"`
 }
 
 // Secrets represents the application's sensitive configuration file.
