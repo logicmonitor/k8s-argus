@@ -1,8 +1,9 @@
 package argus
 
 import (
-	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 	"time"
+
+	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -19,7 +20,7 @@ import (
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -145,7 +146,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 // Watch watches the API for events.
 func (a *Argus) Watch() {
 	for _, w := range a.Watchers {
-		watchlist := cache.NewListWatchFromClient(getK8sRESTClient(a.K8sClient, w.ApiVersion()), w.Resource(), v1.NamespaceAll, fields.Everything())
+		watchlist := cache.NewListWatchFromClient(getK8sRESTClient(a.K8sClient, w.APIVersion()), w.Resource(), v1.NamespaceAll, fields.Everything())
 		_, controller := cache.NewInformer(
 			watchlist,
 			w.ObjType(),
@@ -164,9 +165,9 @@ func (a *Argus) Watch() {
 // get the K8s RESTClient by apiVersion, use the default V1 version if there is no match
 func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.Interface {
 	switch apiVersion {
-	case constants.K8sApiVersion_v1:
+	case constants.K8sAPIVersionV1:
 		return clientset.CoreV1().RESTClient()
-	case constants.K8sApiVersion_apps_v1beta2:
+	case constants.K8sAPIVersionAppsV1beta2:
 		return clientset.AppsV1beta2().RESTClient()
 	default:
 		return clientset.CoreV1().RESTClient()

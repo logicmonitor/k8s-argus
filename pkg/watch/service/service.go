@@ -25,9 +25,9 @@ type Watcher struct {
 	types.DeviceManager
 }
 
-// ApiVersion is a function that implements the Watcher interface.
-func (w *Watcher) ApiVersion() string {
-	return constants.K8sApiVersion_v1
+// APIVersion is a function that implements the Watcher interface.
+func (w *Watcher) APIVersion() string {
+	return constants.K8sAPIVersionV1
 }
 
 // Resource is a function that implements the Watcher interface.
@@ -81,7 +81,6 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
-
 		// Delete the service.
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(fmtServiceDisplayName(service)); err != nil {

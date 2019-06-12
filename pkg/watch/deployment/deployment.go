@@ -4,6 +4,7 @@ package deployment
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -24,9 +25,9 @@ type Watcher struct {
 	types.DeviceManager
 }
 
-// ApiVersion is a function that implements the Watcher interface.
-func (w *Watcher) ApiVersion() string {
-	return constants.K8sApiVersion_apps_v1beta2
+// APIVersion is a function that implements the Watcher interface.
+func (w *Watcher) APIVersion() string {
+	return constants.K8sAPIVersionAppsV1beta2
 }
 
 // Resource is a function that implements the Watcher interface.
@@ -62,6 +63,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		deployment := obj.(*v1beta2.Deployment)
+		log.Debugf("Handling delete deployment event: %s", deployment.Name)
 		// Delete the deployment.
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(fmtDeploymentDisplayName(deployment)); err != nil {
@@ -118,6 +120,7 @@ func (w *Watcher) args(deployment *v1beta2.Deployment, category string) []types.
 		w.Auto("namespace", deployment.Namespace),
 		w.Auto("selflink", deployment.SelfLink),
 		w.Auto("uid", string(deployment.UID)),
+		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(deployment.CreationTimestamp.Unix(), 10)),
 	}
 }
 

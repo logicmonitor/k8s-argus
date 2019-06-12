@@ -22,13 +22,8 @@ type InitSyncer struct {
 // InitSync implements the initial sync through logicmonitor API
 func (i *InitSyncer) InitSync() {
 	log.Infof("Start to sync the resource devices")
-	clusterName := i.DeviceManager.Base.Config.ClusterName
-	// get the cluster info
-	parentGroupID := i.DeviceManager.Config().ClusterGroupID
-	groupName := constants.ClusterDeviceGroupPrefix + clusterName
-	rest, err := devicegroup.Find(parentGroupID, groupName, i.DeviceManager.LMClient)
-	if err != nil || rest == nil {
-		log.Infof("Failed to get the cluster group: %v, parentID: %v", groupName, parentGroupID)
+	rest := i.getDeviceGroups()
+	if rest == nil {
 		return
 	}
 
@@ -75,6 +70,19 @@ func (i *InitSyncer) InitSync() {
 		wg.Wait()
 	}
 	log.Infof("Finished syncing the resource devices")
+}
+
+func (i *InitSyncer) getDeviceGroups() *models.DeviceGroup {
+	clusterName := i.DeviceManager.Base.Config.ClusterName
+	// get the cluster info
+	parentGroupID := i.DeviceManager.Config().ClusterGroupID
+	groupName := constants.ClusterDeviceGroupPrefix + clusterName
+
+	rest, err := devicegroup.Find(parentGroupID, groupName, i.DeviceManager.LMClient)
+	if err != nil || rest == nil {
+		log.Infof("Failed to get the cluster group: %v, parentID: %v", groupName, parentGroupID)
+	}
+	return rest
 }
 
 func (i *InitSyncer) initSyncNodes(parentGroupID int32) {

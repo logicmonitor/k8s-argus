@@ -24,9 +24,9 @@ type Watcher struct {
 	types.DeviceManager
 }
 
-// ApiVersion is a function that implements the Watcher interface.
-func (w *Watcher) ApiVersion() string {
-	return constants.K8sApiVersion_v1
+// APIVersion is a function that implements the Watcher interface.
+func (w *Watcher) APIVersion() string {
+	return constants.K8sAPIVersionV1
 }
 
 // Resource is a function that implements the Watcher interface.
