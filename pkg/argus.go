@@ -38,34 +38,28 @@ type Argus struct {
 	Watchers []types.Watcher
 }
 
-func newLMClient(id, key, company string, proxyUrl string) (*client.LMSdkGo, error) {
+func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
 	config := client.NewConfig()
-	config.SetAccessID(&id)
-	config.SetAccessKey(&key)
-	domain := company + ".logicmonitor.com"
+	config.SetAccessID(&argusConfig.ID)
+	config.SetAccessKey(&argusConfig.Key)
+	domain := argusConfig.Account + ".logicmonitor.com"
 	config.SetAccountDomain(&domain)
 	//config.UserAgent = constants.UserAgentBase + constants.Version
-	log.Infof("proxyUrl = %s", proxyUrl)
-	if proxyUrl == "" {
+	if argusConfig.ProxyURL == "" {
 		return client.New(config), nil
-	} else {
-		return newLMClientProxy(config, proxyUrl)
-
 	}
+	return newLMClientProxy(config, argusConfig.ProxyURL)
 }
 
-func newLMClientProxy(config *client.Config, proxyUrlStr string) (*client.LMSdkGo, error) {
-	log.Infof("Use http proxy: %s", proxyUrlStr)
-	proxyUrl, err := url.Parse(proxyUrlStr)
+func newLMClientProxy(config *client.Config, proxyURLStr string) (*client.LMSdkGo, error) {
+	proxyURL, err := url.Parse(proxyURLStr)
 	if err != nil {
 		return nil, err
 	}
-	// set proxy username and password
-	//proxyUrl.User = url.UserPassword("","")
-
+	log.Infof("Use http proxy: %s://%s", proxyURL.Scheme, proxyURL.Host)
 	httpClient := http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxyUrl),
+			Proxy: http.ProxyURL(proxyURL),
 		},
 	}
 	transport := httptransport.NewWithClient(config.TransportCfg.Host, config.TransportCfg.BasePath, config.TransportCfg.Schemes, &httpClient)
@@ -152,7 +146,7 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 // NewBase instantiates and returns the base structure used throughout Argus.
 func NewBase(config *config.Config) (*types.Base, error) {
 	// LogicMonitor API client.
-	lmClient, err := newLMClient(config.ID, config.Key, config.Account, config.ProxyUrl)
+	lmClient, err := newLMClient(config)
 	if err != nil {
 		return nil, err
 	}
