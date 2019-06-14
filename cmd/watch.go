@@ -7,7 +7,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/logicmonitor/k8s-argus/pkg"
+	"github.com/logicmonitor/k8s-argus/pkg/rbac"
+
+	argus "github.com/logicmonitor/k8s-argus/pkg"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
@@ -15,7 +17,7 @@ import (
 	collectorsetconstants "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
@@ -47,6 +49,9 @@ var watchCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		// Init the rbac component
+		rbac.Init(base.K8sClient)
 
 		// Set up a gRPC connection to the collectorset controller.
 		conn, err := grpc.Dial(config.Address, grpc.WithInsecure())

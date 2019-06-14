@@ -30,6 +30,11 @@ func (w *Watcher) APIVersion() string {
 	return constants.K8sAPIVersionV1
 }
 
+// CheckRBAC is a function that check the resource has RBAC permissions.
+func (w *Watcher) CheckRBAC() bool {
+	return true
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource

@@ -3,6 +3,8 @@ package sync
 import (
 	"sync"
 
+	"github.com/logicmonitor/k8s-argus/pkg/rbac"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
@@ -20,7 +22,7 @@ type InitSyncer struct {
 }
 
 // InitSync implements the initial sync through logicmonitor API
-func (i *InitSyncer) InitSync(hasDeploymentRbac bool) {
+func (i *InitSyncer) InitSync() {
 	log.Infof("Start to sync the resource devices")
 	rest := i.getDeviceGroups()
 	if rest == nil {
@@ -54,7 +56,8 @@ func (i *InitSyncer) InitSync(hasDeploymentRbac bool) {
 			case constants.DeploymentDeviceGroupName:
 				go func() {
 					defer wg.Done()
-					if !hasDeploymentRbac {
+					if !rbac.HasDeploymentRBAC() {
+						log.Warnf("Resource deployments has no rbac, ignore sync")
 						return
 					}
 					i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)

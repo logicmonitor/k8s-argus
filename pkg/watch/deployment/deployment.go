@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/logicmonitor/k8s-argus/pkg/rbac"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -28,6 +30,11 @@ type Watcher struct {
 // APIVersion is a function that implements the Watcher interface.
 func (w *Watcher) APIVersion() string {
 	return constants.K8sAPIVersionAppsV1beta2
+}
+
+// CheckRBAC is a function that check the resource has RBAC permissions.
+func (w *Watcher) CheckRBAC() bool {
+	return rbac.HasDeploymentRBAC()
 }
 
 // Resource is a function that implements the Watcher interface.
