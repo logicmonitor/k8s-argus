@@ -146,7 +146,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 // Watch watches the API for events.
 func (a *Argus) Watch() {
 	for _, w := range a.Watchers {
-		if !w.CheckRBAC() {
+		if !w.HasRBAC() {
 			log.Warnf("Resource %s has no rbac, ignore watch", w.Resource())
 			continue
 		}

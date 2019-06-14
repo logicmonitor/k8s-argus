@@ -36,7 +36,5 @@ func HasDeploymentRBAC() bool {
 	} else {
 		deploymentRBACFlag = rbacFlagEnable
 	}
-
 	return deploymentRBACFlag == rbacFlagEnable
-
 }
