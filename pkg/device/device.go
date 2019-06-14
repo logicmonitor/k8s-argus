@@ -53,21 +53,6 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	return device
 }
 
-func (m *Manager) addDevice(device *models.Device) (*lm.AddDeviceOK, error) {
-	params := lm.NewAddDeviceParams()
-	addFromWizard := false
-	params.SetAddFromWizard(&addFromWizard)
-	params.SetBody(device)
-	restResponse, err := m.LMClient.LM.AddDevice(params)
-	if err != nil {
-		_, ok := err.(*lm.AddDeviceDefault)
-		if !ok {
-			return nil, err
-		}
-	}
-	return restResponse, nil
-}
-
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
 func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.Device, error) {
 	oldDevice, err := m.FindByDisplayName(*device.DisplayName)
@@ -79,22 +64,21 @@ func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.D
 	}
 
 	// the device which is not changed will be ignored
-	if *device.Name == *oldDevice.Name && oldDevice.PreferredCollectorID == device.PreferredCollectorID {
+	if *device.Name == *oldDevice.Name {
 		log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
 		return device, nil
 	}
 
 	// the device of the other cluster will be ignored
-	oldClusterName := getPropertyValue(oldDevice, constants.K8sClusterNamePropertyKey)
-
-	if oldClusterName != m.Config().ClusterName {
-		newDisplayName := fmt.Sprintf("%s-%s", *device.DisplayName, m.Config().ClusterName)
-		device.DisplayName = &newDisplayName
-		_, err := m.addDevice(device)
-		if err != nil {
-			return device, err
+	oldClusterName := ""
+	if oldDevice.CustomProperties != nil && len(oldDevice.CustomProperties) > 0 {
+		for _, cp := range oldDevice.CustomProperties {
+			if *cp.Name == constants.K8sClusterNamePropertyKey {
+				oldClusterName = *cp.Value
+			}
 		}
-
+	}
+	if oldClusterName != m.Config().ClusterName {
 		log.Infof("Device (%s) belongs to a different cluster (%s). Ignoring update", *device.DisplayName, oldClusterName)
 		return device, nil
 	}
@@ -105,27 +89,6 @@ func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.D
 	}
 	log.Infof("Finished updating the device: %s", *newDevice.DisplayName)
 	return newDevice, nil
-}
-
-func getPropertyValue(device *models.Device, propertyName string) string {
-	if device == nil {
-		return ""
-	}
-	if len(device.CustomProperties) > 0 {
-		for _, cp := range device.CustomProperties {
-			if *cp.Name == propertyName {
-				return *cp.Value
-			}
-		}
-	}
-	if len(device.SystemProperties) > 0 {
-		for _, cp := range device.SystemProperties {
-			if *cp.Name == propertyName {
-				return *cp.Value
-			}
-		}
-	}
-	return ""
 }
 
 func (m *Manager) updateAndReplace(id int32, device *models.Device) (*models.Device, error) {

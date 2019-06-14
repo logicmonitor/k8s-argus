@@ -41,27 +41,15 @@ func (i *InitSyncer) InitSync() {
 					i.initSyncNodes(rest.ID)
 					log.Infof("Finish syncing %v", constants.NodeDeviceGroupName)
 				}()
-			case constants.PodDeviceGroupName:
+			case constants.PodDeviceGroupName, constants.ServiceDeviceGroupName, constants.DeploymentDeviceGroupName:
 				go func() {
 					defer wg.Done()
-					i.initSyncPodsOrServicesOrDeploys(constants.PodDeviceGroupName, rest.ID)
-					log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
-				}()
-			case constants.ServiceDeviceGroupName:
-				go func() {
-					defer wg.Done()
-					i.initSyncPodsOrServicesOrDeploys(constants.ServiceDeviceGroupName, rest.ID)
-					log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
-				}()
-			case constants.DeploymentDeviceGroupName:
-				go func() {
-					defer wg.Done()
-					if !rbac.HasDeploymentRBAC() {
+					if subgroup.Name == constants.DeploymentDeviceGroupName && !rbac.HasDeploymentRBAC() {
 						log.Warnf("Resource deployments has no rbac, ignore sync")
 						return
 					}
-					i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)
-					log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
+					i.initSyncPodsOrServicesOrDeploys(subgroup.Name, rest.ID)
+					log.Infof("Finish syncing %v", subgroup.Name)
 				}()
 			default:
 				func() {

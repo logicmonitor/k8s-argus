@@ -19,6 +19,7 @@ var (
 	deploymentRBACFlag = 0
 )
 
+// Init is a function than init the rbac context
 func Init(k8sclient *kubernetes.Clientset) {
 	client = k8sclient
 }
@@ -31,7 +32,7 @@ func HasDeploymentRBAC() bool {
 	_, err := client.AppsV1beta2().Deployments(v1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		deploymentRBACFlag = rbacFlagDisabled
-		log.Error("List deployments failed: %+v", err)
+		log.Errorf("Failed to list deployments: %+v", err)
 	} else {
 		deploymentRBACFlag = rbacFlagEnable
 	}

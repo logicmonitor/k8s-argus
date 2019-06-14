@@ -62,7 +62,6 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 
 // NewArgus instantiates and returns argus.
 func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus, error) {
-
 	argus := &Argus{
 		Base: base,
 	}
