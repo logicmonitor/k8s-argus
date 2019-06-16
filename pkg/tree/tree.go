@@ -3,7 +3,7 @@ package tree
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
-	"github.com/logicmonitor/k8s-argus/pkg/rbac"
+	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 )
 
@@ -88,8 +88,8 @@ func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 		case constants.ClusterDeviceGroupPrefix + d.Config.ClusterName:
 			// don't do anything for the root cluster group
 		default:
-			if opts.Name == constants.DeploymentDeviceGroupName && !rbac.HasDeploymentRBAC() {
-				// deployment has no rbac, don't create the group
+			if opts.Name == constants.DeploymentDeviceGroupName && !permission.HasDeploymentPermissions() {
+				// deployment has no permissions, don't create the group
 				continue
 			}
 			opts.ParentID = deviceGroups[constants.ClusterDeviceGroupPrefix+d.Config.ClusterName]

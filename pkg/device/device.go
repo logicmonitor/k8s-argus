@@ -103,16 +103,15 @@ func (m *Manager) analysisDevices(analysisDevices []*models.Device, device *mode
 			if *analysisDevice.Name == *device.Name {
 				isSame = true
 				compareDevice = analysisDevice
-				return
-			} else {
-				isUpdate = true
-				compareDevice = analysisDevice
-				return
+				return isSame, isUpdate, isAdd, compareDevice
 			}
+			isUpdate = true
+			compareDevice = analysisDevice
+			return isSame, isUpdate, isAdd, compareDevice
 		}
 	}
 	isAdd = true
-	return
+	return isSame, isUpdate, isAdd, compareDevice
 }
 
 // renameAndAddDevice rename display name and then add the device

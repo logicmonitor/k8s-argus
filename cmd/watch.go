@@ -7,12 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/logicmonitor/k8s-argus/pkg/rbac"
-
 	argus "github.com/logicmonitor/k8s-argus/pkg"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
+	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	collectorsetconstants "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants"
 	log "github.com/sirupsen/logrus"
@@ -50,8 +49,8 @@ var watchCmd = &cobra.Command{
 			log.Fatal(err.Error())
 		}
 
-		// Init the rbac component
-		rbac.Init(base.K8sClient)
+		// Init the permission component
+		permission.Init(base.K8sClient)
 
 		// Set up a gRPC connection to the collectorset controller.
 		conn, err := grpc.Dial(config.Address, grpc.WithInsecure())
