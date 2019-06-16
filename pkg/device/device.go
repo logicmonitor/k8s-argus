@@ -2,7 +2,11 @@ package device
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
+
+	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -55,40 +59,153 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
 func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.Device, error) {
-	oldDevice, err := m.FindByDisplayName(*device.DisplayName)
+	analysisDevices, err := m.FindByDisplayNameContains(*device.DisplayName)
 	if err != nil {
 		return nil, err
 	}
-	if oldDevice == nil {
-		return nil, fmt.Errorf("can not find the device: %s", *device.DisplayName)
+	if len(analysisDevices) == 0 {
+		return nil, fmt.Errorf("can not find the devices with string : %s", *device.DisplayName)
 	}
 
+	isSame, isUpdate, isAdd, compareDevice := m.analysisDevices(analysisDevices, device)
+
 	// the device which is not changed will be ignored
-	if *device.Name == *oldDevice.Name {
+	if isSame {
 		log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
 		return device, nil
 	}
 
-	// the device of the other cluster will be ignored
-	oldClusterName := ""
-	if oldDevice.CustomProperties != nil && len(oldDevice.CustomProperties) > 0 {
-		for _, cp := range oldDevice.CustomProperties {
-			if *cp.Name == constants.K8sClusterNamePropertyKey {
-				oldClusterName = *cp.Value
+	// the clusterName is the same and hostName is not the same, need update
+	if isUpdate {
+		newDevice, err := m.updateAndReplace(compareDevice.ID, device)
+		if err != nil {
+			return nil, err
+		}
+		log.Infof("Finished updating the device: %s", *newDevice.DisplayName)
+		return newDevice, nil
+	}
+
+	// the clusterName is not the same, rename displayName and add device
+	if isAdd {
+		return m.renameAndAddDevice(device)
+	}
+	return nil, fmt.Errorf("failed to analysis devices: %s", *device.DisplayName)
+
+}
+
+func (m *Manager) analysisDevices(analysisDevices []*models.Device, device *models.Device) (isSame bool, isUpdate bool, isAdd bool, compareDevice *models.Device) {
+	if len(analysisDevices) == 0 {
+		return
+	}
+	for _, analysisDevice := range analysisDevices {
+		clusterName := m.GetPropertyValue(analysisDevice, constants.K8sClusterNamePropertyKey)
+		if clusterName == m.Config().ClusterName {
+			if *analysisDevice.Name == *device.Name {
+				isSame = true
+				compareDevice = analysisDevice
+				return
+			} else {
+				isUpdate = true
+				compareDevice = analysisDevice
+				return
 			}
 		}
 	}
-	if oldClusterName != m.Config().ClusterName {
-		log.Infof("Device (%s) belongs to a different cluster (%s). Ignoring update", *device.DisplayName, oldClusterName)
-		return device, nil
-	}
+	isAdd = true
+	return
+}
 
-	newDevice, err := m.updateAndReplace(oldDevice.ID, device)
+// renameAndAddDevice rename display name and then add the device
+func (m *Manager) renameAndAddDevice(device *models.Device) (*models.Device, error) {
+	log.Infof("Start rename device(%s)", *device.DisplayName)
+	resourceName := m.GetPropertyValue(device, constants.K8sResourceNamePropertyKey)
+	if resourceName == "" {
+		resourceName = *device.DisplayName
+	}
+	if resourceName == "" {
+		return nil, fmt.Errorf("get device(%s) resource name failed", *device.DisplayName)
+	}
+	renameResourceName, err := m.getAvailableDisplayName(resourceName)
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Finished updating the device: %s", *newDevice.DisplayName)
-	return newDevice, nil
+	if renameResourceName == "" {
+		return nil, fmt.Errorf("device(%s) rename failed", *device.DisplayName)
+	}
+	log.Infof("Rename device: %s -> %s", *device.DisplayName, renameResourceName)
+	device.DisplayName = &renameResourceName
+	params := lm.NewAddDeviceParams()
+	addFromWizard := false
+	params.SetAddFromWizard(&addFromWizard)
+	params.SetBody(device)
+	restResponse, err := m.LMClient.LM.AddDevice(params)
+	if err != nil {
+		return nil, err
+	}
+	return restResponse.Payload, nil
+}
+
+// getAvailableDisplayName get the available display name
+func (m *Manager) getAvailableDisplayName(resourceName string) (string, error) {
+	fields := "displayName"
+	queryParams := lm.NewGetDeviceListParams()
+	queryParams.Fields = &fields
+
+	startIndex := 0
+	renameResourceName := ""
+	for startIndex < 10 {
+		displayNames := utilities.GetBatchDisplayNames(resourceName, m.Config().ClusterName, 5, &startIndex)
+		log.Debugf("Get batch display names: %+v", displayNames)
+		if len(displayNames) == 0 {
+			return renameResourceName, errors.New("can't get batch display names")
+		}
+		filter := fmt.Sprintf("displayName:\"%s\"", strings.Join(displayNames, "\"|\""))
+		queryParams.SetFilter(&filter)
+		deviceList, err := m.LMClient.LM.GetDeviceList(queryParams)
+		if err != nil {
+			return renameResourceName, err
+		}
+		log.Debugf("Get device list by displayNames: %+v", deviceList.Payload.Items)
+		for _, dn := range displayNames {
+			flag := true
+			for _, item := range deviceList.Payload.Items {
+				if dn == *item.DisplayName {
+					flag = false
+					break
+				}
+			}
+			if flag {
+				renameResourceName = dn
+				break
+			}
+		}
+		if renameResourceName != "" {
+			break
+		}
+	}
+	return renameResourceName, nil
+}
+
+// GetPropertyValue get device property value by property name
+func (m *Manager) GetPropertyValue(device *models.Device, propertyName string) string {
+	if device == nil {
+		return ""
+	}
+	if len(device.CustomProperties) > 0 {
+		for _, cp := range device.CustomProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
+			}
+		}
+	}
+	if len(device.SystemProperties) > 0 {
+		for _, cp := range device.SystemProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
+			}
+		}
+	}
+	return ""
 }
 
 func (m *Manager) updateAndReplace(id int32, device *models.Device) (*models.Device, error) {
@@ -122,6 +239,19 @@ func (m *Manager) FindByDisplayName(name string) (*models.Device, error) {
 	}
 
 	return nil, nil
+}
+
+// FindByDisplayNameContains implements types.DeviceManager.
+func (m *Manager) FindByDisplayNameContains(name string) ([]*models.Device, error) {
+	filter := fmt.Sprintf("displayName~\"%s\"", name)
+	params := lm.NewGetDeviceListParams()
+	params.SetFilter(&filter)
+	restResponse, err := m.LMClient.LM.GetDeviceList(params)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("%#v", restResponse)
+	return restResponse.Payload.Items, nil
 }
 
 // Add implements types.DeviceManager.

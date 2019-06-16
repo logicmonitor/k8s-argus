@@ -143,6 +143,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 		w.Auto("selflink", service.SelfLink),
 		w.Auto("uid", string(service.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(service.CreationTimestamp.Unix(), 10)),
+		w.Custom(constants.K8sResourceNamePropertyKey, fmtServiceDisplayName(service)),
 	}
 }
 

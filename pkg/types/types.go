@@ -41,6 +41,8 @@ type DeviceMapper interface {
 	// FindByDisplayName searches for a device by it's display name. It will return a device if and only if
 	// one device was found, and return nil otherwise.
 	FindByDisplayName(string) (*models.Device, error)
+	// FindByDisplayNameContains searches for devices by the specified string by its display name. It will return the device list.
+	FindByDisplayNameContains(string) ([]*models.Device, error)
 	// Add adds a device to a LogicMonitor account.
 	Add(...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByID updates a device using the 'replace' OpType.

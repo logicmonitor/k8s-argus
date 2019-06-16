@@ -157,6 +157,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
+		w.Custom(constants.K8sResourceNamePropertyKey, pod.Name),
 	}
 	if pod.Spec.HostNetwork {
 		options = append(options, w.Custom("kubernetes.pod.hostNetwork", "true"))

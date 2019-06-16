@@ -128,6 +128,7 @@ func (w *Watcher) args(deployment *v1beta2.Deployment, category string) []types.
 		w.Auto("selflink", deployment.SelfLink),
 		w.Auto("uid", string(deployment.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(deployment.CreationTimestamp.Unix(), 10)),
+		w.Custom(constants.K8sResourceNamePropertyKey, fmtDeploymentDisplayName(deployment)),
 	}
 }
 
