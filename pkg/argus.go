@@ -3,8 +3,6 @@ package argus
 import (
 	"time"
 
-	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
-
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
@@ -13,6 +11,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
@@ -146,7 +145,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 // Watch watches the API for events.
 func (a *Argus) Watch() {
 	for _, w := range a.Watchers {
-		if !w.HasRBAC() {
+		if !w.Enabled() {
 			log.Warnf("Resource %s has no rbac, ignore watch", w.Resource())
 			continue
 		}

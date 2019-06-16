@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/logicmonitor/k8s-argus/pkg/rbac"
-
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
@@ -32,9 +31,9 @@ func (w *Watcher) APIVersion() string {
 	return constants.K8sAPIVersionAppsV1beta2
 }
 
-// HasRBAC is a function that check the resource has RBAC permissions.
-func (w *Watcher) HasRBAC() bool {
-	return rbac.HasDeploymentRBAC()
+// Enabled is a function that check the resource can watch.
+func (w *Watcher) Enabled() bool {
+	return permission.HasDeploymentPermissions()
 }
 
 // Resource is a function that implements the Watcher interface.

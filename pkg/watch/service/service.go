@@ -30,8 +30,8 @@ func (w *Watcher) APIVersion() string {
 	return constants.K8sAPIVersionV1
 }
 
-// HasRBAC is a function that check the resource has RBAC permissions.
-func (w *Watcher) HasRBAC() bool {
+// Enabled is a function that check the resource can watch.
+func (w *Watcher) Enabled() bool {
 	return true
 }
 
