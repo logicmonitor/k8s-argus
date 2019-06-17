@@ -11,6 +11,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
@@ -18,7 +19,7 @@ import (
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -110,6 +111,9 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 		&pod.Watcher{
 			DeviceManager: deviceManager,
 		},
+		&deployment.Watcher{
+			DeviceManager: deviceManager,
+		},
 	}
 
 	return argus, nil
@@ -140,9 +144,12 @@ func NewBase(config *config.Config) (*types.Base, error) {
 
 // Watch watches the API for events.
 func (a *Argus) Watch() {
-	getter := a.K8sClient.CoreV1().RESTClient()
 	for _, w := range a.Watchers {
-		watchlist := cache.NewListWatchFromClient(getter, w.Resource(), v1.NamespaceAll, fields.Everything())
+		if !w.Enabled() {
+			log.Warnf("Have no permission for resource %s", w.Resource())
+			continue
+		}
+		watchlist := cache.NewListWatchFromClient(getK8sRESTClient(a.K8sClient, w.APIVersion()), w.Resource(), v1.NamespaceAll, fields.Everything())
 		_, controller := cache.NewInformer(
 			watchlist,
 			w.ObjType(),
@@ -155,6 +162,18 @@ func (a *Argus) Watch() {
 		)
 		stop := make(chan struct{})
 		go controller.Run(stop)
+	}
+}
+
+// get the K8s RESTClient by apiVersion, use the default V1 version if there is no match
+func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.Interface {
+	switch apiVersion {
+	case constants.K8sAPIVersionV1:
+		return clientset.CoreV1().RESTClient()
+	case constants.K8sAPIVersionAppsV1beta2:
+		return clientset.AppsV1beta2().RESTClient()
+	default:
+		return clientset.CoreV1().RESTClient()
 	}
 }
 

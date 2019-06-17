@@ -24,6 +24,16 @@ type Watcher struct {
 	types.DeviceManager
 }
 
+// APIVersion is a function that implements the Watcher interface.
+func (w *Watcher) APIVersion() string {
+	return constants.K8sAPIVersionV1
+}
+
+// Enabled is a function that check the resource can watch.
+func (w *Watcher) Enabled() bool {
+	return true
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource
