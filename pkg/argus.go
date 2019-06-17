@@ -146,7 +146,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 func (a *Argus) Watch() {
 	for _, w := range a.Watchers {
 		if !w.Enabled() {
-			log.Warnf("Resource %s has no rbac, ignore watch", w.Resource())
+			log.Warnf("Have no permission for resource %s", w.Resource())
 			continue
 		}
 		watchlist := cache.NewListWatchFromClient(getK8sRESTClient(a.K8sClient, w.APIVersion()), w.Resource(), v1.NamespaceAll, fields.Everything())
