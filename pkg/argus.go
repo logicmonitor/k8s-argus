@@ -48,10 +48,10 @@ func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
 	if argusConfig.ProxyURL == "" {
 		return client.New(config), nil
 	}
-	return newLMClientProxy(config, argusConfig.ProxyURL)
+	return newLMClientWithProxy(config, argusConfig.ProxyURL)
 }
 
-func newLMClientProxy(config *client.Config, proxyURLStr string) (*client.LMSdkGo, error) {
+func newLMClientWithProxy(config *client.Config, proxyURLStr string) (*client.LMSdkGo, error) {
 	proxyURL, err := url.Parse(proxyURLStr)
 	if err != nil {
 		return nil, err
