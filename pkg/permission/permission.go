@@ -7,16 +7,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-const (
-	permissionFlagDefault  = 0
-	permissionFlagEnable   = 1
-	permissionFlagDisabled = -1
-)
-
 var (
+	enable  = true
+	disable = false
+
 	client *kubernetes.Clientset
 
-	deploymentPermissionFlag = 0
+	deploymentPermissionFlag *bool
 )
 
 // Init is a function than init the permission context
@@ -26,15 +23,15 @@ func Init(k8sClient *kubernetes.Clientset) {
 
 // HasDeploymentPermissions is a function that check if the deployment resource has permissions
 func HasDeploymentPermissions() bool {
-	if deploymentPermissionFlag != permissionFlagDefault {
-		return deploymentPermissionFlag == permissionFlagEnable
+	if deploymentPermissionFlag != nil {
+		return *deploymentPermissionFlag
 	}
 	_, err := client.AppsV1beta2().Deployments(v1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
-		deploymentPermissionFlag = permissionFlagDisabled
+		deploymentPermissionFlag = &disable
 		log.Errorf("Failed to list deployments: %+v", err)
 	} else {
-		deploymentPermissionFlag = permissionFlagEnable
+		deploymentPermissionFlag = &enable
 	}
-	return deploymentPermissionFlag == permissionFlagEnable
+	return *deploymentPermissionFlag
 }
