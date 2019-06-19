@@ -18,7 +18,6 @@ type Config struct {
 	DeleteDevices   bool   `yaml:"delete_devices"`
 	DisableAlerting bool   `yaml:"disable_alerting"`
 	ClusterGroupID  int32  `yaml:"cluster_group_id"`
-	ProxyURL        string `yaml:"proxy_url"`
 }
 
 // Secrets represents the application's sensitive configuration file.
@@ -27,6 +26,7 @@ type Secrets struct {
 	ID                 string `envconfig:"ACCESS_ID"`
 	Key                string `envconfig:"ACCESS_KEY"`
 	EtcdDiscoveryToken string `envconfig:"ETCD_DISCOVERY_TOKEN"`
+	ProxyURL           string `envconfig:"PROXY_URL"`
 }
 
 // GetConfig returns the application configuration specified by the config file.
