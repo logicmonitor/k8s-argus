@@ -194,7 +194,6 @@ func create(name, appliesTo string, disableAlerting bool, parentID int32, client
 		AppliesTo:       appliesTo,
 		DisableAlerting: disableAlerting,
 	})
-
 	restResponse, err := client.LM.AddDeviceGroup(params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add device group %q: %v", name, err)
