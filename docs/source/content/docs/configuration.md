@@ -30,6 +30,7 @@ RBAC enabled, this value should be set to false.
 - **imageRepository (default: `"logicmonitor/collectorset-controller"`):** The
 respository to use for the collectorset-controller docker image.
 - **imageTag:** The collectorset-controller [image tag] (https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/) to use.
+- **proxyURL:** Http proxy url used by collectorset-controller request.
 
 # Configuring Argus via the Helm Chart
 
@@ -60,6 +61,8 @@ RBAC enabled, this value should be set to false.
 - **imageRepository (default: `"logicmonitor/argus"`):** The respository to use
 for the Argus docker image.
 - **imageTag:** The argus container [image tag] (https://hub.docker.com/r/logicmonitor/argus/tags/) to use.
+- **proxyURL:** Http proxy url used by argus request.
+
 
 # Configuring Argus Manually
 
