@@ -23,21 +23,17 @@ type InitSyncer struct {
 // InitSync implements the initial sync through logicmonitor API
 func (i *InitSyncer) InitSync() {
 	log.Infof("Start to sync the resource devices")
-
 	clusterName := i.DeviceManager.Base.Config.ClusterName
 	// get the cluster info
 	parentGroupID := i.DeviceManager.Config().ClusterGroupID
 	groupName := constants.ClusterDeviceGroupPrefix + clusterName
-
 	rest, err := devicegroup.Find(parentGroupID, groupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Infof("Failed to get the cluster group: %v, parentID: %v", groupName, parentGroupID)
 	}
-
 	if rest == nil {
 		return
 	}
-
 	// get the node, pod, service, deployment info
 	if rest.SubGroups != nil && len(rest.SubGroups) != 0 {
 		i.runSync(rest)
@@ -75,8 +71,8 @@ func (i *InitSyncer) runSync(rest *models.DeviceGroup) {
 					log.Warnf("Resource deployments has no permissions, ignore sync")
 					return
 				}
-				i.initSyncPodsOrServicesOrDeploys(subgroup.Name, rest.ID)
-				log.Infof("Finish syncing %v", subgroup.Name)
+				i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)
+				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 			}()
 		default:
 			func() {
