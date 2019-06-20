@@ -56,7 +56,8 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
 func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.Device, error) {
-	analysisDevices, err := m.FindByDisplayNames(*device.DisplayName)
+	displayNameWithClusterName := fmt.Sprintf("%s-%s", *device.DisplayName, m.Config().ClusterName)
+	analysisDevices, err := m.FindByDisplayNames(*device.DisplayName, displayNameWithClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +75,7 @@ func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.D
 
 	// the clusterName is the same and hostName is not the same, need update
 	if isUpdate {
+		device.DisplayName = compareDevice.DisplayName
 		newDevice, err := m.updateAndReplace(compareDevice.ID, device)
 		if err != nil {
 			return nil, err
@@ -288,7 +290,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
-
+	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
 	device, err := m.UpdateAndReplaceByID(d.ID, options...)
 	if err != nil {
@@ -332,7 +334,7 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, 
 		log.Infof("Could not find device %q", name)
 		return nil, nil
 	}
-
+	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
 	device, err := m.UpdateAndReplaceFieldByID(d.ID, field, options...)
 	if err != nil {

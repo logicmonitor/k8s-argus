@@ -75,8 +75,8 @@ func (i *InitSyncer) runSync(rest *models.DeviceGroup) {
 					log.Warnf("Resource deployments has no permissions, ignore sync")
 					return
 				}
-				i.initSyncPodsOrServicesOrDeploys(subgroup.Name, rest.ID)
-				log.Infof("Finish syncing %v", subgroup.Name)
+				i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)
+				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 			}()
 		default:
 			func() {
