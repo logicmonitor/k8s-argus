@@ -54,24 +54,58 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 	return device
 }
 
+// checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
+func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.Device, error) {
+	displayNameWithClusterName := fmt.Sprintf("%s-%s", *device.DisplayName, m.Config().ClusterName)
+	existingDevices, err := m.FindByDisplayNames(*device.DisplayName, displayNameWithClusterName)
+	if err != nil {
+		return nil, err
+	}
+	if len(existingDevices) == 0 {
+		return nil, fmt.Errorf("cannot find devices with name: %s", *device.DisplayName)
+	}
+	for _, existingDevice := range existingDevices {
+		clusterName := m.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey)
+		if clusterName == m.Config().ClusterName {
+			// the device which is not changed will be ignored
+			if *existingDevice.Name == *device.Name {
+				log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
+				return device, nil
+			}
+			// the clusterName is the same and hostName is not the same, need update
+			*device.DisplayName = *existingDevice.DisplayName
+			newDevice, err2 := m.updateAndReplace(existingDevice.ID, device)
+			if err2 != nil {
+				return nil, err2
+			}
+			log.Infof("Updating existing device (%s)", *newDevice.DisplayName)
+			return newDevice, nil
+		}
+	}
+	// duplicate device exists. update displayName and re-add
+	renamedDevice, err := m.renameAndAddDevice(device)
+	if err != nil {
+		log.Errorf("rename device failed: %v", err)
+		return nil, fmt.Errorf("rename device failed")
+	}
+	return renamedDevice, nil
+}
+
 // renameAndAddDevice rename display name and then add the device
 func (m *Manager) renameAndAddDevice(device *models.Device) (*models.Device, error) {
 	resourceName := m.GetPropertyValue(device, constants.K8sResourceNamePropertyKey)
 	if resourceName == "" {
 		resourceName = *device.DisplayName
 	}
-	if resourceName == "" {
-		return nil, fmt.Errorf("get device(%s) resource name failed", *device.DisplayName)
-	}
 	renameResourceName := fmt.Sprintf("%s-%s", resourceName, m.Config().ClusterName)
-	existDevice, err := m.FindByDisplayName(renameResourceName)
+	existingDevice, err := m.FindByDisplayName(renameResourceName)
 	if err != nil {
 		log.Warnf("Get device(%s) failed, err: %v", resourceName, err)
 	}
-	if existDevice != nil {
-		if m.Config().ClusterName == m.GetPropertyValue(existDevice, constants.K8sClusterNamePropertyKey) {
-			device.DisplayName = existDevice.DisplayName
-			return m.updateAndReplace(existDevice.ID, device)
+	if existingDevice != nil {
+		if m.Config().ClusterName == m.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey) {
+			device.DisplayName = existingDevice.DisplayName
+			return m.updateAndReplace(existingDevice.ID, device)
 		}
 		return nil, fmt.Errorf("exist displayName: %s", renameResourceName)
 	}
@@ -179,63 +213,30 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, options...)
 	log.Debugf("%#v", device)
 
-	existDevice, err := m.checkAndUpdateExistingDevice(device)
-	if err != nil {
-		return nil, err
-	}
-	if existDevice != nil {
-		return existDevice, nil
-	}
-
-	// add the new device
 	params := lm.NewAddDeviceParams()
 	addFromWizard := false
 	params.SetAddFromWizard(&addFromWizard)
 	params.SetBody(device)
 	restResponse, err := m.LMClient.LM.AddDevice(params)
 	if err != nil {
+		deviceDefault, ok := err.(*lm.AddDeviceDefault)
+		if !ok {
+			return nil, err
+		}
+		// handle the device existing case
+		if deviceDefault != nil && deviceDefault.Code() == 409 {
+			log.Infof("Check and Update the existing device: %s", *device.DisplayName)
+			newDevice, err2 := m.checkAndUpdateExistingDevice(device)
+			if err2 != nil {
+				return nil, err2
+			}
+			return newDevice, nil
+		}
+
 		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
 	return restResponse.Payload, nil
-}
-
-func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.Device, error) {
-	clusterName := m.Config().ClusterName
-	displayNameWithClusterName := fmt.Sprintf("%s-%s", *device.DisplayName, clusterName)
-	devices, err := m.FindByDisplayNames(*device.DisplayName, displayNameWithClusterName)
-	if err != nil {
-		return nil, err
-	}
-	log.Debugf("%#v", devices)
-	if len(devices) == 0 {
-		return nil, nil
-	}
-	var existDevice *models.Device
-	for _, device := range devices {
-		if clusterName == m.GetPropertyValue(device, constants.K8sClusterNamePropertyKey) {
-			existDevice = device
-			break
-		}
-	}
-	if existDevice != nil {
-		// exist the device, just update it
-		*device.DisplayName = *existDevice.DisplayName
-		updatedDevice, err1 := m.updateAndReplace(existDevice.ID, device)
-		if err1 != nil {
-			return nil, err1
-		}
-		log.Infof("Exists the device(%s), just update it", *updatedDevice.DisplayName)
-		return updatedDevice, nil
-	}
-
-	// exist the duplicate name device, rename displayName and add device
-	renamedDevice, err := m.renameAndAddDevice(device)
-	if err != nil {
-		log.Errorf("rename device failed: %v", err)
-		return nil, fmt.Errorf("rename device failed")
-	}
-	return renamedDevice, nil
 }
 
 // UpdateAndReplaceByID implements types.DeviceManager.
