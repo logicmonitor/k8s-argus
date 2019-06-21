@@ -31,7 +31,10 @@ $ helm upgrade \
   --set account="$ACCOUNT" \
   --set clusterName="$CLUSTER_NAME" \
   --set imageTag="$IMAGE_TAG" \
-  --set proxyURL="$PROXY_URL" \
+  --set proxyHost="$PROXY_HOST" \
+  --set proxyPort="$PROXY_PORT" \
+  --set-string proxyUser="$PROXY_USER" \
+  --set-string proxyPass="$PROXY_PASS" \
   collectorset-controller logicmonitor/collectorset-controller
 ```
 
@@ -55,7 +58,10 @@ Next, install Argus:
     --set clusterGroupID="$CLUSTER_GROUP_ID" \
     --set clusterName="$CLUSTER_NAME" \
     --set imageTag="$IMAGE_TAG" \
-    --set proxyURL="$PROXY_URL" \
+    --set proxyHost="$PROXY_HOST" \
+    --set proxyPort="$PROXY_PORT" \
+    --set-string proxyUser="$PROXY_USER" \
+    --set-string proxyPass="$PROXY_PASS" \
     --set collector.replicas="$COLLECTOR_REPLICAS" \
     --set collector.size="$COLLECTOR_SIZE" \
     argus logicmonitor/argus
