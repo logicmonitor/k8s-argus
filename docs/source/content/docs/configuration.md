@@ -63,7 +63,6 @@ for the Argus docker image.
 - **imageTag:** The argus container [image tag] (https://hub.docker.com/r/logicmonitor/argus/tags/) to use.
 - **proxyURL:** The Http/s proxy url for application request routing.
 
-
 # Configuring Argus Manually
 
 In most applications there are generally two types of configuration options
