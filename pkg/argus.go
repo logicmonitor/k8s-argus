@@ -2,14 +2,11 @@ package argus
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
-	"github.com/go-openapi/strfmt"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-
-	"net/url"
-
 	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
@@ -25,6 +22,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	"github.com/logicmonitor/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
