@@ -55,7 +55,7 @@ func newLMClientWithProxy(config *client.Config, proxyURLStr string) (*client.LM
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Use http proxy: %s://%s", proxyURL.Scheme, proxyURL.Host)
+	log.Infof("Using http/s proxy: %s://%s", proxyURL.Scheme, proxyURL.Host)
 	httpClient := http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
