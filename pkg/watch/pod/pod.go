@@ -3,6 +3,8 @@
 package pod
 
 import (
+	"strconv"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -20,6 +22,16 @@ const (
 // Watcher represents a watcher type that watches pods.
 type Watcher struct {
 	types.DeviceManager
+}
+
+// APIVersion is a function that implements the Watcher interface.
+func (w *Watcher) APIVersion() string {
+	return constants.K8sAPIVersionV1
+}
+
+// Enabled is a function that check the resource can watch.
+func (w *Watcher) Enabled() bool {
+	return true
 }
 
 // Resource is a function that implements the Watcher interface.
@@ -144,6 +156,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("selflink", pod.SelfLink),
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
+		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
 	}
 	if pod.Spec.HostNetwork {
 		options = append(options, w.Custom("kubernetes.pod.hostNetwork", "true"))

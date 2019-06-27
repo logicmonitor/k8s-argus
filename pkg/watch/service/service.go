@@ -4,6 +4,7 @@ package service
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -22,6 +23,16 @@ const (
 // Watcher represents a watcher type that watches services.
 type Watcher struct {
 	types.DeviceManager
+}
+
+// APIVersion is a function that implements the Watcher interface.
+func (w *Watcher) APIVersion() string {
+	return constants.K8sAPIVersionV1
+}
+
+// Enabled is a function that check the resource can watch.
+func (w *Watcher) Enabled() bool {
+	return true
 }
 
 // Resource is a function that implements the Watcher interface.
@@ -75,7 +86,6 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
-
 		// Delete the service.
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(fmtServiceDisplayName(service)); err != nil {
@@ -132,6 +142,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 		w.Auto("namespace", service.Namespace),
 		w.Auto("selflink", service.SelfLink),
 		w.Auto("uid", string(service.UID)),
+		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(service.CreationTimestamp.Unix(), 10)),
 	}
 }
 

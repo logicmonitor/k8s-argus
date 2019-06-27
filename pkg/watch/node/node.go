@@ -3,6 +3,7 @@
 package node
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -26,6 +27,16 @@ type Watcher struct {
 	types.DeviceManager
 	DeviceGroups map[string]int32
 	LMClient     *client.LMSdkGo
+}
+
+// APIVersion is a function that implements the Watcher interface.
+func (w *Watcher) APIVersion() string {
+	return constants.K8sAPIVersionV1
+}
+
+// Enabled is a function that check the resource can watch.
+func (w *Watcher) Enabled() bool {
+	return true
 }
 
 // Resource is a function that implements the Watcher interface.
@@ -137,7 +148,6 @@ func (w *Watcher) move(node *v1.Node) {
 
 func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	categories := utilities.BuildSystemCategoriesFromLabels(category, node.Labels)
-
 	return []types.DeviceOption{
 		w.Name(getInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
@@ -146,6 +156,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.Auto("name", node.Name),
 		w.Auto("selflink", node.SelfLink),
 		w.Auto("uid", string(node.UID)),
+		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
 	}
 }
 
