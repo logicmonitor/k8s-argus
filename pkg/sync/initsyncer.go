@@ -158,21 +158,19 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 	for _, device := range devices {
 		// the "auto.clustername" property checking is used to prevent unexpected deletion of the normal non-k8s device
 		// which may be assigned to the cluster group
-		cps := device.CustomProperties
-		autoClusterName := ""
-		for _, cp := range cps {
-			if *cp.Name == constants.K8sClusterNamePropertyKey {
-				autoClusterName = *cp.Value
-				break
-			}
-		}
+		autoClusterName := i.DeviceManager.GetPropertyValue(device, constants.K8sClusterNamePropertyKey)
 		if autoClusterName != i.DeviceManager.Config().ClusterName {
 			log.Infof("Ignore the device (%v) which does not have property %v:%v",
 				*device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
 			continue
 		}
-
-		_, exist := resourcesMap[*device.DisplayName]
+		// the displayName may be renamed, we should use the constants.K8sResourceNamePropertyKey property value
+		resourceName := i.DeviceManager.GetPropertyValue(device, constants.K8sResourceNamePropertyKey)
+		// for compatibility, if resourceName is empty, use display name
+		if resourceName == "" {
+			resourceName = *device.DisplayName
+		}
+		_, exist := resourcesMap[resourceName]
 		if !exist {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
 			err := i.DeviceManager.DeleteByID(device.ID)
