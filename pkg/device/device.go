@@ -3,6 +3,7 @@ package device
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -55,40 +56,92 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, opti
 
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
 func (m *Manager) checkAndUpdateExistingDevice(device *models.Device) (*models.Device, error) {
-	oldDevice, err := m.FindByDisplayName(*device.DisplayName)
+	displayNameWithClusterName := fmt.Sprintf("%s-%s", *device.DisplayName, m.Config().ClusterName)
+	existingDevices, err := m.FindByDisplayNames(*device.DisplayName, displayNameWithClusterName)
 	if err != nil {
 		return nil, err
 	}
-	if oldDevice == nil {
-		return nil, fmt.Errorf("can not find the device: %s", *device.DisplayName)
+	if len(existingDevices) == 0 {
+		return nil, fmt.Errorf("cannot find devices with name: %s", *device.DisplayName)
 	}
-
-	// the device which is not changed will be ignored
-	if *device.Name == *oldDevice.Name {
-		log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
-		return device, nil
+	for _, existingDevice := range existingDevices {
+		clusterName := m.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey)
+		if clusterName == m.Config().ClusterName {
+			// the device which is not changed will be ignored
+			if *existingDevice.Name == *device.Name {
+				log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
+				return device, nil
+			}
+			// the clusterName is the same and hostName is not the same, need update
+			*device.DisplayName = *existingDevice.DisplayName
+			newDevice, err2 := m.updateAndReplace(existingDevice.ID, device)
+			if err2 != nil {
+				return nil, err2
+			}
+			log.Infof("Updating existing device (%s)", *newDevice.DisplayName)
+			return newDevice, nil
+		}
 	}
+	// duplicate device exists. update displayName and re-add
+	renamedDevice, err := m.renameAndAddDevice(device)
+	if err != nil {
+		log.Errorf("rename device failed: %v", err)
+		return nil, fmt.Errorf("rename device failed")
+	}
+	return renamedDevice, nil
+}
 
-	// the device of the other cluster will be ignored
-	oldClusterName := ""
-	if oldDevice.CustomProperties != nil && len(oldDevice.CustomProperties) > 0 {
-		for _, cp := range oldDevice.CustomProperties {
-			if *cp.Name == constants.K8sClusterNamePropertyKey {
-				oldClusterName = *cp.Value
+// renameAndAddDevice rename display name and then add the device
+func (m *Manager) renameAndAddDevice(device *models.Device) (*models.Device, error) {
+	resourceName := m.GetPropertyValue(device, constants.K8sResourceNamePropertyKey)
+	if resourceName == "" {
+		resourceName = *device.DisplayName
+	}
+	renameResourceName := fmt.Sprintf("%s-%s", resourceName, m.Config().ClusterName)
+	existingDevice, err := m.FindByDisplayName(renameResourceName)
+	if err != nil {
+		log.Warnf("Get device(%s) failed, err: %v", resourceName, err)
+	}
+	if existingDevice != nil {
+		if m.Config().ClusterName == m.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey) {
+			device.DisplayName = existingDevice.DisplayName
+			return m.updateAndReplace(existingDevice.ID, device)
+		}
+		return nil, fmt.Errorf("exist displayName: %s", renameResourceName)
+	}
+	log.Infof("Rename device: %s -> %s", *device.DisplayName, renameResourceName)
+	device.DisplayName = &renameResourceName
+	params := lm.NewAddDeviceParams()
+	addFromWizard := false
+	params.SetAddFromWizard(&addFromWizard)
+	params.SetBody(device)
+	restResponse, err := m.LMClient.LM.AddDevice(params)
+	if err != nil {
+		return nil, err
+	}
+	return restResponse.Payload, nil
+}
+
+// GetPropertyValue get device property value by property name
+func (m *Manager) GetPropertyValue(device *models.Device, propertyName string) string {
+	if device == nil {
+		return ""
+	}
+	if len(device.CustomProperties) > 0 {
+		for _, cp := range device.CustomProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
 			}
 		}
 	}
-	if oldClusterName != m.Config().ClusterName {
-		log.Infof("Device (%s) belongs to a different cluster (%s). Ignoring update", *device.DisplayName, oldClusterName)
-		return device, nil
+	if len(device.SystemProperties) > 0 {
+		for _, cp := range device.SystemProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
+			}
+		}
 	}
-
-	newDevice, err := m.updateAndReplace(oldDevice.ID, device)
-	if err != nil {
-		return nil, err
-	}
-	log.Infof("Finished updating the device: %s", *newDevice.DisplayName)
-	return newDevice, nil
+	return ""
 }
 
 func (m *Manager) updateAndReplace(id int32, device *models.Device) (*models.Device, error) {
@@ -124,6 +177,37 @@ func (m *Manager) FindByDisplayName(name string) (*models.Device, error) {
 	return nil, nil
 }
 
+// FindByDisplayNames implements types.DeviceManager.
+func (m *Manager) FindByDisplayNames(displayNames ...string) ([]*models.Device, error) {
+	if len(displayNames) == 0 {
+		return []*models.Device{}, nil
+	}
+	filter := fmt.Sprintf("displayName:\"%s\"", strings.Join(displayNames, "\"|\""))
+	params := lm.NewGetDeviceListParams()
+	params.SetFilter(&filter)
+	restResponse, err := m.LMClient.LM.GetDeviceList(params)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("%#v", restResponse)
+	return restResponse.Payload.Items, nil
+}
+
+// FindByDisplayNameAndClusterName implements types.DeviceManager.
+func (m *Manager) FindByDisplayNameAndClusterName(displayName string) (*models.Device, error) {
+	displayNameWithClusterName := fmt.Sprintf("%s-%s", displayName, m.Config().ClusterName)
+	devices, err := m.FindByDisplayNames(displayName, displayNameWithClusterName)
+	if err != nil {
+		return nil, err
+	}
+	for _, device := range devices {
+		if m.Config().ClusterName == m.GetPropertyValue(device, constants.K8sClusterNamePropertyKey) {
+			return device, nil
+		}
+	}
+	return nil, nil
+}
+
 // Add implements types.DeviceManager.
 func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, options...)
@@ -152,7 +236,6 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
-
 	return restResponse.Payload, nil
 }
 
@@ -166,7 +249,7 @@ func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) 
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.DeviceOption) (*models.Device, error) {
-	d, err := m.FindByDisplayName(name)
+	d, err := m.FindByDisplayNameAndClusterName(name)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +258,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
-
+	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
 	device, err := m.UpdateAndReplaceByID(d.ID, options...)
 	if err != nil {
@@ -210,7 +293,7 @@ func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...t
 
 // UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, options ...types.DeviceOption) (*models.Device, error) {
-	d, err := m.FindByDisplayName(name)
+	d, err := m.FindByDisplayNameAndClusterName(name)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +302,7 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, 
 		log.Infof("Could not find device %q", name)
 		return nil, nil
 	}
-
+	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
 	device, err := m.UpdateAndReplaceFieldByID(d.ID, field, options...)
 	if err != nil {
@@ -239,7 +322,7 @@ func (m *Manager) DeleteByID(id int32) error {
 
 // DeleteByDisplayName implements types.DeviceManager.
 func (m *Manager) DeleteByDisplayName(name string) error {
-	d, err := m.FindByDisplayName(name)
+	d, err := m.FindByDisplayNameAndClusterName(name)
 	if err != nil {
 		return err
 	}

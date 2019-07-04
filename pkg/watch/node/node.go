@@ -157,6 +157,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.Auto("selflink", node.SelfLink),
 		w.Auto("uid", string(node.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
+		w.Custom(constants.K8sResourceNamePropertyKey, node.Name),
 	}
 }
 
