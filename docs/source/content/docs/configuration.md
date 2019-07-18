@@ -32,8 +32,8 @@ respository to use for the collectorset-controller docker image.
 - **imageTag:** The collectorset-controller [image tag] (https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/) to use.
 - **proxyHost (default: `""`):** The Http/s proxy hostname.
 - **proxyPort (default: `""`):** The Http/s proxy port.
-- **proxyUser (default: `""`):** The Http/s proxy credential username.
-- **proxyPass (default: `""`):** The Http/s proxy credential password.
+- **proxyUser (default: `""`):** The Http/s proxy username.
+- **proxyPass (default: `""`):** The Http/s proxy password.
 
 # Configuring Argus via the Helm Chart
 
@@ -66,8 +66,8 @@ for the Argus docker image.
 - **imageTag:** The argus container [image tag] (https://hub.docker.com/r/logicmonitor/argus/tags/) to use.
 - **proxyHost (default: `""`):** The Http/s proxy hostname.
 - **proxyPort (default: `""`):** The Http/s proxy port.
-- **proxyUser (default: `""`):** The Http/s proxy credential username.
-- **proxyPass (default: `""`):** The Http/s proxy credential password.
+- **proxyUser (default: `""`):** The Http/s proxy username.
+- **proxyPass (default: `""`):** The Http/s proxy password.
 
 # Configuring Argus Manually
 
