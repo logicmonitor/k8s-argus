@@ -57,16 +57,15 @@ func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*c
 		proxyAddr = fmt.Sprintf("%s:%s", argusConfig.ProxyHost, argusConfig.ProxyPort)
 	}
 	proxyURL, err := url.Parse(proxyAddr)
+	if err != nil {
+		return nil, err
+	}
 	if argusConfig.ProxyUser != "" {
 		if argusConfig.ProxyPass != "" {
 			proxyURL.User = url.UserPassword(argusConfig.ProxyUser, argusConfig.ProxyPass)
 		} else {
 			proxyURL.User = url.User(argusConfig.ProxyUser)
 		}
-	}
-
-	if err != nil {
-		return nil, err
 	}
 	log.Infof("Using http/s proxy: %s", proxyAddr)
 	httpClient := http.Client{
@@ -76,10 +75,10 @@ func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*c
 	}
 	transport := httptransport.NewWithClient(config.TransportCfg.Host, config.TransportCfg.BasePath, config.TransportCfg.Schemes, &httpClient)
 	authInfo := client.LMv1Auth(*config.AccessID, *config.AccessKey)
-	cli := new(client.LMSdkGo)
-	cli.Transport = transport
-	cli.LM = lm.New(transport, strfmt.Default, authInfo)
-	return cli, nil
+	client := new(client.LMSdkGo)
+	client.Transport = transport
+	client.LM = lm.New(transport, strfmt.Default, authInfo)
+	return client, nil
 }
 
 func newK8sClient() (*kubernetes.Clientset, error) {
