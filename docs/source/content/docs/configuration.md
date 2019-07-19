@@ -30,8 +30,7 @@ RBAC enabled, this value should be set to false.
 - **imageRepository (default: `"logicmonitor/collectorset-controller"`):** The
 respository to use for the collectorset-controller docker image.
 - **imageTag:** The collectorset-controller [image tag] (https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/) to use.
-- **proxyHost (default: `""`):** The Http/s proxy hostname.
-- **proxyPort (default: `""`):** The Http/s proxy port.
+- **proxyURL (default: `""`):** The Http/s proxy url.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
 
@@ -64,8 +63,7 @@ RBAC enabled, this value should be set to false.
 - **imageRepository (default: `"logicmonitor/argus"`):** The respository to use
 for the Argus docker image.
 - **imageTag:** The argus container [image tag] (https://hub.docker.com/r/logicmonitor/argus/tags/) to use.
-- **proxyHost (default: `""`):** The Http/s proxy hostname.
-- **proxyPort (default: `""`):** The Http/s proxy port.
+- **proxyURL (default: `""`):** The Http/s proxy url.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
 

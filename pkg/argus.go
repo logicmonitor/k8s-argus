@@ -1,7 +1,6 @@
 package argus
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -45,18 +44,14 @@ func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
 	domain := argusConfig.Account + ".logicmonitor.com"
 	config.SetAccountDomain(&domain)
 	//config.UserAgent = constants.UserAgentBase + constants.Version
-	if argusConfig.ProxyHost == "" {
+	if argusConfig.ProxyURL == "" {
 		return client.New(config), nil
 	}
 	return newLMClientWithProxy(config, argusConfig)
 }
 
 func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*client.LMSdkGo, error) {
-	proxyAddr := argusConfig.ProxyHost
-	if argusConfig.ProxyPort != "" {
-		proxyAddr = fmt.Sprintf("%s:%s", argusConfig.ProxyHost, argusConfig.ProxyPort)
-	}
-	proxyURL, err := url.Parse(proxyAddr)
+	proxyURL, err := url.Parse(argusConfig.ProxyURL)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +62,7 @@ func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*c
 			proxyURL.User = url.User(argusConfig.ProxyUser)
 		}
 	}
-	log.Infof("Using http/s proxy: %s", proxyAddr)
+	log.Infof("Using http/s proxy: %s", argusConfig.ProxyURL)
 	httpClient := http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
