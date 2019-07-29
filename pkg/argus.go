@@ -1,8 +1,12 @@
 package argus
 
 import (
+	"net/http"
+	"net/url"
 	"time"
 
+	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
@@ -18,6 +22,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	"github.com/logicmonitor/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -32,15 +37,43 @@ type Argus struct {
 	Watchers []types.Watcher
 }
 
-func newLMClient(id, key, company string) *client.LMSdkGo {
+func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
 	config := client.NewConfig()
-	config.SetAccessID(&id)
-	config.SetAccessKey(&key)
-	domain := company + ".logicmonitor.com"
+	config.SetAccessID(&argusConfig.ID)
+	config.SetAccessKey(&argusConfig.Key)
+	domain := argusConfig.Account + ".logicmonitor.com"
 	config.SetAccountDomain(&domain)
 	//config.UserAgent = constants.UserAgentBase + constants.Version
-	api := client.New(config)
-	return api
+	if argusConfig.ProxyURL == "" {
+		return client.New(config), nil
+	}
+	return newLMClientWithProxy(config, argusConfig)
+}
+
+func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*client.LMSdkGo, error) {
+	proxyURL, err := url.Parse(argusConfig.ProxyURL)
+	if err != nil {
+		return nil, err
+	}
+	if argusConfig.ProxyUser != "" {
+		if argusConfig.ProxyPass != "" {
+			proxyURL.User = url.UserPassword(argusConfig.ProxyUser, argusConfig.ProxyPass)
+		} else {
+			proxyURL.User = url.User(argusConfig.ProxyUser)
+		}
+	}
+	log.Infof("Using http/s proxy: %s", argusConfig.ProxyURL)
+	httpClient := http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(proxyURL),
+		},
+	}
+	transport := httptransport.NewWithClient(config.TransportCfg.Host, config.TransportCfg.BasePath, config.TransportCfg.Schemes, &httpClient)
+	authInfo := client.LMv1Auth(*config.AccessID, *config.AccessKey)
+	client := new(client.LMSdkGo)
+	client.Transport = transport
+	client.LM = lm.New(transport, strfmt.Default, authInfo)
+	return client, nil
 }
 
 func newK8sClient() (*kubernetes.Clientset, error) {
@@ -122,7 +155,10 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 // NewBase instantiates and returns the base structure used throughout Argus.
 func NewBase(config *config.Config) (*types.Base, error) {
 	// LogicMonitor API client.
-	lmClient := newLMClient(config.ID, config.Key, config.Account)
+	lmClient, err := newLMClient(config)
+	if err != nil {
+		return nil, err
+	}
 
 	// check and update the params
 	checkAndUpdateClusterGroup(config, lmClient)
