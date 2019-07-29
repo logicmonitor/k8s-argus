@@ -62,6 +62,9 @@ Next, install Argus:
     --set proxyPass="$PROXY_PASS" \
     --set collector.replicas="$COLLECTOR_REPLICAS" \
     --set collector.size="$COLLECTOR_SIZE" \
+    --set collector.proxyURL="$COLLECTOR_PROXY_URL" \
+    --set collector.proxyUser="$COLLECTOR_PROXY_USER" \
+    --set collector.proxyPass="$COLLECTOR_PROXY_PASS" \
     argus logicmonitor/argus
 ```
 See the [configuration page]
