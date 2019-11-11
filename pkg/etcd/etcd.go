@@ -10,7 +10,6 @@ import (
 	"github.com/coreos/etcd/client"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -86,11 +85,10 @@ func (c *Controller) addDevice(member *Member) {
 
 // nolint: unparam
 func (c *Controller) args(member *Member, category string) []types.DeviceOption {
-	categories := utilities.BuildSystemCategoriesFromLabels(category, nil)
 	return []types.DeviceOption{
 		c.Name(member.URL.Hostname()),
 		c.DisplayName(fmtMemberDisplayName(member)),
-		c.SystemCategories(categories),
+		c.SystemCategories(category),
 		c.Auto("clientport", member.URL.Port()),
 	}
 }

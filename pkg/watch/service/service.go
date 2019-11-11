@@ -8,7 +8,6 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -132,12 +131,11 @@ func (w *Watcher) move(service *v1.Service) {
 }
 
 func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOption {
-	categories := utilities.BuildSystemCategoriesFromLabels(category, service.Labels)
 	return []types.DeviceOption{
 		w.Name(service.Spec.ClusterIP),
 		w.ResourceLabels(service.Labels),
 		w.DisplayName(fmtServiceDisplayName(service)),
-		w.SystemCategories(categories),
+		w.SystemCategories(category),
 		w.Auto("name", service.Name),
 		w.Auto("namespace", service.Namespace),
 		w.Auto("selflink", service.SelfLink),

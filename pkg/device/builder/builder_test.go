@@ -27,7 +27,7 @@ func TestBuilder_SetProperty(t *testing.T) {
 	}
 
 	sysPropValue1 := "k1=v1,k2=v2"
-	sysPropValue2 := constants.PodCategory + ",k2=v21,k3=v3"
+	sysPropValue2 := constants.PodCategory
 
 	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue1)
 	setProp(device)
@@ -36,6 +36,11 @@ func TestBuilder_SetProperty(t *testing.T) {
 	}
 	if sysPropValue1 != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
 		t.Errorf("failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue1)
+	}
+	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
+	setProp(device)
+	if sysPropValue1+","+constants.PodCategory != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
+		t.Errorf("failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
 	}
 	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
 	setProp(device)

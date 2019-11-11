@@ -101,16 +101,13 @@ func setProperty(name, value string) types.DeviceOption {
 }
 
 func getUpdatedSystemCategories(oldValue, newValue string) string {
-	newValues := strings.Split(newValue, ",")
-	var category string
-	for _, nv := range newValues {
-		if !strings.Contains(nv, "=") {
-			category = nv
-			break
+	// we do not use strings.contain, because it may match as substring of some prop
+	oldValues := strings.Split(strings.TrimSpace(oldValue), ",")
+	for _, ov := range oldValues {
+		if ov == newValue {
+			return oldValue
 		}
 	}
-	if !strings.Contains(oldValue, category) {
-		oldValue = oldValue + "," + category
-	}
+	oldValue = oldValue + "," + newValue
 	return oldValue
 }

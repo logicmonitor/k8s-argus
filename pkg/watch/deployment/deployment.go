@@ -9,7 +9,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/api/apps/v1beta2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -116,12 +115,11 @@ func (w *Watcher) move(deployment *v1beta2.Deployment) {
 }
 
 func (w *Watcher) args(deployment *v1beta2.Deployment, category string) []types.DeviceOption {
-	categories := utilities.BuildSystemCategoriesFromLabels(category, deployment.Labels)
 	return []types.DeviceOption{
 		w.Name(deployment.Name),
 		w.ResourceLabels(deployment.Labels),
 		w.DisplayName(fmtDeploymentDisplayName(deployment)),
-		w.SystemCategories(categories),
+		w.SystemCategories(category),
 		w.Auto("name", deployment.Name),
 		w.Auto("namespace", deployment.Namespace),
 		w.Auto("selflink", deployment.SelfLink),
