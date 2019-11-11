@@ -117,7 +117,7 @@ func setProperty(name, value string) types.DeviceOption {
 }
 
 func getUpdatedSystemCategories(oldValue, newValue string) string {
-	// we do not use strings.contain, because it may match as substring of some prop
+	// we do not use strings.contain, because it may be matched as substring of some prop
 	oldValues := strings.Split(strings.TrimSpace(oldValue), ",")
 	for _, ov := range oldValues {
 		if ov == newValue {
