@@ -43,16 +43,32 @@ func (b *Builder) SystemCategories(categories string) types.DeviceOption {
 // ResourceLabels implements types.DeviceBuilder
 func (b *Builder) ResourceLabels(properties map[string]string) types.DeviceOption {
 	return func(device *models.Device) {
+		if device == nil {
+			return
+		}
+		if device.CustomProperties == nil {
+			device.CustomProperties = []*models.NameAndValue{}
+		}
 		for name, value := range properties {
 			propName := constants.LabelCustomPropertyPrefix + name
 			propValue := value
 			if propValue == "" {
 				propValue = constants.LabelNullPlaceholder
 			}
-			device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
-				Name:  &propName,
-				Value: &propValue,
-			})
+			existed := false
+			for _, prop := range device.CustomProperties {
+				if *prop.Name == propName {
+					*prop.Value = propValue
+					existed = true
+					break
+				}
+			}
+			if !existed {
+				device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
+					Name:  &propName,
+					Value: &propValue,
+				})
+			}
 		}
 	}
 }

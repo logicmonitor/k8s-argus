@@ -40,6 +40,10 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, d *m
 			DeviceType:      constants.K8sDeviceType,
 		}
 
+		for _, option := range options {
+			option(d)
+		}
+
 		reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
 		if err != nil {
 			log.Errorf("Failed to get collector ID: %v", err)
@@ -47,11 +51,12 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, d *m
 			log.Infof("Using collector ID %d for %q", reply.Id, *d.DisplayName)
 			d.PreferredCollectorID = &reply.Id
 		}
+	} else {
+		for _, option := range options {
+			option(d)
+		}
 	}
 
-	for _, option := range options {
-		option(d)
-	}
 	return d
 }
 
