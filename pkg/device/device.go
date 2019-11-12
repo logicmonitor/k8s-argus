@@ -245,8 +245,8 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 	return restResponse.Payload, nil
 }
 
-// UpdateAndReplaceByID implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByID(d *models.Device, options ...types.DeviceOption) (*models.Device, error) {
+// UpdateAndReplace implements types.DeviceManager.
+func (m *Manager) UpdateAndReplace(d *models.Device, options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, d, options...)
 	log.Debugf("%#v", device)
 
@@ -266,7 +266,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 	}
 	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
-	device, err := m.UpdateAndReplaceByID(d, options...)
+	device, err := m.UpdateAndReplace(d, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -276,8 +276,8 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 
 // TODO: this method needs to be removed in DEV-50496
 
-// UpdateAndReplaceFieldByID implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByID(d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
+// UpdateAndReplaceField implements types.DeviceManager.
+func (m *Manager) UpdateAndReplaceField(d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
 	device := buildDevice(m.Config(), m.ControllerClient, d, options...)
 	log.Debugf("%#v", device)
 
@@ -310,7 +310,7 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, 
 	}
 	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
-	device, err := m.UpdateAndReplaceFieldByID(d, field, options...)
+	device, err := m.UpdateAndReplaceField(d, field, options...)
 	if err != nil {
 		return nil, err
 	}
