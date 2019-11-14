@@ -22,36 +22,42 @@ type Manager struct {
 	ControllerClient api.CollectorSetControllerClient
 }
 
-func buildDevice(c *config.Config, client api.CollectorSetControllerClient, options ...types.DeviceOption) *models.Device {
-	hostGroupIds := "1"
-	propertyName := constants.K8sClusterNamePropertyKey
-	// use the copy value
-	clusterName := c.ClusterName
-	device := &models.Device{
-		CustomProperties: []*models.NameAndValue{
-			{
-				Name:  &propertyName,
-				Value: &clusterName,
+func buildDevice(c *config.Config, client api.CollectorSetControllerClient, d *models.Device, options ...types.DeviceOption) *models.Device {
+	if d == nil {
+		hostGroupIds := "1"
+		propertyName := constants.K8sClusterNamePropertyKey
+		// use the copy value
+		clusterName := c.ClusterName
+		d = &models.Device{
+			CustomProperties: []*models.NameAndValue{
+				{
+					Name:  &propertyName,
+					Value: &clusterName,
+				},
 			},
-		},
-		DisableAlerting: c.DisableAlerting,
-		HostGroupIds:    &hostGroupIds,
-		DeviceType:      constants.K8sDeviceType,
-	}
+			DisableAlerting: c.DisableAlerting,
+			HostGroupIds:    &hostGroupIds,
+			DeviceType:      constants.K8sDeviceType,
+		}
 
-	for _, option := range options {
-		option(device)
-	}
+		for _, option := range options {
+			option(d)
+		}
 
-	reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
-	if err != nil {
-		log.Errorf("Failed to get collector ID: %v", err)
+		reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
+		if err != nil {
+			log.Errorf("Failed to get collector ID: %v", err)
+		} else {
+			log.Infof("Using collector ID %d for %q", reply.Id, *d.DisplayName)
+			d.PreferredCollectorID = &reply.Id
+		}
 	} else {
-		log.Infof("Using collector ID %d for %q", reply.Id, *device.DisplayName)
-		device.PreferredCollectorID = &reply.Id
+		for _, option := range options {
+			option(d)
+		}
 	}
 
-	return device
+	return d
 }
 
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
@@ -210,7 +216,7 @@ func (m *Manager) FindByDisplayNameAndClusterName(displayName string) (*models.D
 
 // Add implements types.DeviceManager.
 func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
-	device := buildDevice(m.Config(), m.ControllerClient, options...)
+	device := buildDevice(m.Config(), m.ControllerClient, nil, options...)
 	log.Debugf("%#v", device)
 
 	params := lm.NewAddDeviceParams()
@@ -239,12 +245,12 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 	return restResponse.Payload, nil
 }
 
-// UpdateAndReplaceByID implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByID(id int32, options ...types.DeviceOption) (*models.Device, error) {
-	device := buildDevice(m.Config(), m.ControllerClient, options...)
+// UpdateAndReplace implements types.DeviceManager.
+func (m *Manager) UpdateAndReplace(d *models.Device, options ...types.DeviceOption) (*models.Device, error) {
+	device := buildDevice(m.Config(), m.ControllerClient, d, options...)
 	log.Debugf("%#v", device)
 
-	return m.updateAndReplace(id, device)
+	return m.updateAndReplace(d.ID, device)
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
@@ -260,7 +266,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 	}
 	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
-	device, err := m.UpdateAndReplaceByID(d.ID, options...)
+	device, err := m.UpdateAndReplace(d, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -270,13 +276,13 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 
 // TODO: this method needs to be removed in DEV-50496
 
-// UpdateAndReplaceFieldByID implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByID(id int32, field string, options ...types.DeviceOption) (*models.Device, error) {
-	device := buildDevice(m.Config(), m.ControllerClient, options...)
+// UpdateAndReplaceField implements types.DeviceManager.
+func (m *Manager) UpdateAndReplaceField(d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
+	device := buildDevice(m.Config(), m.ControllerClient, d, options...)
 	log.Debugf("%#v", device)
 
 	params := lm.NewPatchDeviceParams()
-	params.SetID(id)
+	params.SetID(d.ID)
 	params.SetBody(device)
 	opType := "replace"
 	params.SetOpType(&opType)
@@ -304,7 +310,7 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(name string, field string, 
 	}
 	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
-	device, err := m.UpdateAndReplaceFieldByID(d.ID, field, options...)
+	device, err := m.UpdateAndReplaceField(d, field, options...)
 	if err != nil {
 		return nil, err
 	}

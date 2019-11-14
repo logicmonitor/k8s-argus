@@ -47,13 +47,13 @@ type DeviceMapper interface {
 	FindByDisplayNameAndClusterName(string) (*models.Device, error)
 	// Add adds a device to a LogicMonitor account.
 	Add(...DeviceOption) (*models.Device, error)
-	// UpdateAndReplaceByID updates a device using the 'replace' OpType.
-	UpdateAndReplaceByID(int32, ...DeviceOption) (*models.Device, error)
+	// UpdateAndReplace updates a device using the 'replace' OpType.
+	UpdateAndReplace(*models.Device, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
 	UpdateAndReplaceByDisplayName(string, ...DeviceOption) (*models.Device, error)
-	// UpdateAndReplaceFieldByID updates a device using the 'replace' OpType for a
+	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
 	// specific field of a device.
-	UpdateAndReplaceFieldByID(int32, string, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceField(*models.Device, string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceFieldByDisplayName updates a device using the 'replace' OpType for a
 	// specific field of a device.
 	UpdateAndReplaceFieldByDisplayName(string, string, ...DeviceOption) (*models.Device, error)

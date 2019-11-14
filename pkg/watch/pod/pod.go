@@ -7,7 +7,6 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -144,12 +143,11 @@ func (w *Watcher) move(pod *v1.Pod) {
 }
 
 func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
-	categories := utilities.BuildSystemCategoriesFromLabels(category, pod.Labels)
 	options := []types.DeviceOption{
 		w.Name(getPodDNSName(pod)),
 		w.ResourceLabels(pod.Labels),
 		w.DisplayName(pod.Name),
-		w.SystemCategories(categories),
+		w.SystemCategories(category),
 		w.Auto("name", pod.Name),
 		w.Auto("namespace", pod.Namespace),
 		w.Auto("nodename", pod.Spec.NodeName),
