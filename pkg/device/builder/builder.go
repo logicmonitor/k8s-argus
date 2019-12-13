@@ -1,6 +1,8 @@
 package builder
 
 import (
+	"strings"
+
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/lm-sdk-go/models"
@@ -35,22 +37,38 @@ func (b *Builder) CollectorID(id int32) types.DeviceOption {
 
 // SystemCategories implements types.DeviceBuilder
 func (b *Builder) SystemCategories(categories string) types.DeviceOption {
-	return setProperty("system.categories", categories)
+	return setProperty(constants.K8sSystemCategoriesPropertyKey, categories)
 }
 
 // ResourceLabels implements types.DeviceBuilder
 func (b *Builder) ResourceLabels(properties map[string]string) types.DeviceOption {
 	return func(device *models.Device) {
+		if device == nil {
+			return
+		}
+		if device.CustomProperties == nil {
+			device.CustomProperties = []*models.NameAndValue{}
+		}
 		for name, value := range properties {
 			propName := constants.LabelCustomPropertyPrefix + name
 			propValue := value
 			if propValue == "" {
 				propValue = constants.LabelNullPlaceholder
 			}
-			device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
-				Name:  &propName,
-				Value: &propValue,
-			})
+			existed := false
+			for _, prop := range device.CustomProperties {
+				if *prop.Name == propName {
+					*prop.Value = propValue
+					existed = true
+					break
+				}
+			}
+			if !existed {
+				device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
+					Name:  &propName,
+					Value: &propValue,
+				})
+			}
 		}
 	}
 }
@@ -72,6 +90,21 @@ func (b *Builder) Custom(name, value string) types.DeviceOption {
 
 func setProperty(name, value string) types.DeviceOption {
 	return func(device *models.Device) {
+		if device == nil {
+			return
+		}
+		if device.CustomProperties == nil {
+			device.CustomProperties = []*models.NameAndValue{}
+		}
+		for _, prop := range device.CustomProperties {
+			if *prop.Name == name && value != "" {
+				if *prop.Name == constants.K8sSystemCategoriesPropertyKey {
+					value = getUpdatedSystemCategories(*prop.Value, value)
+				}
+				*prop.Value = value
+				return
+			}
+		}
 		if value != "" {
 			device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
 				Name:  &name,
@@ -81,4 +114,16 @@ func setProperty(name, value string) types.DeviceOption {
 			log.Warnf("Custom property value is empty for %q, skipping", name)
 		}
 	}
+}
+
+func getUpdatedSystemCategories(oldValue, newValue string) string {
+	// we do not use strings.contain, because it may be matched as substring of some prop
+	oldValues := strings.Split(strings.TrimSpace(oldValue), ",")
+	for _, ov := range oldValues {
+		if ov == newValue {
+			return oldValue
+		}
+	}
+	oldValue = oldValue + "," + newValue
+	return oldValue
 }
