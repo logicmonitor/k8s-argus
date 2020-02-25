@@ -220,7 +220,7 @@ func checkAndUpdateClusterGroup(config *config.Config, lmClient *client.LMSdkGo)
 		return
 	}
 
-	// if the group does not exist anymore, we will add the cluster to the root group
+	// if the group does not exist anymore, we will add the cluster to the root group # dummy pr
 	if !devicegroup.ExistsByID(config.ClusterGroupID, lmClient) {
 		log.Warnf("The device group (id=%v) does not exist, the cluster will be added to the root group", config.ClusterGroupID)
 		config.ClusterGroupID = constants.RootDeviceGroupID
