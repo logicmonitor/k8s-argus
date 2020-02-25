@@ -215,7 +215,7 @@ func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.I
 
 // check the cluster group ID, if the group does not exist, just use the root group
 func checkAndUpdateClusterGroup(config *config.Config, lmClient *client.LMSdkGo) {
-	// do not need to check the root group
+	// do not need to check the root group # dummy commit
 	if config.ClusterGroupID == constants.RootDeviceGroupID {
 		return
 	}
