@@ -18,6 +18,7 @@ package proxy
 
 import (
 	"bytes"
+	"compress/flate"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -27,9 +28,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/golang/glog"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
+	"k8s.io/klog"
 
 	"k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -100,16 +101,19 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := rt.RoundTrip(req)
 
 	if err != nil {
-		message := fmt.Sprintf("Error: '%s'\nTrying to reach: '%v'", err.Error(), req.URL.String())
+		message := fmt.Sprintf("Error trying to reach service: '%v'", err.Error())
 		resp = &http.Response{
+			Header:     http.Header{},
 			StatusCode: http.StatusServiceUnavailable,
 			Body:       ioutil.NopCloser(strings.NewReader(message)),
 		}
+		resp.Header.Set("Content-Type", "text/plain; charset=utf-8")
+		resp.Header.Set("X-Content-Type-Options", "nosniff")
 		return resp, nil
 	}
 
 	if redirect := resp.Header.Get("Location"); redirect != "" {
-		resp.Header.Set("Location", t.rewriteURL(redirect, req.URL))
+		resp.Header.Set("Location", t.rewriteURL(redirect, req.URL, req.Host))
 		return resp, nil
 	}
 
@@ -131,21 +135,39 @@ func (rt *Transport) WrappedRoundTripper() http.RoundTripper {
 
 // rewriteURL rewrites a single URL to go through the proxy, if the URL refers
 // to the same host as sourceURL, which is the page on which the target URL
-// occurred. If any error occurs (e.g. parsing), it returns targetURL.
-func (t *Transport) rewriteURL(targetURL string, sourceURL *url.URL) string {
+// occurred, or if the URL matches the sourceRequestHost. If any error occurs (e.g.
+// parsing), it returns targetURL.
+func (t *Transport) rewriteURL(targetURL string, sourceURL *url.URL, sourceRequestHost string) string {
 	url, err := url.Parse(targetURL)
 	if err != nil {
 		return targetURL
 	}
 
-	isDifferentHost := url.Host != "" && url.Host != sourceURL.Host
+	// Example:
+	//      When API server processes a proxy request to a service (e.g. /api/v1/namespace/foo/service/bar/proxy/),
+	//      the sourceURL.Host (i.e. req.URL.Host) is the endpoint IP address of the service. The
+	//      sourceRequestHost (i.e. req.Host) is the Host header that specifies the host on which the
+	//      URL is sought, which can be different from sourceURL.Host. For example, if user sends the
+	//      request through "kubectl proxy" locally (i.e. localhost:8001/api/v1/namespace/foo/service/bar/proxy/),
+	//      sourceRequestHost is "localhost:8001".
+	//
+	//      If the service's response URL contains non-empty host, and url.Host is equal to either sourceURL.Host
+	//      or sourceRequestHost, we should not consider the returned URL to be a completely different host.
+	//      It's the API server's responsibility to rewrite a same-host-and-absolute-path URL and append the
+	//      necessary URL prefix (i.e. /api/v1/namespace/foo/service/bar/proxy/).
+	isDifferentHost := url.Host != "" && url.Host != sourceURL.Host && url.Host != sourceRequestHost
 	isRelative := !strings.HasPrefix(url.Path, "/")
 	if isDifferentHost || isRelative {
 		return targetURL
 	}
 
-	url.Scheme = t.Scheme
-	url.Host = t.Host
+	// Do not rewrite scheme and host if the Transport has empty scheme and host
+	// when targetURL already contains the sourceRequestHost
+	if !(url.Host == sourceRequestHost && t.Scheme == "" && t.Host == "") {
+		url.Scheme = t.Scheme
+		url.Host = t.Host
+	}
+
 	origPath := url.Path
 	// Do not rewrite URL if the sourceURL already contains the necessary prefix.
 	if strings.HasPrefix(url.Path, t.PathPrepend) {
@@ -213,21 +235,32 @@ func (t *Transport) rewriteResponse(req *http.Request, resp *http.Response) (*ht
 		gzw := gzip.NewWriter(writer)
 		defer gzw.Close()
 		writer = gzw
-	// TODO: support flate, other encodings.
+	case "deflate":
+		var err error
+		reader = flate.NewReader(reader)
+		flw, err := flate.NewWriter(writer, flate.BestCompression)
+		if err != nil {
+			return nil, fmt.Errorf("errorf making flate writer: %v", err)
+		}
+		defer func() {
+			flw.Close()
+			flw.Flush()
+		}()
+		writer = flw
 	case "":
 		// This is fine
 	default:
 		// Some encoding we don't understand-- don't try to parse this
-		glog.Errorf("Proxy encountered encoding %v for text/html; can't understand this so not fixing links.", encoding)
+		klog.Errorf("Proxy encountered encoding %v for text/html; can't understand this so not fixing links.", encoding)
 		return resp, nil
 	}
 
 	urlRewriter := func(targetUrl string) string {
-		return t.rewriteURL(targetUrl, req.URL)
+		return t.rewriteURL(targetUrl, req.URL, req.Host)
 	}
 	err := rewriteHTML(reader, writer, urlRewriter)
 	if err != nil {
-		glog.Errorf("Failed to rewrite URLs: %v", err)
+		klog.Errorf("Failed to rewrite URLs: %v", err)
 		return resp, err
 	}
 

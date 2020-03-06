@@ -54,19 +54,19 @@
   name = "gopkg.in/yaml.v2"
 
 [[constraint]]
-  branch = "release-1.8"
+  branch = "release-1.17"
   name = "k8s.io/api"
 
 [[constraint]]
-  branch = "release-1.8"
+  branch = "release-1.17"
   name = "k8s.io/apiextensions-apiserver"
 
 [[constraint]]
-  branch = "release-1.8"
+  branch = "release-1.17"
   name = "k8s.io/apimachinery"
 
 [[constraint]]
-  branch = "release-5.0"
+  branch = "release-14.0"
   name = "k8s.io/client-go"
 
 [[override]]
