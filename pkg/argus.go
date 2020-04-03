@@ -208,6 +208,8 @@ func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.I
 		return clientset.CoreV1().RESTClient()
 	case constants.K8sAPIVersionAppsV1beta2:
 		return clientset.AppsV1beta2().RESTClient()
+	case constants.K8sAPIVersionAppsV1:
+		return clientset.AppsV1().RESTClient()
 	default:
 		return clientset.CoreV1().RESTClient()
 	}

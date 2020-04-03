@@ -26,7 +26,7 @@ func HasDeploymentPermissions() bool {
 	if deploymentPermissionFlag != nil {
 		return *deploymentPermissionFlag
 	}
-	_, err := client.AppsV1beta2().Deployments(v1.NamespaceAll).List(metav1.ListOptions{})
+	_, err := client.AppsV1().Deployments(v1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		deploymentPermissionFlag = &disable
 		log.Errorf("Failed to list deployments: %+v", err)
