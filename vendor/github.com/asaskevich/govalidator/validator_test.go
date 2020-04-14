@@ -2,6 +2,7 @@ package govalidator
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -634,7 +635,7 @@ func TestIsHash(t *testing.T) {
 	}
 }
 
-func TestIsEmail(t *testing.T) {
+func TestIsExistingEmail(t *testing.T) {
 	t.Parallel()
 
 	var tests = []struct {
@@ -645,11 +646,46 @@ func TestIsEmail(t *testing.T) {
 		{"foo@bar.com", true},
 		{"foo@bar.com.au", true},
 		{"foo+bar@bar.com", true},
-		{"foo@bar.coffee", true},
+		{"foo@bar.museum", true},
+		{"foo@driftaway.coffee", true},
 		{"foo@bar.coffee..coffee", false},
 		{"invalidemail@", false},
 		{"invalid.com", false},
 		{"@invalid.com", false},
+		{"NathAn.daVIeS@DomaIn.cOM", true},
+		{"NATHAN.DAVIES@DOMAIN.CO.UK", true},
+		{"nosuchdomain@bar.coffee", false},
+	}
+	for _, test := range tests {
+		actual := IsExistingEmail(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected IsExistingEmail(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestIsEmail(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"", false},
+		{"foo@bar.com", true},
+		{"x@x.x", true},
+		{"foo@bar.com.au", true},
+		{"foo+bar@bar.com", true},
+		{"foo@bar.coffee", true},
+		{"foo@bar.coffee..coffee", false},
+		{"foo@bar.bar.coffee", true},
+		{"foo@bar.中文网", true},
+		{"invalidemail@", false},
+		{"invalid.com", false},
+		{"@invalid.com", false},
+		{"test|123@m端ller.com", true},
+		{"hans@m端ller.com", true},
+		{"hans.m端ller@test.com", true},
 		{"NathAn.daVIeS@DomaIn.cOM", true},
 		{"NATHAN.DAVIES@DOMAIN.CO.UK", true},
 	}
@@ -691,12 +727,14 @@ func TestIsURL(t *testing.T) {
 		{"http://foobar.com/a-", true},
 		{"http://foobar.پاکستان/", true},
 		{"http://foobar.c_o_m", false},
+		{"http://_foobar.com", false},
+		{"http://foo_bar.com", true},
+		{"http://user:pass@foo_bar_bar.bar_foo.com", true},
 		{"", false},
 		{"xyz://foobar.com", false},
 		// {"invalid.", false}, is it false like "localhost."?
 		{".com", false},
 		{"rtmp://foobar.com", false},
-		{"http://www.foo_bar.com/", false},
 		{"http://localhost:3000/", true},
 		{"http://foobar.com#baz=qux", true},
 		{"http://foobar.com/t$-_.+!*\\'(),", true},
@@ -980,6 +1018,56 @@ func TestIsNull(t *testing.T) {
 		actual := IsNull(test.param)
 		if actual != test.expected {
 			t.Errorf("Expected IsNull(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestHasWhitespaceOnly(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"abacaba", false},
+		{"", false},
+		{"    ", true},
+		{"  \r\n  ", true},
+		{"\014\012\011\013\015", true},
+		{"\014\012\011\013 abc  \015", false},
+		{"\f\n\t\v\r\f", true},
+		{"x\n\t\t\t\t", false},
+		{"\f\n\t  \n\n\n   \v\r\f", true},
+	}
+	for _, test := range tests {
+		actual := HasWhitespaceOnly(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected HasWhitespaceOnly(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestHasWhitespace(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"abacaba", false},
+		{"", false},
+		{"    ", true},
+		{"  \r\n  ", true},
+		{"\014\012\011\013\015", true},
+		{"\014\012\011\013 abc  \015", true},
+		{"\f\n\t\v\r\f", true},
+		{"x\n\t\t\t\t", true},
+		{"\f\n\t  \n\n\n   \v\r\f", true},
+	}
+	for _, test := range tests {
+		actual := HasWhitespace(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected HasWhitespace(%q) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -1299,26 +1387,36 @@ func TestIsUUID(t *testing.T) {
 
 func TestIsCreditCard(t *testing.T) {
 	t.Parallel()
-
-	var tests = []struct {
-		param    string
-		expected bool
+	tests := []struct {
+		name   string
+		number string
+		want   bool
 	}{
-		{"", false},
-		{"foo", false},
-		{"5398228707871528", false},
-		{"375556917985515", true},
-		{"36050234196908", true},
-		{"4716461583322103", true},
-		{"4716-2210-5188-5662", true},
-		{"4929 7226 5379 7141", true},
-		{"5398228707871527", true},
+		{"empty", "", false},
+		{"not numbers", "credit card", false},
+		{"invalid luhn algorithm", "4220855426213389", false},
+
+		{"visa", "4220855426222389", true},
+		{"visa spaces", "4220 8554 2622 2389", true},
+		{"visa dashes", "4220-8554-2622-2389", true},
+		{"mastercard", "5139288802098206", true},
+		{"american express", "374953669708156", true},
+		{"discover", "6011464355444102", true},
+		{"jcb", "3548209662790989", true},
+
+		// below should be valid, do they respect international standards?
+		// is our validator logic not correct?
+		{"diners club international", "30190239451016", false},
+		{"rupay", "6521674451993089", false},
+		{"mir", "2204151414444676", false},
+		{"china unionPay", "624356436327468104", false},
 	}
-	for _, test := range tests {
-		actual := IsCreditCard(test.param)
-		if actual != test.expected {
-			t.Errorf("Expected IsCreditCard(%q) to be %v, got %v", test.param, test.expected, actual)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsCreditCard(tt.number); got != tt.want {
+				t.Errorf("IsCreditCard(%v) = %v, want %v", tt.number, got, tt.want)
+			}
+		})
 	}
 }
 
@@ -1418,6 +1516,41 @@ func TestIsDataURI(t *testing.T) {
 		actual := IsDataURI(test.param)
 		if actual != test.expected {
 			t.Errorf("Expected IsDataURI(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestIsMagnetURI(t *testing.T) {
+	t.Parallel()
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"magnet:?xt=urn:btih:06E2A9683BF4DA92C73A661AC56F0ECC9C63C5B4&dn=helloword2000&tr=udp://helloworld:1337/announce", true},
+		{"magnet:?xt=urn:btih:3E30322D5BFC7444B7B1D8DD42404B75D0531DFB&dn=world&tr=udp://world.com:1337", true},
+		{"magnet:?xt=urn:btih:4ODKSDJBVMSDSNJVBCBFYFBKNRU875DW8D97DWC6&dn=helloworld&tr=udp://helloworld.com:1337", true},
+		{"magnet:?xt=urn:btih:1GSHJVBDVDVJFYEHKFHEFIO8573898434JBFEGHD&dn=foo&tr=udp://foo.com:1337", true},
+		{"magnet:?xt=urn:btih:MCJDCYUFHEUD6E2752T7UJNEKHSUGEJFGTFHVBJS&dn=bar&tr=udp://bar.com:1337", true},
+		{"magnet:?xt=urn:btih:LAKDHWDHEBFRFVUFJENBYYTEUY837562JH2GEFYH&dn=foobar&tr=udp://foobar.com:1337", true},
+		{"magnet:?xt=urn:btih:MKCJBHCBJDCU725TGEB3Y6RE8EJ2U267UNJFGUID&dn=test&tr=udp://test.com:1337", true},
+		{"magnet:?xt=urn:btih:UHWY2892JNEJ2GTEYOMDNU67E8ICGICYE92JDUGH&dn=baz&tr=udp://baz.com:1337", true},
+		{"magnet:?xt=urn:btih:HS263FG8U3GFIDHWD7829BYFCIXB78XIHG7CWCUG&dn=foz&tr=udp://foz.com:1337", true},
+		{"", false},
+		{":?xt=urn:btih:06E2A9683BF4DA92C73A661AC56F0ECC9C63C5B4&dn=helloword2000&tr=udp://helloworld:1337/announce", false},
+		{"magnett:?xt=urn:btih:3E30322D5BFC7444B7B1D8DD42404B75D0531DFB&dn=world&tr=udp://world.com:1337", false},
+		{"xt=urn:btih:4ODKSDJBVMSDSNJVBCBFYFBKNRU875DW8D97DWC6&dn=helloworld&tr=udp://helloworld.com:1337", false},
+		{"magneta:?xt=urn:btih:1GSHJVBDVDVJFYEHKFHEFIO8573898434JBFEGHD&dn=foo&tr=udp://foo.com:1337", false},
+		{"magnet:?xt=uarn:btih:MCJDCYUFHEUD6E2752T7UJNEKHSUGEJFGTFHVBJS&dn=bar&tr=udp://bar.com:1337", false},
+		{"magnet:?xt=urn:btihz&dn=foobar&tr=udp://foobar.com:1337", false},
+		{"magnet:?xat=urn:btih:MKCJBHCBJDCU725TGEB3Y6RE8EJ2U267UNJFGUID&dn=test&tr=udp://test.com:1337", false},
+		{"magnet::?xt=urn:btih:UHWY2892JNEJ2GTEYOMDNU67E8ICGICYE92JDUGH&dn=baz&tr=udp://baz.com:1337", false},
+		{"magnet:?xt:btih:HS263FG8U3GFIDHWD7829BYFCIXB78XIHG7CWCUG&dn=foz&tr=udp://foz.com:1337", false},
+	}
+	for _, test := range tests {
+		actual := IsMagnetURI(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected IsMagnetURI(%q) to be %v, got %v", test.param, test.expected, actual)
 		}
 	}
 }
@@ -2114,7 +2247,7 @@ type User struct {
 	Name     string `valid:"required"`
 	Email    string `valid:"required,email"`
 	Password string `valid:"required"`
-	Age      int    `valid:"required,numeric,@#\u0000"`
+	Age      int    `valid:"required,numeric,range(1|200),@#\u0000"`
 	Home     *Address
 	Work     []Address
 }
@@ -2164,6 +2297,10 @@ type IsInStruct struct {
 	IsIn string `valid:"in(PRESENT|PRÉSENTE|NOTABSENT)"`
 }
 
+type IsInStructWithPointer struct {
+	IsIn *string `valid:"in(PRESENT|PRÉSENTE|NOTABSENT)"`
+}
+
 type Post struct {
 	Title    string `valid:"alpha,required"`
 	Message  string `valid:"ascii"`
@@ -2194,6 +2331,11 @@ type FieldsRequiredByDefaultButExemptOrOptionalStruct struct {
 	Email string `valid:"optional,email"`
 }
 
+type FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers struct {
+	Name  *string `valid:"-"`
+	Email *string `valid:"optional,email"`
+}
+
 type MessageWithSeveralFieldsStruct struct {
 	Title string `valid:"length(1|10)"`
 	Body  string `valid:"length(1|10)"`
@@ -2220,6 +2362,35 @@ func TestValidateMissingValidationDeclarationStruct(t *testing.T) {
 	SetFieldsRequiredByDefault(false)
 }
 
+func structToMaps(in interface{}) (map[string]interface{}, map[string]interface{}, error) {
+	out := map[string]interface{}{}
+	tags := map[string]interface{}{}
+
+	v := reflect.ValueOf(in)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return nil, nil, fmt.Errorf("structToMaps accepts only structs; got %T", v)
+	}
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		f := t.Field(i)
+		if v.Field(i).Kind() == reflect.Struct {
+			innerOut, innerTags, err := structToMaps(v.Field(i).Interface())
+			if err != nil {
+				return nil, nil, err
+			}
+			out[f.Name] = innerOut
+			tags[f.Name] = innerTags
+		} else {
+			out[f.Name] = v.Field(i).Interface()
+			tags[f.Name] = f.Tag.Get(tagName)
+		}
+	}
+	return out, tags, nil
+}
+
 func TestFieldRequiredByDefault(t *testing.T) {
 	var tests = []struct {
 		param    FieldRequiredByDefault
@@ -2234,6 +2405,18 @@ func TestFieldRequiredByDefault(t *testing.T) {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
 			}
 		}
 	}
@@ -2254,6 +2437,18 @@ func TestMultipleFieldsRequiredByDefault(t *testing.T) {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
 			}
 		}
 	}
@@ -2279,6 +2474,18 @@ func TestFieldsRequiredByDefaultButExemptStruct(t *testing.T) {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
 			}
 		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
 	}
 	SetFieldsRequiredByDefault(false)
 }
@@ -2288,9 +2495,9 @@ func TestFieldsRequiredByDefaultButExemptOrOptionalStruct(t *testing.T) {
 		param    FieldsRequiredByDefaultButExemptOrOptionalStruct
 		expected bool
 	}{
-		{FieldsRequiredByDefaultButExemptOrOptionalStruct{}, true},
-		{FieldsRequiredByDefaultButExemptOrOptionalStruct{Name: "TEST"}, true},
-		{FieldsRequiredByDefaultButExemptOrOptionalStruct{Email: ""}, true},
+		{FieldsRequiredByDefaultButExemptOrOptionalStruct{}, false},
+		{FieldsRequiredByDefaultButExemptOrOptionalStruct{Name: "TEST"}, false},
+		{FieldsRequiredByDefaultButExemptOrOptionalStruct{Email: ""}, false},
 		{FieldsRequiredByDefaultButExemptOrOptionalStruct{Email: "test@example.com"}, true},
 		{FieldsRequiredByDefaultButExemptOrOptionalStruct{Email: "test@example"}, false},
 	}
@@ -2301,6 +2508,43 @@ func TestFieldsRequiredByDefaultButExemptOrOptionalStruct(t *testing.T) {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
+	}
+	SetFieldsRequiredByDefault(false)
+}
+
+func TestFieldsRequiredByDefaultButExemptOrOptionalStructWithPointers(t *testing.T) {
+	var tests = []struct {
+		param    FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers
+		expected bool
+	}{
+		{FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers{}, true},
+		{FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers{Name: ptrString("TEST")}, true},
+		{FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers{Email: ptrString("")}, false},
+		{FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers{Email: nil}, true},
+		{FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers{Email: ptrString("test@example.com")}, true},
+		{FieldsRequiredByDefaultButExemptOrOptionalStructWithPointers{Email: ptrString("test@example")}, false},
+	}
+	SetFieldsRequiredByDefault(true)
+	for _, test := range tests {
+		actual, err := ValidateStruct(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected ValidateStruct(%#v) to be %v, got %v", test.param, test.expected, actual)
+			if err != nil {
+				t.Errorf("Got Error on ValidateStruct(%#v): %s", test.param, err)
 			}
 		}
 	}
@@ -2315,7 +2559,16 @@ func TestInvalidValidator(t *testing.T) {
 	invalidStruct := InvalidStruct{1}
 	if valid, err := ValidateStruct(&invalidStruct); valid || err == nil ||
 		err.Error() != `Field: The following validator is invalid or can't be applied to the field: "someInvalidValidator"` {
-		t.Errorf("Got an unexpected result for struct with invalid validator: %t %s", valid, err)
+		t.Errorf("ValidateStruct: Got an unexpected result for struct with invalid validator: %t %s", valid, err)
+	}
+	mapParams, mapValidator, err := structToMaps(invalidStruct)
+	if err != nil {
+		t.Errorf("Got Error on structToMaps(%q): %s", invalidStruct, err)
+	} else {
+		if valid, err := ValidateMap(mapParams, mapValidator); valid || err == nil ||
+			err.Error() != `Field: The following validator is invalid or can't be applied to the field: "someInvalidValidator"` {
+			t.Errorf("ValidateMap: Got an unexpected result for struct with invalid validator: %t %s", valid, err)
+		}
 	}
 }
 
@@ -2325,29 +2578,62 @@ func TestCustomValidator(t *testing.T) {
 	}
 
 	type InvalidStruct struct {
-		Field int `valid:"customFalseValidator~Custom validator error"`
+		Field int `valid:"customFalseValidator~Value: %s Custom validator error: %s"`
 	}
 
 	type StructWithCustomAndBuiltinValidator struct {
-		Field int `valid:"customTrueValidator,required"`
+		Field *int `valid:"customTrueValidator,required"`
 	}
 
 	if valid, err := ValidateStruct(&ValidStruct{Field: 1}); !valid || err != nil {
-		t.Errorf("Got an unexpected result for struct with custom always true validator: %t %s", valid, err)
+		t.Errorf("ValidateStruct: Got an unexpected result for struct with custom always true validator: %t %s", valid, err)
 	}
 
-	if valid, err := ValidateStruct(&InvalidStruct{Field: 1}); valid || err == nil || err.Error() != "Custom validator error" {
-		t.Errorf("Got an unexpected result for struct with custom always false validator: %t %s", valid, err)
+	if mapParams, mapValidator, err := structToMaps(&ValidStruct{Field: 1}); err != nil {
+		t.Errorf("Got Error on structToMaps(%q): %s", &ValidStruct{Field: 1}, err)
+	} else {
+		if valid, err := ValidateMap(mapParams, mapValidator); !valid || err != nil {
+			t.Errorf("ValidateMap: Got an unexpected result for struct with custom always true validator: %t %s", valid, err)
+		}
+	}
+
+	if valid, err := ValidateStruct(&InvalidStruct{Field: 1}); valid || err == nil || err.Error() != "Value: 1 Custom validator error: customFalseValidator" {
+		fmt.Println(err)
+		t.Errorf("ValidateStruct: Got an unexpected result for struct with custom always false validator: %t %s", valid, err)
+	}
+
+	if mapParams, mapValidator, err := structToMaps(&InvalidStruct{Field: 1}); err != nil {
+		t.Errorf("Got Error on structToMaps(%q): %s", &ValidStruct{Field: 1}, err)
+	} else {
+		if valid, err := ValidateMap(mapParams, mapValidator); valid || err == nil || err.Error() != "Value: 1 Custom validator error: customFalseValidator" {
+			t.Errorf("ValidateMap: Got an unexpected result for struct with custom always false validator: %t %s", valid, err)
+		}
 	}
 
 	mixedStruct := StructWithCustomAndBuiltinValidator{}
 	if valid, err := ValidateStruct(&mixedStruct); valid || err == nil || err.Error() != "Field: non zero value required" {
-		t.Errorf("Got an unexpected result for invalid struct with custom and built-in validators: %t %s", valid, err)
+		t.Errorf("ValidateStruct: Got an unexpected result for invalid struct with custom and built-in validators: %t %s", valid, err)
 	}
 
-	mixedStruct.Field = 1
+	if mapParams, mapValidator, err := structToMaps(&mixedStruct); err != nil {
+		t.Errorf("Got Error on structToMaps(%q): %s", &ValidStruct{Field: 1}, err)
+	} else {
+		if valid, err := ValidateMap(mapParams, mapValidator); valid || err == nil || err.Error() != "Field: non zero value required" {
+			t.Errorf("ValidateMap: Got an unexpected result for invalid struct with custom and built-in validators: %t %s", valid, err)
+		}
+	}
+
+	mixedStruct.Field = ptrInt(1)
 	if valid, err := ValidateStruct(&mixedStruct); !valid || err != nil {
-		t.Errorf("Got an unexpected result for valid struct with custom and built-in validators: %t %s", valid, err)
+		t.Errorf("ValidateStruct: Got an unexpected result for valid struct with custom and built-in validators: %t %s", valid, err)
+	}
+
+	if mapParams, mapValidator, err := structToMaps(&mixedStruct); err != nil {
+		t.Errorf("Got Error on structToMaps(%q): %s", &ValidStruct{Field: 1}, err)
+	} else {
+		if valid, err := ValidateMap(mapParams, mapValidator); !valid || err != nil {
+			t.Errorf("ValidateMap: Got an unexpected result for valid struct with custom and built-in validators: %t %s", valid, err)
+		}
 	}
 }
 
@@ -2371,6 +2657,13 @@ func TestStructWithCustomByteArray(t *testing.T) {
 					t.Errorf("v.Email should have been 'test@example.com' but was '%s'", v.Email)
 				}
 			}
+		// for ValidateMap
+		case map[string]interface{}:
+			if len(v["Email"].(string)) > 0 {
+				if v["Email"].(string) != "test@example.com" {
+					t.Errorf("v.Email should have been 'test@example.com' but was '%s'", v["Email"].(string))
+				}
+			}
 		default:
 			t.Errorf("Context object passed to custom validator should have been a StructWithCustomByteArray but was %T (%+v)", o, o)
 		}
@@ -2389,6 +2682,9 @@ func TestStructWithCustomByteArray(t *testing.T) {
 		switch v := o.(type) {
 		case StructWithCustomByteArray:
 			return len(v.ID) >= v.CustomMinLength
+		// for ValidateMap
+		case map[string]interface{}:
+			return len(v["iD"].(CustomByteArray)) > v["CustomMinLength"].(int)
 		}
 		return false
 	}))
@@ -2409,6 +2705,18 @@ func TestStructWithCustomByteArray(t *testing.T) {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
 			}
 		}
 	}
@@ -2437,6 +2745,18 @@ func TestValidateNegationStruct(t *testing.T) {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
 			}
 		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
 	}
 }
 
@@ -2456,6 +2776,18 @@ func TestLengthStruct(t *testing.T) {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
 			}
 		}
 	}
@@ -2483,6 +2815,18 @@ func TestStringLengthStruct(t *testing.T) {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
 			}
 		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
 	}
 }
 
@@ -2504,6 +2848,18 @@ func TestStringMatchesStruct(t *testing.T) {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
 			}
 		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
 	}
 }
 
@@ -2513,9 +2869,13 @@ func TestIsInStruct(t *testing.T) {
 		expected bool
 	}{
 		{IsInStruct{"PRESENT"}, true},
-		{IsInStruct{""}, true},
+		{IsInStruct{""}, false},
 		{IsInStruct{" "}, false},
 		{IsInStruct{"ABSENT"}, false},
+		{IsInStructWithPointer{ptrString("PRESENT")}, true},
+		{IsInStructWithPointer{nil}, true},
+		{IsInStructWithPointer{ptrString("")}, false},
+		{IsInStructWithPointer{ptrString("ABSENT")}, false},
 	}
 
 	for _, test := range tests {
@@ -2526,12 +2886,27 @@ func TestIsInStruct(t *testing.T) {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
 			}
 		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
 	}
 }
 
 func TestRequiredIsInStruct(t *testing.T) {
 	type RequiredIsInStruct struct {
 		IsIn string `valid:"in(PRESENT|PRÉSENTE|NOTABSENT),required"`
+	}
+	type RequiredIsInStructWithPointer struct {
+		IsIn *string `valid:"in(PRESENT|PRÉSENTE|NOTABSENT),required"`
 	}
 
 	var tests = []struct {
@@ -2542,6 +2917,10 @@ func TestRequiredIsInStruct(t *testing.T) {
 		{RequiredIsInStruct{""}, false},
 		{RequiredIsInStruct{" "}, false},
 		{RequiredIsInStruct{"ABSENT"}, false},
+		{RequiredIsInStructWithPointer{ptrString("PRESENT")}, true},
+		{RequiredIsInStructWithPointer{ptrString("")}, false},
+		{RequiredIsInStructWithPointer{nil}, false},
+		{RequiredIsInStructWithPointer{ptrString("ABSENT")}, false},
 	}
 
 	for _, test := range tests {
@@ -2552,6 +2931,18 @@ func TestRequiredIsInStruct(t *testing.T) {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
 			}
 		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
 	}
 }
 
@@ -2559,15 +2950,21 @@ func TestEmptyRequiredIsInStruct(t *testing.T) {
 	type EmptyRequiredIsInStruct struct {
 		IsIn string `valid:"in(),required"`
 	}
+	type EmptyRequiredIsInStructWithPointer struct {
+		IsIn *string `valid:"in(),required"`
+	}
 
 	var tests = []struct {
 		param    interface{}
 		expected bool
 	}{
 		{EmptyRequiredIsInStruct{"PRESENT"}, false},
-		{EmptyRequiredIsInStruct{""}, false},
+		{EmptyRequiredIsInStruct{""}, true}, // an empty string is allowed by 'in()' !
 		{EmptyRequiredIsInStruct{" "}, false},
 		{EmptyRequiredIsInStruct{"ABSENT"}, false},
+		{EmptyRequiredIsInStructWithPointer{ptrString("PRESENT")}, false},
+		{EmptyRequiredIsInStructWithPointer{ptrString("")}, true},
+		{EmptyRequiredIsInStructWithPointer{nil}, false},
 	}
 
 	for _, test := range tests {
@@ -2576,6 +2973,170 @@ func TestEmptyRequiredIsInStruct(t *testing.T) {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
+		}
+	}
+}
+
+func TestEmptyStringPtr(t *testing.T) {
+	type EmptyIsInStruct struct {
+		IsIn *string `valid:"length(3|5),required"`
+	}
+
+	var empty = ""
+	var valid = "123"
+	var invalid = "123456"
+
+	var tests = []struct {
+		param       interface{}
+		expected    bool
+		expectedErr string
+	}{
+		{EmptyIsInStruct{&empty}, false, "IsIn:  does not validate as length(3|5)"},
+		{EmptyIsInStruct{nil}, true, ""}, // because of SetNilPtrAllowedByRequired(true)
+		{EmptyIsInStruct{&valid}, true, ""},
+		{EmptyIsInStruct{&invalid}, false, "IsIn: 123456 does not validate as length(3|5)"},
+	}
+
+	SetNilPtrAllowedByRequired(true)
+	for _, test := range tests {
+		actual, err := ValidateStruct(test.param)
+
+		if actual != test.expected {
+			t.Errorf("Expected ValidateStruct(%#v) to be %v, got %v", test.param, test.expected, actual)
+		}
+		if err != nil {
+			if err.Error() != test.expectedErr {
+				t.Errorf("Got Error on ValidateStruct(%#v). Expected: %s Actual: %s", test.param, test.expectedErr, err)
+			}
+		} else if test.expectedErr != "" {
+			t.Errorf("Expected error on ValidateStruct(%#v).", test.param)
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+			}
+			if err != nil {
+				if err.Error() != test.expectedErr {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q. Expected: %s Actual: %s",
+						mapParams, mapValidator, test.param, test.expectedErr, err)
+				}
+			} else if test.expectedErr != "" {
+				t.Errorf("Expected error on ValidateMap(%q, %q) of %q.", mapParams, mapValidator, test.param)
+			}
+		}
+	}
+	SetNilPtrAllowedByRequired(false)
+}
+
+func TestNestedStruct(t *testing.T) {
+	type EvenMoreNestedStruct struct {
+		Bar string `valid:"length(3|5)"`
+	}
+	type NestedStruct struct {
+		Foo                 string `valid:"length(3|5),required"`
+		EvenMoreNested      EvenMoreNestedStruct
+		SliceEvenMoreNested []EvenMoreNestedStruct
+		MapEvenMoreNested   map[string]EvenMoreNestedStruct
+	}
+	type OuterStruct struct {
+		Nested NestedStruct
+	}
+
+	var tests = []struct {
+		param       interface{}
+		expected    bool
+		expectedErr string
+	}{
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "",
+			},
+		}, false, "Nested.Foo:  does not validate as length(3|5);Nested.EvenMoreNested.Bar:  does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+			},
+		}, false, "Nested.EvenMoreNested.Bar:  does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123456",
+			},
+		}, false, "Nested.Foo: 123456 does not validate as length(3|5);Nested.EvenMoreNested.Bar:  does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+				EvenMoreNested: EvenMoreNestedStruct{
+					Bar: "123456",
+				},
+			},
+		}, false, "Nested.EvenMoreNested.Bar: 123456 does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+				SliceEvenMoreNested: []EvenMoreNestedStruct{
+					EvenMoreNestedStruct{
+						Bar: "123456",
+					},
+				},
+			},
+		}, false, "Nested.EvenMoreNested.Bar:  does not validate as length(3|5);Nested.SliceEvenMoreNested.0.Bar: 123456 does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+				MapEvenMoreNested: map[string]EvenMoreNestedStruct{
+					"Foo": EvenMoreNestedStruct{
+						Bar: "123456",
+					},
+				},
+			},
+		}, false, "Nested.EvenMoreNested.Bar:  does not validate as length(3|5);Nested.MapEvenMoreNested.Foo.Bar: 123456 does not validate as length(3|5)"},
+	}
+
+	for _, test := range tests {
+		actual, err := ValidateStruct(test.param)
+
+		if actual != test.expected {
+			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+		if err != nil {
+			if err.Error() != test.expectedErr {
+				t.Errorf("Got Error on ValidateStruct(%q). Expected: %s Actual: %s", test.param, test.expectedErr, err)
+			}
+		} else if test.expectedErr != "" {
+			t.Errorf("Expected error on ValidateStruct(%q).", test.param)
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+			}
+			if err != nil {
+				if err.Error() != test.expectedErr {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q. Expected: %s Actual: %s",
+						mapParams, mapValidator, test.param, test.expectedErr, err)
+				}
+			} else if test.expectedErr != "" {
+				t.Errorf("Expected error on ValidateMap(%q, %q) of %q.", mapParams, mapValidator, test.param)
 			}
 		}
 	}
@@ -2629,6 +3190,18 @@ func TestFunkyIsInStruct(t *testing.T) {
 // 				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
 // 			}
 // 		}
+//		mapParams, mapValidator, err := structToMaps(test.param)
+//		if err != nil {
+//			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+//		} else {
+//			actual, err := ValidateMap(mapParams, mapValidator)
+//			if actual != test.expected {
+//				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+//				if err != nil {
+//					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+//				}
+//			}
+//		}
 // 	}
 // }
 
@@ -2638,7 +3211,7 @@ func TestValidateStruct(t *testing.T) {
 		param    interface{}
 		expected bool
 	}{
-		{User{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, false},
+		{User{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "ABC456D89"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, false},
 		{User{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{User{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{UserValid{"John", "john@yahoo.com", "123G#678", 20, &Address{"Street", "123456"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, true},
@@ -2653,9 +3226,9 @@ func TestValidateStruct(t *testing.T) {
 	for _, test := range tests {
 		actual, err := ValidateStruct(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected ValidateStruct(%#v) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
-				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+				t.Errorf("Got Error on ValidateStruct(%#v): %s", test.param, err)
 			}
 		}
 	}
@@ -2665,7 +3238,7 @@ func TestValidateStruct(t *testing.T) {
 	})
 	result, err := ValidateStruct(PrivateStruct{"d_k", 0, []int{1, 2}, []string{"hi", "super"}, [2]Address{{"Street", "123456"},
 		{"Street", "123456"}}, Address{"Street", "123456"}, map[string]Address{"address": {"Street", "123456"}}})
-	if result != true {
+	if !result {
 		t.Log("Case ", 6, ": expected ", true, " when result is ", result)
 		t.Error(err)
 		t.FailNow()
@@ -2681,6 +3254,7 @@ type testStringIntMap map[string]int
 func TestRequired(t *testing.T) {
 
 	testString := "foobar"
+	testEmptyString := ""
 	var tests = []struct {
 		param    interface{}
 		expected bool
@@ -2695,6 +3269,14 @@ func TestRequired(t *testing.T) {
 			struct {
 				Pointer *string `valid:"required"`
 			}{
+				Pointer: &testEmptyString,
+			},
+			true,
+		},
+		{
+			struct {
+				Pointer *string `valid:"required"`
+			}{
 				Pointer: &testString,
 			},
 			true,
@@ -2703,7 +3285,7 @@ func TestRequired(t *testing.T) {
 			struct {
 				Addr Address `valid:"required"`
 			}{},
-			false,
+			true,
 		},
 		{
 			struct {
@@ -2730,16 +3312,10 @@ func TestRequired(t *testing.T) {
 		{
 			struct {
 				TestByteArray testByteArray `valid:"required"`
-			}{},
-			false,
-		},
-		{
-			struct {
-				TestByteArray testByteArray `valid:"required"`
 			}{
 				testByteArray{},
 			},
-			false,
+			true, // array cannot be nil
 		},
 		{
 			struct {
@@ -2781,9 +3357,21 @@ func TestRequired(t *testing.T) {
 	for _, test := range tests {
 		actual, err := ValidateStruct(test.param)
 		if actual != test.expected {
-			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
+			t.Errorf("Expected ValidateStruct(%#v) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
-				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+				t.Errorf("Got Error on ValidateStruct(%#v): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
 			}
 		}
 	}
@@ -2864,7 +3452,7 @@ func TestErrorsByField(t *testing.T) {
 		{"CustomField", "An error occurred"},
 	}
 
-	err = Error{"CustomField", fmt.Errorf("An error occurred"), false, "hello"}
+	err = Error{"CustomField", fmt.Errorf("An error occurred"), false, "hello", []string{}}
 	errs = ErrorsByField(err)
 
 	if len(errs) != 1 {
@@ -2932,6 +3520,46 @@ func TestValidateStructPointers(t *testing.T) {
 	nerd := true
 	user := &UserWithPointers{&name, &email, &food, &nerd}
 	_, err := ValidateStruct(user)
+
+	for _, test := range tests {
+		actual := ErrorByField(err, test.param)
+		if actual != test.expected {
+			t.Errorf("Expected ErrorByField(%q) to be %v, got %v", test.param, test.expected, actual)
+		}
+	}
+}
+
+func TestValidateMapPointers(t *testing.T) {
+	// Struct which uses pointers for values
+	type UserWithPointers struct {
+		Name         *string `valid:"-"`
+		Email        *string `valid:"email"`
+		FavoriteFood *string `valid:"length(0|32)"`
+		Nerd         *bool   `valid:"-"`
+	}
+
+	var tests = []struct {
+		param    string
+		expected string
+	}{
+		{"Name", ""},
+		{"Email", "invalid does not validate as email"},
+		{"FavoriteFood", ""},
+		{"Nerd", ""},
+	}
+
+	name := "Herman"
+	email := "invalid"
+	food := "Pizza"
+	nerd := true
+	user := &UserWithPointers{&name, &email, &food, &nerd}
+	var err error
+	mapParams, mapValidator, err := structToMaps(user)
+	if err != nil {
+		t.Errorf("Got Error on structToMaps(%+v): %s", user, err)
+	} else {
+		_, err = ValidateMap(mapParams, mapValidator)
+	}
 
 	for _, test := range tests {
 		actual := ErrorByField(err, test.param)
@@ -3026,6 +3654,67 @@ func TestValidateStructParamValidatorInt(t *testing.T) {
 	if err == nil {
 		t.Errorf("Test failed: nil")
 	}
+
+	type Test3 struct {
+		Int   int   `valid:"in(1|10),int"`
+		Int8  int8  `valid:"in(1|10),int8"`
+		Int16 int16 `valid:"in(1|10),int16"`
+		Int32 int32 `valid:"in(1|10),int32"`
+		Int64 int64 `valid:"in(1|10),int64"`
+
+		Uint   uint   `valid:"in(1|10),uint"`
+		Uint8  uint8  `valid:"in(1|10),uint8"`
+		Uint16 uint16 `valid:"in(1|10),uint16"`
+		Uint32 uint32 `valid:"in(1|10),uint32"`
+		Uint64 uint64 `valid:"in(1|10),uint64"`
+
+		Float32 float32 `valid:"in(1|10),float32"`
+		Float64 float64 `valid:"in(1|10),float64"`
+	}
+
+	test3Ok1 := &Test2{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+	test3Ok2 := &Test2{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10}
+	test3NotOk := &Test2{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
+
+	_, err = ValidateStruct(test3Ok1)
+	if err != nil {
+		t.Errorf("Test failed: %s", err)
+	}
+
+	_, err = ValidateStruct(test3Ok2)
+	if err != nil {
+		t.Errorf("Test failed: %s", err)
+	}
+
+	_, err = ValidateStruct(test3NotOk)
+	if err == nil {
+		t.Errorf("Test failed: nil")
+	}
+}
+
+func TestValidateStructUpperAndLowerCaseWithNumTypeCheck(t *testing.T) {
+
+	type StructCapital struct {
+		Total float32 `valid:"float,required"`
+	}
+
+	structCapital := &StructCapital{53.3535}
+	_, err := ValidateStruct(structCapital)
+	if err != nil {
+		t.Errorf("Test failed: nil")
+		fmt.Println(err)
+	}
+
+	type StructLower struct {
+		total float32 `valid:"float,required"`
+	}
+
+	structLower := &StructLower{53.3535}
+	_, err = ValidateStruct(structLower)
+	if err != nil {
+		t.Errorf("Test failed: nil")
+		fmt.Println(err)
+	}
 }
 
 func TestIsCIDR(t *testing.T) {
@@ -3064,6 +3753,29 @@ func TestOptionalCustomValidators(t *testing.T) {
 
 	ok, err := ValidateStruct(val)
 
+	if err == nil {
+		t.Error("Expected non-nil err with optional validation, got nil")
+	}
+
+	if ok {
+		t.Error("Expected validation to return false, got true")
+	}
+}
+
+func TestOptionalCustomValidatorsWithPointers(t *testing.T) {
+
+	CustomTypeTagMap.Set("f2", CustomTypeValidator(func(i interface{}, o interface{}) bool {
+		return false
+	}))
+
+	var val struct {
+		WithCustomError    *string `valid:"f2~boom,optional"`
+		WithoutCustomError *string `valid:"f2,optional"`
+		OptionalFirst      *string `valid:"optional,f2"`
+	}
+
+	ok, err := ValidateStruct(val)
+
 	if err != nil {
 		t.Errorf("Expected nil err with optional validation, got %v", err)
 	}
@@ -3093,7 +3805,7 @@ func TestJSONValidator(t *testing.T) {
 		t.Errorf("Expected error message to contain with_json_name but actual error is: %s", err.Error())
 	}
 
-	if Contains(err.Error(), "WithoutJSONName") == false {
+	if !Contains(err.Error(), "WithoutJSONName") {
 		t.Errorf("Expected error message to contain WithoutJSONName but actual error is: %s", err.Error())
 	}
 
@@ -3211,6 +3923,319 @@ bQIDAQAB
 		actual := IsRsaPublicKey(test.rsastr, test.keylen)
 		if actual != test.expected {
 			t.Errorf("Expected TestIsRsaPublicKey(%d, %d) to be %v, got %v", i, test.keylen, test.expected, actual)
+		}
+	}
+}
+
+func ptrString(s string) *string { return &s }
+func ptrInt(i int) *int          { return &i }
+
+func TestDoNotRepeatStructErrors(t *testing.T) {
+	// based on the code provided by @apremalal
+	type TestB struct {
+		B string `valid:"required,matches(B)"`
+	}
+
+	type TestA struct {
+		TB TestB `valid:"optional"`
+	}
+
+	r := TestA{
+		TB: TestB{
+			B: "C",
+		},
+	}
+
+	ok, errors := ValidateStruct(r)
+	if ok {
+		t.Errorf("expected validation to fail, %v", ok)
+	}
+
+	validator := errors.(Errors)[0].(Errors)[0].(Error).Validator
+	if validator != "matches" {
+		t.Errorf("expected validator for Text to be matches, but was %s", validator)
+	}
+
+	if len(errors.(Errors).Errors()) > 1 {
+		t.Errorf("expected errors count to be 1, but was %d (%#v)", len(errors.(Errors).Errors()), errors)
+	}
+}
+
+func TestValidateMap(t *testing.T) {
+	t.Parallel()
+	var tests = []struct {
+		params    map[string]interface{}
+		validator map[string]interface{}
+		expected  bool
+	}{
+		{
+			map[string]interface{}{
+				"name":   "Bob",
+				"family": "Smith",
+				"email":  "foo@bar.baz",
+				"address": map[string]interface{}{
+					"line1":       "123456",
+					"line2":       "",
+					"postal-code": "",
+				},
+			},
+			map[string]interface{}{
+				"name":       "required,alpha",
+				"family":     "required,alpha",
+				"email":      "required,email",
+				"cell-phone": "numeric",
+				"address": map[string]interface{}{
+					"line1":       "required,alphanum",
+					"line2":       "alphanum",
+					"postal-code": "numeric",
+				},
+			},
+			true,
+		},
+		{
+			map[string]interface{}{
+				"name":   "Bob",
+				"family": "Smith",
+				"email":  "foo@bar.baz",
+				"address": map[string]interface{}{
+					"line2":       "",
+					"postal-code": "",
+				},
+			},
+			map[string]interface{}{
+				"name":       "required,alpha",
+				"family":     "required,alpha",
+				"email":      "required,email",
+				"cell-phone": "numeric",
+				"address": map[string]interface{}{
+					"line1":       "required,alphanum",
+					"line2":       "alphanum",
+					"postal-code": "numeric",
+				},
+			},
+			false,
+		},
+		{
+			map[string]interface{}{
+				"name":   "Bob",
+				"family": "Smith",
+				"email":  "foo@bar.baz",
+				"address": map[string]interface{}{
+					"line1":       "+123",
+					"line2":       "",
+					"postal-code": "",
+				},
+			},
+			map[string]interface{}{
+				"name":       "required,alpha",
+				"family":     "required,alpha",
+				"email":      "required,email",
+				"cell-phone": "numeric",
+				"address": map[string]interface{}{
+					"line1":       "required,alphanum",
+					"line2":       "alphanum",
+					"postal-code": "numeric",
+				},
+			},
+			false,
+		},
+	}
+
+	for _, test := range tests {
+		actual, err := ValidateMap(test.params, test.validator)
+		if actual != test.expected {
+			t.Errorf("Expected ValidateMap(%q, %q) to be %v, got %v", test.params, test.validator, test.expected, actual)
+			if err != nil {
+				t.Errorf("Got Error on ValidateMap(%q, %q): %s", test.params, test.validator, err)
+			}
+		}
+	}
+}
+
+func TestValidateMapMissing(t *testing.T) {
+	t.Parallel()
+	var tests = []struct {
+		params    map[string]interface{}
+		validator map[string]interface{}
+		expected  bool
+	}{
+		{
+			map[string]interface{}{
+				"name": "Bob",
+			},
+			map[string]interface{}{
+				"name":   "required,alpha",
+				"family": "required,alpha",
+			},
+			false,
+		},
+		{
+			map[string]interface{}{
+				"name": "Bob",
+				"submap": map[string]interface{}{
+					"family": "Smith",
+				},
+			},
+			map[string]interface{}{
+				"name": "required,alpha",
+				"submap": map[string]interface{}{
+					"name":   "required,alpha",
+					"family": "required,alpha",
+				},
+			},
+			false,
+		},
+	}
+
+	for _, test := range tests {
+		actual, err := ValidateMap(test.params, test.validator)
+		if actual != test.expected {
+			t.Errorf("Expected ValidateMap(%q, %q) to be %v, got %v", test.params, test.validator, test.expected, actual)
+			if err != nil {
+				t.Errorf("Got Error on ValidateMap(%q, %q): %s", test.params, test.validator, err)
+			}
+		}
+	}
+}
+
+func TestValidateMapMissingValidator(t *testing.T) {
+	t.Parallel()
+	var tests = []struct {
+		params    map[string]interface{}
+		validator map[string]interface{}
+		expected  bool
+	}{
+		{
+			map[string]interface{}{
+				"name":   "Bob",
+				"family": "Smith",
+			},
+			map[string]interface{}{
+				"name": "required,alpha",
+			},
+			false,
+		},
+		{
+			map[string]interface{}{
+				"name": "Bob",
+				"submap": map[string]interface{}{
+					"name":   "Bob",
+					"family": "Smith",
+				},
+			},
+			map[string]interface{}{
+				"name": "required,alpha",
+				"submap": map[string]interface{}{
+					"family": "required,alpha",
+				},
+			},
+			false,
+		},
+	}
+
+	for _, test := range tests {
+		actual, err := ValidateMap(test.params, test.validator)
+		if actual != test.expected {
+			t.Errorf("Expected ValidateMap(%q, %q) to be %v, got %v", test.params, test.validator, test.expected, actual)
+			if err != nil {
+				t.Errorf("Got Error on ValidateMap(%q, %q): %s", test.params, test.validator, err)
+			}
+		}
+	}
+}
+
+func TestIsType(t *testing.T) {
+	t.Parallel()
+	i := 1
+	ptr := &i
+	var tests = []struct {
+		param    interface{}
+		expected bool
+	}{
+		{
+			struct {
+				Name string `valid:"type(string)"`
+				Age  int    `valid:"type(int)"`
+			}{"Bob", 20},
+			true,
+		},
+		{
+			struct {
+				Name string `valid:"type(int)"`
+				Age  int    `valid:"type(int)"`
+			}{"Bob", 20},
+			false,
+		},
+		{
+			struct {
+				PtrToInt *int `valid:"type(int)"`
+			}{ptr},
+			false,
+		},
+		{
+			struct {
+				PtrToInt    *int  `valid:"type(*int)"`
+				PtrPtrToInt **int `valid:"type(**int)"`
+			}{ptr, &ptr},
+			true,
+		},
+		{
+			struct {
+				StringInterface interface{} `valid:"type(string)"`
+			}{"Bob"},
+			true,
+		},
+		{
+			struct {
+				StringInterface interface{} `valid:"type(int)"`
+			}{"Bob"},
+			false,
+		},
+		{
+			struct {
+				Map map[string]interface{} `valid:"type(map[string]interface {})"`
+			}{map[string]interface{}{"x": struct{}{}}},
+			true,
+		},
+		{
+			struct {
+				Map map[string]interface{} `valid:"type(map[string]interface{})"`
+			}{map[string]interface{}{"x": struct{}{}}},
+			true,
+		},
+		{
+			struct {
+				Map interface{} `valid:"type(map[string]interface{})"`
+			}{map[string]interface{}{"x": struct{}{}}},
+			true,
+		},
+		{
+			struct {
+				Array []string `valid:"type([]string)"`
+			}{[]string{"Bob"}},
+			true,
+		},
+	}
+
+	for _, test := range tests {
+		actual, err := ValidateStruct(test.param)
+		if actual != test.expected {
+			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
+			if err != nil {
+				t.Errorf("Got Error on ValidateStruct(%q): %s", test.param, err)
+			}
+		}
+		mapParams, mapValidator, err := structToMaps(test.param)
+		if err != nil {
+			t.Errorf("Got Error on structToMaps(%q): %s", test.param, err)
+		} else {
+			actual, err := ValidateMap(mapParams, mapValidator)
+			if actual != test.expected {
+				t.Errorf("Expected ValidateMap(%q, %q) of %q to be %v, got %v", mapParams, mapValidator, test.param, test.expected, actual)
+				if err != nil {
+					t.Errorf("Got Error on ValidateMap(%q, %q) of %q: %s", mapParams, mapValidator, test.param, err)
+				}
+			}
 		}
 	}
 }
