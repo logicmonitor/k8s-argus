@@ -16,11 +16,12 @@ package strfmt
 
 import (
 	"bytes"
+	"encoding/gob"
 	"testing"
 	"time"
 
-	"github.com/globalsign/mgo/bson"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var (
@@ -31,6 +32,7 @@ var (
 		time time.Time // its representation in time.Time
 		str  string    // its marshalled representation
 	}{
+		{[]byte("2014-12-15T08:00:00"), time.Date(2014, 12, 15, 8, 0, 0, 0, time.UTC), "2014-12-15T08:00:00.000Z"},
 		{[]byte("2014-12-15T08:00:00.000Z"), time.Date(2014, 12, 15, 8, 0, 0, 0, time.UTC), "2014-12-15T08:00:00.000Z"},
 		{[]byte("2011-08-18T19:03:37.000000000+01:00"), time.Date(2011, 8, 18, 19, 3, 37, 0, p.Location()), "2011-08-18T19:03:37.000+01:00"},
 		{[]byte("2014-12-15T19:30:20Z"), time.Date(2014, 12, 15, 19, 30, 20, 0, time.UTC), "2014-12-15T19:30:20.000Z"},
@@ -145,6 +147,10 @@ func TestDateTime_UnmarshalJSON(t *testing.T) {
 	// Check lexer failure
 	err = pp.UnmarshalJSON([]byte(`"zorg emperor"`))
 	assert.Error(t, err)
+
+	// Check null case
+	err = pp.UnmarshalJSON([]byte("null"))
+	assert.Nil(t, err)
 }
 
 func esc(v []byte) []byte {
@@ -227,7 +233,21 @@ func TestDateTime_BSON(t *testing.T) {
 		var dtCopy DateTime
 		err = bson.Unmarshal(bsonData, &dtCopy)
 		assert.NoError(t, err)
-		assert.Equal(t, dt, dtCopy)
+		// BSON DateTime type loses timezone information, so compare UTC()
+		assert.Equal(t, time.Time(dt).UTC(), time.Time(dtCopy).UTC())
+
+		// Check value marshaling explicitly
+		m := bson.M{"data": dt}
+		bsonData, err = bson.Marshal(&m)
+		assert.NoError(t, err)
+
+		var mCopy bson.M
+		err = bson.Unmarshal(bsonData, &mCopy)
+		assert.NoError(t, err)
+
+		data, ok := m["data"].(DateTime)
+		assert.Equal(t, true, ok)
+		assert.Equal(t, time.Time(dt).UTC(), time.Time(data).UTC())
 	}
 }
 
@@ -246,4 +266,26 @@ func TestDeepCopyDateTime(t *testing.T) {
 	var inNil *DateTime
 	out3 := inNil.DeepCopy()
 	assert.Nil(t, out3)
+}
+
+func TestGobEncodingDateTime(t *testing.T) {
+	now := time.Now()
+
+	b := bytes.Buffer{}
+	enc := gob.NewEncoder(&b)
+	err := enc.Encode(DateTime(now))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, b.Bytes())
+
+	var result DateTime
+
+	dec := gob.NewDecoder(&b)
+	err = dec.Decode(&result)
+	assert.NoError(t, err)
+	assert.Equal(t, now.Year(), time.Time(result).Year())
+	assert.Equal(t, now.Month(), time.Time(result).Month())
+	assert.Equal(t, now.Day(), time.Time(result).Day())
+	assert.Equal(t, now.Hour(), time.Time(result).Hour())
+	assert.Equal(t, now.Minute(), time.Time(result).Minute())
+	assert.Equal(t, now.Second(), time.Time(result).Second())
 }
