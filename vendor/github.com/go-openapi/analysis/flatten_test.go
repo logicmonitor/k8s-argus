@@ -19,15 +19,19 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	goruntime "runtime"
 	"strings"
 	"testing"
 
 	"github.com/go-openapi/jsonpointer"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSaveDefinition(t *testing.T) {
@@ -125,43 +129,48 @@ func TestUpdateRef(t *testing.T) {
 }
 
 func TestImportExternalReferences(t *testing.T) {
-	bp := filepath.Join(".", "fixtures", "external_definitions.yml")
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	// this fixture is the same as external_definitions.yml, but no more
+	// checks if invalid construct is supported (i.e. $ref in parameters items)
+	bp := filepath.Join(".", "fixtures", "external_definitions_valid.yml")
 	sp, err := loadSpec(bp)
-	if assert.NoError(t, err) {
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	opts := &FlattenOpts{
+		Spec:     New(sp),
+		BasePath: bp,
+	}
+	// NOTE(fredbi): now we no more expand, but merely resolve and iterate until there is no more ext ref
+	// so calling importExternalReferences is no more idempotent
+	_, err = importExternalReferences(opts)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
 
-		for i, v := range refFixture {
-			// there is 1 notable difference with the updateRef test:
-			if i == 5 {
-				v.Ref = spec.MustCreateRef("#/definitions/tag")
-			}
-			// technically not necessary to run for each value, but if things go right
-			// this is idempotent, so having it repeat shouldn't matter
-			// this validates that behavior
-			_, err := importExternalReferences(&FlattenOpts{
-				Spec:     New(sp),
-				BasePath: bp,
-			})
+	for i, v := range refFixture {
+		// there is 1 notable difference with the updateRef test:
+		if i == 5 {
+			v.Ref = spec.MustCreateRef("#/definitions/tag")
+		}
 
-			if assert.NoError(t, err) {
-
-				ptr, err := jsonpointer.New(v.Key[1:])
-				if assert.NoError(t, err) {
-					vv, _, err := ptr.Get(sp)
-
-					if assert.NoError(t, err) {
-						switch tv := vv.(type) {
-						case *spec.Schema:
-							assert.Equal(t, v.Ref.String(), tv.Ref.String(), "for %s", v.Key)
-						case spec.Schema:
-							assert.Equal(t, v.Ref.String(), tv.Ref.String(), "for %s", v.Key)
-						case *spec.SchemaOrBool:
-							assert.Equal(t, v.Ref.String(), tv.Schema.Ref.String(), "for %s", v.Key)
-						case *spec.SchemaOrArray:
-							assert.Equal(t, v.Ref.String(), tv.Schema.Ref.String(), "for %s", v.Key)
-						default:
-							assert.Fail(t, "unknown type", "got %T", vv)
-						}
-					}
+		ptr, erj := jsonpointer.New(v.Key[1:])
+		if assert.NoErrorf(t, erj, "error on jsonpointer.New(%q)", v.Key[1:]) {
+			vv, _, erg := ptr.Get(sp)
+			if assert.NoErrorf(t, erg, "error on ptr.Get(p for key=%s)", v.Key[1:]) {
+				switch tv := vv.(type) {
+				case *spec.Schema:
+					assert.Equal(t, v.Ref.String(), tv.Ref.String(), "for %s", v.Key)
+				case spec.Schema:
+					assert.Equal(t, v.Ref.String(), tv.Ref.String(), "for %s", v.Key)
+				case *spec.SchemaOrBool:
+					assert.Equal(t, v.Ref.String(), tv.Schema.Ref.String(), "for %s", v.Key)
+				case *spec.SchemaOrArray:
+					assert.Equal(t, v.Ref.String(), tv.Schema.Ref.String(), "for %s", v.Key)
+				default:
+					assert.Fail(t, "unknown type", "got %T", vv)
 				}
 			}
 		}
@@ -170,6 +179,339 @@ func TestImportExternalReferences(t *testing.T) {
 		assert.Contains(t, sp.Definitions, "named")
 		assert.Contains(t, sp.Definitions, "record")
 	}
+
+	// check the complete result for clarity
+	bb, _ := json.MarshalIndent(sp, "", " ")
+	assert.JSONEq(t, `{
+         "swagger": "2.0",
+         "info": {
+          "title": "reference analysis",
+          "version": "0.1.0"
+         },
+         "paths": {
+          "/other/place": {
+           "$ref": "external/pathItem.yml"
+          },
+          "/some/where/{id}": {
+           "get": {
+            "parameters": [
+             {
+              "$ref": "external/parameters.yml#/parameters/limitParam"
+             },
+             {
+              "type": "array",
+              "items": {
+               "type": "string"
+              },
+              "name": "other",
+              "in": "query"
+             },
+             {
+              "name": "body",
+              "in": "body",
+              "schema": {
+               "$ref": "#/definitions/record"
+              }
+             }
+            ],
+            "responses": {
+             "200": {
+              "schema": {
+               "$ref": "#/definitions/tag"
+              }
+             },
+             "404": {
+              "$ref": "external/responses.yml#/responses/notFound"
+             },
+             "default": {
+              "schema": {
+               "$ref": "#/definitions/record"
+              }
+             }
+            }
+           },
+           "parameters": [
+            {
+             "$ref": "external/parameters.yml#/parameters/idParam"
+            },
+            {
+             "name": "bodyId",
+             "in": "body",
+             "schema": {
+              "$ref": "#/definitions/record"
+             }
+            }
+           ]
+          }
+         },
+         "definitions": {
+          "datedRecords": {
+           "type": "array",
+           "items": [
+            {
+             "type": "string",
+             "format": "date-time"
+            },
+            {
+             "$ref": "#/definitions/record"
+            }
+           ]
+          },
+          "datedTag": {
+           "allOf": [
+            {
+             "type": "string",
+             "format": "date"
+            },
+            {
+             "$ref": "#/definitions/tag"
+            }
+           ]
+          },
+          "datedTaggedRecords": {
+           "type": "array",
+           "items": [
+            {
+             "type": "string",
+             "format": "date-time"
+            },
+            {
+             "$ref": "#/definitions/record"
+            }
+           ],
+           "additionalItems": {
+            "$ref": "#/definitions/tag"
+           }
+          },
+          "named": {
+           "type": "string"
+          },
+          "namedAgain": {
+           "$ref": "#/definitions/named"
+          },
+          "namedThing": {
+           "type": "object",
+           "properties": {
+            "name": {
+             "$ref": "#/definitions/named"
+            }
+           }
+          },
+          "otherRecords": {
+           "type": "array",
+           "items": {
+            "$ref": "#/definitions/record"
+           }
+          },
+          "record": {
+           "type": "object",
+           "properties": {
+            "createdAt": {
+             "type": "string",
+             "format": "date-time"
+            }
+           }
+          },
+          "records": {
+           "type": "array",
+           "items": [
+            {
+             "$ref": "#/definitions/record"
+            }
+           ]
+          },
+          "tag": {
+           "type": "object",
+           "properties": {
+            "audit": {
+             "$ref": "external/definitions.yml#/definitions/record"
+            },
+            "id": {
+             "type": "integer",
+             "format": "int64"
+            },
+            "value": {
+             "type": "string"
+            }
+           }
+          },
+          "tags": {
+           "type": "object",
+           "additionalProperties": {
+            "$ref": "#/definitions/tag"
+           }
+          }
+         },
+         "parameters": {
+          "someParam": {
+           "name": "someParam",
+           "in": "body",
+           "schema": {
+            "$ref": "#/definitions/record"
+           }
+          }
+         },
+         "responses": {
+          "someResponse": {
+           "schema": {
+            "$ref": "#/definitions/record"
+           }
+          }
+         }
+        }`, string(bb))
+
+	// iterate again: this time all external schema $ref's should be reinlined
+	opts.Spec.reload()
+	_, err = importExternalReferences(&FlattenOpts{
+		Spec:     New(sp),
+		BasePath: bp,
+	})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	opts.Spec.reload()
+	for _, ref := range opts.Spec.references.schemas {
+		assert.True(t, ref.HasFragmentOnly)
+	}
+
+	// now try complete flatten
+	sp = loadOrFail(t, bp)
+	an := New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: true})
+	assert.NoError(t, err)
+
+	bbb, _ := json.MarshalIndent(an.spec, "", " ")
+	//t.Logf("%s", string(bbb))
+	assert.JSONEq(t, `{
+		"swagger": "2.0",
+         "info": {
+          "title": "reference analysis",
+          "version": "0.1.0"
+         },
+         "paths": {
+          "/other/place": {
+           "get": {
+            "description": "Used to see if a codegen can render all the possible parameter variations for a header param",
+            "tags": [
+             "testcgen"
+            ],
+            "summary": "many model variations",
+            "operationId": "modelOp",
+            "responses": {
+             "default": {
+              "description": "Generic Out"
+             }
+            }
+           }
+          },
+          "/some/where/{id}": {
+           "get": {
+            "parameters": [
+             {
+              "type": "integer",
+              "format": "int32",
+              "name": "limit",
+              "in": "query"
+             },
+             {
+              "type": "array",
+              "items": {
+               "type": "string"
+              },
+              "name": "other",
+              "in": "query"
+             },
+             {
+              "name": "body",
+              "in": "body",
+              "schema": {
+               "$ref": "#/definitions/record"
+              }
+             }
+            ],
+            "responses": {
+             "200": {
+              "schema": {
+               "$ref": "#/definitions/tag"
+              }
+             },
+             "404": {
+              "schema": {
+               "$ref": "#/definitions/error"
+              }
+             },
+             "default": {
+              "schema": {
+               "$ref": "#/definitions/record"
+              }
+             }
+            }
+           },
+           "parameters": [
+            {
+             "type": "integer",
+             "format": "int32",
+             "name": "id",
+             "in": "path"
+            },
+            {
+             "name": "bodyId",
+             "in": "body",
+             "schema": {
+              "$ref": "#/definitions/record"
+             }
+            }
+           ]
+          }
+         },
+         "definitions": {
+          "error": {
+           "type": "object",
+           "required": [
+            "id",
+            "message"
+           ],
+           "properties": {
+            "id": {
+             "type": "integer",
+             "format": "int64",
+             "readOnly": true
+            },
+            "message": {
+             "type": "string",
+             "readOnly": true
+            }
+           }
+          },
+          "named": {
+           "type": "string"
+          },
+          "record": {
+           "type": "object",
+           "properties": {
+            "createdAt": {
+             "type": "string",
+             "format": "date-time"
+            }
+           }
+          },
+          "tag": {
+           "type": "object",
+           "properties": {
+            "audit": {
+             "$ref": "#/definitions/record"
+            },
+            "id": {
+             "type": "integer",
+             "format": "int64"
+            },
+            "value": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }`, string(bbb))
 }
 
 func TestRewriteSchemaRef(t *testing.T) {
@@ -923,24 +1265,25 @@ func TestFlatten(t *testing.T) {
 
 func TestFlatten_oaigenFull(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
+	var sp *spec.Swagger
+	defer func() {
+		if t.Failed() && sp != nil {
+			bbb, _ := json.MarshalIndent(sp, "", " ")
+			t.Logf("%s", string(bbb))
+		}
+	}()
 
 	cwd, _ := os.Getwd()
 	bp := filepath.Join(cwd, "fixtures", "oaigen", "fixture-oaigen.yaml")
 	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
 
 	var logCapture bytes.Buffer
 	log.SetOutput(&logCapture)
 	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
 	msg := logCapture.String()
 
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
 
 	if !assert.Containsf(t, msg, "warning: duplicate flattened definition name resolved as aAOAIGen",
 		"Expected log message") {
@@ -992,6 +1335,9 @@ func TestFlatten_oaigenFull(t *testing.T) {
 	res = getDefinition(t, sp, "bB")
 	assert.JSONEqf(t, `{"type": "string", "format": "date-time"}`, res, "Expected a simple schema for response")
 
+	_, ok := sp.Definitions["bItems"]
+	assert.Falsef(t, ok, "Did not expect a definition for %s", "bItems")
+
 	res = getDefinition(t, sp, "d")
 	assert.JSONEqf(t, `{
 		   "type": "object",
@@ -1001,6 +1347,14 @@ func TestFlatten_oaigenFull(t *testing.T) {
 		    }
 		   }
 	}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "b")
+	assert.JSONEqf(t, `{
+		   "type": "array",
+		   "items": {
+			   "$ref": "#/definitions/d"
+		   }
+	}`, res, "Expected a ref in response")
 
 	res = getDefinition(t, sp, "myBody")
 	assert.JSONEqf(t, `{
@@ -1104,27 +1458,25 @@ func TestFlatten_oaigenFull(t *testing.T) {
 
 func TestFlatten_oaigenMinimal(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
+	var sp *spec.Swagger
+	defer func() {
+		if t.Failed() && sp != nil {
+			bbb, _ := json.MarshalIndent(sp, "", " ")
+			t.Logf("%s", string(bbb))
+		}
+	}()
 
 	cwd, _ := os.Getwd()
 	bp := filepath.Join(cwd, "fixtures", "oaigen", "fixture-oaigen.yaml")
 	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
 
 	var logCapture bytes.Buffer
 	log.SetOutput(&logCapture)
 	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-	//bb, _ := json.MarshalIndent(sp, "", " ")
-	//t.Log(string(bb))
+	require.NoError(t, err)
 
 	msg := logCapture.String()
-	//t.Log(msg)
 	if !assert.NotContainsf(t, msg,
 		"warning: duplicate flattened definition name resolved as aAOAIGen", "Expected log message") {
 		t.Logf("Captured log: %s", msg)
@@ -1176,6 +1528,9 @@ func TestFlatten_oaigenMinimal(t *testing.T) {
 	res = getDefinition(t, sp, "bB")
 	assert.JSONEqf(t, `{"type": "string", "format": "date-time"}`, res, "Expected a simple schema for response")
 
+	_, ok := sp.Definitions["bItems"]
+	assert.Falsef(t, ok, "Did not expect a definition for %s", "bItems")
+
 	res = getDefinition(t, sp, "d")
 	assert.JSONEqf(t, `{
 		   "type": "object",
@@ -1185,6 +1540,14 @@ func TestFlatten_oaigenMinimal(t *testing.T) {
 		    }
 		   }
 	}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "b")
+	assert.JSONEqf(t, `{
+		   "type": "array",
+		   "items": {
+			   "$ref": "#/definitions/d"
+		   }
+	}`, res, "Expected a ref in response")
 
 	res = getDefinition(t, sp, "myBody")
 	assert.JSONEqf(t, `{
@@ -1302,22 +1665,18 @@ func TestFlatten_oaigen_1260ter(t *testing.T) {
 
 func getDefinition(t *testing.T, sp *spec.Swagger, key string) string {
 	d, ok := sp.Definitions[key]
-	if !assert.Truef(t, ok, "Expected definition for %s", key) {
-		t.FailNow()
-	}
+	require.Truef(t, ok, "Expected definition for %s", key)
 	res, _ := json.Marshal(d)
 	return string(res)
 }
 
 func getInPath(t *testing.T, sp *spec.Swagger, path, key string) string {
 	ptr, erp := jsonpointer.New(key)
-	if !assert.NoError(t, erp, "at %s no key", key) {
-		t.FailNow()
-	}
+	require.NoError(t, erp, "at %s no key", key)
+
 	d, _, erg := ptr.Get(sp.Paths.Paths[path])
-	if !assert.NoError(t, erg, "at %s no value for %s", path, key) {
-		t.FailNow()
-	}
+	require.NoError(t, erg, "at %s no value for %s", path, key)
+
 	res, _ := json.Marshal(d)
 	return string(res)
 }
@@ -1327,7 +1686,7 @@ func TestMoreNameInlinedSchemas(t *testing.T) {
 	sp := loadOrFail(t, bp)
 
 	err := Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	res := getInPath(t, sp, "/some/where/{id}", "/post/responses/200/schema")
 	assert.JSONEqf(t,
@@ -1486,9 +1845,16 @@ func TestOperationIDs(t *testing.T) {
 
 func TestFlatten_Pointers(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
+	var sp *spec.Swagger
+	defer func() {
+		if t.Failed() && sp != nil {
+			bbb, _ := json.MarshalIndent(sp, "", " ")
+			t.Logf("%s", string(bbb))
+		}
+	}()
 
 	bp := filepath.Join("fixtures", "pointers", "fixture-pointers.yaml")
-	sp := loadOrFail(t, bp)
+	sp = loadOrFail(t, bp)
 
 	var logCapture bytes.Buffer
 	log.SetOutput(&logCapture)
@@ -1498,8 +1864,6 @@ func TestFlatten_Pointers(t *testing.T) {
 		t.FailNow()
 		return
 	}
-	//bb, _ := json.MarshalIndent(sp, "", " ")
-	//t.Log(string(bb))
 	msg := logCapture.String()
 	if !assert.NotContains(t, msg, "warning") {
 		t.Log(msg)
@@ -1678,6 +2042,7 @@ func TestFlatten_Bitbucket(t *testing.T) {
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
+
 	assert.Len(t, sp.Definitions, 2) // only 2 remaining refs after expansion: circular $ref
 	_, ok := sp.Definitions["base_commit"]
 	assert.True(t, ok)
@@ -1793,7 +2158,6 @@ func TestFlatten_Issue_1614(t *testing.T) {
 	bbb, _ := json.Marshal(sp)
 	assert.NotContains(t, string(bbb), `#/responses/forbidden`)
 	assert.NotContains(t, string(bbb), `#/responses/empty`)
-	//t.Logf("%v", string(bbb))
 }
 
 func TestFlatten_Issue_1621(t *testing.T) {
@@ -1829,34 +2193,53 @@ func TestFlatten_Issue_1621(t *testing.T) {
 			 }`, string(bbb))
 }
 
+// wrapWindowsPath adapts path expectations for tests running on windows
+func wrapWindowsPath(p string) string {
+	if goruntime.GOOS != "windows" {
+		return p
+	}
+	pp := filepath.FromSlash(p)
+	if !filepath.IsAbs(p) && []rune(pp)[0] == '\\' {
+		pp, _ = filepath.Abs(p)
+		u, _ := url.Parse(pp)
+		return u.String()
+	}
+	return pp
+}
+
 func Test_NormalizePath(t *testing.T) {
 	values := []struct{ Source, Expected string }{
 		{"#/definitions/A", "#/definitions/A"},
 		{"http://somewhere.com/definitions/A", "http://somewhere.com/definitions/A"},
-		{"/definitions/A", "/definitions/A"},
-		{"/definitions/errorModel.json#/definitions/A", "/definitions/errorModel.json#/definitions/A"},
+		{wrapWindowsPath("/definitions/A"), wrapWindowsPath("/definitions/A")}, // considered absolute on unix but not on windows
+		{wrapWindowsPath("/definitions/errorModel.json") + "#/definitions/A", wrapWindowsPath("/definitions/errorModel.json") + "#/definitions/A"},
 		{"http://somewhere.com", "http://somewhere.com"},
-		{"./definitions/definitions.yaml#/definitions/A", "/abs/to/spec/definitions/definitions.yaml#/definitions/A"},
-		{"#", "/abs/to/spec"},
+		{wrapWindowsPath("./definitions/definitions.yaml") + "#/definitions/A", wrapWindowsPath("/abs/to/spec/definitions/definitions.yaml") + "#/definitions/A"},
+		{"#", wrapWindowsPath("/abs/to/spec")},
 	}
 
 	for _, v := range values {
 		assert.Equal(t, v.Expected, normalizePath(spec.MustCreateRef(v.Source),
-			&FlattenOpts{BasePath: "/abs/to/spec/spec.json"}))
+			&FlattenOpts{BasePath: wrapWindowsPath("/abs/to/spec/spec.json")}))
 	}
 }
 
 func TestFlatten_Issue_1796(t *testing.T) {
+	var sp *spec.Swagger
+	defer func() {
+		if t.Failed() && sp != nil {
+			bbb, _ := json.MarshalIndent(sp, "", " ")
+			t.Logf("%s", string(bbb))
+		}
+	}()
+
 	// remote cyclic ref
 	bp := filepath.Join("fixtures", "bugs", "1796", "queryIssue.json")
-	sp := loadOrFail(t, bp)
+	sp = loadOrFail(t, bp)
 	an := New(sp)
 	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
 		RemoveUnused: false})
-	assert.NoError(t, err)
-	//bbb, _ := json.MarshalIndent(an.spec, "", " ")
-	//t.Logf("%s", string(bbb))
-	//t.Logf("%s", an.AllDefinitionReferences())
+	require.NoError(t, err)
 
 	// assert all $ref match  "$ref": "#/definitions/something"
 	for _, ref := range an.AllReferences() {
@@ -1871,7 +2254,8 @@ func TestFlatten_Issue_1767(t *testing.T) {
 	an := New(sp)
 	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
 		RemoveUnused: false})
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	// assert all $ref match  "$ref": "#/definitions/something"
 	for _, ref := range an.AllReferences() {
 		assert.True(t, strings.HasPrefix(ref, "#/definitions"))
@@ -1879,16 +2263,22 @@ func TestFlatten_Issue_1767(t *testing.T) {
 }
 
 func TestFlatten_Issue_1774(t *testing.T) {
+	var sp *spec.Swagger
+	defer func() {
+		if t.Failed() && sp != nil {
+			bbb, _ := json.MarshalIndent(sp, "", " ")
+			t.Logf("%s", string(bbb))
+		}
+	}()
+
 	// remote cyclic ref again
 	bp := filepath.Join("fixtures", "bugs", "1774", "def_api.yaml")
-	sp := loadOrFail(t, bp)
+	sp = loadOrFail(t, bp)
 	an := New(sp)
 	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: false, Expand: false,
 		RemoveUnused: false})
-	assert.NoError(t, err)
-	//bbb, _ := json.MarshalIndent(an.spec, "", " ")
-	//t.Logf("%s", string(bbb))
-	//t.Logf("%s", an.AllDefinitionReferences())
+	require.NoError(t, err)
+
 	// assert all $ref match  "$ref": "#/definitions/something"
 	for _, ref := range an.AllReferences() {
 		assert.True(t, strings.HasPrefix(ref, "#/definitions"))
@@ -1903,5 +2293,187 @@ func TestFlatten_1429(t *testing.T) {
 
 	an := New(sp)
 	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	require.NoError(t, err)
+}
+
+func TestRebaseRef(t *testing.T) {
+	assert.Equal(t, "#/definitions/abc", rebaseRef("#/definitions/base", "#/definitions/abc"))
+	assert.Equal(t, "#/definitions/abc", rebaseRef("", "#/definitions/abc"))
+	assert.Equal(t, "#/definitions/abc", rebaseRef(".", "#/definitions/abc"))
+	assert.Equal(t, "otherfile#/definitions/abc", rebaseRef("file#/definitions/base", "otherfile#/definitions/abc"))
+	assert.Equal(t, wrapWindowsPath("../otherfile")+"#/definitions/abc", rebaseRef(wrapWindowsPath("../file")+"#/definitions/base", wrapWindowsPath("./otherfile")+"#/definitions/abc"))
+	assert.Equal(t, wrapWindowsPath("../otherfile")+"#/definitions/abc", rebaseRef(wrapWindowsPath("../file")+"#/definitions/base", wrapWindowsPath("otherfile")+"#/definitions/abc"))
+	assert.Equal(t, wrapWindowsPath("local/remote/otherfile")+"#/definitions/abc", rebaseRef(wrapWindowsPath("local/file")+"#/definitions/base", wrapWindowsPath("remote/otherfile")+"#/definitions/abc"))
+	assert.Equal(t, wrapWindowsPath("local/remote/otherfile.yaml"), rebaseRef(wrapWindowsPath("local/file.yaml"), wrapWindowsPath("remote/otherfile.yaml")))
+
+	assert.Equal(t, "file#/definitions/abc", rebaseRef("file#/definitions/base", "#/definitions/abc"))
+
+	// with remote
+	assert.Equal(t, "https://example.com/base#/definitions/abc", rebaseRef("https://example.com/base", "https://example.com/base#/definitions/abc"))
+	assert.Equal(t, "https://example.com/base#/definitions/abc", rebaseRef("https://example.com/base", "#/definitions/abc"))
+	assert.Equal(t, "https://example.com/base#/dir/definitions/abc", rebaseRef("https://example.com/base", "#/dir/definitions/abc"))
+	assert.Equal(t, "https://example.com/base/dir/definitions/abc", rebaseRef("https://example.com/base/spec.yaml", "dir/definitions/abc"))
+	assert.Equal(t, "https://example.com/base/dir/definitions/abc", rebaseRef("https://example.com/base/", "dir/definitions/abc"))
+	assert.Equal(t, "https://example.com/dir/definitions/abc", rebaseRef("https://example.com/base", "dir/definitions/abc"))
+}
+
+func TestFlatten_1851(t *testing.T) {
+	// nested / remote $ref in response / param schemas
+	// issue go-swagger/go-swagger#1851
+	bp := filepath.Join("fixtures", "bugs", "1851", "fixture-1851.yaml")
+	sp := loadOrFail(t, bp)
+
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
 	assert.NoError(t, err)
+	var jazon []byte
+
+	serverDefinition, ok := an.spec.Definitions["server"]
+	assert.True(t, ok)
+	serverStatusDefinition, ok := an.spec.Definitions["serverStatus"]
+	assert.True(t, ok)
+	serverStatusProperty, ok := serverDefinition.Properties["Status"]
+	assert.True(t, ok)
+	jazon, _ = json.Marshal(serverStatusProperty)
+	assert.JSONEq(t, `{"$ref": "#/definitions/serverStatus"}`, string(jazon))
+	jazon, _ = json.Marshal(serverStatusDefinition)
+	assert.JSONEq(t, `{
+         "type": "string",
+         "enum": [
+          "OK",
+          "Not OK"
+         ]
+	 }`, string(jazon))
+
+	// additional test case: this one used to work
+	bp = filepath.Join("fixtures", "bugs", "1851", "fixture-1851-2.yaml")
+	sp = loadOrFail(t, bp)
+
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	assert.NoError(t, err)
+	serverDefinition, ok = an.spec.Definitions["Server"]
+	assert.True(t, ok)
+	serverStatusDefinition, ok = an.spec.Definitions["ServerStatus"]
+	assert.True(t, ok)
+	serverStatusProperty, ok = serverDefinition.Properties["Status"]
+	assert.True(t, ok)
+	jazon, _ = json.Marshal(serverStatusProperty)
+	assert.JSONEq(t, `{"$ref": "#/definitions/ServerStatus"}`, string(jazon))
+	jazon, _ = json.Marshal(serverStatusDefinition)
+	assert.JSONEq(t, `{
+         "type": "string",
+         "enum": [
+          "OK",
+          "Not OK"
+         ]
+	 }`, string(jazon))
+}
+
+var (
+	rex    = regexp.MustCompile(`"\$ref":\s*"(.+)"`)
+	oairex = regexp.MustCompile(`oiagen`)
+)
+
+func checkRefs(t *testing.T, spec *spec.Swagger, expectNoConflict bool) {
+	// all $ref resolve locally
+	jazon, _ := json.MarshalIndent(spec, "", " ")
+	m := rex.FindAllStringSubmatch(string(jazon), -1)
+	if assert.NotNil(t, m) {
+		for _, matched := range m {
+			subMatch := matched[1]
+			assert.True(t, strings.HasPrefix(subMatch, "#/definitions/"),
+				"expected $ref to be inlined, got: %s", matched[0])
+		}
+	}
+
+	if expectNoConflict {
+		// no naming conflict
+		m := oairex.FindAllStringSubmatch(string(jazon), -1)
+		assert.Empty(t, m)
+	}
+}
+
+func testFlattenWithDefaults(t *testing.T, bp string) *Spec {
+	sp := loadOrFail(t, bp)
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	require.NoError(t, err)
+	return an
+}
+
+func TestFlatten_RemoteAbsolute(t *testing.T) {
+	// this one has simple remote ref pattern
+	an := testFlattenWithDefaults(t, filepath.Join("fixtures", "bugs", "remote-absolute", "swagger-mini.json"))
+	checkRefs(t, an.spec, true)
+
+	// this has no remote ref
+	an = testFlattenWithDefaults(t, filepath.Join("fixtures", "bugs", "remote-absolute", "swagger.json"))
+	checkRefs(t, an.spec, true)
+
+	// this one has local ref, no naming conflict (same as previous but with external ref imported)
+	an = testFlattenWithDefaults(t, filepath.Join("fixtures", "bugs", "remote-absolute", "swagger-with-local-ref.json"))
+	checkRefs(t, an.spec, true)
+
+	// this one has remote ref, no naming conflict (same as previous but with external ref imported)
+	an = testFlattenWithDefaults(t, filepath.Join("fixtures", "bugs", "remote-absolute", "swagger-with-remote-only-ref.json"))
+	checkRefs(t, an.spec, true)
+
+	// this one has both remote and local ref with naming conflict.
+	// This creates some "oiagen" definitions to address naming conflict, which are removed by the oaigen pruning process (reinlined / merged with parents).
+	an = testFlattenWithDefaults(t, filepath.Join("fixtures", "bugs", "remote-absolute", "swagger-with-ref.json"))
+	checkRefs(t, an.spec, false)
+}
+
+func TestTopmostFirs(t *testing.T) {
+	assert.Equal(t, []string{"/a/b", "/a/b/c"}, topmostFirst([]string{"/a/b/c", "/a/b"}))
+	assert.Equal(t, []string{"/a/b", "/a/c"}, topmostFirst([]string{"/a/c", "/a/b"}))
+	assert.Equal(t, []string{"/a/b", "/a/c", "/a/b/c", "/a/b/d", "/a/a/b/d"}, topmostFirst([]string{"/a/a/b/d", "/a/b", "/a/b/c", "/a/b/d", "/a/c"}))
+}
+
+func TestFlatten_2092(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	bp := filepath.Join("fixtures", "bugs", "2092", "swagger.yaml")
+	rexOAIGen := regexp.MustCompile(`(?i)("\$ref":\s*")(.?oaigen.?)"`)
+
+	// #2092 exhibits a stability issue: repeat 100 times the process to make sure it is stable
+	var bb, bb2 string
+	for i := 0; i < 100; i++ {
+		sp := loadOrFail(t, bp)
+		an := New(sp)
+		err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+		require.NoError(t, err)
+
+		bbb, _ := json.MarshalIndent(an.spec, "", " ")
+
+		if i == 0 {
+			// verify we don't have dangling oaigen refs
+			bb = string(bbb)
+			if !assert.False(t, rexOAIGen.Match(bbb)) {
+				t.Logf("%s", bb)
+			}
+		} else {
+			// verify that we produce a stable result
+			assert.JSONEq(t, bb, string(bbb))
+		}
+
+		err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: true})
+		require.NoError(t, err)
+
+		err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+		require.NoError(t, err)
+
+		bbb, _ = json.MarshalIndent(an.spec, "", " ")
+		if i == 0 {
+			bb2 = string(bbb)
+			if !assert.False(t, rexOAIGen.Match(bbb)) {
+				t.Logf("%s", string(bbb))
+			}
+		} else {
+			// verify that we produce a stable result
+			assert.JSONEq(t, bb2, string(bbb))
+		}
+	}
 }

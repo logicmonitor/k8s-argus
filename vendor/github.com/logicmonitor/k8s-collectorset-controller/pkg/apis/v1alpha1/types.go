@@ -37,6 +37,8 @@ type CollectorSetSpec struct {
 	CollectorVersion  int32               `json:"collectorVersion,omitempty"`  //default value is 0, it means the latest GD version
 	UseEA             bool                `json:"useEA,omitempty"`             //default value is false, it means the latest GD version
 	Policy            *CollectorSetPolicy `json:"policy"`
+	ProxyURL          string              `json:"proxyURL,omitempty"`
+	SecretName        string              `json:"secretName,omitempty"`
 }
 
 // CollectorSetStatus is the CollectorSet controller's status.
