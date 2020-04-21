@@ -16,9 +16,13 @@ package swag
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"testing"
 	"time"
+	"unicode"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -48,8 +52,20 @@ func TestIndexOfInitialismsSorted(t *testing.T) {
 		"XSS":   true,
 	}
 
-	goldenSample := newIndexOfInitialisms().load(configuredInitialisms).sorted()
-	for i := 0; i < 100; i++ {
+	goldenSample := []string{
+		"ASCII",
+		"XMPP",
+		"XSRF",
+		"ACL",
+		"API",
+		"CPU",
+		"CSS",
+		"DNS",
+		"XML",
+		"XSS",
+		"VM",
+	}
+	for i := 0; i < 50; i++ {
 		sample := newIndexOfInitialisms().load(configuredInitialisms).sorted()
 		failMsg := "equal sorted initialisms should be always equal"
 
@@ -59,9 +75,23 @@ func TestIndexOfInitialismsSorted(t *testing.T) {
 	}
 }
 
+func TestHighUnicode(t *testing.T) {
+	ss := "日本語sample 2 Text"
+	rss := []rune(ss)
+
+	log.Println("title:", unicode.IsTitle(rss[0]))
+	require.False(t, rss[0] < unicode.MaxASCII && unicode.IsLetter(rss[0]))
+}
+
 func TestToGoName(t *testing.T) {
 	samples := []translationSample{
+		{"@Type", "AtType"},
+		{"Sample@where", "SampleAtWhere"},
+		{"Id", "ID"},
+		{"SomethingTTLSeconds", "SomethingTTLSeconds"},
 		{"sample text", "SampleText"},
+		{"IPv6Address", "IPV6Address"},
+		{"IPv4Address", "IPV4Address"},
 		{"sample-text", "SampleText"},
 		{"sample_text", "SampleText"},
 		{"sampleText", "SampleText"},
@@ -70,9 +100,12 @@ func TestToGoName(t *testing.T) {
 		{"日本語sample 2 Text", "X日本語sample2Text"},
 		{"日本語findThingById", "X日本語findThingByID"},
 		{"findTHINGSbyID", "FindTHINGSbyID"},
+		{"x-isAnOptionalHeader0", "XIsAnOptionalHeader0"},
 	}
 
 	for _, k := range commonInitialisms.sorted() {
+		k = upper(k)
+
 		samples = append(samples,
 			translationSample{"sample " + lower(k) + " text", "Sample" + k + "Text"},
 			translationSample{"sample-" + lower(k) + "-text", "Sample" + k + "Text"},
@@ -89,7 +122,9 @@ func TestToGoName(t *testing.T) {
 	}
 
 	for _, sample := range samples {
-		assert.Equal(t, sample.out, ToGoName(sample.str))
+		result := ToGoName(sample.str)
+		assert.Equal(t, sample.out, result,
+			"ToGoName(%q) == %q but %q", sample.str, sample.out, result)
 	}
 }
 
@@ -189,7 +224,7 @@ func TestToFileName(t *testing.T) {
 		{"SampleText", "sample_text"},
 		{"FindThingByID", "find_thing_by_id"},
 		{"CAPWD.folwdBylc", "capwd_folwd_bylc"},
-		{"CAPWDfolwdBylc", "capwdfolwd_bylc"},
+		{"CAPWDfolwdBylc", "cap_w_dfolwd_bylc"},
 		{"CAP_WD_folwdBylc", "cap_wd_folwd_bylc"},
 		{"TypeOAI_alias", "type_oai_alias"},
 		{"Type_OAI_alias", "type_oai_alias"},
@@ -205,7 +240,9 @@ func TestToFileName(t *testing.T) {
 	}
 
 	for _, sample := range samples {
-		assert.Equal(t, sample.out, ToFileName(sample.str))
+		result := ToFileName(sample.str)
+		assert.Equal(t, sample.out, ToFileName(sample.str),
+			"ToFileName(%q) == %q but got %q", sample.str, sample.out, result)
 	}
 }
 
@@ -229,6 +266,7 @@ func TestToCommandName(t *testing.T) {
 
 func TestToHumanName(t *testing.T) {
 	samples := []translationSample{
+		{"Id", "Id"},
 		{"SampleText", "sample text"},
 		{"FindThingByID", "find thing by ID"},
 		{"elbHTTPLoadBalancer", "elb HTTP load balancer"},
@@ -366,6 +404,7 @@ func TestCamelize(t *testing.T) {
 		{"ELB.HTTPLoadBalancer", "Elb.httploadbalancer"},
 		{"elbHTTPLoadBalancer", "Elbhttploadbalancer"},
 		{"ELBHTTPLoadBalancer", "Elbhttploadbalancer"},
+		{"12ab", "12ab"},
 	}
 
 	for _, sample := range samples {
@@ -379,7 +418,7 @@ func TestToHumanNameTitle(t *testing.T) {
 		{"SampleText", "Sample Text"},
 		{"FindThingByID", "Find Thing By ID"},
 		{"CAPWD.folwdBylc", "CAPWD Folwd Bylc"},
-		{"CAPWDfolwdBylc", "Capwdfolwd Bylc"},
+		{"CAPWDfolwdBylc", "CAP W Dfolwd Bylc"},
 		{"CAP_WD_folwdBylc", "CAP WD Folwd Bylc"},
 		{"TypeOAI_alias", "Type OAI Alias"},
 		{"Type_OAI_alias", "Type OAI Alias"},
@@ -400,7 +439,7 @@ func TestToVarName(t *testing.T) {
 		{"SampleText", "sampleText"},
 		{"FindThingByID", "findThingByID"},
 		{"CAPWD.folwdBylc", "cAPWDFolwdBylc"},
-		{"CAPWDfolwdBylc", "capwdfolwdBylc"},
+		{"CAPWDfolwdBylc", "cAPWDfolwdBylc"},
 		{"CAP_WD_folwdBylc", "cAPWDFolwdBylc"},
 		{"TypeOAI_alias", "typeOAIAlias"},
 		{"Type_OAI_alias", "typeOAIAlias"},
@@ -416,5 +455,38 @@ func TestToVarName(t *testing.T) {
 	for _, sample := range samples {
 		res := ToVarName(sample.str)
 		assert.Equalf(t, sample.out, res, "expected ToVarName(%q)=%q, got %q", sample.str, sample.out, res)
+	}
+}
+
+func TestToGoNameUnicode(t *testing.T) {
+	defer func() { GoNamePrefixFunc = nil }()
+	GoNamePrefixFunc = func(name string) string {
+		// this is the pascalize func from go-swagger codegen
+		arg := []rune(name)
+		if len(arg) == 0 || arg[0] > '9' {
+			return ""
+		}
+		if arg[0] == '+' {
+			return "Plus"
+		}
+		if arg[0] == '-' {
+			return "Minus"
+		}
+
+		return "Nr"
+	}
+
+	samples := []translationSample{
+		{"123_a", "Nr123a"},
+		{"!123_a", "Bang123a"},
+		{"+123_a", "Plus123a"},
+		{"abc", "Abc"},
+		{"éabc", "Éabc"},
+		{":éabc", "Éabc"},
+		// TODO: non unicode char
+	}
+
+	for _, sample := range samples {
+		assert.Equal(t, sample.out, ToGoName(sample.str))
 	}
 }

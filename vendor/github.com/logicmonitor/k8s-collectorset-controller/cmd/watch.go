@@ -38,7 +38,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Retrieve the application configuration.
-		collectorsetconfig, err := config.New()
+		collectorsetconfig, err := config.GetConfig()
 		if err != nil {
 			log.Fatalf("Failed to get config: %v", err)
 		}

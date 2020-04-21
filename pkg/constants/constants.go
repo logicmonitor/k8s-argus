@@ -101,4 +101,6 @@ const (
 	K8sAPIVersionAppsV1beta1 = "apps/v1beta1"
 	// K8sAPIVersionAppsV1beta2 is the version 'apps/v1beta2' of k8s api
 	K8sAPIVersionAppsV1beta2 = "apps/v1beta2"
+	// K8sAPIVersionAppsV1 is the version 'apps/v1' of k8s api
+	K8sAPIVersionAppsV1 = "apps/v1"
 )
