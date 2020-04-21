@@ -18,16 +18,17 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/errors"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/internal/testing/petstore"
-	"github.com/stretchr/testify/assert"
 )
 
 func newTestValidation(ctx *Context, next http.Handler) http.Handler {
-
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		matched, rCtx, _ := ctx.RouteInfo(r)
 		if rCtx != nil {
@@ -81,7 +82,7 @@ func TestContentTypeValidation(t *testing.T) {
 	assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("POST", "/api/pets", nil)
+	request, _ = http.NewRequest("POST", "/api/pets", strings.NewReader(`{"name":"dog"}`))
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("content-type", "text/html")
 	request.TransferEncoding = []string{"chunked"}
@@ -96,7 +97,7 @@ func TestContentTypeValidation(t *testing.T) {
 	request.Header.Add("content-type", "text/html")
 
 	mw.ServeHTTP(recorder, request)
-	assert.Equal(t, 422, recorder.Code)
+	assert.Equal(t, 406, recorder.Code)
 	assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
 }
 

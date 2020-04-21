@@ -3,8 +3,8 @@ REPOSITORY := argus
 VERSION    := 1.0.0
 
 all:
-	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):latest .
-	docker tag $(NAMESPACE)/$(REPOSITORY):latest $(NAMESPACE)/$(REPOSITORY):$(VERSION)
+	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):v2latest .
+	docker tag $(NAMESPACE)/$(REPOSITORY):v2latest $(NAMESPACE)/$(REPOSITORY):$(VERSION)
 
 .PHONY: docs
 docs:
