@@ -33,7 +33,7 @@ To build Argus, run:
 ```
 $ make
 ```
-> **Note:** The Dockerfile uses multi-stage builds. Docker 17.05.0 or greater is required.
+> **Note:** The Dockerfile uses multi-stage builds. Docker CE 17.05.0 or greater is required.
 
 To build the documentation, run:
 ```
