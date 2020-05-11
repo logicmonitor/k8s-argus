@@ -82,7 +82,7 @@ func (i *InitSyncer) runSync(rest *models.DeviceGroup) {
 					log.Warnf("Resource HorizontalPodAutoscaler has no permissions, ignore sync")
 					return
 				}
-				i.initSyncAdditionalResources(constants.HorizontalPodAutoscalerDeviceGroupName, rest.ID)
+				i.initSyncHPA(rest.ID)
 				log.Infof("Finish syncing %v", constants.HorizontalPodAutoscalerDeviceGroupName)
 			}()
 		default:
@@ -135,8 +135,9 @@ func (i *InitSyncer) initSyncPodsOrServicesOrDeploys(deviceType string, parentGr
 
 	// loop every namespace
 	for _, subGroup := range rest.SubGroups {
-		//get pod/service info from k8s
+		//get pod/service/deployment info from k8s
 		var deviceMap map[string]string
+
 		if deviceType == constants.PodDeviceGroupName {
 			deviceMap, err = pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name)
 		} else if deviceType == constants.ServiceDeviceGroupName {
@@ -191,7 +192,11 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 		}
 	}
 }
-func (i *InitSyncer) initSyncAdditionalResources(deviceType string, parentGroupID int32) {
+
+func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
+
+	deviceType := "HorizontalPodAutoscalers"
+
 	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Warnf("Failed to get the %s group", deviceType)
