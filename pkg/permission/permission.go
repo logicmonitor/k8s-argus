@@ -13,7 +13,8 @@ var (
 
 	client *kubernetes.Clientset
 
-	deploymentPermissionFlag *bool
+	deploymentPermissionFlag              *bool
+	horizontalPodAutoscalerPermissionFlag *bool
 )
 
 // Init is a function than init the permission context
@@ -34,4 +35,19 @@ func HasDeploymentPermissions() bool {
 		deploymentPermissionFlag = &enable
 	}
 	return *deploymentPermissionFlag
+}
+
+// HasHorizontalPodAutoscalerPermissions is a function that check if the deployment resource has permissions
+func HasHorizontalPodAutoscalerPermissions() bool {
+	if horizontalPodAutoscalerPermissionFlag != nil {
+		return *horizontalPodAutoscalerPermissionFlag
+	}
+	_, err := client.AutoscalingV2beta2().HorizontalPodAutoscalers(v1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		horizontalPodAutoscalerPermissionFlag = &disable
+		log.Errorf("Failed to list horizontalPodAutoscalers: %+v", err)
+	} else {
+		horizontalPodAutoscalerPermissionFlag = &enable
+	}
+	return *horizontalPodAutoscalerPermissionFlag
 }

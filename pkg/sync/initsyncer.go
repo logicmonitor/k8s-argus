@@ -8,6 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/hpa"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
@@ -73,6 +74,16 @@ func (i *InitSyncer) runSync(rest *models.DeviceGroup) {
 				}
 				i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
+			}()
+		case constants.HorizontalPodAutoscalerDeviceGroupName:
+			go func() {
+				defer wg.Done()
+				if !permission.HasHorizontalPodAutoscalerPermissions() {
+					log.Warnf("Resource HorizontalPodAutoscaler has no permissions, ignore sync")
+					return
+				}
+				i.initSyncAdditionalResources(constants.HorizontalPodAutoscalerDeviceGroupName, rest.ID)
+				log.Infof("Finish syncing %v", constants.HorizontalPodAutoscalerDeviceGroupName)
 			}()
 		default:
 			func() {
@@ -178,5 +189,34 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
 			}
 		}
+	}
+}
+func (i *InitSyncer) initSyncAdditionalResources(deviceType string, parentGroupID int32) {
+	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
+	if err != nil || rest == nil {
+		log.Warnf("Failed to get the %s group", deviceType)
+		return
+	}
+	if rest.SubGroups == nil {
+		return
+	}
+	// loop every namespace
+	for _, subGroup := range rest.SubGroups {
+		//get hpa info from k8s
+		var deviceMap map[string]string
+
+		switch deviceType {
+		case constants.HorizontalPodAutoscalerDeviceGroupName:
+			deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(i.DeviceManager.K8sClient, subGroup.Name)
+		default:
+			return
+		}
+		if err != nil || deviceMap == nil {
+			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)
+			continue
+		}
+
+		// get and check all the devices in the group
+		i.syncDevices(deviceType, deviceMap, subGroup)
 	}
 }
