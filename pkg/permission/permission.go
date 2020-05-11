@@ -42,7 +42,7 @@ func HasHorizontalPodAutoscalerPermissions() bool {
 	if horizontalPodAutoscalerPermissionFlag != nil {
 		return *horizontalPodAutoscalerPermissionFlag
 	}
-	_, err := client.AutoscalingV2beta2().HorizontalPodAutoscalers(v1.NamespaceAll).List(metav1.ListOptions{})
+	_, err := client.AutoscalingV1().HorizontalPodAutoscalers(v1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		horizontalPodAutoscalerPermissionFlag = &disable
 		log.Errorf("Failed to list horizontalPodAutoscalers: %+v", err)

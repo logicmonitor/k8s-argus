@@ -109,6 +109,6 @@ const (
 	K8sAPIVersionAppsV1beta2 = "apps/v1beta2"
 	// K8sAPIVersionAppsV1 is the version 'apps/v1' of k8s api
 	K8sAPIVersionAppsV1 = "apps/v1"
-	// K8sAutoscalingV2beta2 is the version 'autoscaling/v2beta2' of k8s api
-	K8sAutoscalingV2beta2 = "autoscaling/v2beta2"
+	// K8sAutoscalingV1 is the version 'autoscaling/v1' of k8s api
+	K8sAutoscalingV1 = "autoscaling/v1"
 )
