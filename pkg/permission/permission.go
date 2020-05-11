@@ -37,7 +37,7 @@ func HasDeploymentPermissions() bool {
 	return *deploymentPermissionFlag
 }
 
-// HasHorizontalPodAutoscalerPermissions is a function that check if the deployment resource has permissions
+// HasHorizontalPodAutoscalerPermissions is a function that checks if the Horizontal Pod Autoscaler resource has permissions
 func HasHorizontalPodAutoscalerPermissions() bool {
 	if horizontalPodAutoscalerPermissionFlag != nil {
 		return *horizontalPodAutoscalerPermissionFlag
