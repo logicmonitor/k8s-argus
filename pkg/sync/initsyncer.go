@@ -205,12 +205,8 @@ func (i *InitSyncer) initSyncAdditionalResources(deviceType string, parentGroupI
 		//get hpa info from k8s
 		var deviceMap map[string]string
 
-		switch deviceType {
-		case constants.HorizontalPodAutoscalerDeviceGroupName:
-			deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(i.DeviceManager.K8sClient, subGroup.Name)
-		default:
-			return
-		}
+		deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(i.DeviceManager.K8sClient, subGroup.Name)
+
 		if err != nil || deviceMap == nil {
 			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)
 			continue
