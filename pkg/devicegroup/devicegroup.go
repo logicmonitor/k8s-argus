@@ -131,6 +131,25 @@ func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGr
 	return deviceGroup, nil
 }
 
+// FindDeviceGroupByID searches for a device group by ID.
+func FindDeviceGroupByID(groupID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {
+	params := lm.NewGetDeviceGroupByIDParams()
+	params.SetID(groupID)
+	fields := "name,id,parentId,subGroups"
+	params.SetFields(&fields)
+	restResponse, err := client.LM.GetDeviceGroupByID(params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get device group (id=%v): %v", groupID, err)
+	}
+
+	var deviceGroup *models.DeviceGroup
+	if restResponse != nil && restResponse.Payload != nil {
+		deviceGroup = restResponse.Payload
+	}
+
+	return deviceGroup, nil
+}
+
 // Exists returns true if the specified device group exists in the account
 func Exists(parentID int32, name string, client *client.LMSdkGo) bool {
 	deviceGroup, err := Find(parentID, name, client)
@@ -178,6 +197,7 @@ func DeleteSubGroup(deviceGroup *models.DeviceGroup, name string, client *client
 		params.SetDeleteChildren(&deleteChildren)
 		deleteHard := true
 		params.SetDeleteHard(&deleteHard)
+		log.Infof("Deleting subGroup:\"%s\" from deviceGroup:\"%v\"", subGroup.Name, *deviceGroup.Name)
 		_, err := client.LM.DeleteDeviceGroupByID(params)
 		return err
 	}
