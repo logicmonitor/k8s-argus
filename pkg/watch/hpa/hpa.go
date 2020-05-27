@@ -1,5 +1,6 @@
 // Package hpa provides the logic for mapping a Kubernetes horizontalPodAutoscaler to a
 // LogicMonitor w.
+// nolint: dupl
 package hpa
 
 import (
@@ -84,6 +85,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	}
 }
 
+// nolint: dupl
 func (w *Watcher) add(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
 	if _, err := w.Add(
 		w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerCategory)...,

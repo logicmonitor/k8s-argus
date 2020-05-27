@@ -23,6 +23,7 @@ func Init(k8sClient *kubernetes.Clientset) {
 }
 
 // HasDeploymentPermissions is a function that check if the deployment resource has permissions
+// nolint: dupl
 func HasDeploymentPermissions() bool {
 	if deploymentPermissionFlag != nil {
 		return *deploymentPermissionFlag
@@ -38,6 +39,7 @@ func HasDeploymentPermissions() bool {
 }
 
 // HasHorizontalPodAutoscalerPermissions is a function that checks if the Horizontal Pod Autoscaler resource has permissions
+// nolint: dupl
 func HasHorizontalPodAutoscalerPermissions() bool {
 	if horizontalPodAutoscalerPermissionFlag != nil {
 		return *horizontalPodAutoscalerPermissionFlag
