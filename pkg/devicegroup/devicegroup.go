@@ -131,23 +131,24 @@ func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGr
 	return deviceGroup, nil
 }
 
-// FindDeviceGroupByID searches for a device group by ID.
-func FindDeviceGroupByID(groupID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {
-	params := lm.NewGetDeviceGroupByIDParams()
-	params.SetID(groupID)
+// FindDeviceGroupByName searches for a device group by name.
+func FindDeviceGroupByName(name string, client *client.LMSdkGo) ([]*models.DeviceGroup, error) {
+	params := lm.NewGetDeviceGroupListParams()
 	fields := "name,id,parentId,subGroups"
 	params.SetFields(&fields)
-	restResponse, err := client.LM.GetDeviceGroupByID(params)
+	filter := fmt.Sprintf("name:\"%s\"", name)
+	params.SetFilter(&filter)
+	restResponse, err := client.LM.GetDeviceGroupList(params)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get device group (id=%v): %v", groupID, err)
+		return nil, fmt.Errorf("failed to get device group (name=%v): %v", name, err)
 	}
 
-	var deviceGroup *models.DeviceGroup
+	var deviceGroups []*models.DeviceGroup
 	if restResponse != nil && restResponse.Payload != nil {
-		deviceGroup = restResponse.Payload
+		deviceGroups = restResponse.Payload.Items
 	}
 
-	return deviceGroup, nil
+	return deviceGroups, nil
 }
 
 // Exists returns true if the specified device group exists in the account
@@ -203,6 +204,19 @@ func DeleteSubGroup(deviceGroup *models.DeviceGroup, name string, client *client
 	}
 
 	return nil
+}
+
+// DeleteGroup deletes a device group with the specified deviceGroupID.
+func DeleteGroup(deviceGroup *models.DeviceGroup, client *client.LMSdkGo) error {
+	params := lm.NewDeleteDeviceGroupByIDParams()
+	params.ID = deviceGroup.ID
+	deleteChildren := true
+	params.SetDeleteChildren(&deleteChildren)
+	deleteHard := true
+	params.SetDeleteHard(&deleteHard)
+	log.Infof("Deleting deviceGroup:\"%s\" ID:\"%d\" ParentID:\"%d\"", *deviceGroup.Name, deviceGroup.ID, deviceGroup.ParentID)
+	_, err := client.LM.DeleteDeviceGroupByID(params)
+	return err
 }
 
 func create(name, appliesTo string, disableAlerting bool, parentID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {

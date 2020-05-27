@@ -95,23 +95,24 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handle deleting namespace event: %s", namespace.Name)
 
-		for name, groupID := range w.DeviceGroups {
-			deviceGroup, err := devicegroup.FindDeviceGroupByID(groupID, w.LMClient)
-			if err != nil {
-				log.Warnf("Failed to find namespace %s: %v", name, err)
-				return
-			}
-			// We should only be returned a device group if it is namespaced.
-			if deviceGroup == nil {
-				log.Warnf("Device group (id=%v name=%s) not found: %v", groupID, name, err)
-				continue
-			}
-			err = devicegroup.DeleteSubGroup(deviceGroup, namespace.Name, w.LMClient)
-			if err != nil {
-				log.Errorf("Failed to delete namespace %q: %v", namespace.Name, err)
-				return
-			}
+		deviceGroups, err := devicegroup.FindDeviceGroupByName(namespace.Name, w.LMClient)
+		if err != nil {
+			log.Errorf("Error: %v", err)
+			return
 		}
 
+		for _, groupID := range w.DeviceGroups {
+			for _, d := range deviceGroups {
+				if d.ParentID == groupID {
+					log.Infof("Found deviceGroup:\"%s\" with id:\"%d\"", *d.Name, d.ID)
+					err = devicegroup.DeleteGroup(d, w.LMClient)
+					if err != nil {
+						log.Errorf("Failed to delete namespace %q: %v", namespace.Name, err)
+						return
+					}
+					break
+				}
+			}
+		}
 	}
 }
