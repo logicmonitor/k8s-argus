@@ -95,24 +95,28 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handle deleting namespace event: %s", namespace.Name)
 
-		deviceGroups, err := devicegroup.FindDeviceGroupByName(namespace.Name, w.LMClient)
+		deviceGroups, err := devicegroup.FindDeviceGroupsByName(namespace.Name, w.LMClient)
 		if err != nil {
-			log.Errorf("Error: %v", err)
+			log.Errorf("Failed to get device group for namespace:\"%s\" with error: %v", namespace.Name, err)
 			return
 		}
 
-		for _, groupID := range w.DeviceGroups {
-			for _, d := range deviceGroups {
-				if d.ParentID == groupID {
-					log.Infof("Found deviceGroup:\"%s\" with id:\"%d\"", *d.Name, d.ID)
-					err = devicegroup.DeleteGroup(d, w.LMClient)
-					if err != nil {
-						log.Errorf("Failed to delete namespace %q: %v", namespace.Name, err)
-						return
-					}
-					break
+		reversedDeviceGroups := getReversedDeviceGroups(w.DeviceGroups)
+		for _, d := range deviceGroups {
+			if _, ok := reversedDeviceGroups[d.ParentID]; ok {
+				err = devicegroup.DeleteGroup(d, w.LMClient)
+				if err != nil {
+					log.Errorf("Failed to delete device group of namespace:\"%s\" having ID:\"%d\" with error: %v", namespace.Name, d.ID, err)
 				}
 			}
 		}
 	}
+}
+
+func getReversedDeviceGroups(deviceGroups map[string]int32) map[int32]string {
+	reversedDeviceGroups := make(map[int32]string)
+	for key, value := range deviceGroups {
+		reversedDeviceGroups[value] = key
+	}
+	return reversedDeviceGroups
 }
