@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/connection"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -44,13 +45,20 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, d *m
 			option(d)
 		}
 
+		var collectorID int32
 		reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
 		if err != nil {
 			log.Errorf("Failed to get collector ID: %v", err)
+			id, err := connection.ReconnectAndGetCollectorID()
+			if err != nil {
+				log.Errorf("Failed to reconnect & get collector ID: %v", err)
+			}
+			collectorID = id
 		} else {
-			log.Infof("Using collector ID %d for %q", reply.Id, *d.DisplayName)
-			d.PreferredCollectorID = &reply.Id
+			collectorID = reply.Id
 		}
+		log.Infof("Using collector ID %d for %q", collectorID, *d.DisplayName)
+		d.PreferredCollectorID = &collectorID
 	} else {
 		for _, option := range options {
 			option(d)
