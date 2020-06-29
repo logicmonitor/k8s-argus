@@ -163,7 +163,8 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 // getInternalAddress finds the node's internal address.
 func getInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
 	var hostname *v1.NodeAddress
-	for _, address := range addresses {
+	for i := range addresses {
+		address := addresses[i]
 		if address.Type == v1.NodeInternalIP {
 			return &address
 		}
