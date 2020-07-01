@@ -142,8 +142,8 @@ func GetDeploymentsMap(k8sClient *kubernetes.Clientset, namespace string) (map[s
 		log.Warnf("Failed to get the deployments from k8s")
 		return nil, err
 	}
-	for _, deploymentInfo := range deploymentList.Items {
-		deploymentsMap[fmtDeploymentDisplayName(&deploymentInfo)] = deploymentInfo.Name
+	for i := range deploymentList.Items {
+		deploymentsMap[fmtDeploymentDisplayName(&deploymentList.Items[i])] = deploymentList.Items[i].Name
 	}
 
 	return deploymentsMap, nil

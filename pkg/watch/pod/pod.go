@@ -178,9 +178,9 @@ func GetPodsMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]s
 	if err != nil || podList == nil {
 		return nil, err
 	}
-	for _, podInfo := range podList.Items {
+	for i := range podList.Items {
 		// TODO: we should improve the value of the map to the ip of the pod when changing the name of the device to the ip
-		podsMap[podInfo.Name] = getPodDNSName(&podInfo)
+		podsMap[podList.Items[i].Name] = getPodDNSName(&podList.Items[i])
 	}
 
 	return podsMap, nil
