@@ -158,8 +158,8 @@ func GetServicesMap(k8sClient *kubernetes.Clientset, namespace string) (map[stri
 		log.Warnf("Failed to get the services from k8s")
 		return nil, err
 	}
-	for _, serviceInfo := range serviceList.Items {
-		servicesMap[fmtServiceDisplayName(&serviceInfo)] = serviceInfo.Spec.ClusterIP
+	for i := range serviceList.Items {
+		servicesMap[fmtServiceDisplayName(&serviceList.Items[i])] = serviceList.Items[i].Spec.ClusterIP
 	}
 
 	return servicesMap, nil
