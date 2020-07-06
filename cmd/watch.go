@@ -13,7 +13,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 )
 
 // watchCmd represents the watch command
@@ -48,19 +47,14 @@ var watchCmd = &cobra.Command{
 		permission.Init(base.K8sClient)
 
 		// Set up a gRPC connection to the collectorset controller.
-		conn, err := grpc.Dial(config.Address, grpc.WithInsecure())
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-		defer conn.Close() // nolint: errcheck
+		connection.CreateGRPCConn(config.Address)
+		defer connection.CloseGRPCConn()
 
-		client, err := connection.WaitForCollectorSetClient(conn)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		// Create a CSC Client
+		connection.CreateCSCClient(connection.GetGRPCConn())
 
 		// Instantiate the application and add watchers.
-		argus, err := argus.NewArgus(base, client)
+		argus, err := argus.NewArgus(base)
 		if err != nil {
 			log.Fatal(err.Error())
 		}

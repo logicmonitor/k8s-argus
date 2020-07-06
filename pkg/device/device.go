@@ -1,16 +1,14 @@
 package device
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
-	"github.com/logicmonitor/k8s-argus/pkg/connection"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-collectorset-controller/api"
+	collector "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
@@ -20,10 +18,9 @@ import (
 type Manager struct {
 	*types.Base
 	*builder.Builder
-	ControllerClient api.CollectorSetControllerClient
 }
 
-func buildDevice(c *config.Config, client api.CollectorSetControllerClient, d *models.Device, options ...types.DeviceOption) *models.Device {
+func buildDevice(c *config.Config, d *models.Device, options ...types.DeviceOption) *models.Device {
 	if d == nil {
 		hostGroupIds := "1"
 		propertyName := constants.K8sClusterNamePropertyKey
@@ -45,18 +42,7 @@ func buildDevice(c *config.Config, client api.CollectorSetControllerClient, d *m
 			option(d)
 		}
 
-		var collectorID int32
-		reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
-		if err != nil {
-			log.Errorf("Failed to get collector ID: %v", err)
-			id, err := connection.ReconnectAndGetCollectorID()
-			if err != nil {
-				log.Errorf("Failed to reconnect & get collector ID: %v", err)
-			}
-			collectorID = id
-		} else {
-			collectorID = reply.Id
-		}
+		collectorID := collector.GetCollectorID()
 		log.Infof("Using collector ID %d for %q", collectorID, *d.DisplayName)
 		d.PreferredCollectorID = &collectorID
 	} else {
@@ -224,7 +210,7 @@ func (m *Manager) FindByDisplayNameAndClusterName(displayName string) (*models.D
 
 // Add implements types.DeviceManager.
 func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
-	device := buildDevice(m.Config(), m.ControllerClient, nil, options...)
+	device := buildDevice(m.Config(), nil, options...)
 	log.Debugf("%#v", device)
 
 	params := lm.NewAddDeviceParams()
@@ -255,7 +241,7 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 
 // UpdateAndReplace implements types.DeviceManager.
 func (m *Manager) UpdateAndReplace(d *models.Device, options ...types.DeviceOption) (*models.Device, error) {
-	device := buildDevice(m.Config(), m.ControllerClient, d, options...)
+	device := buildDevice(m.Config(), d, options...)
 	log.Debugf("%#v", device)
 
 	return m.updateAndReplace(d.ID, device)
@@ -286,7 +272,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 
 // UpdateAndReplaceField implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceField(d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
-	device := buildDevice(m.Config(), m.ControllerClient, d, options...)
+	device := buildDevice(m.Config(), d, options...)
 	log.Debugf("%#v", device)
 
 	params := lm.NewPatchDeviceParams()
