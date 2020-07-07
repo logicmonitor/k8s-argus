@@ -3,9 +3,12 @@ package connection
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	collectorsetconstants "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants"
 	log "github.com/sirupsen/logrus"
@@ -17,46 +20,59 @@ import (
 var (
 	grpcConn  *grpc.ClientConn
 	cscClient api.CollectorSetControllerClient
-	grpcLock1 = &sync.Mutex{}
-	grpcLock2 = &sync.Mutex{}
-	cscLock1  = &sync.Mutex{}
-	cscLock2  = &sync.Mutex{}
+	lock      = &sync.Mutex{}
 )
 
-// CreateGRPCConn - Setup a gRPC connection to the collectorset controller.
-func CreateGRPCConn(address string) {
+// Initialize - it will initialize gRPC connection & csc client
+func Initialize(address string) {
+	log.Info("Initializing gRPC connection & CSC Client.")
+	createConnection(address)
+}
+
+func createConnection(address string) {
 	var grpcErr error
-	if grpcConn == nil {
-		grpcLock1.Lock()
-		defer grpcLock1.Unlock()
-		if grpcConn == nil {
-			log.Infof("Creating new gRPC connection.")
-			grpcConn, grpcErr = grpc.Dial(address, grpc.WithInsecure())
-			if grpcErr != nil {
-				log.Fatalf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
-			}
-		}
+	grpcConn, grpcErr = grpc.Dial(address, grpc.WithInsecure())
+	if grpcErr != nil {
+		log.Fatalf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
 	}
 
-	/* added to check gRPC connection.
-	If it is in TransientFailure or in Shutdown state then create new gRPC connection. */
-	state := grpcConn.GetState()
-	if state == connectivity.TransientFailure || state == connectivity.Shutdown {
-		grpcLock2.Lock()
-		defer grpcLock2.Unlock()
-		if state == connectivity.TransientFailure || state == connectivity.Shutdown {
-			log.Infof("gRPC connection state is \"%v\". Creating new gRPC connection.", state)
-			grpcConn, grpcErr = grpc.Dial(address, grpc.WithInsecure())
-			if grpcErr != nil {
-				log.Fatalf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
-			}
-		}
+	var cscErr error
+	cscClient, cscErr = WaitForCollectorSetClient(grpcConn)
+	if cscErr != nil {
+		log.Fatalf("Error while creating CSC client. Error: %v", cscErr.Error())
 	}
 }
 
-// GetGRPCConn - returns gRPC connection
-func GetGRPCConn() *grpc.ClientConn {
-	return grpcConn
+// RecreateConnection - Creates gRPC conn & CSC client, if grpcConn is in TransientFailure or Shutdown state.
+func RecreateConnection() {
+	if grpcConn != nil {
+		state := grpcConn.GetState()
+		if state == connectivity.TransientFailure || state == connectivity.Shutdown {
+			lock.Lock()
+			defer lock.Unlock()
+			if state == connectivity.TransientFailure || state == connectivity.Shutdown {
+				config, err := config.GetConfig()
+				if err != nil {
+					fmt.Printf("Failed to open %s: %v", constants.ConfigPath, err)
+					os.Exit(1)
+				}
+				log.Infof("gRPC connection state is \"%v\". Creating new gRPC connection & CSC Client.", state)
+				createConnection(config.Address)
+			}
+		}
+	} else {
+		lock.Lock()
+		defer lock.Unlock()
+		if grpcConn == nil {
+			config, err := config.GetConfig()
+			if err != nil {
+				fmt.Printf("Failed to open %s: %v", constants.ConfigPath, err)
+				os.Exit(1)
+			}
+			log.Info("Creating new gRPC connection & CSC Client.")
+			createConnection(config.Address)
+		}
+	}
 }
 
 // CloseGRPCConn - Close gRPC connection
@@ -67,39 +83,6 @@ func CloseGRPCConn() {
 	}
 }
 
-// CreateCSCClient - create CSC client
-func CreateCSCClient(grpcConn *grpc.ClientConn) {
-	var cscErr error
-	if cscClient == nil {
-		cscLock1.Lock()
-		defer cscLock1.Unlock()
-		if cscClient == nil {
-			log.Infof("Creating new CSC client.")
-			cscClient, cscErr = WaitForCollectorSetClient(grpcConn)
-			if cscErr != nil {
-				log.Fatalf("Error while creating CSC client. Error: %v", cscErr.Error())
-			}
-		}
-	}
-
-	/* added to check gRPC connection.
-	If it is not in ready state then create new csc client. */
-	if grpcConn != nil {
-		state := grpcConn.GetState()
-		if state != connectivity.Ready {
-			cscLock2.Lock()
-			defer cscLock2.Unlock()
-			if state != connectivity.Ready {
-				log.Infof("gRPC connection state is \"%v\". Creating new CSC client.", state)
-				cscClient, cscErr = WaitForCollectorSetClient(grpcConn)
-				if cscErr != nil {
-					log.Fatalf("Error while creating CSC client. Error: %v", cscErr.Error())
-				}
-			}
-		}
-	}
-}
-
 // GetCSCClient - returns CSC client
 func GetCSCClient() api.CollectorSetControllerClient {
 	return cscClient
@@ -107,20 +90,6 @@ func GetCSCClient() api.CollectorSetControllerClient {
 
 // WaitForCollectorSetClient - wait for collectorset
 func WaitForCollectorSetClient(conn *grpc.ClientConn) (api.CollectorSetControllerClient, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	state := conn.GetState()
-	// Wait for connection to be Ready.
-	for ; state != connectivity.Ready && conn.WaitForStateChange(ctx, state); state = conn.GetState() {
-		log.Infof("Waiting for gRPC")
-	}
-	if state != connectivity.Ready {
-		log.Fatalf("Failed waiting for gRPC to ready, state is %q", state)
-	}
-
-	log.Infof("State of gRPC is %q", state)
-
 	client := api.NewCollectorSetControllerClient(conn)
 
 	ready, err := pollCollectorSetStatus(conn)
