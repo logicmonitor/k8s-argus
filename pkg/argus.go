@@ -10,6 +10,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
@@ -98,9 +99,16 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 		Base: base,
 	}
 
+	dcache := devicecache.NewDeviceCache(base, 5)
+	err := dcache.Run()
+	if err != nil {
+		log.Errorf("Couldn't start device cache resyncer")
+	}
+
 	deviceManager := &device.Manager{
 		Base:             base,
 		ControllerClient: client,
+		DC:               dcache,
 	}
 
 	deviceTree := &tree.DeviceTree{
