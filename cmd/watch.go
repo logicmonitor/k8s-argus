@@ -47,8 +47,7 @@ var watchCmd = &cobra.Command{
 		permission.Init(base.K8sClient)
 
 		// Set up a gRPC connection and CSC Client.
-		connection.Initialize(config.Address)
-		defer connection.CloseGRPCConn()
+		connection.Initialize(config)
 
 		// Instantiate the application and add watchers.
 		argus, err := argus.NewArgus(base)

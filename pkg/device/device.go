@@ -8,7 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	collector "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	cscutils "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
@@ -42,7 +42,7 @@ func buildDevice(c *config.Config, d *models.Device, options ...types.DeviceOpti
 			option(d)
 		}
 
-		collectorID := collector.GetCollectorID()
+		collectorID := cscutils.GetCollectorID()
 		log.Infof("Using collector ID %d for %q", collectorID, *d.DisplayName)
 		d.PreferredCollectorID = &collectorID
 	} else {

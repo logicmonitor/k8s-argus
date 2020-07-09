@@ -11,18 +11,17 @@ import (
 // GetCollectorID - get collectorID from csc
 func GetCollectorID() int32 {
 	reply, err := connection.GetCSCClient().CollectorID(context.Background(), &api.CollectorIDRequest{})
-	if err != nil || reply == nil {
+	if err != nil {
 		log.Errorf("Failed to get collector ID: %v", err)
 
-		// If collectorset-controller pod restarted then recreate gRPC connection & CSC client.
-		connection.RecreateConnection()
+		connection.CheckCSCHealthAndRecreateConnection()
 
-		/* recursive call to handle cscClient error like
-		'Error while dialing dial tcp 10.97.80.18:50000: connect: connection refused'
-		'Failed to find a policy that matches the request'. */
-		collectorID := GetCollectorID()
+		reply, err := connection.GetCSCClient().CollectorID(context.Background(), &api.CollectorIDRequest{})
+		if err != nil {
+			log.Errorf("Failed to get collector ID: %v", err)
+		}
 
-		return collectorID
+		return reply.Id
 	}
 
 	return reply.Id
