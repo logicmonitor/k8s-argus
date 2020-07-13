@@ -100,10 +100,7 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 	}
 
 	dcache := devicecache.NewDeviceCache(base, 5)
-	err := dcache.Run()
-	if err != nil {
-		log.Errorf("Couldn't start device cache resyncer")
-	}
+	dcache.Run()
 
 	deviceManager := &device.Manager{
 		Base:             base,

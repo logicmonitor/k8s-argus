@@ -29,7 +29,7 @@ func NewDeviceCache(b *types.Base, rp int) *DeviceCache {
 }
 
 // Run start a goroutine to resync cache periodically with server
-func (dc *DeviceCache) Run() error {
+func (dc *DeviceCache) Run() {
 	go func(dcache *DeviceCache) {
 		for {
 			time.Sleep(time.Duration(dcache.resyncPeriod) * time.Minute)
@@ -44,7 +44,6 @@ func (dc *DeviceCache) Run() error {
 			}
 		}
 	}(dc)
-	return nil
 }
 
 func (dc *DeviceCache) getAllDevices(b *types.Base) map[string]interface{} {
