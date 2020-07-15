@@ -33,7 +33,31 @@ func createGRPCConnection() {
 	var grpcErr error
 	grpcConn, grpcErr = grpc.Dial(appConfig.Address, grpc.WithInsecure())
 	if grpcErr != nil {
-		log.Fatalf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
+		log.Errorf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
+		err := retryGRPCConnection()
+		if err != nil {
+			log.Fatalf("Error while creating gRPC connection. Error: %v", err.Error())
+		}
+	}
+}
+
+// retryGRPCConnection - It will try to recreate gRPC connection
+func retryGRPCConnection() error {
+	timeout := time.After(10 * time.Minute)
+	ticker := time.NewTicker(10 * time.Second)
+	var grpcErr error
+	for {
+		select {
+		case <-timeout:
+			return fmt.Errorf("timeout waiting for gRPC connection")
+		case <-ticker.C:
+			grpcConn, grpcErr = grpc.Dial(appConfig.Address, grpc.WithInsecure())
+			if grpcErr != nil {
+				log.Errorf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
+			} else {
+				return nil
+			}
+		}
 	}
 }
 
