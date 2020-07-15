@@ -25,24 +25,14 @@ var (
 func Initialize(config *config.Config) {
 	log.Info("Initializing gRPC connection & CSC Client.")
 	appConfig = config
-	createGRPCConnection()
+	err := createGRPCConnection()
+	if err != nil {
+		log.Fatalf("Error while creating gRPC connection. Error: %v", err.Error())
+	}
 	createCSCClient()
 }
 
-func createGRPCConnection() {
-	var grpcErr error
-	grpcConn, grpcErr = grpc.Dial(appConfig.Address, grpc.WithInsecure())
-	if grpcErr != nil {
-		log.Errorf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
-		err := retryGRPCConnection()
-		if err != nil {
-			log.Fatalf("Error while creating gRPC connection. Error: %v", err.Error())
-		}
-	}
-}
-
-// retryGRPCConnection - It will try to recreate gRPC connection
-func retryGRPCConnection() error {
+func createGRPCConnection() error {
 	timeout := time.After(10 * time.Minute)
 	ticker := time.NewTicker(10 * time.Second)
 	var grpcErr error
@@ -121,7 +111,10 @@ func CheckCSCHealthAndRecreateConnection() {
 		defer lock.Unlock()
 		if healthCheckResponse.GetStatus() != healthpb.HealthCheckResponse_SERVING {
 			log.Infof("CSC client is in \"%v\" state. Creating new gRPC connection & CSC client.", healthCheckResponse.GetStatus().String())
-			createGRPCConnection()
+			err := createGRPCConnection()
+			if err != nil {
+				log.Fatalf("Error while creating gRPC connection. Error: %v", err.Error())
+			}
 			createCSCClient()
 		}
 	}
