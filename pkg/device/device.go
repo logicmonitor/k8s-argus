@@ -7,6 +7,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	cscutils "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
@@ -18,6 +19,7 @@ import (
 type Manager struct {
 	*types.Base
 	*builder.Builder
+	DC *devicecache.DeviceCache
 }
 
 func buildDevice(c *config.Config, d *models.Device, options ...types.DeviceOption) *models.Device {
@@ -230,12 +232,14 @@ func (m *Manager) Add(options ...types.DeviceOption) (*models.Device, error) {
 			if err2 != nil {
 				return nil, err2
 			}
+			m.DC.Set(*newDevice.DisplayName)
 			return newDevice, nil
 		}
 
 		return nil, err
 	}
 	log.Debugf("%#v", restResponse)
+	m.DC.Set(*restResponse.Payload.DisplayName)
 	return restResponse.Payload, nil
 }
 
@@ -248,7 +252,16 @@ func (m *Manager) UpdateAndReplace(d *models.Device, options ...types.DeviceOpti
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) UpdateAndReplaceByDisplayName(name string, filter types.UpdateFilter, options ...types.DeviceOption) (*models.Device, error) {
+	if !m.DC.Exists(name) {
+		log.Infof("Missing device %v; adding it now", name)
+		return m.Add(options...)
+	}
+	if filter != nil && !filter() {
+		log.Debugf("filtered device update %s", name)
+		return nil, nil
+	}
+
 	d, err := m.FindByDisplayNameAndClusterName(name)
 	if err != nil {
 		return nil, err
@@ -258,13 +271,15 @@ func (m *Manager) UpdateAndReplaceByDisplayName(name string, options ...types.De
 		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
+
 	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
 	device, err := m.UpdateAndReplace(d, options...)
 	if err != nil {
+
 		return nil, err
 	}
-
+	m.DC.Set(*device.DisplayName)
 	return device, nil
 }
 
@@ -336,6 +351,9 @@ func (m *Manager) DeleteByDisplayName(name string) error {
 	params := lm.NewDeleteDeviceByIDParams()
 	params.SetID(d.ID)
 	_, err = m.LMClient.LM.DeleteDeviceByID(params)
+	if err == nil {
+		m.DC.Unset(name)
+	}
 	return err
 }
 
