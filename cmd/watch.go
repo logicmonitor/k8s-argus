@@ -11,6 +11,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
+	"github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	collectorsetconstants "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants"
@@ -42,6 +43,10 @@ var watchCmd = &cobra.Command{
 		if config.Debug {
 			log.SetLevel(log.DebugLevel)
 		}
+
+		// Add hook to log pod id in log context
+		hook := &lmlog.DefaultFieldHook{}
+		log.AddHook(hook)
 
 		// Instantiate the base struct.
 		base, err := argus.NewBase(config)
