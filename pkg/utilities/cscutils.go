@@ -10,13 +10,13 @@ import (
 
 // GetCollectorID - get collectorID from csc
 func GetCollectorID() int32 {
-	reply, err := connection.GetCSCClient().CollectorID(context.Background(), &api.CollectorIDRequest{})
+	reply, err := getCollectorID()
 	if err != nil {
 		log.Errorf("Failed to get collector ID: %v", err)
 
 		connection.CheckCSCHealthAndRecreateConnection()
 
-		reply, err := connection.GetCSCClient().CollectorID(context.Background(), &api.CollectorIDRequest{})
+		reply, err := getCollectorID()
 		if err != nil {
 			log.Errorf("Failed to get collector ID: %v", err)
 		}
@@ -25,4 +25,9 @@ func GetCollectorID() int32 {
 	}
 
 	return reply.Id
+}
+
+func getCollectorID() (*api.CollectorIDReply, error) {
+	reply, err := connection.GetCSCClient().CollectorID(context.Background(), &api.CollectorIDRequest{})
+	return reply, err
 }

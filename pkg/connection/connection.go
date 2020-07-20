@@ -17,7 +17,7 @@ import (
 var (
 	grpcConn  *grpc.ClientConn
 	cscClient api.CollectorSetControllerClient
-	lock      sync.Mutex
+	lock      sync.RWMutex
 	appConfig *config.Config
 )
 
@@ -25,63 +25,70 @@ var (
 func Initialize(config *config.Config) {
 	log.Info("Initializing gRPC connection & CSC Client.")
 	appConfig = config
-	err := createGRPCConnection()
-	if err != nil {
-		log.Fatalf("Error while creating gRPC connection. Error: %v", err.Error())
-	}
-	createCSCClient()
+	createConnection()
 }
 
-func createGRPCConnection() error {
+func createConnection() {
+	grpcConn, grpcErr := createGRPCConnection()
+	if grpcErr != nil {
+		log.Fatalf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
+	}
+	setGRPCConn(grpcConn)
+
+	cscClient, cscErr := createCSCClient()
+	if cscErr != nil {
+		log.Fatalf("Error while creating gRPC connection. Error: %v", cscErr.Error())
+	}
+	setCSCClient(cscClient)
+}
+
+func setGRPCConn(conn *grpc.ClientConn) {
+	grpcConn = conn
+}
+
+func setCSCClient(csc api.CollectorSetControllerClient) {
+	cscClient = csc
+}
+
+// GetCSCClient - returns CSC client
+func GetCSCClient() api.CollectorSetControllerClient {
+	lock.RLock()
+	defer lock.RUnlock()
+	return cscClient
+}
+
+func createGRPCConnection() (*grpc.ClientConn, error) {
 	timeout := time.After(10 * time.Minute)
 	ticker := time.NewTicker(10 * time.Second)
-	var grpcErr error
 	for {
 		select {
 		case <-timeout:
-			return fmt.Errorf("timeout waiting for gRPC connection")
+			return nil, fmt.Errorf("timeout waiting for gRPC connection")
 		case <-ticker.C:
-			grpcConn, grpcErr = grpc.Dial(appConfig.Address, grpc.WithInsecure())
+			grpcConn, grpcErr := grpc.Dial(appConfig.Address, grpc.WithInsecure())
 			if grpcErr != nil {
 				log.Errorf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
 			} else {
-				return nil
+				return grpcConn, nil
 			}
 		}
 	}
 }
 
-// GetCSCClient - returns CSC client
-func GetCSCClient() api.CollectorSetControllerClient {
-	return cscClient
-}
-
-func createCSCClient() {
+func createCSCClient() (api.CollectorSetControllerClient, error) {
 	cscClient = api.NewCollectorSetControllerClient(grpcConn)
 
-	ready, err := pollCollectorSetStatus()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	if !ready {
-		log.Fatalf("The collectorset controller does not have any ready collectors")
-	}
-	log.Infof("The collectorset controller has available collectors")
-}
-
-func pollCollectorSetStatus() (bool, error) {
 	timeout := time.After(10 * time.Minute)
 	ticker := time.NewTicker(10 * time.Second)
 	hc := healthpb.NewHealthClient(grpcConn)
 	for {
 		select {
 		case <-timeout:
-			return false, fmt.Errorf("timeout waiting for collectors to become available")
+			return cscClient, fmt.Errorf("timeout waiting for collectors to become available")
 		case <-ticker.C:
 			healthCheckResponse := getCSCHealth(hc)
 			if healthCheckResponse.GetStatus() == healthpb.HealthCheckResponse_SERVING {
-				return true, nil
+				return cscClient, nil
 			}
 			log.Debugf("The collectors are not ready: %v", healthCheckResponse.GetStatus().String())
 		}
@@ -111,11 +118,7 @@ func CheckCSCHealthAndRecreateConnection() {
 		defer lock.Unlock()
 		if healthCheckResponse.GetStatus() != healthpb.HealthCheckResponse_SERVING {
 			log.Infof("CSC client is in \"%v\" state. Creating new gRPC connection & CSC client.", healthCheckResponse.GetStatus().String())
-			err := createGRPCConnection()
-			if err != nil {
-				log.Fatalf("Error while creating gRPC connection. Error: %v", err.Error())
-			}
-			createCSCClient()
+			createConnection()
 		}
 	}
 }
