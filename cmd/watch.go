@@ -10,10 +10,11 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/connection"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
-	"github.com/logicmonitor/k8s-argus/pkg/log"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gopkg.in/robfig/cron.v2"
 )
 
 // watchCmd represents the watch command
@@ -54,6 +55,8 @@ var watchCmd = &cobra.Command{
 		// Set up a gRPC connection and CSC Client.
 		connection.Initialize(config)
 
+		createConnectionCronJob()
+
 		// Instantiate the application and add watchers.
 		argus, err := argus.NewArgus(base)
 		if err != nil {
@@ -72,4 +75,16 @@ var watchCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(watchCmd)
+}
+
+func createConnectionCronJob() {
+	log.Info("Creating cron job for connection handling")
+	c := cron.New()
+	_, err := c.AddFunc("@every 0h0m10s", func() {
+		connection.CheckGRPCState()
+	})
+	if err != nil {
+		log.Errorf("Error while creating cron job for connection handling. Error: %v", err)
+	}
+	c.Start()
 }
