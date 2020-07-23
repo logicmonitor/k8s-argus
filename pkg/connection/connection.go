@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"gopkg.in/robfig/cron.v2"
 )
 
 var (
@@ -123,8 +124,21 @@ func getCSCHealth(hc healthpb.HealthClient) *healthpb.HealthCheckResponse {
 	return healthCheckResponse
 }
 
-// CheckGRPCState - It will check gRPC state & call createConnection if required
-func CheckGRPCState() {
+// CreateConnectionCronJob - It will create CronJob for handling gRPC connection creation
+func CreateConnectionCronJob() {
+	log.Info("Creating cron job for connection handling")
+	c := cron.New()
+	_, err := c.AddFunc("@every 0h0m10s", func() {
+		checkGRPCState()
+	})
+	if err != nil {
+		log.Errorf("Error while creating cron job for connection handling. Error: %v", err)
+	}
+	c.Start()
+}
+
+// checkGRPCState - It will check gRPC state & call createConnection if required
+func checkGRPCState() {
 	state := getGRPCConn().GetState()
 	if state == connectivity.Shutdown || getCounter() > 5 {
 		cronLock.Lock()
