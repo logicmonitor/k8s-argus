@@ -7,10 +7,89 @@ import (
 	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
+var (
+	propName   string = "name"
+	prop2Name  string = "name2"
+	propValue1 string = "value1"
+	propValue2 string = "value2"
+)
+
+func TestResourceLabels_NilDevice(t *testing.T) {
+	properties := map[string]string{
+		propName: propValue1,
+		"name":   propValue2,
+	}
+
+	builder := Builder{}
+
+	resourceLabel := builder.ResourceLabels(properties)
+	resourceLabel(nil)
+	if resourceLabel == nil {
+		t.Errorf("invalid inputs")
+	}
+}
+
+func TestResourceLabels_NilCustomProperties(t *testing.T) {
+	device := &models.Device{
+		CustomProperties: []*models.NameAndValue{},
+	}
+
+	properties := map[string]string{
+		propName:  propValue1,
+		prop2Name: propValue2,
+	}
+
+	builder := Builder{}
+
+	resourceLabel := builder.ResourceLabels(properties)
+	resourceLabel(device)
+
+	kubernetesPropName := constants.LabelCustomPropertyPrefix + propName
+	if propValue1 != getDevicePropValueByName(device, kubernetesPropName) {
+		t.Errorf("failed to set device property %s", kubernetesPropName)
+	}
+
+	kubernetesPropName2 := constants.LabelCustomPropertyPrefix + prop2Name
+	if propValue2 != getDevicePropValueByName(device, kubernetesPropName2) {
+		t.Errorf("failed to set device property %s", kubernetesPropName2)
+	}
+
+}
+
+func TestResourceLabels_ExistingCustomProperties(t *testing.T) {
+	device := &models.Device{
+		CustomProperties: []*models.NameAndValue{
+			{
+				Name:  &propName,
+				Value: &propValue1,
+			}, {
+				Name:  &prop2Name,
+				Value: &propValue2,
+			},
+		},
+	}
+
+	properties := map[string]string{
+		propName:  propValue1,
+		prop2Name: propValue2,
+	}
+
+	builder := Builder{}
+
+	resourceLabel := builder.ResourceLabels(properties)
+	resourceLabel(device)
+
+	if propValue1 != getDevicePropValueByName(device, propName) {
+		t.Errorf("failed to set device property %s", propName)
+	}
+
+	if propValue2 != getDevicePropValueByName(device, prop2Name) {
+		t.Errorf("failed to set device property %s", prop2Name)
+	}
+
+}
+
 func TestBuilder_SetProperty(t *testing.T) {
-	propName := "name"
-	propValue1 := "value1"
-	propValue2 := "value2"
 	device := &models.Device{
 		CustomProperties: []*models.NameAndValue{},
 	}
