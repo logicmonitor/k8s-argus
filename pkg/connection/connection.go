@@ -13,16 +13,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
-	"gopkg.in/robfig/cron.v2"
 )
 
 var (
 	grpcConn  *grpc.ClientConn
 	cscClient api.CollectorSetControllerClient
 	connLock  sync.RWMutex
-	cronLock  sync.RWMutex
 	appConfig *config.Config
-	counter   int
 )
 
 // Initialize - it will initialize gRPC connection & csc client
@@ -36,12 +33,14 @@ func createConnection() {
 	conn, grpcErr := createGRPCConnection()
 	if grpcErr != nil {
 		log.Errorf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
+		return
 	}
 	setGRPCConn(conn)
 
 	client, cscErr := createCSCClient()
 	if cscErr != nil {
 		log.Errorf("Error while creating gRPC connection. Error: %v", cscErr.Error())
+		return
 	}
 	setCSCClient(client)
 }
@@ -79,9 +78,11 @@ func createGRPCConnection() (*grpc.ClientConn, error) {
 		case <-timeout:
 			return nil, fmt.Errorf("timeout waiting for gRPC connection")
 		case <-ticker.C:
-			conn, grpcErr := grpc.Dial(appConfig.Address, grpc.WithInsecure())
-			if grpcErr != nil {
-				log.Errorf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
+			defer cancel()
+			conn, err := grpc.DialContext(ctx, appConfig.Address, grpc.WithBlock(), grpc.WithInsecure())
+			if err != nil {
+				log.Errorf("Error while creating gRPC connection. Error: %v", err.Error())
 			} else {
 				return conn, nil
 			}
@@ -124,46 +125,21 @@ func getCSCHealth(hc healthpb.HealthClient) *healthpb.HealthCheckResponse {
 	return healthCheckResponse
 }
 
-// CreateConnectionCronJob - It will create CronJob for handling gRPC connection creation
-func CreateConnectionCronJob() {
-	log.Info("Creating cron job for connection handling")
-	c := cron.New()
-	_, err := c.AddFunc("@every 0h0m10s", func() {
-		checkGRPCState()
-	})
-	if err != nil {
-		log.Errorf("Error while creating cron job for connection handling. Error: %v", err)
-	}
-	c.Start()
+// CreateConnectionHandler - It will create a go routine for handling gRPC connection creation
+func CreateConnectionHandler() {
+	go func() {
+		for {
+			time.Sleep(time.Duration(10) * time.Second)
+			checkGRPCState()
+		}
+	}()
 }
 
 // checkGRPCState - It will check gRPC state & call createConnection if required
 func checkGRPCState() {
 	state := getGRPCConn().GetState()
-	if state == connectivity.Shutdown || getCounter() > 5 {
-		cronLock.Lock()
-		defer cronLock.Unlock()
-		state := getGRPCConn().GetState()
-		if state == connectivity.Shutdown || getCounter() > 5 {
-			log.Infof("gRPC is in \"%v\" state. Creating new gRPC connection & CSC client.", state.String())
-			createConnection()
-			resetCounter()
-		}
-	} else if state == connectivity.Ready {
-		resetCounter()
-	} else if state == connectivity.Idle || state == connectivity.Connecting || state == connectivity.TransientFailure {
-		incCounter()
+	if state == connectivity.Shutdown {
+		log.Infof("gRPC is in \"%v\" state. Creating new gRPC connection & CSC client.", state.String())
+		createConnection()
 	}
-}
-
-func getCounter() int {
-	return counter
-}
-
-func resetCounter() {
-	counter = 0
-}
-
-func incCounter() {
-	counter++
 }

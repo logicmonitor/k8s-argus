@@ -54,7 +54,7 @@ var watchCmd = &cobra.Command{
 		// Set up a gRPC connection and CSC Client.
 		connection.Initialize(config)
 
-		connection.CreateConnectionCronJob()
+		connection.CreateConnectionHandler()
 
 		// Instantiate the application and add watchers.
 		argus, err := argus.NewArgus(base)
