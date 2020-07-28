@@ -10,16 +10,16 @@ import (
 )
 
 var (
-	deviceName             string = "test-device"
-	customPropertiesName1  string = "name1"
-	customPropertiesValue1 string = "value1"
-	customPropertiesName2  string = "name2"
-	customPropertiesValue2 string = "value2"
+	deviceName             = "test-device"
+	customPropertiesName1  = "name1"
+	customPropertiesValue1 = "value1"
+	customPropertiesName2  = "name2"
+	customPropertiesValue2 = "value2"
 
-	systemPropertiesName1  string = "system-name1"
-	systemPropertiesValue1 string = "system-value1"
-	systemPropertiesName2  string = "system-name2"
-	systemPropertiesValue2 string = "system-value2"
+	systemPropertiesName1  = "system-name1"
+	systemPropertiesValue1 = "system-value1"
+	systemPropertiesName2  = "system-name2"
+	systemPropertiesValue2 = "system-value2"
 )
 
 func TestBuildeviceWithExistingDeviceInput(t *testing.T) {

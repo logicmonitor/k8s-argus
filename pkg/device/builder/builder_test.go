@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	propName   string = "name"
-	prop2Name  string = "name2"
-	propValue1 string = "value1"
-	propValue2 string = "value2"
+	propName   = "name"
+	prop2Name  = "name2"
+	propValue1 = "value1"
+	propValue2 = "value2"
 )
 
 func TestResourceLabels_NilDevice(t *testing.T) {
