@@ -73,7 +73,7 @@ func TestGetPropertyValue(t *testing.T) {
 }
 
 func getSampleDevice() *models.Device {
-	device := &models.Device{
+	return &models.Device{
 		Name:        &deviceName,
 		DisplayName: &deviceName,
 		CustomProperties: []*models.NameAndValue{
@@ -95,6 +95,4 @@ func getSampleDevice() *models.Device {
 			},
 		},
 	}
-
-	return device
 }
