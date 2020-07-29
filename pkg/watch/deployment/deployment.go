@@ -97,7 +97,7 @@ func (w *Watcher) add(deployment *appsv1.Deployment) {
 
 func (w *Watcher) update(old, new *appsv1.Deployment) {
 	if _, err := w.UpdateAndReplaceByDisplayName(
-		fmtDeploymentDisplayName(old),
+		fmtDeploymentDisplayName(old), nil,
 		w.args(new, constants.DeploymentCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update deployment %q: %v", fmtDeploymentDisplayName(new), err)
@@ -106,6 +106,7 @@ func (w *Watcher) update(old, new *appsv1.Deployment) {
 	log.Infof("Updated deployment %q", fmtDeploymentDisplayName(old))
 }
 
+// nolint: dupl
 func (w *Watcher) move(deployment *appsv1.Deployment) {
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(fmtDeploymentDisplayName(deployment), constants.CustomPropertiesFieldName, w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move deployment %q: %v", fmtDeploymentDisplayName(deployment), err)

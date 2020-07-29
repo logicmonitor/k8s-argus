@@ -75,9 +75,9 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 
 		// Covers the case when the old service is in the process of terminating
 		// and the new service is coming up to replace it.
-		if old.Spec.ClusterIP != new.Spec.ClusterIP {
-			w.update(old, new)
-		}
+		// if old.Spec.ClusterIP != new.Spec.ClusterIP {
+		w.update(old, new)
+		// }
 	}
 }
 
@@ -111,9 +111,15 @@ func (w *Watcher) add(service *v1.Service) {
 	log.Infof("Added service %q", fmtServiceDisplayName(service))
 }
 
+func (w *Watcher) serviceUpdateFilter(old, new *v1.Service) types.UpdateFilter {
+	return func() bool {
+		return old.Spec.ClusterIP != new.Spec.ClusterIP
+	}
+}
+
 func (w *Watcher) update(old, new *v1.Service) {
 	if _, err := w.UpdateAndReplaceByDisplayName(
-		fmtServiceDisplayName(old),
+		fmtServiceDisplayName(old), w.serviceUpdateFilter(old, new),
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update service %q: %v", fmtServiceDisplayName(new), err)
@@ -122,6 +128,7 @@ func (w *Watcher) update(old, new *v1.Service) {
 	log.Infof("Updated service %q", fmtServiceDisplayName(old))
 }
 
+// nolint: dupl
 func (w *Watcher) move(service *v1.Service) {
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(fmtServiceDisplayName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", fmtServiceDisplayName(service), err)

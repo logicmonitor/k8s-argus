@@ -50,7 +50,7 @@ type DeviceMapper interface {
 	// UpdateAndReplace updates a device using the 'replace' OpType.
 	UpdateAndReplace(*models.Device, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
-	UpdateAndReplaceByDisplayName(string, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceByDisplayName(string, UpdateFilter, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
 	// specific field of a device.
 	UpdateAndReplaceField(*models.Device, string, ...DeviceOption) (*models.Device, error)
@@ -85,3 +85,6 @@ type DeviceBuilder interface {
 	// System adds a custom property to the device.
 	Custom(string, string) DeviceOption
 }
+
+// UpdateFilter is a boolean function to run predicate and return boolean value
+type UpdateFilter func() bool

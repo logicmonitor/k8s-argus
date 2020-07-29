@@ -82,9 +82,9 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		}
 		// Covers the case when the old node is in the process of terminating
 		// and the new node is coming up to replace it.
-		if oldInternalAddress.Address != newInternalAddress.Address {
-			w.update(old, new)
-		}
+		// if oldInternalAddress.Address != newInternalAddress.Address {
+		w.update(old, new)
+		// }
 	}
 }
 
@@ -122,8 +122,14 @@ func (w *Watcher) add(node *v1.Node) {
 	w.createRoleDeviceGroup(node.Labels)
 }
 
+func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
+	return func() bool {
+		return getInternalAddress(old.Status.Addresses) != getInternalAddress(new.Status.Addresses)
+	}
+}
+
 func (w *Watcher) update(old, new *v1.Node) {
-	if _, err := w.UpdateAndReplaceByDisplayName(old.Name, w.args(new, constants.NodeCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceByDisplayName(old.Name, w.nodeUpdateFilter(old, new), w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", new.Name, err)
 	} else {
 		log.Infof("Updated node %q", old.Name)
