@@ -45,7 +45,7 @@ func TestBuildeviceWithExistingDeviceInput(t *testing.T) {
 	device := buildDevice(config, inputdevice, options...)
 
 	if inputdevice.Name != device.Name {
-		t.Errorf("Error building device %v", device.Name)
+		t.Errorf("TestBuildeviceWithExistingDeviceInput - Error building device %v", device.Name)
 	}
 }
 

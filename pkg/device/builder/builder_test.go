@@ -25,7 +25,7 @@ func TestResourceLabels_NilDevice(t *testing.T) {
 	resourceLabel := builder.ResourceLabels(properties)
 	resourceLabel(nil)
 	if resourceLabel == nil {
-		t.Errorf("invalid inputs")
+		t.Errorf("TestResourceLabels_NilDevice - invalid inputs")
 	}
 }
 
@@ -46,12 +46,12 @@ func TestResourceLabels_NilCustomProperties(t *testing.T) {
 
 	kubernetesPropName := constants.LabelCustomPropertyPrefix + propName
 	if propValue1 != getDevicePropValueByName(device, kubernetesPropName) {
-		t.Errorf("failed to set device property %s", kubernetesPropName)
+		t.Errorf("TestResourceLabels_NilCustomProperties - failed to set device property %s", kubernetesPropName)
 	}
 
 	kubernetesPropName2 := constants.LabelCustomPropertyPrefix + prop2Name
 	if propValue2 != getDevicePropValueByName(device, kubernetesPropName2) {
-		t.Errorf("failed to set device property %s", kubernetesPropName2)
+		t.Errorf("TestResourceLabels_NilCustomProperties - failed to set device property %s", kubernetesPropName2)
 	}
 
 }
@@ -80,11 +80,11 @@ func TestResourceLabels_ExistingCustomProperties(t *testing.T) {
 	resourceLabel(device)
 
 	if propValue1 != getDevicePropValueByName(device, propName) {
-		t.Errorf("failed to set device property %s", propName)
+		t.Errorf("TestResourceLabels_ExistingCustomProperties - failed to set device property %s", propName)
 	}
 
 	if propValue2 != getDevicePropValueByName(device, prop2Name) {
-		t.Errorf("failed to set device property %s", prop2Name)
+		t.Errorf("TestResourceLabels_ExistingCustomProperties- failed to set device property %s", prop2Name)
 	}
 
 }
@@ -97,12 +97,12 @@ func TestBuilder_SetProperty(t *testing.T) {
 	setProp := setProperty(propName, propValue1)
 	setProp(device)
 	if propValue1 != getDevicePropValueByName(device, propName) {
-		t.Errorf("failed to set prop %s:%s to the device", propName, propValue1)
+		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", propName, propValue1)
 	}
 	setProp = setProperty(propName, propValue2)
 	setProp(device)
 	if propValue2 != getDevicePropValueByName(device, propName) {
-		t.Errorf("failed to set prop %s:%s to the device", propName, propValue2)
+		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", propName, propValue2)
 	}
 
 	sysPropValue1 := "k1=v1,k2=v2"
@@ -111,20 +111,20 @@ func TestBuilder_SetProperty(t *testing.T) {
 	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue1)
 	setProp(device)
 	if propValue2 != getDevicePropValueByName(device, propName) {
-		t.Errorf("failed to set prop %s:%s to the device", propName, propValue2)
+		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", propName, propValue2)
 	}
 	if sysPropValue1 != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
-		t.Errorf("failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue1)
+		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue1)
 	}
 	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
 	setProp(device)
 	if sysPropValue1+","+constants.PodCategory != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
-		t.Errorf("failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
+		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
 	}
 	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
 	setProp(device)
 	if sysPropValue1+","+constants.PodCategory != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
-		t.Errorf("failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
+		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
 	}
 }
 
