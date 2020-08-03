@@ -10,6 +10,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
@@ -20,7 +21,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
-	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	log "github.com/sirupsen/logrus"
@@ -93,14 +93,17 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 }
 
 // NewArgus instantiates and returns argus.
-func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus, error) {
+func NewArgus(base *types.Base) (*Argus, error) {
 	argus := &Argus{
 		Base: base,
 	}
 
+	dcache := devicecache.NewDeviceCache(base, 5)
+	dcache.Run()
+
 	deviceManager := &device.Manager{
-		Base:             base,
-		ControllerClient: client,
+		Base: base,
+		DC:   dcache,
 	}
 
 	deviceTree := &tree.DeviceTree{

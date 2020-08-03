@@ -82,9 +82,9 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 			return
 		}
 
-		if old.Status.PodIP != new.Status.PodIP {
-			w.update(old, new)
-		}
+		// if old.Status.PodIP != new.Status.PodIP {
+		w.update(old, new)
+		// }
 	}
 }
 
@@ -122,9 +122,15 @@ func (w *Watcher) add(pod *v1.Pod) {
 	log.Infof("Added pod %q", pod.Name)
 }
 
+func (w *Watcher) podUpdateFilter(old, new *v1.Pod) types.UpdateFilter {
+	return func() bool {
+		return old.Status.PodIP != new.Status.PodIP
+	}
+}
+
 func (w *Watcher) update(old, new *v1.Pod) {
 	if _, err := w.UpdateAndReplaceByDisplayName(
-		old.Name,
+		old.Name, w.podUpdateFilter(old, new),
 		w.args(new, constants.PodCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update pod %q: %v", new.Name, err)
