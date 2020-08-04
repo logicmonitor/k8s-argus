@@ -16,8 +16,8 @@ var (
 
 func TestResourceLabels_NilDevice(t *testing.T) {
 	properties := map[string]string{
-		propName: propValue1,
-		"name":   propValue2,
+		propName:  propValue1,
+		prop2Name: propValue2,
 	}
 
 	builder := Builder{}
