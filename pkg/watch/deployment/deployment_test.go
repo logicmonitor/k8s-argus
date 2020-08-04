@@ -12,7 +12,7 @@ import (
 
 func TestGetDeploymentsMap(t *testing.T) {
 	t.Parallel()
-	podTestCases := []struct {
+	deploymentTestCases := []struct {
 		name                     string
 		clientSet                kubernetes.Interface
 		inputNamespace           string
@@ -43,7 +43,7 @@ func TestGetDeploymentsMap(t *testing.T) {
 		},
 	}
 	assert := assert.New(t)
-	for _, testCase := range podTestCases {
+	for _, testCase := range deploymentTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			deploymentsMap, err := GetDeploymentsMap(testCase.clientSet, testCase.inputNamespace)
 

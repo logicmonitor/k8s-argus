@@ -1,18 +1,14 @@
 package pod
 
 import (
-	// "log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	// "k8s.io/apimachinery/pkg/runtime"
-	// "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
-	// "k8s.io/client-go/tools/cache"
 )
 
 func TestGetPodsMap(t *testing.T) {
@@ -101,41 +97,3 @@ func TestGetPodsMap(t *testing.T) {
 		})
 	}
 }
-
-// type PodListWatch struct {
-// 	kubernetes.Interface
-// }
-
-// func (p PodListWatch) List(options metav1.ListOptions) (runtime.Object, error) {
-// 	return p.Interface.CoreV1().Pods("default").List(options)
-// }
-
-// func (p PodListWatch) Watch(options metav1.ListOptions) (watch.Interface, error) {
-// 	return p.Interface.CoreV1().Pods("default").Watch(options)
-// }
-
-// func TestAddFunc(t *testing.T) {
-// 	clientSet := fake.NewSimpleClientset()
-// 	clientSet.CoreV1().Pods("default").Create(&v1.Pod{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name:      "node-app",
-// 			Namespace: "default",
-// 		},
-// 		Status: v1.PodStatus{
-// 			Phase: v1.PodRunning,
-// 			PodIP: "10.96.90.1",
-// 		},
-// 	})
-
-// 	lw := PodListWatch{clientSet}
-// 	watch := Watcher{}
-// 	_, controller := cache.NewInformer(lw, watch.ObjType(), 2,
-// 		cache.ResourceEventHandlerFuncs{
-// 			AddFunc:    watch.AddFunc(),
-// 			DeleteFunc: func(obj interface{}) {},
-// 			UpdateFunc: func(oldObj, newObj interface{}) {},
-// 		})
-// 	stop := make(chan struct{})
-// 	controller.Run(stop)
-// 	log.Println("controller: ", controller)
-// }
