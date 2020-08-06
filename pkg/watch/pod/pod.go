@@ -22,7 +22,7 @@ const (
 // Watcher represents a watcher type that watches pods.
 type Watcher struct {
 	types.DeviceManager
-	types.WConfig
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.

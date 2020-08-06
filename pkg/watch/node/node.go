@@ -28,7 +28,7 @@ type Watcher struct {
 	types.DeviceManager
 	DeviceGroups map[string]int32
 	LMClient     *client.LMSdkGo
-	types.WConfig
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.

@@ -15,20 +15,20 @@ const (
 
 // Worker object
 type Worker struct {
-	config      types.WConfig
+	config      *types.WConfig
 	initialized bool
 	running     bool
 }
 
 // GetConfig returns the config object
-func (w *Worker) GetConfig() types.WConfig {
+func (w *Worker) GetConfig() *types.WConfig {
 	return w.config
 }
 
 // NewWorker creates a worker with provided config
 func NewWorker(c *types.WConfig) *Worker {
 	return &Worker{
-		config:      *c,
+		config:      c,
 		initialized: false,
 		running:     false,
 	}
@@ -38,7 +38,7 @@ func NewWorker(c *types.WConfig) *Worker {
 func NewSharedReaderWorker(SharedReadChannel chan types.ICommand) *Worker {
 	inChan := make(chan types.ICommand)
 	w := &Worker{
-		config: types.WConfig{
+		config: &types.WConfig{
 			MethodChannels: map[string]chan types.ICommand{
 				"GET":    SharedReadChannel,
 				"POST":   inChan,
@@ -55,7 +55,7 @@ func NewSharedReaderWorker(SharedReadChannel chan types.ICommand) *Worker {
 func NewHTTPWorker() *Worker {
 	inChan := make(chan types.ICommand)
 	w := &Worker{
-		config: types.WConfig{
+		config: &types.WConfig{
 			MethodChannels: map[string]chan types.ICommand{
 				"GET":    inChan,
 				"POST":   inChan,

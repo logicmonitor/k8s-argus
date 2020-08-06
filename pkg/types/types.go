@@ -24,17 +24,17 @@ type WConfig struct {
 	RetryLimit     int
 }
 
-// GetConfig returns worker config
-func (w *WConfig) GetConfig() *WConfig {
-	return w
+// GetConfig returns reference to itself. impl here to avoid duplication everywhere
+func (wc *WConfig) GetConfig() *WConfig {
+	return wc
 }
 
 // GetChannel Get channel for mentioned command
-func (w *WConfig) GetChannel(command ICommand) chan ICommand {
+func (wc *WConfig) GetChannel(command ICommand) chan ICommand {
 	switch command := command.(type) {
 	case IHTTPCommand:
 		m := command.(IHTTPCommand).GetMethod()
-		return w.MethodChannels[m]
+		return wc.MethodChannels[m]
 	}
 	return nil
 }
@@ -135,7 +135,8 @@ type WorkerResponse struct {
 
 //Worker worker interface to provide interface method
 type Worker interface {
-	Execute() (interface{}, error)
+	Run()
+	GetConfig() *WConfig
 }
 
 // HTTPWorker specific worker to handle http requests
@@ -209,4 +210,5 @@ type LMFacade interface {
 	//Send(command ICommand)
 	// sync
 	SendReceive(*lmctx.LMContext, string, ICommand) (interface{}, error)
+	RegisterWorker(string, Worker) (bool, error)
 }

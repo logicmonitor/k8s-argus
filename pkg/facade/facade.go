@@ -6,19 +6,18 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/worker"
 	"github.com/sirupsen/logrus"
 )
 
 // Facade implements types.LMFacade interface
 type Facade struct {
-	WorkerConf map[string]types.WConfig
+	WorkerConf map[string]*types.WConfig
 }
 
 // NewFacade creates new facade object
 func NewFacade() *Facade {
 	f := &Facade{
-		WorkerConf: make(map[string]types.WConfig),
+		WorkerConf: make(map[string]*types.WConfig),
 	}
 	return f
 }
@@ -60,7 +59,7 @@ func (f *Facade) SendReceive(lctx *lmctx.LMContext, resource string, command typ
 
 // RegisterWorker Registers worker into facade to handler commands of mentioned resource
 // plugin pattern, if worker go routine dies for some reason, watcher should create worker and register again
-func (f *Facade) RegisterWorker(resource string, w *worker.Worker) (bool, error) {
+func (f *Facade) RegisterWorker(resource string, w types.Worker) (bool, error) {
 	logrus.Debugf("registering worker for %s %#v", resource, w.GetConfig())
 	f.WorkerConf[resource] = w.GetConfig()
 	return true, nil

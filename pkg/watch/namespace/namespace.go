@@ -18,12 +18,7 @@ type Watcher struct {
 	*types.Base
 	// TODO: This should be thread safe.
 	DeviceGroups map[string]int32
-	config       *types.WConfig
-}
-
-// GetConfig returns worker config
-func (w *Watcher) GetConfig() *types.WConfig {
-	return w.config
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.

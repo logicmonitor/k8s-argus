@@ -37,7 +37,7 @@ import (
 // Argus represents the Argus cli.
 type Argus struct {
 	*types.Base
-	*facade.Facade
+	types.LMFacade
 	types.DeviceManager
 	Watchers []types.Watcher
 }
@@ -101,8 +101,8 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 func NewArgus(base *types.Base) (*Argus, error) {
 	facadeObj := facade.NewFacade()
 	argus := &Argus{
-		Base:   base,
-		Facade: facadeObj,
+		Base:     base,
+		LMFacade: facadeObj,
 	}
 	lmExecObj := &lmexec.LMExec{
 		Base: base,
@@ -141,7 +141,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 			DeviceManager: deviceManager,
 			DeviceGroups:  deviceGroups,
 			LMClient:      base.LMClient,
-			WConfig: types.WConfig{
+			WConfig: &types.WConfig{
 				MethodChannels: map[string]chan types.ICommand{
 					"GET":    nodeChannel,
 					"POST":   nodeChannel,
@@ -155,7 +155,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		},
 		&service.Watcher{
 			DeviceManager: deviceManager,
-			WConfig: types.WConfig{
+			WConfig: &types.WConfig{
 				MethodChannels: map[string]chan types.ICommand{
 					"GET":    serviceChannel,
 					"POST":   serviceChannel,
@@ -169,7 +169,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		},
 		&pod.Watcher{
 			DeviceManager: deviceManager,
-			WConfig: types.WConfig{
+			WConfig: &types.WConfig{
 				MethodChannels: map[string]chan types.ICommand{
 					"GET":    podChannel,
 					"POST":   podChannel,
@@ -183,7 +183,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		},
 		&deployment.Watcher{
 			DeviceManager: deviceManager,
-			WConfig: types.WConfig{
+			WConfig: &types.WConfig{
 				MethodChannels: map[string]chan types.ICommand{
 					"GET":    deploymentChannel,
 					"POST":   deploymentChannel,
@@ -205,7 +205,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 			continue
 		}
 		wc := worker.NewWorker(c)
-		b, err := argus.Facade.RegisterWorker(w.Resource(), wc)
+		b, err := argus.LMFacade.RegisterWorker(w.Resource(), wc)
 		if err != nil {
 			log.Errorf("Failed to register worker for resource for: %s", w.Resource())
 		}
