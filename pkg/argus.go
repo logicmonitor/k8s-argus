@@ -112,10 +112,10 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	dcache.Run()
 
 	deviceManager := &device.Manager{
-		Base:   base,
-		LMExec: lmExecObj,
-		Facade: facadeObj,
-		DC:     dcache,
+		Base:       base,
+		LMExecutor: lmExecObj,
+		LMFacade:   facadeObj,
+		DC:         dcache,
 	}
 	argus.DeviceManager = deviceManager
 

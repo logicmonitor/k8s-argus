@@ -119,7 +119,12 @@ type ExecRequest func() (interface{}, error)
 
 // LMExecutor All the
 type LMExecutor interface {
-	AddDevice(params *lm.AddDeviceParams) ExecRequest
+	AddDevice(*lm.AddDeviceParams) ExecRequest
+	UpdateDevice(*lm.UpdateDeviceParams) ExecRequest
+	GetDeviceList(*lm.GetDeviceListParams) ExecRequest
+	PatchDevice(*lm.PatchDeviceParams) ExecRequest
+	DeleteDeviceByID(*lm.DeleteDeviceByIDParams) ExecRequest
+	GetImmediateDeviceListByDeviceGroupID(*lm.GetImmediateDeviceListByDeviceGroupIDParams) ExecRequest
 }
 
 // WorkerResponse wraps response and error
@@ -203,5 +208,5 @@ type LMFacade interface {
 	// Async
 	//Send(command ICommand)
 	// sync
-	SendReceive(command ICommand) (interface{}, error)
+	SendReceive(*lmctx.LMContext, string, ICommand) (interface{}, error)
 }

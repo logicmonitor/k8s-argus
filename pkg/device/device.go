@@ -8,9 +8,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
-	"github.com/logicmonitor/k8s-argus/pkg/facade"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
-	"github.com/logicmonitor/k8s-argus/pkg/lmexec"
+	//"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	cscutils "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
@@ -22,8 +21,8 @@ type Manager struct {
 	ResourceType string
 	*types.Base
 	*builder.Builder
-	*lmexec.LMExec
-	*facade.Facade
+	types.LMExecutor
+	types.LMFacade
 	DC *devicecache.DeviceCache
 }
 
@@ -132,7 +131,7 @@ func (m *Manager) renameAndAddDevice(lctx *lmctx.LMContext, resource string, dev
 		},
 		Method: "POST",
 	}
-	restResponse, err := m.Facade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.AddDevice(params)
 	if err != nil {
 		return nil, err
@@ -176,7 +175,7 @@ func (m *Manager) updateAndReplace(lctx *lmctx.LMContext, resource string, id in
 		},
 		Method: "PUT",
 	}
-	restResponse, err := m.Facade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 
 	//restResponse, err := m.LMClient.LM.UpdateDevice(params)
 	if err != nil {
@@ -201,7 +200,7 @@ func (m *Manager) FindByDisplayName(lctx *lmctx.LMContext, resource string, name
 		},
 		Method: "GET",
 	}
-	restResponse, err := m.Facade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.GetDeviceList(params)
 	if err != nil {
 		return nil, err
@@ -231,7 +230,7 @@ func (m *Manager) FindByDisplayNames(lctx *lmctx.LMContext, resource string, dis
 		},
 		Method: "GET",
 	}
-	restResponse, err := m.Facade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.GetDeviceList(params)
 	if err != nil {
 		return nil, err
@@ -273,7 +272,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.D
 		},
 		Method: "POST",
 	}
-	restResponse, err := m.Facade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	if err != nil {
 		deviceDefault, ok := err.(*lm.AddDeviceDefault)
 		if !ok {
@@ -360,7 +359,7 @@ func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, 
 		},
 		Method: "PATCH",
 	}
-	restResponse, err := m.Facade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.PatchDevice(params)
 	if err != nil {
 		return nil, err
@@ -406,7 +405,7 @@ func (m *Manager) DeleteByID(lctx *lmctx.LMContext, resource string, id int32) e
 		},
 		Method: "DELETE",
 	}
-	_, err := m.Facade.SendReceive(lctx, resource, cmd)
+	_, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//_, err := m.LMClient.LM.DeleteDeviceByID(params)
 	return err
 }
@@ -454,7 +453,7 @@ func (m *Manager) GetListByGroupID(lctx *lmctx.LMContext, resource string, group
 		Method: "GET",
 	}
 
-	restResponse, err := m.Facade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.GetImmediateDeviceListByDeviceGroupID(params)
 	if err != nil {
 		return nil, err
