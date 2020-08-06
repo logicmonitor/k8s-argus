@@ -9,8 +9,9 @@ import (
 
 	"github.com/coreos/etcd/client"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Controller is the etcd controller for discovering etcd nodes.
@@ -26,6 +27,8 @@ type Member struct {
 
 // DiscoverByToken discovers the etcd node IP addresses using the etcd discovery service.
 func (c *Controller) DiscoverByToken() ([]*Member, error) {
+	lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"name": "etcd-discovery"}))
+	log := lctx.Logger()
 	members := []*Member{}
 	response, err := http.Get(c.Config().EtcdDiscoveryToken)
 	if err != nil {
@@ -53,16 +56,17 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 				URL:  u,
 			}
 			members = append(members, m)
-			c.addDevice(m)
+			c.addDevice(lctx, m)
 		}
 	}
 
 	return members, nil
 }
 
-func (c *Controller) addDevice(member *Member) {
+func (c *Controller) addDevice(lctx *lmctx.LMContext, member *Member) {
+	log := lctx.Logger()
 	// Check if the etcd member has already been added.
-	d, err := c.FindByDisplayName(fmtMemberDisplayName(member))
+	d, err := c.FindByDisplayName(lctx, "etcd", fmtMemberDisplayName(member))
 	if err != nil {
 		log.Errorf("Failed to find etcd member %q: %v", member.Name, err)
 		return
@@ -73,7 +77,7 @@ func (c *Controller) addDevice(member *Member) {
 	}
 
 	// Add the etcd member.
-	if _, err := c.Add(
+	if _, err := c.Add(lctx, "etcd",
 		c.args(member, constants.EtcdCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add etcd member %q: %v", member.URL.Hostname(), err)

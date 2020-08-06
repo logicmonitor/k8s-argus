@@ -8,10 +8,11 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,6 +28,7 @@ type Watcher struct {
 	types.DeviceManager
 	DeviceGroups map[string]int32
 	LMClient     *client.LMSdkGo
+	types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.
@@ -53,6 +55,8 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
+		lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + node.Name}))
+		log := lctx.Logger()
 
 		log.Debugf("Handling add node event: %s", node.Name)
 
@@ -60,7 +64,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 		if getInternalAddress(node.Status.Addresses) == nil {
 			return
 		}
-		w.add(node)
+		w.add(lctx, node)
 	}
 }
 
@@ -69,6 +73,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Node)
 		new := newObj.(*v1.Node)
+		lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
+		log := lctx.Logger()
 
 		log.Debugf("Handling update node event: %s", old.Name)
 
@@ -77,13 +83,13 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		oldInternalAddress := getInternalAddress(old.Status.Addresses)
 		newInternalAddress := getInternalAddress(new.Status.Addresses)
 		if oldInternalAddress == nil && newInternalAddress != nil {
-			w.add(new)
+			w.add(lctx, new)
 			return
 		}
 		// Covers the case when the old node is in the process of terminating
 		// and the new node is coming up to replace it.
 		// if oldInternalAddress.Address != newInternalAddress.Address {
-		w.update(old, new)
+		w.update(lctx, old, new)
 		// }
 	}
 }
@@ -93,12 +99,14 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
+		lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + node.Name}))
+		log := lctx.Logger()
 
 		log.Debugf("Handling delete node event: %s", node.Name)
 
 		// Delete the node.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(node.Name); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), node.Name); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
 				return
 			}
@@ -107,19 +115,20 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		}
 
 		// Move the node.
-		w.move(node)
+		w.move(lctx, node)
 	}
 }
 
 // nolint: dupl
-func (w *Watcher) add(node *v1.Node) {
-	if _, err := w.Add(w.args(node, constants.NodeCategory)...); err != nil {
+func (w *Watcher) add(lctx *lmctx.LMContext, node *v1.Node) {
+	log := lctx.Logger()
+	if _, err := w.Add(lctx, w.Resource(), w.args(node, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to add node %q: %v", node.Name, err)
 	} else {
 		log.Infof("Added node %q", node.Name)
 	}
 
-	w.createRoleDeviceGroup(node.Labels)
+	w.createRoleDeviceGroup(lctx, node.Labels)
 }
 
 func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
@@ -128,8 +137,9 @@ func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
 	}
 }
 
-func (w *Watcher) update(old, new *v1.Node) {
-	if _, err := w.UpdateAndReplaceByDisplayName(old.Name, w.nodeUpdateFilter(old, new), w.args(new, constants.NodeCategory)...); err != nil {
+func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
+	log := lctx.Logger()
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "nodes", old.Name, w.nodeUpdateFilter(old, new), w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", new.Name, err)
 	} else {
 		log.Infof("Updated node %q", old.Name)
@@ -139,13 +149,14 @@ func (w *Watcher) update(old, new *v1.Node) {
 	oldLabel, _ := utilities.GetLabelByPrefix(constants.LabelNodeRole, old.Labels)
 	newLabel, _ := utilities.GetLabelByPrefix(constants.LabelNodeRole, new.Labels)
 	if oldLabel != newLabel {
-		w.createRoleDeviceGroup(new.Labels)
+		w.createRoleDeviceGroup(lctx, new.Labels)
 	}
 }
 
 // nolint: dupl
-func (w *Watcher) move(node *v1.Node) {
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
+func (w *Watcher) move(lctx *lmctx.LMContext, node *v1.Node) {
+	log := lctx.Logger()
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", node.Name, err)
 		return
 	}
@@ -182,7 +193,8 @@ func getInternalAddress(addresses []v1.NodeAddress) *v1.NodeAddress {
 	return hostname
 }
 
-func (w *Watcher) createRoleDeviceGroup(labels map[string]string) {
+func (w *Watcher) createRoleDeviceGroup(lctx *lmctx.LMContext, labels map[string]string) {
+	log := lctx.Logger()
 	label, _ := utilities.GetLabelByPrefix(constants.LabelNodeRole, labels)
 	if label == "" {
 		return

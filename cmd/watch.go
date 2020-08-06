@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	argus "github.com/logicmonitor/k8s-argus/pkg"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -27,23 +28,42 @@ var watchCmd = &cobra.Command{
 		// version to the next.
 
 		// Application configuration
-		config, err := config.GetConfig()
+		conf, err := config.GetConfig()
 		if err != nil {
 			fmt.Printf("Failed to open %s: %v", constants.ConfigPath, err)
 			os.Exit(1)
 		}
 
 		// Set the logging level.
-		if config.Debug {
+		if conf.Debug {
 			log.SetLevel(log.DebugLevel)
 		}
+		// starting thread to reflect log levels dynamically
+		go func(initLevel bool) {
+			t := time.NewTicker(5 * time.Second)
+			c := initLevel
+			for {
+				<-t.C
+				conf, err := config.GetConfig()
+				if err == nil && c != conf.Debug {
+					c = conf.Debug
+					if conf.Debug {
+						log.Info("Setting debug")
+						log.SetLevel(log.DebugLevel)
+					} else {
+						log.Info("Setting info")
+						log.SetLevel(log.InfoLevel)
+					}
+				}
+			}
+		}(conf.Debug)
 
 		// Add hook to log pod id in log context
 		hook := &lmlog.DefaultFieldHook{}
 		log.AddHook(hook)
 
 		// Instantiate the base struct.
-		base, err := argus.NewBase(config)
+		base, err := argus.NewBase(conf)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -52,7 +72,7 @@ var watchCmd = &cobra.Command{
 		permission.Init(base.K8sClient)
 
 		// Set up a gRPC connection and CSC Client.
-		connection.Initialize(config)
+		connection.Initialize(conf)
 
 		connection.CreateConnectionHandler()
 
