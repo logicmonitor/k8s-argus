@@ -11,6 +11,7 @@ func TestBuilder_SetProperty(t *testing.T) {
 	propName := "name"
 	propValue1 := "value1"
 	propValue2 := "value2"
+
 	device := &models.Device{
 		CustomProperties: []*models.NameAndValue{},
 	}
