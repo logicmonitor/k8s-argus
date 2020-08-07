@@ -158,7 +158,7 @@ func fmtServiceDisplayName(service *v1.Service) string {
 }
 
 // GetServicesMap implements the getting services map info from k8s
-func GetServicesMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+func GetServicesMap(k8sClient kubernetes.Interface, namespace string) (map[string]string, error) {
 	servicesMap := make(map[string]string)
 	serviceList, err := k8sClient.CoreV1().Services(namespace).List(metav1.ListOptions{})
 	if err != nil || serviceList == nil {
