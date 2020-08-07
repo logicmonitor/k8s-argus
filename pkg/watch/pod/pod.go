@@ -178,7 +178,7 @@ func getPodDNSName(pod *v1.Pod) string {
 }
 
 // GetPodsMap implements the getting pods map info from k8s
-func GetPodsMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+func GetPodsMap(k8sClient kubernetes.Interface, namespace string) (map[string]string, error) {
 	podsMap := make(map[string]string)
 	podList, err := k8sClient.CoreV1().Pods(namespace).List(metav1.ListOptions{})
 	if err != nil || podList == nil {
