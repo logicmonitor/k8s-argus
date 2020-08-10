@@ -64,14 +64,14 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 			go func() {
 				defer wg.Done()
 				lctxPods := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-pods"}))
-				i.initSyncPodsOrServicesOrDeploys(lctxPods, constants.PodDeviceGroupName, rest.ID)
+				i.initSyncNamespacedResource(lctxPods, constants.PodDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
 			}()
 		case constants.ServiceDeviceGroupName:
 			go func() {
 				defer wg.Done()
 				lctxServices := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-services"}))
-				i.initSyncPodsOrServicesOrDeploys(lctxServices, constants.ServiceDeviceGroupName, rest.ID)
+				i.initSyncNamespacedResource(lctxServices, constants.ServiceDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
 			}()
 		case constants.DeploymentDeviceGroupName:
@@ -82,7 +82,7 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 					log.Warnf("Resource deployments has no permissions, ignore sync")
 					return
 				}
-				i.initSyncPodsOrServicesOrDeploys(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID)
+				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 			}()
 		default:
@@ -126,7 +126,7 @@ func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32) {
 	}
 }
 
-func (i *InitSyncer) initSyncPodsOrServicesOrDeploys(lctx *lmctx.LMContext, deviceType string, parentGroupID int32) {
+func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceType string, parentGroupID int32) {
 	log := lmlog.Logger(lctx)
 	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
