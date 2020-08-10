@@ -85,8 +85,8 @@ func (w *Worker) Run() {
 				select {
 				case command := <-inch:
 					lctx := command.LMContext()
-					commandCtx := lctx.WithFields(logrus.Fields{"worker": w.config.ID})
-					log = commandCtx.Logger()
+					commandCtx := lmlog.LMContextWithFields(lctx, logrus.Fields{"worker": w.config.ID})
+					log = lmlog.Logger(commandCtx)
 					log.Debugf("Received command")
 					w.handleCommand(commandCtx, command)
 				case <-timeout:

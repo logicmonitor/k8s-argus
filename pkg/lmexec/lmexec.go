@@ -6,6 +6,7 @@ import (
 )
 
 // LMExec Provides utility function for SDK calls using Base object
+// LMExec is holding device related api calls at the moment to mitigate rate limit handling
 type LMExec struct {
 	*types.Base
 }
