@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	argus "github.com/logicmonitor/k8s-argus/pkg"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -38,25 +37,8 @@ var watchCmd = &cobra.Command{
 		if conf.Debug {
 			log.SetLevel(log.DebugLevel)
 		}
-		// starting thread to reflect log levels dynamically
-		go func(initLevel bool) {
-			t := time.NewTicker(5 * time.Second)
-			c := initLevel
-			for {
-				<-t.C
-				conf, err := config.GetConfig()
-				if err == nil && c != conf.Debug {
-					c = conf.Debug
-					if conf.Debug {
-						log.Info("Setting debug")
-						log.SetLevel(log.DebugLevel)
-					} else {
-						log.Info("Setting info")
-						log.SetLevel(log.InfoLevel)
-					}
-				}
-			}
-		}(conf.Debug)
+		// Monitor config for log level change
+		lmlog.MonitorConfig()
 
 		// Add hook to log pod id in log context
 		hook := &lmlog.DefaultFieldHook{}

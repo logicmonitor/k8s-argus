@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/sirupsen/logrus"
 )
@@ -70,8 +71,8 @@ func NewHTTPWorker() *Worker {
 
 // Run creates go routine to handle requests
 func (w *Worker) Run() {
-	lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"worker": w.config.ID}))
-	log := lctx.Logger()
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"worker": w.config.ID}))
+	log := lmlog.Logger(lctx)
 	log.Infof("Starting worker for %v", w.config.ID)
 	channelMap := make(map[chan types.ICommand]bool)
 	for _, ch := range w.config.MethodChannels {
@@ -101,7 +102,7 @@ func (w *Worker) Run() {
 }
 
 func (w *Worker) handleCommand(lctx *lmctx.LMContext, command types.ICommand) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	var resp interface{}
 	var err error
 	retryMax := w.config.RetryLimit

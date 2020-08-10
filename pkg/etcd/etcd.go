@@ -10,6 +10,7 @@ import (
 	"github.com/coreos/etcd/client"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/sirupsen/logrus"
 )
@@ -27,8 +28,8 @@ type Member struct {
 
 // DiscoverByToken discovers the etcd node IP addresses using the etcd discovery service.
 func (c *Controller) DiscoverByToken() ([]*Member, error) {
-	lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"name": "etcd-discovery"}))
-	log := lctx.Logger()
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "etcd-discovery"}))
+	log := lmlog.Logger(lctx)
 	members := []*Member{}
 	response, err := http.Get(c.Config().EtcdDiscoveryToken)
 	if err != nil {
@@ -64,7 +65,7 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 }
 
 func (c *Controller) addDevice(lctx *lmctx.LMContext, member *Member) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	// Check if the etcd member has already been added.
 	d, err := c.FindByDisplayName(lctx, "etcd", fmtMemberDisplayName(member))
 	if err != nil {

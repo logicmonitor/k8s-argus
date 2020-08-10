@@ -8,6 +8,7 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/sirupsen/logrus"
@@ -51,8 +52,8 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		deployment := obj.(*appsv1.Deployment)
-		lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + deployment.Name}))
-		log := lctx.Logger()
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + deployment.Name}))
+		log := lmlog.Logger(lctx)
 		log.Infof("Handling add deployment event: %s", deployment.Name)
 		w.add(lctx, deployment)
 	}
@@ -64,7 +65,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		old := oldObj.(*appsv1.Deployment)
 		new := newObj.(*appsv1.Deployment)
 
-		lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
 		w.update(lctx, old, new)
 	}
 }
@@ -73,8 +74,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		deployment := obj.(*appsv1.Deployment)
-		lctx := lmctx.WithLogger(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + deployment.Name}))
-		log := lctx.Logger()
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + deployment.Name}))
+		log := lmlog.Logger(lctx)
 		log.Debugf("Handling delete deployment event: %s", deployment.Name)
 		// Delete the deployment.
 		if w.Config().DeleteDevices {
@@ -93,7 +94,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	if _, err := w.Add(lctx, w.Resource(),
 		w.args(deployment, constants.DeploymentCategory)...,
 	); err != nil {
@@ -104,7 +105,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 }
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "deployments",
 		fmtDeploymentDisplayName(old), nil,
 		w.args(new, constants.DeploymentCategory)...,
@@ -117,7 +118,7 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), fmtDeploymentDisplayName(deployment), constants.CustomPropertiesFieldName, w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move deployment %q: %v", fmtDeploymentDisplayName(deployment), err)
 		return
@@ -147,7 +148,7 @@ func fmtDeploymentDisplayName(deployment *appsv1.Deployment) string {
 
 // GetDeploymentsMap implements the getting deployments map info from k8s
 func GetDeploymentsMap(lctx *lmctx.LMContext, k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	deploymentsMap := make(map[string]string)
 	deploymentList, err := k8sClient.AppsV1().Deployments(namespace).List(v1.ListOptions{})
 	if err != nil || deploymentList == nil {

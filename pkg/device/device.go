@@ -9,6 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	//"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	cscutils "github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -27,7 +28,7 @@ type Manager struct {
 }
 
 func buildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, options ...types.DeviceOption) *models.Device {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	if d == nil {
 		hostGroupIds := "1"
 		propertyName := constants.K8sClusterNamePropertyKey
@@ -63,7 +64,7 @@ func buildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, opti
 
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
 func (m *Manager) checkAndUpdateExistingDevice(lctx *lmctx.LMContext, resource string, device *models.Device) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	displayNameWithClusterName := fmt.Sprintf("%s-%s", *device.DisplayName, m.Config().ClusterName)
 	existingDevices, err := m.FindByDisplayNames(lctx, resource, *device.DisplayName, displayNameWithClusterName)
 	if err != nil {
@@ -101,7 +102,7 @@ func (m *Manager) checkAndUpdateExistingDevice(lctx *lmctx.LMContext, resource s
 
 // renameAndAddDevice rename display name and then add the device
 func (m *Manager) renameAndAddDevice(lctx *lmctx.LMContext, resource string, device *models.Device) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	resourceName := m.GetPropertyValue(device, constants.K8sResourceNamePropertyKey)
 	if resourceName == "" {
 		resourceName = *device.DisplayName
@@ -162,7 +163,7 @@ func (m *Manager) GetPropertyValue(device *models.Device, propertyName string) s
 }
 
 func (m *Manager) updateAndReplace(lctx *lmctx.LMContext, resource string, id int32, device *models.Device) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	opType := "replace"
 	params := lm.NewUpdateDeviceParams()
 	params.SetID(id)
@@ -189,7 +190,7 @@ func (m *Manager) updateAndReplace(lctx *lmctx.LMContext, resource string, id in
 
 // FindByDisplayName implements types.DeviceManager.
 func (m *Manager) FindByDisplayName(lctx *lmctx.LMContext, resource string, name string) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	filter := fmt.Sprintf("displayName:\"%s\"", name)
 	params := lm.NewGetDeviceListParams()
 	params.SetFilter(&filter)
@@ -216,7 +217,7 @@ func (m *Manager) FindByDisplayName(lctx *lmctx.LMContext, resource string, name
 
 // FindByDisplayNames implements types.DeviceManager.
 func (m *Manager) FindByDisplayNames(lctx *lmctx.LMContext, resource string, displayNames ...string) ([]*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	if len(displayNames) == 0 {
 		return []*models.Device{}, nil
 	}
@@ -257,7 +258,7 @@ func (m *Manager) FindByDisplayNameAndClusterName(lctx *lmctx.LMContext, resourc
 
 // Add implements types.DeviceManager.
 func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.DeviceOption) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
 	log.Debugf("%#v", device)
 
@@ -299,7 +300,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.D
 
 // UpdateAndReplace implements types.DeviceManager.
 func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *models.Device, options ...types.DeviceOption) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), d, options...)
 	log.Debugf("%#v", device)
 
@@ -308,7 +309,7 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource string, name string, filter types.UpdateFilter, options ...types.DeviceOption) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	if !m.DC.Exists(name) {
 		log.Infof("Missing device %v; adding it now", name)
 		return m.Add(lctx, resource, options...)
@@ -343,7 +344,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource 
 
 // UpdateAndReplaceField implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), d, options...)
 	log.Debugf("%#v", device)
 
@@ -374,7 +375,7 @@ func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, 
 
 // UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, resource string, name string, field string, options ...types.DeviceOption) (*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	d, err := m.FindByDisplayNameAndClusterName(lctx, resource, name)
 	if err != nil {
 		return nil, err
@@ -412,7 +413,7 @@ func (m *Manager) DeleteByID(lctx *lmctx.LMContext, resource string, id int32) e
 
 // DeleteByDisplayName implements types.DeviceManager.
 func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource string, name string) error {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	d, err := m.FindByDisplayNameAndClusterName(lctx, resource, name)
 	if err != nil {
 		return err
@@ -437,7 +438,7 @@ func (m *Manager) Config() *config.Config {
 
 // GetListByGroupID implements getting all the devices belongs to the group directly
 func (m *Manager) GetListByGroupID(lctx *lmctx.LMContext, resource string, groupID int32) ([]*models.Device, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	params := lm.NewGetImmediateDeviceListByDeviceGroupIDParams()
 	params.SetID(groupID)
 	fields := "id,name,displayName,customProperties"

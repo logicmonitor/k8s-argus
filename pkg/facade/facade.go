@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/sirupsen/logrus"
 )
@@ -29,7 +30,7 @@ func NewFacade() *Facade {
 
 // SendReceive sync command handler
 func (f *Facade) SendReceive(lctx *lmctx.LMContext, resource string, command types.ICommand) (interface{}, error) {
-	log := lctx.Logger()
+	log := lmlog.Logger(lctx)
 	respch := make(chan *types.WorkerResponse)
 	var i interface{} = command
 	if cmd, ok := i.(types.Responder); ok {
