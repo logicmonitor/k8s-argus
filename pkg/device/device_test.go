@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,7 +44,8 @@ func TestBuildeviceWithExistingDeviceInput(t *testing.T) {
 	}
 
 	inputdevice := getSampleDevice()
-	device := buildDevice(config, inputdevice, options...)
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": "build_device_test"}))
+	device := buildDevice(lctx, config, inputdevice, options...)
 
 	if inputdevice.Name != device.Name {
 		t.Errorf("TestBuildeviceWithExistingDeviceInput - Error building device %v", device.Name)
@@ -54,7 +57,8 @@ func TestFindByDisplayNamesWithEmptyDisplayNames(t *testing.T) {
 	manager := Manager{}
 
 	expectedDevice := []*models.Device{}
-	actualDevice, err := manager.FindByDisplayNames(displayNames...)
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": "build_device_test"}))
+	actualDevice, err := manager.FindByDisplayNames(lctx, "pods", displayNames...)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedDevice, actualDevice)
 }

@@ -3,6 +3,8 @@ package deployment
 import (
 	"testing"
 
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,9 +45,11 @@ func TestGetDeploymentsMap(t *testing.T) {
 		},
 	}
 	assert := assert.New(t)
+	// nolint: dupl
 	for _, testCase := range deploymentTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			deploymentsMap, err := GetDeploymentsMap(testCase.clientSet, testCase.inputNamespace)
+			lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": "get_deploys_map_test"}))
+			deploymentsMap, err := GetDeploymentsMap(lctx, testCase.clientSet, testCase.inputNamespace)
 
 			// check if err not nil
 			if err != nil {
