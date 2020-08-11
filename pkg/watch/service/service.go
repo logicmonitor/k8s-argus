@@ -169,7 +169,7 @@ func fmtServiceDisplayName(service *v1.Service) string {
 }
 
 // GetServicesMap implements the getting services map info from k8s
-func GetServicesMap(lctx *lmctx.LMContext, k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+func GetServicesMap(lctx *lmctx.LMContext, k8sClient kubernetes.Interface, namespace string) (map[string]string, error) {
 	log := lmlog.Logger(lctx)
 	servicesMap := make(map[string]string)
 	serviceList, err := k8sClient.CoreV1().Services(namespace).List(metav1.ListOptions{})

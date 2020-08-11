@@ -229,7 +229,7 @@ func (w *Watcher) createRoleDeviceGroup(lctx *lmctx.LMContext, labels map[string
 }
 
 // GetNodesMap implements the getting nodes map info from k8s
-func GetNodesMap(k8sClient *kubernetes.Clientset) (map[string]string, error) {
+func GetNodesMap(k8sClient kubernetes.Interface) (map[string]string, error) {
 	nodesMap := make(map[string]string)
 	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil || nodeList == nil {

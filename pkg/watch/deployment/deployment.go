@@ -147,7 +147,7 @@ func fmtDeploymentDisplayName(deployment *appsv1.Deployment) string {
 }
 
 // GetDeploymentsMap implements the getting deployments map info from k8s
-func GetDeploymentsMap(lctx *lmctx.LMContext, k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+func GetDeploymentsMap(lctx *lmctx.LMContext, k8sClient kubernetes.Interface, namespace string) (map[string]string, error) {
 	log := lmlog.Logger(lctx)
 	deploymentsMap := make(map[string]string)
 	deploymentList, err := k8sClient.AppsV1().Deployments(namespace).List(v1.ListOptions{})
