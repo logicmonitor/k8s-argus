@@ -7,8 +7,10 @@ import (
 	"strconv"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -22,6 +24,7 @@ const (
 // Watcher represents a watcher type that watches services.
 type Watcher struct {
 	types.DeviceManager
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.
@@ -48,6 +51,8 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + service.Name}))
+		log := lmlog.Logger(lctx)
 
 		log.Infof("Service type is %s", service.Spec.Type)
 
@@ -56,7 +61,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 			log.Warningf("Service clusterIP is empty, service name : %s", service.Name)
 			return
 		}
-		w.add(service)
+		w.add(lctx, service)
 	}
 }
 
@@ -65,18 +70,19 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Service)
 		new := newObj.(*v1.Service)
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
 
 		// If the old service does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
 		if old.Spec.ClusterIP == "" && new.Spec.ClusterIP != "" {
-			w.add(new)
+			w.add(lctx, new)
 			return
 		}
 
 		// Covers the case when the old service is in the process of terminating
 		// and the new service is coming up to replace it.
 		// if old.Spec.ClusterIP != new.Spec.ClusterIP {
-		w.update(old, new)
+		w.update(lctx, old, new)
 		// }
 	}
 }
@@ -85,9 +91,11 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + service.Name}))
+		log := lmlog.Logger(lctx)
 		// Delete the service.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(fmtServiceDisplayName(service)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), fmtServiceDisplayName(service)); err != nil {
 				log.Errorf("Failed to delete service: %v", err)
 				return
 			}
@@ -96,13 +104,14 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		}
 
 		// Move the service.
-		w.move(service)
+		w.move(lctx, service)
 	}
 }
 
 // nolint: dupl
-func (w *Watcher) add(service *v1.Service) {
-	if _, err := w.Add(
+func (w *Watcher) add(lctx *lmctx.LMContext, service *v1.Service) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.Add(lctx, w.Resource(),
 		w.args(service, constants.ServiceCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add service %q: %v", fmtServiceDisplayName(service), err)
@@ -117,8 +126,9 @@ func (w *Watcher) serviceUpdateFilter(old, new *v1.Service) types.UpdateFilter {
 	}
 }
 
-func (w *Watcher) update(old, new *v1.Service) {
-	if _, err := w.UpdateAndReplaceByDisplayName(
+func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "services",
 		fmtServiceDisplayName(old), w.serviceUpdateFilter(old, new),
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
@@ -129,8 +139,9 @@ func (w *Watcher) update(old, new *v1.Service) {
 }
 
 // nolint: dupl
-func (w *Watcher) move(service *v1.Service) {
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(fmtServiceDisplayName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+func (w *Watcher) move(lctx *lmctx.LMContext, service *v1.Service) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), fmtServiceDisplayName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", fmtServiceDisplayName(service), err)
 		return
 	}
@@ -158,7 +169,8 @@ func fmtServiceDisplayName(service *v1.Service) string {
 }
 
 // GetServicesMap implements the getting services map info from k8s
-func GetServicesMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+func GetServicesMap(lctx *lmctx.LMContext, k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+	log := lmlog.Logger(lctx)
 	servicesMap := make(map[string]string)
 	serviceList, err := k8sClient.CoreV1().Services(namespace).List(metav1.ListOptions{})
 	if err != nil || serviceList == nil {

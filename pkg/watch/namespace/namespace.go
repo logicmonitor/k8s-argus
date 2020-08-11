@@ -18,6 +18,7 @@ type Watcher struct {
 	*types.Base
 	// TODO: This should be thread safe.
 	DeviceGroups map[string]int32
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.
