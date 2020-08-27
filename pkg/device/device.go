@@ -130,7 +130,11 @@ func (m *Manager) renameAndAddDevice(lctx *lmctx.LMContext, resource string, dev
 			ExecFun: m.AddDevice(params),
 			LMCtx:   lctx,
 		},
-		Method: "POST",
+		Method:   "POST",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.AddDeviceErrResp,
+		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.AddDevice(params)
@@ -174,7 +178,11 @@ func (m *Manager) updateAndReplace(lctx *lmctx.LMContext, resource string, id in
 			ExecFun: m.UpdateDevice(params),
 			LMCtx:   lctx,
 		},
-		Method: "PUT",
+		Method:   "PUT",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.UpdateDeviceErrResp,
+		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 
@@ -199,7 +207,11 @@ func (m *Manager) FindByDisplayName(lctx *lmctx.LMContext, resource string, name
 			ExecFun: m.GetDeviceList(params),
 			LMCtx:   lctx,
 		},
-		Method: "GET",
+		Method:   "GET",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.GetDeviceListErrResp,
+		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.GetDeviceList(params)
@@ -229,7 +241,11 @@ func (m *Manager) FindByDisplayNames(lctx *lmctx.LMContext, resource string, dis
 			ExecFun: m.GetDeviceList(params),
 			LMCtx:   lctx,
 		},
-		Method: "GET",
+		Method:   "GET",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.GetDeviceListErrResp,
+		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.GetDeviceList(params)
@@ -271,7 +287,11 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.D
 			ExecFun: m.AddDevice(params),
 			LMCtx:   lctx,
 		},
-		Method: "POST",
+		Method:   "POST",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.AddDeviceErrResp,
+		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	if err != nil {
@@ -358,7 +378,11 @@ func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, 
 			ExecFun: m.PatchDevice(params),
 			LMCtx:   lctx,
 		},
-		Method: "PATCH",
+		Method:   "PATCH",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.PatchDeviceErrResp,
+		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//restResponse, err := m.LMClient.LM.PatchDevice(params)
@@ -404,7 +428,11 @@ func (m *Manager) DeleteByID(lctx *lmctx.LMContext, resource string, id int32) e
 			ExecFun: m.DeleteDeviceByID(params),
 			LMCtx:   lctx,
 		},
-		Method: "DELETE",
+		Method:   "DELETE",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.DeleteDeviceByIDErrResp,
+		},
 	}
 	_, err := m.LMFacade.SendReceive(lctx, resource, cmd)
 	//_, err := m.LMClient.LM.DeleteDeviceByID(params)
@@ -451,7 +479,11 @@ func (m *Manager) GetListByGroupID(lctx *lmctx.LMContext, resource string, group
 			ExecFun: m.GetImmediateDeviceListByDeviceGroupID(params),
 			LMCtx:   lctx,
 		},
-		Method: "GET",
+		Method:   "GET",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.GetImmediateDeviceListByDeviceGroupIDErrResp,
+		},
 	}
 
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
