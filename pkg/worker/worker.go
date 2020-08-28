@@ -124,7 +124,7 @@ func (w *Worker) watchForLimitChanges(lctx *lmctx.LMContext, ch <-chan types.Wor
 	}(ch)
 }
 
-func (w *Worker) getTokenChannel(category string, method string) *RLTokenizer {
+func (w *Worker) getTokenizer(category string, method string) *RLTokenizer {
 	ch, ok := w.tokenizers.Load(category + method)
 	if !ok {
 		return w.createTokenizer(category+method, 1000)
@@ -136,10 +136,10 @@ func (w *Worker) popRLToken(command types.ICommand) {
 	var tmpCommand interface{} = command
 	switch cmdRef := tmpCommand.(type) {
 	case types.IHTTPCommand:
-		tch := w.getTokenChannel(cmdRef.GetCategory(), cmdRef.GetMethod())
+		tch := w.getTokenizer(cmdRef.GetCategory(), cmdRef.GetMethod())
 		err := tch.popToken()
 		if err != nil && err == context.Canceled {
-			tch = w.getTokenChannel(cmdRef.GetCategory(), cmdRef.GetMethod())
+			tch = w.getTokenizer(cmdRef.GetCategory(), cmdRef.GetMethod())
 			tch.popToken() // nolint: errcheck, gosec
 		}
 	}
