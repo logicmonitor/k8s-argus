@@ -47,17 +47,14 @@ func (f *Facade) RegisterWorker(resource string, w types.Worker) (bool, error) {
 func (f *Facade) sendRecv(lctx *lmctx.LMContext, resource string, command types.ICommand) (interface{}, error) {
 	log := lmlog.Logger(lctx)
 	respch := make(chan *types.WorkerResponse)
-	defer close(respch)
 	var i interface{} = command
 	if cmd, ok := i.(types.Responder); ok {
-		log.Debugf("Command is of responder type")
+		log.Debugf("sync command... setting response channel")
 		cmd.SetResponseChannel(respch)
 	}
 
-	switch t := i.(type) {
+	switch i.(type) {
 	case types.IHTTPCommand:
-		log.Debugf("Type is IHttpCommand %s", t)
-		log.Debugf("Workers: %#v", f.WorkerConf)
 		wc := f.WorkerConf[resource]
 		ch := wc.GetChannel(command)
 		ch <- command

@@ -163,7 +163,12 @@ func (w *Worker) handleCommand(lctx *lmctx.LMContext, command types.ICommand) {
 		log.Debugf("Sync command")
 		if rch := n.GetResponseChannel(); rch != nil {
 			log.Debugf("Response channel defined %v", wresp)
-			rch <- wresp
+			select {
+			case rch <- wresp:
+			// to make non blocking, golang unbuffered channels are blocking if there is no goroutine listening on channel. if facade timed out and returned then this would become blocking
+			case <-time.After(2 * time.Millisecond):
+				log.Warnf("Response cannot sent")
+			}
 		}
 	}
 }

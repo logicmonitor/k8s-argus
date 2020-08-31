@@ -2,6 +2,7 @@ package ratelimiter
 
 import (
 	"io/ioutil"
+	"net/http"
 	"reflect"
 	"sync"
 	"time"
@@ -16,12 +17,6 @@ const (
 	pods        = "pods"
 	services    = "services"
 	nodes       = "nodes"
-
-	get    = "GET"
-	post   = "POST"
-	put    = "PUT"
-	patch  = "PATCH"
-	delete = "DELETE"
 )
 
 var (
@@ -32,13 +27,13 @@ var (
 func readConfig() *Policies {
 	configBytes, err := ioutil.ReadFile("/etc/argus/rl-policy.yaml")
 	if err != nil {
-		log.Debugf("Failed to read rl policy config file: /etc/argus/rl-policy.yaml")
+		log.Fatalf("Failed to read rl policy config file: /etc/argus/rl-policy.yaml")
 	}
-	log.Infof("rl policy raw: %s", configBytes)
+	log.Debugf("rl policy raw: %s", configBytes)
 	m := &Policies{}
 	err = yaml.Unmarshal(configBytes, m)
 	if err != nil {
-		log.Errorf("Couldn't parse rl-policy.yaml file")
+		log.Fatalf("Couldn't parse rl-policy.yaml file")
 	}
 	log.Infof("Policies read: %v", m)
 	return m
@@ -121,15 +116,15 @@ type APIResource struct {
 // Get returns verblimits for mentioned http verb
 func (apires *APIResource) Get(method string) *VerbLimits {
 	switch method {
-	case get:
+	case http.MethodGet:
 		return apires.GET
-	case post:
+	case http.MethodPost:
 		return apires.POST
-	case put:
+	case http.MethodPut:
 		return apires.PUT
-	case patch:
+	case http.MethodPatch:
 		return apires.PATCH
-	case delete:
+	case http.MethodDelete:
 		return apires.DELETE
 	}
 	return nil
@@ -147,15 +142,15 @@ type APIPolicy struct {
 // Get returns verbpolicy for mentioned http verb
 func (apires APIPolicy) Get(method string) VerbPolicy {
 	switch method {
-	case get:
+	case http.MethodGet:
 		return apires.GET
-	case post:
+	case http.MethodPost:
 		return apires.POST
-	case put:
+	case http.MethodPut:
 		return apires.PUT
-	case patch:
+	case http.MethodPatch:
 		return apires.PATCH
-	case delete:
+	case http.MethodDelete:
 		return apires.DELETE
 	}
 	return VerbPolicy{}
@@ -273,20 +268,28 @@ func (m *Manager) initNewCurrentLimit() *APIResource {
 	}
 }
 
-func (m *Manager) reformWorkerLimits(request types.RateLimitUpdateRequest) {
+func (m *Manager) distributeWorkerLimits(request types.RateLimitUpdateRequest) {
 	vl := m.Policies.Get(request.Category).Get(request.Method)
 	log.Debugf("reform policies : %v", m.Policies)
 	log.Debugf("reform limits for : %v", vl)
 	v := reflect.ValueOf(vl)
 	typeOfS := v.Type()
 
+	/*
+		Distribute limits among workers according to configured percentage limits for those workers
+		for ex:
+		POD: 70%
+		NODES: 10%
+		Say, rate limit threshold values is 500, then 350 limit will be given to POD worker and 50 will be given to NODES.
+	*/
 	for i := 0; i < v.NumField(); i++ {
 		log.Infof("Field: %s\tValue: %v\n", typeOfS.Field(i).Name, v.Field(i).Interface())
 		rlch := types.WorkerRateLimitsUpdate{
 			Category: request.Category,
 			Method:   request.Method,
-			Limit:    request.Limit * v.Field(i).Interface().(int64) / 100,
-			Window:   request.Window,
+			// divide by 100 since configured value is in percentage
+			Limit:  request.Limit * v.Field(i).Interface().(int64) / 100,
+			Window: request.Window,
 		}
 		switch typeOfS.Field(i).Name {
 		case "POD":
@@ -303,12 +306,12 @@ func (m *Manager) reformWorkerLimits(request types.RateLimitUpdateRequest) {
 
 func (m *Manager) handleRequest(request types.RateLimitUpdateRequest) {
 	mutex.Lock()
+	defer mutex.Unlock()
 	if !m.hasDelta(request) {
 		return
 	}
 	m.saveLimits(request)
-	m.reformWorkerLimits(request)
-	mutex.Unlock()
+	m.distributeWorkerLimits(request)
 }
 
 // Run starts ratelimit manager
