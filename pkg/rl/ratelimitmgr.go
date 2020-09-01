@@ -7,16 +7,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
-)
-
-const (
-	deployments = "deployments"
-	pods        = "pods"
-	services    = "services"
-	nodes       = "nodes"
 )
 
 var (
@@ -24,25 +18,23 @@ var (
 	mutex sync.Mutex
 )
 
-func readConfig() *Policies {
-	configBytes, err := ioutil.ReadFile("/etc/argus/rl-policy.yaml")
-	if err != nil {
-		log.Fatalf("Failed to read rl policy config file: /etc/argus/rl-policy.yaml")
-	}
-	log.Debugf("rl policy raw: %s", configBytes)
-	m := &Policies{}
-	err = yaml.Unmarshal(configBytes, m)
-	if err != nil {
-		log.Fatalf("Couldn't parse rl-policy.yaml file")
-	}
-	log.Infof("Policies read: %v", m)
-	return m
-}
-
+// package init block so that policies will be loaded on application start
 func init() {
 	rlm.SetPolicies(readConfig())
 	rlm.Run()
 }
+
+// RegisterWorkerNotifyChannel registers worker to receive updates
+func RegisterWorkerNotifyChannel(resource string, ch chan types.WorkerRateLimitsUpdate) {
+	rlm.RegisterWorkerNotifyChannel(resource, ch)
+}
+
+// GetUpdateRequestChannel channel to send new limits to rate limit manager
+func GetUpdateRequestChannel() chan types.RateLimitUpdateRequest {
+	return rlm.UpReqChan
+}
+
+// Package internal structures and methods
 
 // VerbLimits limits of http verb
 type VerbLimits struct {
@@ -55,13 +47,13 @@ type VerbLimits struct {
 // Get returns values from verblimit for mentioned resource
 func (vl *VerbLimits) Get(resource string) int64 {
 	switch resource {
-	case pods:
+	case constants.Pods:
 		return vl.POD
-	case deployments:
+	case constants.Deployments:
 		return vl.DEP
-	case services:
+	case constants.Services:
 		return vl.SVC
-	case nodes:
+	case constants.Nodes:
 		return vl.NODE
 	}
 	return -1
@@ -70,13 +62,13 @@ func (vl *VerbLimits) Get(resource string) int64 {
 // Set sets value to mentioned resource with the new value
 func (vl *VerbLimits) Set(resource string, limit int64) {
 	switch resource {
-	case pods:
+	case constants.Pods:
 		vl.POD = limit
-	case deployments:
+	case constants.Deployments:
 		vl.DEP = limit
-	case services:
+	case constants.Services:
 		vl.SVC = limit
-	case nodes:
+	case constants.Nodes:
 		vl.NODE = limit
 	}
 }
@@ -92,13 +84,13 @@ type VerbPolicy struct {
 // Get return policy for mentioned resource
 func (vl VerbPolicy) Get(resource string) int64 {
 	switch resource {
-	case pods:
+	case constants.Pods:
 		return vl.POD
-	case deployments:
+	case constants.Deployments:
 		return vl.DEP
-	case services:
+	case constants.Services:
 		return vl.SVC
-	case nodes:
+	case constants.Nodes:
 		return vl.NODE
 	}
 	return -1
@@ -192,19 +184,9 @@ func (m *Manager) GetUpdateRequestChannel() chan types.RateLimitUpdateRequest {
 	return m.UpReqChan
 }
 
-// GetUpdateRequestChannel channel to send new limits to rate limit manager
-func GetUpdateRequestChannel() chan types.RateLimitUpdateRequest {
-	return rlm.UpReqChan
-}
-
 // RegisterWorkerNotifyChannel registers worker to receive updates
 func (m *Manager) RegisterWorkerNotifyChannel(resource string, ch chan types.WorkerRateLimitsUpdate) {
 	m.WorkerBroadcastChannels[resource] = ch
-}
-
-// RegisterWorkerNotifyChannel registers worker to receive updates
-func RegisterWorkerNotifyChannel(resource string, ch chan types.WorkerRateLimitsUpdate) {
-	rlm.RegisterWorkerNotifyChannel(resource, ch)
 }
 
 // SetPolicies sets policies
@@ -329,4 +311,19 @@ func (m *Manager) Run() {
 			}
 		}
 	}()
+}
+
+func readConfig() *Policies {
+	configBytes, err := ioutil.ReadFile("/etc/argus/rl-policy.yaml")
+	if err != nil {
+		log.Fatalf("Failed to read rl policy config file: /etc/argus/rl-policy.yaml")
+	}
+	log.Debugf("rl policy raw: %s", configBytes)
+	m := &Policies{}
+	err = yaml.Unmarshal(configBytes, m)
+	if err != nil {
+		log.Fatalf("Couldn't parse rl-policy.yaml file")
+	}
+	log.Infof("Policies read: %v", m)
+	return m
 }
