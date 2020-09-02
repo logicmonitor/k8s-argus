@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"net/http"
 	"regexp"
 	"strconv"
 	"sync"
@@ -197,7 +198,7 @@ func (w *Worker) executeWithRetry(lctx *lmctx.LMContext, retry int, command type
 		if code >= 500 && code <= 599 {
 			log.Warningf("Request failed with error %v, retrying for %v time...", err, i)
 			time.Sleep(5 * time.Second)
-		} else if code == 429 { // rate limit reached then send update to rate limit manager
+		} else if code == http.StatusTooManyRequests { // rate limit reached then send update to rate limit manager
 			req := w.getRLLimit(lctx, command, err)
 			w.sendRLLimitUpdate(lctx, req)
 			log.Infof("Waiting for rate limit window %v", req.Window)
@@ -224,7 +225,7 @@ func (w *Worker) getRLLimit(lctx *lmctx.LMContext, command types.ICommand, err e
 		hc := command.(types.IHTTPCommand)
 		errResp := cmdRef.ParseErrResponse(err)
 		code := getHTTPStatusCode(err)
-		if code == 429 {
+		if code == http.StatusTooManyRequests {
 			headers := errResp.ErrorDetail.(map[string]interface{})
 			limit, lerr := strconv.Atoi(headers["x-rate-limit-limit"].(string))
 			if lerr != nil {
