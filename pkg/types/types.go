@@ -117,14 +117,28 @@ type UpdateFilter func() bool
 // ExecRequest funnction type to point to execute fubction
 type ExecRequest func() (interface{}, error)
 
+// ParseErrResp function signature to parse error response
+type ParseErrResp func(error) *models.ErrorResponse
+
 // LMExecutor All the
 type LMExecutor interface {
 	AddDevice(*lm.AddDeviceParams) ExecRequest
+	AddDeviceErrResp(error) *models.ErrorResponse
+
 	UpdateDevice(*lm.UpdateDeviceParams) ExecRequest
+	UpdateDeviceErrResp(error) *models.ErrorResponse
+
 	GetDeviceList(*lm.GetDeviceListParams) ExecRequest
+	GetDeviceListErrResp(error) *models.ErrorResponse
+
 	PatchDevice(*lm.PatchDeviceParams) ExecRequest
+	PatchDeviceErrResp(error) *models.ErrorResponse
+
 	DeleteDeviceByID(*lm.DeleteDeviceByIDParams) ExecRequest
+	DeleteDeviceByIDErrResp(error) *models.ErrorResponse
+
 	GetImmediateDeviceListByDeviceGroupID(*lm.GetImmediateDeviceListByDeviceGroupIDParams) ExecRequest
+	GetImmediateDeviceListByDeviceGroupIDErrResp(error) *models.ErrorResponse
 }
 
 // WorkerResponse wraps response and error
@@ -189,19 +203,44 @@ func (c *Command) GetResponseChannel() chan *WorkerResponse {
 
 // IHTTPCommand Http command interface
 type IHTTPCommand interface {
+	// GetMethod Get Http method
 	GetMethod() string
+	// GetCategory Get rest api category
+	GetCategory() string
+}
+
+// LMHCErrParse function to parse error response
+type LMHCErrParse struct {
+	ParseErrResp ParseErrResp
+}
+
+// ParseErrResponse executes parse error response function
+func (lhp *LMHCErrParse) ParseErrResponse(err error) *models.ErrorResponse {
+	return lhp.ParseErrResp(err)
 }
 
 // HTTPCommand extended Command
 type HTTPCommand struct {
 	*Command
-	Method string
+	*LMHCErrParse
+	Method   string
+	Category string
 	// GetHeaderFun GetHeaders
 }
 
 // GetMethod Get Http method
 func (hc *HTTPCommand) GetMethod() string {
 	return hc.Method
+}
+
+// GetCategory Get rest api category
+func (hc *HTTPCommand) GetCategory() string {
+	return hc.Category
+}
+
+// LMHCErrParser methods specific to lm sdk
+type LMHCErrParser interface {
+	ParseErrResponse(err error) *models.ErrorResponse
 }
 
 // LMFacade public interface others to interact with
@@ -211,4 +250,31 @@ type LMFacade interface {
 	// sync
 	SendReceive(*lmctx.LMContext, string, ICommand) (interface{}, error)
 	RegisterWorker(string, Worker) (bool, error)
+}
+
+// RateLimitUpdateRequest struct to send new rate limits received from server to manager
+type RateLimitUpdateRequest struct {
+	Worker   string
+	Category string
+	Method   string
+	Limit    int64
+	Window   int
+}
+
+// WorkerRateLimitsUpdate struct to send new rate limits received from server to manager
+type WorkerRateLimitsUpdate struct {
+	Category string
+	Method   string
+	Limit    int64
+	Window   int
+}
+
+// RateLimitManager interface for rate limit manager
+type RateLimitManager interface {
+	// GetUpdateRequestChannel channel to send new limits to rate limit manager
+	GetUpdateRequestChannel() chan RateLimitUpdateRequest
+	// GetRateLimitConfig sends config for requested resource
+	GetRateLimitConfig(resource string) map[string]int
+	// RegisterWorkerNotifyChannel register channel to send updates to workers
+	RegisterWorkerNotifyChannel(resource string, ch chan WorkerRateLimitsUpdate) (bool, error)
 }

@@ -30,22 +30,35 @@ func NewFacade() *Facade {
 
 // SendReceive sync command handler
 func (f *Facade) SendReceive(lctx *lmctx.LMContext, resource string, command types.ICommand) (interface{}, error) {
+	var res interface{}
+	var err error
+	res, err = f.sendRecv(lctx, resource, command)
+	return res, err
+}
+
+// RegisterWorker Registers worker into facade to handler commands of mentioned resource
+// plugin pattern, if worker go routine dies for some reason, watcher should create worker and register again
+func (f *Facade) RegisterWorker(resource string, w types.Worker) (bool, error) {
+	logrus.Debugf("registering worker for %s %#v", resource, w.GetConfig())
+	f.WorkerConf[resource] = w.GetConfig()
+	return true, nil
+}
+
+func (f *Facade) sendRecv(lctx *lmctx.LMContext, resource string, command types.ICommand) (interface{}, error) {
 	log := lmlog.Logger(lctx)
 	respch := make(chan *types.WorkerResponse)
 	var i interface{} = command
 	if cmd, ok := i.(types.Responder); ok {
-		log.Debugf("Command is of responder type")
+		log.Debugf("sync command... setting response channel")
 		cmd.SetResponseChannel(respch)
 	}
 
-	switch t := i.(type) {
+	switch i.(type) {
 	case types.IHTTPCommand:
-		log.Debugf("Type is IHttpCommand %s", t)
-		log.Debugf("Workers: %#v", f.WorkerConf)
 		wc := f.WorkerConf[resource]
 		ch := wc.GetChannel(command)
 		ch <- command
-		timeout := time.NewTicker(20 * time.Second)
+		timeout := time.NewTicker(5 * time.Minute)
 		select {
 		case t := <-respch:
 			return t.Response, t.Error
@@ -56,12 +69,5 @@ func (f *Facade) SendReceive(lctx *lmctx.LMContext, resource string, command typ
 	}
 
 	return nil, errors.New("unknown Command")
-}
 
-// RegisterWorker Registers worker into facade to handler commands of mentioned resource
-// plugin pattern, if worker go routine dies for some reason, watcher should create worker and register again
-func (f *Facade) RegisterWorker(resource string, w types.Worker) (bool, error) {
-	logrus.Debugf("registering worker for %s %#v", resource, w.GetConfig())
-	f.WorkerConf[resource] = w.GetConfig()
-	return true, nil
 }

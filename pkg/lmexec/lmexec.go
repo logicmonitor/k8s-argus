@@ -3,6 +3,7 @@ package lmexec
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // LMExec Provides utility function for SDK calls using Base object
@@ -51,4 +52,34 @@ func (lmexec *LMExec) GetImmediateDeviceListByDeviceGroupID(params *lm.GetImmedi
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.GetImmediateDeviceListByDeviceGroupID(params)
 	}
+}
+
+// AddDeviceErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) AddDeviceErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.AddDeviceDefault).Payload
+}
+
+// UpdateDeviceErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) UpdateDeviceErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.UpdateDeviceDefault).Payload
+}
+
+// GetDeviceListErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) GetDeviceListErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.GetDeviceListDefault).Payload
+}
+
+// PatchDeviceErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) PatchDeviceErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.PatchDeviceDefault).Payload
+}
+
+// DeleteDeviceByIDErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) DeleteDeviceByIDErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.DeleteDeviceByIDDefault).Payload
+}
+
+// GetImmediateDeviceListByDeviceGroupIDErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) GetImmediateDeviceListByDeviceGroupIDErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.GetImmediateDeviceListByDeviceGroupIDDefault).Payload
 }
