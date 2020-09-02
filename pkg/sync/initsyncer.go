@@ -1,18 +1,21 @@
 package sync
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/lm-sdk-go/models"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // InitSyncer implements the initial sync through logicmonitor API
@@ -22,6 +25,8 @@ type InitSyncer struct {
 
 // InitSync implements the initial sync through logicmonitor API
 func (i *InitSyncer) InitSync() {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "init-sync"}))
+	log := lmlog.Logger(lctx)
 	log.Infof("Start to sync the resource devices")
 	clusterName := i.DeviceManager.Base.Config.ClusterName
 	// get the cluster info
@@ -36,12 +41,13 @@ func (i *InitSyncer) InitSync() {
 	}
 	// get the node, pod, service, deployment info
 	if rest.SubGroups != nil && len(rest.SubGroups) != 0 {
-		i.runSync(rest)
+		i.runSync(lctx, rest)
 	}
 	log.Infof("Finished syncing the resource devices")
 }
 
-func (i *InitSyncer) runSync(rest *models.DeviceGroup) {
+func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
+	log := lmlog.Logger(lctx)
 	wg := sync.WaitGroup{}
 	wg.Add(len(rest.SubGroups))
 	for _, subgroup := range rest.SubGroups {
@@ -49,29 +55,34 @@ func (i *InitSyncer) runSync(rest *models.DeviceGroup) {
 		case constants.NodeDeviceGroupName:
 			go func() {
 				defer wg.Done()
-				i.initSyncNodes(rest.ID)
+				lctxNodes := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-nodes"}))
+				i.initSyncNodes(lctxNodes, rest.ID)
 				log.Infof("Finish syncing %v", constants.NodeDeviceGroupName)
 			}()
+		// nolint: dupl
 		case constants.PodDeviceGroupName:
 			go func() {
 				defer wg.Done()
-				i.initSyncPodsOrServicesOrDeploys(constants.PodDeviceGroupName, rest.ID)
+				lctxPods := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-pods"}))
+				i.initSyncNamespacedResource(lctxPods, constants.PodDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
 			}()
 		case constants.ServiceDeviceGroupName:
 			go func() {
 				defer wg.Done()
-				i.initSyncPodsOrServicesOrDeploys(constants.ServiceDeviceGroupName, rest.ID)
+				lctxServices := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-services"}))
+				i.initSyncNamespacedResource(lctxServices, constants.ServiceDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
 			}()
 		case constants.DeploymentDeviceGroupName:
 			go func() {
 				defer wg.Done()
+				lctxDeployments := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-deployments"}))
 				if !permission.HasDeploymentPermissions() {
 					log.Warnf("Resource deployments has no permissions, ignore sync")
 					return
 				}
-				i.initSyncPodsOrServicesOrDeploys(constants.DeploymentDeviceGroupName, rest.ID)
+				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 			}()
 		default:
@@ -82,11 +93,14 @@ func (i *InitSyncer) runSync(rest *models.DeviceGroup) {
 
 		}
 	}
+	log.Debugf("Waiting to complete sync")
 	// wait the init sync processes finishing
 	wg.Wait()
+	log.Debugf("Completed sync")
 }
 
-func (i *InitSyncer) initSyncNodes(parentGroupID int32) {
+func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32) {
+	log := lmlog.Logger(lctx)
 	rest, err := devicegroup.Find(parentGroupID, constants.NodeDeviceGroupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Warnf("Failed to get the node group")
@@ -108,11 +122,12 @@ func (i *InitSyncer) initSyncNodes(parentGroupID int32) {
 		if subGroup.Name != constants.AllNodeDeviceGroupName {
 			continue
 		}
-		i.syncDevices(constants.NodeDeviceGroupName, nodesMap, subGroup)
+		i.syncDevices(lctx, constants.NodeDeviceGroupName, nodesMap, subGroup)
 	}
 }
 
-func (i *InitSyncer) initSyncPodsOrServicesOrDeploys(deviceType string, parentGroupID int32) {
+func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceType string, parentGroupID int32) {
+	log := lmlog.Logger(lctx)
 	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Warnf("Failed to get the %s group", deviceType)
@@ -129,9 +144,9 @@ func (i *InitSyncer) initSyncPodsOrServicesOrDeploys(deviceType string, parentGr
 		if deviceType == constants.PodDeviceGroupName {
 			deviceMap, err = pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name)
 		} else if deviceType == constants.ServiceDeviceGroupName {
-			deviceMap, err = service.GetServicesMap(i.DeviceManager.K8sClient, subGroup.Name)
+			deviceMap, err = service.GetServicesMap(lctx, i.DeviceManager.K8sClient, subGroup.Name)
 		} else if deviceType == constants.DeploymentDeviceGroupName {
-			deviceMap, err = deployment.GetDeploymentsMap(i.DeviceManager.K8sClient, subGroup.Name)
+			deviceMap, err = deployment.GetDeploymentsMap(lctx, i.DeviceManager.K8sClient, subGroup.Name)
 		} else {
 			return
 		}
@@ -141,12 +156,13 @@ func (i *InitSyncer) initSyncPodsOrServicesOrDeploys(deviceType string, parentGr
 		}
 
 		// get and check all the devices in the group
-		i.syncDevices(deviceType, deviceMap, subGroup)
+		i.syncDevices(lctx, deviceType, deviceMap, subGroup)
 	}
 }
 
-func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData) {
-	devices, err := i.DeviceManager.GetListByGroupID(subGroup.ID)
+func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData) {
+	log := lmlog.Logger(lctx)
+	devices, err := i.DeviceManager.GetListByGroupID(lctx, strings.ToLower(resourceType), subGroup.ID)
 	if err != nil {
 		log.Warnf("Failed to get the devices in the group: %v", subGroup.FullPath)
 		return
@@ -173,7 +189,7 @@ func (i *InitSyncer) syncDevices(resourceType string, resourcesMap map[string]st
 		_, exist := resourcesMap[resourceName]
 		if !exist {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
-			err := i.DeviceManager.DeleteByID(device.ID)
+			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
 			if err != nil {
 				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
 			}

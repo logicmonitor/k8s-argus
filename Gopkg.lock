@@ -213,6 +213,14 @@
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:ad92aa49f34cbc3546063c7eb2cabb55ee2278b72842eda80e2a20a8a06a8d73"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = ""
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:2910e18ef4f095cf30d095f6764f2a1031c7206c7f7f89cf892a154b6dc0bc2a"
   name = "github.com/googleapis/gnostic"
   packages = [
@@ -920,6 +928,7 @@
     "github.com/coreos/etcd/client",
     "github.com/go-openapi/runtime/client",
     "github.com/go-openapi/strfmt",
+    "github.com/google/uuid",
     "github.com/kelseyhightower/envconfig",
     "github.com/logicmonitor/k8s-collectorset-controller/api",
     "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants",

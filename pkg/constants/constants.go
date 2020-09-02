@@ -104,3 +104,14 @@ const (
 	// K8sAPIVersionAppsV1 is the version 'apps/v1' of k8s api
 	K8sAPIVersionAppsV1 = "apps/v1"
 )
+
+const (
+	// Deployments deployments generic
+	Deployments = "deployments"
+	// Pods pods generic
+	Pods = "pods"
+	// Services Services generic
+	Services = "services"
+	// Nodes Nodes generic
+	Nodes = "nodes"
+)
