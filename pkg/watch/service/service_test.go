@@ -3,6 +3,8 @@ package service
 import (
 	"testing"
 
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,9 +47,11 @@ func TestGetServicesMap(t *testing.T) {
 		},
 	}
 	assert := assert.New(t)
+	// nolint: dupl
 	for _, testCase := range serviceTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			servicesMap, err := GetServicesMap(testCase.clientSet, testCase.inputNamespace)
+			lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": "get_svc_map_test"}))
+			servicesMap, err := GetServicesMap(lctx, testCase.clientSet, testCase.inputNamespace)
 
 			// check if err not nil
 			if err != nil {
