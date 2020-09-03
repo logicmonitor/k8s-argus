@@ -211,10 +211,10 @@ func (w *Watcher) createRoleDeviceGroup(lctx *lmctx.LMContext, labels map[string
 		ParentID:              w.DeviceGroups[constants.NodeDeviceGroupName],
 		Name:                  role,
 		DisableAlerting:       w.Config().DisableAlerting,
-		AppliesTo:             devicegroup.NewAppliesToBuilder().Exists(constants.LabelCustomPropertyPrefix + label).And().Auto("clustername").Equals(w.Config().ClusterName),
+		AppliesTo:             devicegroup.NewAppliesToBuilder().Exists(constants.LabelCustomPropertyPrefix + label).And().HasCategory(constants.NodeCategory).And().Auto("clustername").Equals(w.Config().ClusterName),
 		Client:                w.LMClient,
 		DeleteDevices:         w.Config().DeleteDevices,
-		AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(label + "=").And().Auto("clustername").Equals(w.Config().ClusterName),
+		AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().Exists(constants.LabelCustomPropertyPrefix + label).And().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(w.Config().ClusterName),
 	}
 
 	log.Debugf("%v", opts)
