@@ -123,7 +123,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(), w.args(node, constants.NodeCategory)...); err != nil {
+	if _, err := w.Add(lctx, w.Resource(), node.Labels, w.args(node, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to add node %q: %v", node.Name, err)
 	} else {
 		log.Infof("Added node %q", node.Name)

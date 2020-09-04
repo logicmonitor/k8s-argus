@@ -95,7 +95,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(),
+	if _, err := w.Add(lctx, w.Resource(), deployment.Labels,
 		w.args(deployment, constants.DeploymentCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add deployment %q: %v", fmtDeploymentDisplayName(deployment), err)

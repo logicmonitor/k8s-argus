@@ -111,7 +111,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, service *v1.Service) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(),
+	if _, err := w.Add(lctx, w.Resource(), service.Labels,
 		w.args(service, constants.ServiceCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add service %q: %v", fmtServiceDisplayName(service), err)

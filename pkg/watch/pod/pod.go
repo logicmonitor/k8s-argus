@@ -120,9 +120,11 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 }
 
 // nolint: dupl
+
 func (w *Watcher) add(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(),
+
+	if _, err := w.Add(lctx, w.Resource(), pod.Labels,
 		w.args(pod, constants.PodCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add pod %q: %v", pod.Name, err)

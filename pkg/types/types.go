@@ -71,7 +71,7 @@ type DeviceMapper interface {
 	// FindByDisplayNameAndClusterName searches for device by the specified string by its display name and clusterName. It will return a device if and only if
 	FindByDisplayNameAndClusterName(*lmctx.LMContext, string, string) (*models.Device, error)
 	// Add adds a device to a LogicMonitor account.
-	Add(*lmctx.LMContext, string, ...DeviceOption) (*models.Device, error)
+	Add(*lmctx.LMContext, string, map[string]string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplace updates a device using the 'replace' OpType.
 	UpdateAndReplace(*lmctx.LMContext, string, *models.Device, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.

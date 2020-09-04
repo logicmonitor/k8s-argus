@@ -8,6 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
+	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 
@@ -274,10 +275,15 @@ func (m *Manager) FindByDisplayNameAndClusterName(lctx *lmctx.LMContext, resourc
 }
 
 // Add implements types.DeviceManager.
-func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
 	log.Debugf("%#v", device)
+
+	if filters.EvaluateFiltering(resource, device, labels) {
+		log.Infof("filtering out device %q ", *device.DisplayName)
+		return nil, nil
+	}
 
 	params := lm.NewAddDeviceParams()
 	addFromWizard := false
@@ -333,7 +339,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource 
 	log := lmlog.Logger(lctx)
 	if !m.DC.Exists(name) {
 		log.Infof("Missing device %v; adding it now", name)
-		return m.Add(lctx, resource, options...)
+		return m.Add(lctx, resource, nil, options...)
 	}
 	if filter != nil && !filter() {
 		log.Debugf("filtered device update %s", name)
