@@ -95,7 +95,7 @@ func getFilterExpressionForResource(resource string) string {
 // EvaluateFiltering evaluates filtering expression based on labels and specified resource
 func EvaluateFiltering(resource string, device *models.Device, labels map[string]string) bool {
 	filterExpression := getFilterExpressionForResource(resource)
-	log.Infof("Filter exprrssion for resource %s is %s", resource, filterExpression)
+	log.Debugf("Filter exprrssion for resource %s is %s", resource, filterExpression)
 
 	if len(filterExpression) == 0 {
 		log.Infof("No filtering specified for resouce %s ", resource)
@@ -107,7 +107,7 @@ func EvaluateFiltering(resource string, device *models.Device, labels map[string
 	}
 
 	evaluationParams, _ := getEvaluationParamsForResource(device, labels)
-	log.Infof("Evaluation params  %+v:", evaluationParams)
+	log.Debugf("Evaluation params  %+v:", evaluationParams)
 
 	expression, err := govaluate.NewEvaluableExpression(filterExpression)
 
@@ -119,7 +119,6 @@ func EvaluateFiltering(resource string, device *models.Device, labels map[string
 	}
 
 	if result.(bool) {
-		log.Infof("Condition is evaluated to true")
 		return true
 	}
 	return false
