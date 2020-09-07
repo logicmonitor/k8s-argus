@@ -129,7 +129,7 @@ func (w *Watcher) serviceUpdateFilter(old, new *v1.Service) types.UpdateFilter {
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "services",
-		fmtServiceDisplayName(old), w.serviceUpdateFilter(old, new),
+		fmtServiceDisplayName(old), w.serviceUpdateFilter(old, new), new.Labels,
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update service %q: %v", fmtServiceDisplayName(new), err)

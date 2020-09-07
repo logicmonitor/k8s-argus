@@ -280,8 +280,13 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 	device := buildDevice(lctx, m.Config(), nil, options...)
 	log.Debugf("%#v", device)
 
-	if filters.EvaluateFiltering(resource, device, labels) {
-		log.Infof("filtering out device %q ", *device.DisplayName)
+	if filters.Evaluate(resource, device, labels) {
+		log.Infof("filtering out device %s ", *device.DisplayName)
+		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName)
+		if err != nil {
+			return nil, err
+		}
+		log.Infof("Successfully filtered out device %s ", *device.DisplayName)
 		return nil, nil
 	}
 
@@ -335,11 +340,11 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource string, name string, filter types.UpdateFilter, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource string, name string, filter types.UpdateFilter, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	if !m.DC.Exists(name) {
 		log.Infof("Missing device %v; adding it now", name)
-		return m.Add(lctx, resource, nil, options...)
+		return m.Add(lctx, resource, labels, options...)
 	}
 	if filter != nil && !filter() {
 		log.Debugf("filtered device update %s", name)

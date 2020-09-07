@@ -17,7 +17,7 @@ var (
 )
 
 type filters struct {
-	filtersConfig config
+	config config
 }
 
 type config struct {
@@ -42,7 +42,7 @@ func init() {
 }
 
 func (f *filters) setConfig(config *config) {
-	f.filtersConfig = *config
+	f.config = *config
 }
 
 func (config config) get(resource string) filterExpression {
@@ -73,7 +73,7 @@ func readFilterConfig() *config {
 		log.Fatalf("Failed to read filters config file: /etc/argus/filters-config.yaml")
 	}
 	config := &config{}
-	log.Infof("config bytes %s ", configBytes)
+	log.Debugf("config bytes %s ", configBytes)
 	err = yaml.Unmarshal(configBytes, config)
 	if err != nil {
 		log.Fatalf("Couldn't parse filters-config file.")
@@ -84,7 +84,7 @@ func readFilterConfig() *config {
 
 // getEvaluationParamsForResource generates evaluation parameters based on labels and specified resource
 func getEvaluationParamsForResource(device *models.Device, labels map[string]string) (map[string]interface{}, error) {
-	evaluationParams := make(map[string]interface{}, 8)
+	evaluationParams := make(map[string]interface{})
 
 	for key, value := range labels {
 		evaluationParams[key] = value
@@ -95,13 +95,13 @@ func getEvaluationParamsForResource(device *models.Device, labels map[string]str
 }
 
 func getFilterExpressionForResource(resource string) string {
-	return filter.filtersConfig.get("filter").get(resource)
+	return filter.config.get("filter").get(resource)
 }
 
-// EvaluateFiltering evaluates filtering expression based on labels and specified resource
-func EvaluateFiltering(resource string, device *models.Device, labels map[string]string) bool {
+// Evaluate evaluates filtering expression based on labels and specified resource
+func Evaluate(resource string, device *models.Device, labels map[string]string) bool {
 	filterExpression := getFilterExpressionForResource(resource)
-	log.Debugf("Filter exprrssion for resource %s is %s", resource, filterExpression)
+	log.Debugf("Filter expression for resource %s is %s", resource, filterExpression)
 
 	if len(filterExpression) == 0 {
 		log.Infof("No filtering specified for resouce %s ", resource)
@@ -115,7 +115,6 @@ func EvaluateFiltering(resource string, device *models.Device, labels map[string
 	evaluationParams, err := getEvaluationParamsForResource(device, labels)
 
 	if err != nil {
-		log.Errorf("Error occurred while generating evaluation params for resource %s", resource)
 		return false
 	}
 	log.Debugf("Evaluation params  %+v:", evaluationParams)

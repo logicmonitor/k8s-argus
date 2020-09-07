@@ -75,7 +75,7 @@ type DeviceMapper interface {
 	// UpdateAndReplace updates a device using the 'replace' OpType.
 	UpdateAndReplace(*lmctx.LMContext, string, *models.Device, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
-	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, UpdateFilter, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, UpdateFilter, map[string]string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
 	// specific field of a device.
 	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string, ...DeviceOption) (*models.Device, error)

@@ -107,7 +107,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "deployments",
-		fmtDeploymentDisplayName(old), nil,
+		fmtDeploymentDisplayName(old), nil, new.Labels,
 		w.args(new, constants.DeploymentCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update deployment %q: %v", fmtDeploymentDisplayName(new), err)
