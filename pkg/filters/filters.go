@@ -2,6 +2,8 @@ package filters
 
 import (
 	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/Knetic/govaluate"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -31,6 +33,10 @@ type filterExpression struct {
 
 // package init block so that filter-config will be loaded on application start
 func init() {
+	// skip launching config file read when invoked via go test.
+	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "-test.") {
+		return
+	}
 	filter = filters{}
 	filter.setConfig(readFilterConfig())
 }
@@ -106,15 +112,24 @@ func EvaluateFiltering(resource string, device *models.Device, labels map[string
 		return true
 	}
 
-	evaluationParams, _ := getEvaluationParamsForResource(device, labels)
+	evaluationParams, err := getEvaluationParamsForResource(device, labels)
+
+	if err != nil {
+		log.Errorf("Error occurred while generating evaluation params for resource %s", resource)
+		return false
+	}
 	log.Debugf("Evaluation params  %+v:", evaluationParams)
 
 	expression, err := govaluate.NewEvaluableExpression(filterExpression)
 
-	result, err := expression.Evaluate(evaluationParams)
-
 	if err != nil {
 		log.Errorf("Invalid filter expression for resource %s -> %s", resource, filterExpression)
+		return false
+	}
+
+	result, err := expression.Evaluate(evaluationParams)
+	if err != nil {
+		log.Errorf("Error while evaluation expression %s", filterExpression)
 		return false
 	}
 
