@@ -16,6 +16,16 @@ var (
 	expressionMap map[string]string
 )
 
+// package init block so that filter-config will be loaded on application start
+func init() {
+	// skip launching config file read when invoked via go test.
+	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "-test.") {
+		return
+	}
+	filter = filters{}
+	filter.setConfig(readFilterConfig())
+}
+
 type filters struct {
 	config config
 }
@@ -53,37 +63,28 @@ func (expression filterExpression) get(resource string) string {
 	return ""
 }
 
-// package init block so that filter-config will be loaded on application start
-func init() {
-	// skip launching config file read when invoked via go test.
-	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "-test.") {
-		return
-	}
-	filter = filters{}
-	filter.setConfig(readFilterConfig())
-	generateFilterExpressionMap()
-}
-
+// setConfig sets filter config and prepares expression map.
 func (f *filters) setConfig(config *config) {
 	f.config = *config
+	compileExpressionMap()
 }
 
 func readFilterConfig() *config {
 	configBytes, err := ioutil.ReadFile("/etc/argus/filters-config.yaml")
 	if err != nil {
-		log.Fatalf("Failed to read filters config file: /etc/argus/filters-config.yaml")
+		log.Errorf("Failed to read filters config file: /etc/argus/filters-config.yaml")
 	}
 	config := &config{}
 	log.Debugf("config bytes %s ", configBytes)
 	err = yaml.Unmarshal(configBytes, config)
 	if err != nil {
-		log.Fatalf("Couldn't parse filters-config file.")
+		log.Errorf("Couldn't parse filters-config file.")
 	}
 	log.Infof("Filter config read: %v", config)
 	return config
 }
 
-func generateFilterExpressionMap() {
+func compileExpressionMap() {
 	expressionMap = make(map[string]string)
 	expressionMap[constants.Pods] = getFilterExpressionForResource(constants.Pods)
 	expressionMap[constants.Deployments] = getFilterExpressionForResource(constants.Deployments)
@@ -95,7 +96,7 @@ func getFilterExpressionForResource(resource string) string {
 	return filter.config.get("filter").get(resource)
 }
 
-// Eval evaluates filtering expression based on labels and specified resource
+// Eval evaluates filtering expression based on specified evaluation parameters
 func Eval(resource string, evaluationParams map[string]interface{}) bool {
 	filterExpression := expressionMap[resource]
 

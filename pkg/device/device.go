@@ -304,7 +304,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 		if err != nil {
 			return nil, err
 		}
-		log.Infof("Successfully filtered out device %s ", *device.DisplayName)
+		log.Debugf("Successfully filtered out device %s ", *device.DisplayName)
 		return nil, nil
 	}
 
@@ -485,6 +485,7 @@ func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource string, na
 	err2 := m.DeleteByID(lctx, resource, d.ID)
 	if err2 == nil {
 		m.DC.Unset(name)
+		log.Infof("deleted device %q", name)
 	}
 	return err2
 }
