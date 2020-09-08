@@ -7,13 +7,13 @@ import (
 
 	"github.com/Knetic/govaluate"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	filter filters
+	filter        filters
+	expressionMap map[string]string
 )
 
 type filters struct {
@@ -21,7 +21,7 @@ type filters struct {
 }
 
 type config struct {
-	Filter filterExpression `yaml:"filter"`
+	FilterExp filterExpression `yaml:"filter"`
 }
 
 type filterExpression struct {
@@ -31,24 +31,10 @@ type filterExpression struct {
 	NODE       string `yaml:"nodes"`
 }
 
-// package init block so that filter-config will be loaded on application start
-func init() {
-	// skip launching config file read when invoked via go test.
-	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "-test.") {
-		return
-	}
-	filter = filters{}
-	filter.setConfig(readFilterConfig())
-}
-
-func (f *filters) setConfig(config *config) {
-	f.config = *config
-}
-
 func (config config) get(resource string) filterExpression {
 	switch resource {
 	case "filter":
-		return config.Filter
+		return config.FilterExp
 	}
 	return filterExpression{}
 }
@@ -67,6 +53,21 @@ func (expression filterExpression) get(resource string) string {
 	return ""
 }
 
+// package init block so that filter-config will be loaded on application start
+func init() {
+	// skip launching config file read when invoked via go test.
+	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "-test.") {
+		return
+	}
+	filter = filters{}
+	filter.setConfig(readFilterConfig())
+	generateFilterExpressionMap()
+}
+
+func (f *filters) setConfig(config *config) {
+	f.config = *config
+}
+
 func readFilterConfig() *config {
 	configBytes, err := ioutil.ReadFile("/etc/argus/filters-config.yaml")
 	if err != nil {
@@ -82,42 +83,30 @@ func readFilterConfig() *config {
 	return config
 }
 
-// getEvaluationParamsForResource generates evaluation parameters based on labels and specified resource
-func getEvaluationParamsForResource(device *models.Device, labels map[string]string) (map[string]interface{}, error) {
-	evaluationParams := make(map[string]interface{})
-
-	for key, value := range labels {
-		evaluationParams[key] = value
-	}
-
-	evaluationParams["name"] = *device.DisplayName
-	return evaluationParams, nil
+func generateFilterExpressionMap() {
+	expressionMap = make(map[string]string)
+	expressionMap[constants.Pods] = getFilterExpressionForResource(constants.Pods)
+	expressionMap[constants.Deployments] = getFilterExpressionForResource(constants.Deployments)
+	expressionMap[constants.Nodes] = getFilterExpressionForResource(constants.Nodes)
+	expressionMap[constants.Services] = getFilterExpressionForResource(constants.Services)
 }
 
 func getFilterExpressionForResource(resource string) string {
 	return filter.config.get("filter").get(resource)
 }
 
-// Evaluate evaluates filtering expression based on labels and specified resource
-func Evaluate(resource string, device *models.Device, labels map[string]string) bool {
-	filterExpression := getFilterExpressionForResource(resource)
-	log.Debugf("Filter expression for resource %s is %s", resource, filterExpression)
+// Eval evaluates filtering expression based on labels and specified resource
+func Eval(resource string, evaluationParams map[string]interface{}) bool {
+	filterExpression := expressionMap[resource]
 
 	if len(filterExpression) == 0 {
-		log.Infof("No filtering specified for resouce %s ", resource)
+		log.Debugf("No filtering specified for resouce %s ", resource)
 		return false
 	}
 
 	if isFilterAll(filterExpression) {
 		return true
 	}
-
-	evaluationParams, err := getEvaluationParamsForResource(device, labels)
-
-	if err != nil {
-		return false
-	}
-	log.Debugf("Evaluation params  %+v:", evaluationParams)
 
 	expression, err := govaluate.NewEvaluableExpression(filterExpression)
 
@@ -128,7 +117,7 @@ func Evaluate(resource string, device *models.Device, labels map[string]string) 
 
 	result, err := expression.Evaluate(evaluationParams)
 	if err != nil {
-		log.Errorf("Error while evaluation expression %s", filterExpression)
+		log.Errorf("Error while evaluating expression %s", filterExpression)
 		return false
 	}
 

@@ -274,14 +274,32 @@ func (m *Manager) FindByDisplayNameAndClusterName(lctx *lmctx.LMContext, resourc
 	return nil, nil
 }
 
+// getEvaluationParamsForResource generates evaluation parameters based on labels and specified resource
+func getEvaluationParamsForResource(device *models.Device, labels map[string]string) (map[string]interface{}, error) {
+	evaluationParams := make(map[string]interface{})
+
+	for key, value := range labels {
+		evaluationParams[key] = value
+	}
+
+	evaluationParams["name"] = *device.DisplayName
+	return evaluationParams, nil
+}
+
 // Add implements types.DeviceManager.
 func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
 	log.Debugf("%#v", device)
 
-	if filters.Evaluate(resource, device, labels) {
-		log.Infof("filtering out device %s ", *device.DisplayName)
+	evaluationParams, err := getEvaluationParamsForResource(device, labels)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
+
+	if filters.Eval(resource, evaluationParams) {
+		// delete existing resource which is mentioned for filtering.
 		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName)
 		if err != nil {
 			return nil, err
