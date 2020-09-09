@@ -10,8 +10,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const hasCategoryOpen = "hasCategory("
-const hasCategoryClose = ")"
+const (
+	hasCategoryOpen = "hasCategory("
+	existsOpen      = "exists("
+	closingBracket  = ")"
+)
 
 // Options are the options for creating a device group.
 type Options struct {
@@ -31,6 +34,7 @@ type AppliesToBuilder interface {
 	And() AppliesToBuilder
 	Or() AppliesToBuilder
 	Equals(string) AppliesToBuilder
+	Exists(string) AppliesToBuilder
 	String() string
 }
 
@@ -58,7 +62,12 @@ func (a *appliesToBuilder) Equals(val string) AppliesToBuilder {
 }
 
 func (a *appliesToBuilder) HasCategory(category string) AppliesToBuilder {
-	a.value += hasCategoryOpen + fmt.Sprintf(`"%s"`, category) + hasCategoryClose
+	a.value += hasCategoryOpen + fmt.Sprintf(`"%s"`, category) + closingBracket
+	return a
+}
+
+func (a *appliesToBuilder) Exists(property string) AppliesToBuilder {
+	a.value += existsOpen + fmt.Sprintf(`"%s"`, property) + closingBracket
 	return a
 }
 

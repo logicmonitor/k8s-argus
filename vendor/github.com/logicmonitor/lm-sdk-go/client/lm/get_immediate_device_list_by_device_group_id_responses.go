@@ -34,6 +34,19 @@ func (o *GetImmediateDeviceListByDeviceGroupIDReader) ReadResponse(response runt
 
 	default:
 		result := NewGetImmediateDeviceListByDeviceGroupIDDefault(response.Code())
+		if result.Code() == 429 {
+			errResp := &models.ErrorResponse{
+				ErrorCode: 429,
+				ErrorDetail: map[string]interface{}{
+					"x-rate-limit-limit":     response.GetHeader("x-rate-limit-limit"),
+					"x-rate-limit-remaining": response.GetHeader("x-rate-limit-remaining"),
+					"x-rate-limit-window":    response.GetHeader("x-rate-limit-window"),
+				},
+				ErrorMessage: "Customized response from argus sdk",
+			}
+			result.Payload = errResp
+			return nil, result
+		}
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}

@@ -6,8 +6,10 @@ import (
 	"strconv"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -21,6 +23,7 @@ const (
 // Watcher represents a watcher type that watches pods.
 type Watcher struct {
 	types.DeviceManager
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.
@@ -47,14 +50,15 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
-
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + pod.Name}))
+		log := lmlog.Logger(lctx)
 		log.Debugf("Handling add pod event: %s", pod.Name)
 
 		// Require an IP address.
 		if pod.Status.PodIP == "" {
 			return
 		}
-		w.add(pod)
+		w.add(lctx, pod)
 	}
 }
 
@@ -64,17 +68,19 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Pod)
 		new := newObj.(*v1.Pod)
 
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
+		log := lmlog.Logger(lctx)
 		log.Debugf("Handling update pod event: %s", old.Name)
 
 		// If the old pod does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
 		if old.Status.PodIP == "" && new.Status.PodIP != "" {
-			w.add(new)
+			w.add(lctx, new)
 			return
 		}
 
 		if new.Status.Phase == v1.PodSucceeded {
-			if err := w.DeleteByDisplayName(old.Name); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), old.Name); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
@@ -83,7 +89,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		}
 
 		// if old.Status.PodIP != new.Status.PodIP {
-		w.update(old, new)
+		w.update(lctx, old, new)
 		// }
 	}
 }
@@ -93,12 +99,14 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		pod := obj.(*v1.Pod)
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + pod.Name}))
+		log := lmlog.Logger(lctx)
 
 		log.Debugf("Handling delete pod event: %s", pod.Name)
 
 		// Delete the pod.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(pod.Name); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), pod.Name); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
@@ -107,17 +115,25 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		}
 
 		// Move the pod.
-		w.move(pod)
+		w.move(lctx, pod)
 	}
 }
 
 // nolint: dupl
-func (w *Watcher) add(pod *v1.Pod) {
-	if _, err := w.Add(
+
+func (w *Watcher) add(lctx *lmctx.LMContext, pod *v1.Pod) {
+	log := lmlog.Logger(lctx)
+
+	p, err := w.Add(lctx, w.Resource(), pod.Labels,
 		w.args(pod, constants.PodCategory)...,
-	); err != nil {
+	)
+	if err != nil {
 		log.Errorf("Failed to add pod %q: %v", pod.Name, err)
 		return
+	}
+
+	if p == nil {
+		log.Infof("pod %q is not added as it is mentioned for filtering.", pod.Name)
 	}
 	log.Infof("Added pod %q", pod.Name)
 }
@@ -128,9 +144,10 @@ func (w *Watcher) podUpdateFilter(old, new *v1.Pod) types.UpdateFilter {
 	}
 }
 
-func (w *Watcher) update(old, new *v1.Pod) {
-	if _, err := w.UpdateAndReplaceByDisplayName(
-		old.Name, w.podUpdateFilter(old, new),
+func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "pods",
+		old.Name, w.podUpdateFilter(old, new), new.Labels,
 		w.args(new, constants.PodCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update pod %q: %v", new.Name, err)
@@ -140,8 +157,9 @@ func (w *Watcher) update(old, new *v1.Pod) {
 }
 
 // nolint: dupl
-func (w *Watcher) move(pod *v1.Pod) {
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(pod.Name, constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
+func (w *Watcher) move(lctx *lmctx.LMContext, pod *v1.Pod) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), pod.Name, constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", pod.Name, err)
 		return
 	}
@@ -178,7 +196,7 @@ func getPodDNSName(pod *v1.Pod) string {
 }
 
 // GetPodsMap implements the getting pods map info from k8s
-func GetPodsMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+func GetPodsMap(k8sClient kubernetes.Interface, namespace string) (map[string]string, error) {
 	podsMap := make(map[string]string)
 	podList, err := k8sClient.CoreV1().Pods(namespace).List(metav1.ListOptions{})
 	if err != nil || podList == nil {
