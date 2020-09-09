@@ -120,13 +120,20 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 }
 
 // nolint: dupl
+
 func (w *Watcher) add(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(),
+
+	p, err := w.Add(lctx, w.Resource(), pod.Labels,
 		w.args(pod, constants.PodCategory)...,
-	); err != nil {
+	)
+	if err != nil {
 		log.Errorf("Failed to add pod %q: %v", pod.Name, err)
 		return
+	}
+
+	if p == nil {
+		log.Infof("pod %q is not added as it is mentioned for filtering.", pod.Name)
 	}
 	log.Infof("Added pod %q", pod.Name)
 }
@@ -140,7 +147,7 @@ func (w *Watcher) podUpdateFilter(old, new *v1.Pod) types.UpdateFilter {
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "pods",
-		old.Name, w.podUpdateFilter(old, new),
+		old.Name, w.podUpdateFilter(old, new), new.Labels,
 		w.args(new, constants.PodCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update pod %q: %v", new.Name, err)
