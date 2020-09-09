@@ -98,7 +98,12 @@ func getFilterExpressionForResource(resource string) string {
 
 // Eval evaluates filtering expression based on specified evaluation parameters
 func Eval(resource string, evaluationParams map[string]interface{}) bool {
-	filterExpression := expressionMap[resource]
+	filterExpression, exists := expressionMap[resource]
+
+	if !exists {
+		log.Debugf("Filtering not possible for resouce %s as entry is missing in configuration.", resource)
+		return false
+	}
 
 	if len(filterExpression) == 0 {
 		log.Debugf("No filtering specified for resouce %s ", resource)
@@ -118,7 +123,7 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 
 	result, err := expression.Evaluate(evaluationParams)
 	if err != nil {
-		log.Errorf("Error while evaluating expression %s", filterExpression)
+		log.Debugf("Error while evaluating expression %s", filterExpression)
 		return false
 	}
 

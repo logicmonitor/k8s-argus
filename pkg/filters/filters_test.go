@@ -7,16 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func generateFilterExprMap() {
+func initFilterExprMap() {
 	expressionMap = make(map[string]string)
-	expressionMap[constants.Pods] = "l1 =~ 'v1'"
+	expressionMap[constants.Pods] = "l1 =~ 'v1' && name =~ 'test'"
 	expressionMap[constants.Deployments] = ""
 	expressionMap[constants.Nodes] = "*"
-	expressionMap[constants.Services] = "name =~ 'test*'"
+	expressionMap[constants.Services] = "l2 =~ 'v*'"
 }
 
 func init() {
-	generateFilterExprMap()
+	initFilterExprMap()
 }
 
 func TestEvaluate(t *testing.T) {
@@ -27,6 +27,12 @@ func TestEvaluate(t *testing.T) {
 		evalParams     map[string]interface{}
 		expectedResult bool
 	}{
+		{
+			name:           "Invalid resouce name",
+			resource:       "XYZ",
+			evalParams:     getSampleEvaluationParams(),
+			expectedResult: false,
+		},
 		{
 			name:           "Pods expression, check equality",
 			resource:       constants.Pods,
