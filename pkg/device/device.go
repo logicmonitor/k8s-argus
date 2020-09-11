@@ -299,7 +299,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
 
 	if filters.Eval(resource, evaluationParams) {
-		log.Infof("Filtering out device %s.", *device.DisplayName)
+		log.Infof("Filtering out %s %s.", resource, *device.DisplayName)
 		// delete existing resource which is mentioned for filtering.
 		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName)
 		if err != nil {
