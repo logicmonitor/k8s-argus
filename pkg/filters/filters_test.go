@@ -11,6 +11,14 @@ func init() {
 	initFilterExprMap()
 }
 
+func initFilterExprMap() {
+	expressionMap = make(map[string]string)
+	expressionMap[constants.Pods] = "p1 =~ 'v1' || p3 =~ 'v*'"
+	expressionMap[constants.Deployments] = "d1 =~ 'v1' || d4 =~ 'v4'"
+	expressionMap[constants.Nodes] = "test\\/qa == 'abc'"
+	expressionMap[constants.Services] = "s1 =~ 'dev' || s1 =~ 'qa'"
+}
+
 func TestEvaluate(t *testing.T) {
 	t.Parallel()
 	filterTestCases := []struct {
@@ -79,14 +87,6 @@ func TestEvaluate(t *testing.T) {
 			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.name, testCase.expectedResult, result)
 		})
 	}
-}
-
-func initFilterExprMap() {
-	expressionMap = make(map[string]string)
-	expressionMap[constants.Pods] = "p1 =~ 'v1' || p3 =~ 'v*'"
-	expressionMap[constants.Deployments] = "d1 =~ 'v1' || d4 =~ 'v4'"
-	expressionMap[constants.Nodes] = "test\\/qa == 'abc'"
-	expressionMap[constants.Services] = "s1 =~ 'dev' || s1 =~ 'qa'"
 }
 
 func getSampleEvaluationParamsForPod1() map[string]interface{} {
