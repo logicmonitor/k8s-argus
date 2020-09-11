@@ -119,7 +119,7 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 	}
 
 	parsedExpression := parseFilterExpressions(filterExpression)
-	log.Infof("parsed expression : %q", parsedExpression)
+	log.Debugf("parsed expression for resource %s: %q", resource, parsedExpression)
 
 	for _, expr := range parsedExpression {
 		expression, err := govaluate.NewEvaluableExpression(expr)
@@ -132,9 +132,10 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 		result, err := expression.Evaluate(evaluationParams)
 		if err != nil {
 			log.Debugf("Error while evaluating expression %s", expr)
+			continue
 		}
 
-		if result != nil && result.(bool) {
+		if result.(bool) {
 			return true
 		}
 	}

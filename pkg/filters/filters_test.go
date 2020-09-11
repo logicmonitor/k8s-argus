@@ -38,7 +38,7 @@ func TestEvaluate(t *testing.T) {
 			expectedResult: true,
 		},
 		{
-			name:           "Nodes- check filter all",
+			name:           "Nodes- check back slash in key",
 			resource:       constants.Nodes,
 			evalParams:     getSampleEvaluationParamsForNode1(),
 			expectedResult: true,
@@ -85,7 +85,7 @@ func initFilterExprMap() {
 	expressionMap = make(map[string]string)
 	expressionMap[constants.Pods] = "p1 =~ 'v1' || p3 =~ 'v*'"
 	expressionMap[constants.Deployments] = "d1 =~ 'v1' || d4 =~ 'v4'"
-	expressionMap[constants.Nodes] = "*"
+	expressionMap[constants.Nodes] = "test\\/qa == 'abc'"
 	expressionMap[constants.Services] = "s1 =~ 'dev' || s1 =~ 'qa'"
 }
 
@@ -136,7 +136,7 @@ func getSampleEvaluationParamsForSvc2() map[string]interface{} {
 
 func getSampleEvaluationParamsForNode1() map[string]interface{} {
 	labels := make(map[string]interface{})
-	labels["n1"] = "v1"
+	labels["test/qa"] = "abc"
 	labels["name"] = "node-device"
 	return labels
 }
