@@ -11,13 +11,13 @@ var (
 	enable  = true
 	disable = false
 
-	client *kubernetes.Clientset
+	client kubernetes.Interface
 
 	deploymentPermissionFlag *bool
 )
 
 // Init is a function than init the permission context
-func Init(k8sClient *kubernetes.Clientset) {
+func Init(k8sClient kubernetes.Interface) {
 	client = k8sClient
 }
 
