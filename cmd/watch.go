@@ -44,6 +44,10 @@ var watchCmd = &cobra.Command{
 		hook := &lmlog.DefaultFieldHook{}
 		log.AddHook(hook)
 
+		// Add hook to log pod id in log context
+		hook := &lmlog.DefaultFieldHook{}
+		log.AddHook(hook)
+
 		// Instantiate the base struct.
 		base, err := argus.NewBase(conf)
 		if err != nil {
