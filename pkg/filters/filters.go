@@ -96,6 +96,10 @@ func getFilterExpressionForResource(resource string) string {
 	return filter.config.get("filter").get(resource)
 }
 
+func parseFilterExpressions(expression string) []string {
+	return strings.Split(expression, "||")
+}
+
 // Eval evaluates filtering expression based on specified evaluation parameters
 func Eval(resource string, evaluationParams map[string]interface{}) bool {
 	filterExpression, exists := expressionMap[resource]
@@ -114,22 +118,27 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 		return true
 	}
 
-	expression, err := govaluate.NewEvaluableExpression(filterExpression)
+	parsedExpression := parseFilterExpressions(filterExpression)
+	log.Infof("parsed expression : %q", parsedExpression)
 
-	if err != nil {
-		log.Errorf("Invalid filter expression for resource %s -> %s", resource, filterExpression)
-		return false
+	for _, expr := range parsedExpression {
+		expression, err := govaluate.NewEvaluableExpression(expr)
+
+		if err != nil {
+			log.Errorf("Invalid filter expression for resource %s -> %s", resource, expr)
+			return false
+		}
+
+		result, err := expression.Evaluate(evaluationParams)
+		if err != nil {
+			log.Debugf("Error while evaluating expression %s", expr)
+		}
+
+		if result != nil && result.(bool) {
+			return true
+		}
 	}
 
-	result, err := expression.Evaluate(evaluationParams)
-	if err != nil {
-		log.Debugf("Error while evaluating expression %s", filterExpression)
-		return false
-	}
-
-	if result.(bool) {
-		return true
-	}
 	return false
 
 }
