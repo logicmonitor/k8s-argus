@@ -15,7 +15,7 @@ func initFilterExprMap() {
 	expressionMap = make(map[string]string)
 	expressionMap[constants.Pods] = "p1 =~ 'v1' || p3 =~ 'v*'"
 	expressionMap[constants.Deployments] = "d1 =~ 'v1' || d4 =~ 'v4'"
-	expressionMap[constants.Nodes] = "test\\/qa == 'abc'"
+	expressionMap[constants.Nodes] = "test/qa == 'abc'"
 	expressionMap[constants.Services] = "s1 =~ 'dev' || s1 =~ 'qa'"
 }
 

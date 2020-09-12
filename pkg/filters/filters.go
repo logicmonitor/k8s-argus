@@ -122,6 +122,10 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 	log.Debugf("parsed expression for resource %s: %q", resource, parsedExpression)
 
 	for _, expr := range parsedExpression {
+		if strings.Contains(expr, "/") {
+			expr = strings.ReplaceAll(expr, "/", "\\/")
+		}
+
 		expression, err := govaluate.NewEvaluableExpression(expr)
 
 		if err != nil {
