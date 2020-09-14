@@ -50,6 +50,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:a5d11ec5e6c3eee7eef01b01c1acf98b61fe41c4850a6c775122df3bcf954a82"
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  pruneopts = ""
+  revision = "78cf029964937ffcb67feaeac1fe23d9cef0d26a"
+  version = "v5.0.0"
+
+[[projects]]
   digest = "1:eb53021a8aa3f599d29c7102e65026242bdedce998a54837dc67f14b6a97c5fd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -205,6 +213,14 @@
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:ad92aa49f34cbc3546063c7eb2cabb55ee2278b72842eda80e2a20a8a06a8d73"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = ""
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:2910e18ef4f095cf30d095f6764f2a1031c7206c7f7f89cf892a154b6dc0bc2a"
   name = "github.com/googleapis/gnostic"
   packages = [
@@ -354,6 +370,22 @@
   version = "v1.6.0"
 
 [[projects]]
+  digest = "1:c45802472e0c06928cd997661f2af610accd85217023b1d5f6331bebce0671d3"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = ""
+  revision = "614d223910a179a466c1767a985424175c39b465"
+  version = "v0.9.1"
+
+[[projects]]
+  digest = "1:256484dbbcd271f9ecebc6795b2df8cad4c458dd0f5fd82a8c2fa0c29f233411"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = ""
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:1a405cddcf3368445051fb70ab465ae99da56ad7be8d8ca7fc52159d1c2d873c"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -411,6 +443,14 @@
   packages = ["."]
   pruneopts = ""
   revision = "97ee7adfef4882d78c0ef26e22a0c8a7a8bf6776"
+
+[[projects]]
+  digest = "1:83fd2513b9f6ae0997bf646db6b74e9e00131e31002116fda597175f25add42d"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = ""
+  revision = "f654a9112bbeac49ca2cd45bfbe11533c4666cf8"
+  version = "v1.6.1"
 
 [[projects]]
   digest = "1:e818a738c880c5571b3817e9173add5c598a90f8615fa7a9bafc23fea774a603"
@@ -625,6 +665,14 @@
   revision = "53403b58ad1b561927d19068c655246f2db79d48"
 
 [[projects]]
+  branch = "v3"
+  digest = "1:2e9c4d6def1d36dcd17730e00c06b49a2e97ea5e1e639bcd24fa60fa43e33ad6"
+  name = "gopkg.in/yaml.v3"
+  packages = ["."]
+  pruneopts = ""
+  revision = "eeeca48fe7764f320e4870d231902bf9c1be2c08"
+
+[[projects]]
   branch = "release-1.17"
   digest = "1:b89da004785adaae71e99583bb8f68f70b6a34840673990d9bcebfd24b7a49ea"
   name = "k8s.io/api"
@@ -706,16 +754,19 @@
     "pkg/util/framer",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/mergepatch",
     "pkg/util/naming",
     "pkg/util/net",
     "pkg/util/runtime",
     "pkg/util/sets",
+    "pkg/util/strategicpatch",
     "pkg/util/validation",
     "pkg/util/validation/field",
     "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/version",
     "pkg/watch",
+    "third_party/forked/golang/json",
     "third_party/forked/golang/reflect",
   ]
   pruneopts = ""
@@ -727,48 +778,90 @@
   name = "k8s.io/client-go"
   packages = [
     "discovery",
+    "discovery/fake",
     "kubernetes",
+    "kubernetes/fake",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1",
+    "kubernetes/typed/admissionregistration/v1/fake",
     "kubernetes/typed/admissionregistration/v1beta1",
+    "kubernetes/typed/admissionregistration/v1beta1/fake",
     "kubernetes/typed/apps/v1",
+    "kubernetes/typed/apps/v1/fake",
     "kubernetes/typed/apps/v1beta1",
+    "kubernetes/typed/apps/v1beta1/fake",
     "kubernetes/typed/apps/v1beta2",
+    "kubernetes/typed/apps/v1beta2/fake",
     "kubernetes/typed/auditregistration/v1alpha1",
+    "kubernetes/typed/auditregistration/v1alpha1/fake",
     "kubernetes/typed/authentication/v1",
+    "kubernetes/typed/authentication/v1/fake",
     "kubernetes/typed/authentication/v1beta1",
+    "kubernetes/typed/authentication/v1beta1/fake",
     "kubernetes/typed/authorization/v1",
+    "kubernetes/typed/authorization/v1/fake",
     "kubernetes/typed/authorization/v1beta1",
+    "kubernetes/typed/authorization/v1beta1/fake",
     "kubernetes/typed/autoscaling/v1",
+    "kubernetes/typed/autoscaling/v1/fake",
     "kubernetes/typed/autoscaling/v2beta1",
+    "kubernetes/typed/autoscaling/v2beta1/fake",
     "kubernetes/typed/autoscaling/v2beta2",
+    "kubernetes/typed/autoscaling/v2beta2/fake",
     "kubernetes/typed/batch/v1",
+    "kubernetes/typed/batch/v1/fake",
     "kubernetes/typed/batch/v1beta1",
+    "kubernetes/typed/batch/v1beta1/fake",
     "kubernetes/typed/batch/v2alpha1",
+    "kubernetes/typed/batch/v2alpha1/fake",
     "kubernetes/typed/certificates/v1beta1",
+    "kubernetes/typed/certificates/v1beta1/fake",
     "kubernetes/typed/coordination/v1",
+    "kubernetes/typed/coordination/v1/fake",
     "kubernetes/typed/coordination/v1beta1",
+    "kubernetes/typed/coordination/v1beta1/fake",
     "kubernetes/typed/core/v1",
+    "kubernetes/typed/core/v1/fake",
     "kubernetes/typed/discovery/v1alpha1",
+    "kubernetes/typed/discovery/v1alpha1/fake",
     "kubernetes/typed/discovery/v1beta1",
+    "kubernetes/typed/discovery/v1beta1/fake",
     "kubernetes/typed/events/v1beta1",
+    "kubernetes/typed/events/v1beta1/fake",
     "kubernetes/typed/extensions/v1beta1",
+    "kubernetes/typed/extensions/v1beta1/fake",
     "kubernetes/typed/flowcontrol/v1alpha1",
+    "kubernetes/typed/flowcontrol/v1alpha1/fake",
     "kubernetes/typed/networking/v1",
+    "kubernetes/typed/networking/v1/fake",
     "kubernetes/typed/networking/v1beta1",
+    "kubernetes/typed/networking/v1beta1/fake",
     "kubernetes/typed/node/v1alpha1",
+    "kubernetes/typed/node/v1alpha1/fake",
     "kubernetes/typed/node/v1beta1",
+    "kubernetes/typed/node/v1beta1/fake",
     "kubernetes/typed/policy/v1beta1",
+    "kubernetes/typed/policy/v1beta1/fake",
     "kubernetes/typed/rbac/v1",
+    "kubernetes/typed/rbac/v1/fake",
     "kubernetes/typed/rbac/v1alpha1",
+    "kubernetes/typed/rbac/v1alpha1/fake",
     "kubernetes/typed/rbac/v1beta1",
+    "kubernetes/typed/rbac/v1beta1/fake",
     "kubernetes/typed/scheduling/v1",
+    "kubernetes/typed/scheduling/v1/fake",
     "kubernetes/typed/scheduling/v1alpha1",
+    "kubernetes/typed/scheduling/v1alpha1/fake",
     "kubernetes/typed/scheduling/v1beta1",
+    "kubernetes/typed/scheduling/v1beta1/fake",
     "kubernetes/typed/settings/v1alpha1",
+    "kubernetes/typed/settings/v1alpha1/fake",
     "kubernetes/typed/storage/v1",
+    "kubernetes/typed/storage/v1/fake",
     "kubernetes/typed/storage/v1alpha1",
+    "kubernetes/typed/storage/v1alpha1/fake",
     "kubernetes/typed/storage/v1beta1",
+    "kubernetes/typed/storage/v1beta1/fake",
     "pkg/apis/clientauthentication",
     "pkg/apis/clientauthentication/v1alpha1",
     "pkg/apis/clientauthentication/v1beta1",
@@ -776,6 +869,7 @@
     "plugin/pkg/client/auth/exec",
     "rest",
     "rest/watch",
+    "testing",
     "tools/cache",
     "tools/clientcmd/api",
     "tools/metrics",
@@ -798,6 +892,14 @@
   pruneopts = ""
   revision = "2ca9ad30301bf30a8a6e0fa2110db6b8df699a91"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "feature-serverside-apply"
+  digest = "1:859289d74af491879fee9da12d64c4ddf32cee242b29be39c37db0cb8854282c"
+  name = "k8s.io/kube-openapi"
+  packages = ["pkg/util/proto"]
+  pruneopts = ""
+  revision = "f442ecb314a3679150c272e2b9713d8deed5955d"
 
 [[projects]]
   branch = "master"
@@ -826,6 +928,7 @@
     "github.com/coreos/etcd/client",
     "github.com/go-openapi/runtime/client",
     "github.com/go-openapi/strfmt",
+    "github.com/google/uuid",
     "github.com/kelseyhightower/envconfig",
     "github.com/logicmonitor/k8s-collectorset-controller/api",
     "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants",
@@ -835,6 +938,7 @@
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "github.com/stretchr/testify/assert",
     "google.golang.org/grpc",
     "google.golang.org/grpc/connectivity",
     "google.golang.org/grpc/health/grpc_health_v1",
@@ -845,6 +949,7 @@
     "k8s.io/apimachinery/pkg/fields",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/cache",
   ]

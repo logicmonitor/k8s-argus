@@ -27,23 +27,25 @@ var watchCmd = &cobra.Command{
 		// version to the next.
 
 		// Application configuration
-		config, err := config.GetConfig()
+		conf, err := config.GetConfig()
 		if err != nil {
 			fmt.Printf("Failed to open %s: %v", constants.ConfigPath, err)
 			os.Exit(1)
 		}
 
 		// Set the logging level.
-		if config.Debug {
+		if conf.Debug {
 			log.SetLevel(log.DebugLevel)
 		}
+		// Monitor config for log level change
+		lmlog.MonitorConfig()
 
 		// Add hook to log pod id in log context
 		hook := &lmlog.DefaultFieldHook{}
 		log.AddHook(hook)
 
 		// Instantiate the base struct.
-		base, err := argus.NewBase(config)
+		base, err := argus.NewBase(conf)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -52,7 +54,7 @@ var watchCmd = &cobra.Command{
 		permission.Init(base.K8sClient)
 
 		// Set up a gRPC connection and CSC Client.
-		connection.Initialize(config)
+		connection.Initialize(conf)
 
 		connection.CreateConnectionHandler()
 
