@@ -100,6 +100,28 @@ func parseFilterExpressions(expression string) []string {
 	return strings.Split(expression, "||")
 }
 
+func checkAndReplaceDot(expression string) string {
+	if strings.Contains(expression, ".") {
+		expression = strings.ReplaceAll(expression, ".", "_")
+	}
+	return expression
+}
+
+func checkAndReplaceDash(expression string) string {
+	if strings.Contains(expression, "-") {
+		expression = strings.ReplaceAll(expression, "-", "_")
+	}
+	return expression
+}
+
+// CheckAndReplaceInvlidChars replaces unsupported characters with '_'.
+func CheckAndReplaceInvlidChars(expression string) string {
+	expression = checkAndReplaceDot(expression)
+	expression = checkAndReplaceDash(expression)
+
+	return expression
+}
+
 // Eval evaluates filtering expression based on specified evaluation parameters
 func Eval(resource string, evaluationParams map[string]interface{}) bool {
 	filterExpression, exists := expressionMap[resource]
@@ -126,6 +148,7 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 			expr = strings.ReplaceAll(expr, "/", "\\/")
 		}
 
+		expr = CheckAndReplaceInvlidChars(expr)
 		expression, err := govaluate.NewEvaluableExpression(expr)
 
 		if err != nil {

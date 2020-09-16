@@ -15,8 +15,12 @@ func initFilterExprMap() {
 	expressionMap = make(map[string]string)
 	expressionMap[constants.Pods] = "p1 =~ 'v1' || p3 =~ 'v*'"
 	expressionMap[constants.Deployments] = "d1 =~ 'v1' || d4 =~ 'v4'"
-	expressionMap[constants.Nodes] = "test/qa == 'abc'"
+	expressionMap[constants.Nodes] = "*"
 	expressionMap[constants.Services] = "s1 =~ 'dev' || s1 =~ 'qa'"
+	expressionMap["TestDot"] = "kubernetes.node =~ 'abc*'"
+	expressionMap["TestDash"] = "node-app =~ 'TestNode'"
+	expressionMap["TestSlash"] = "kubernetes/hostname =~ 'host-One'"
+	expressionMap["TestAllChars"] = "kubernetes.io/pod-name =~ 'pod-test-01'"
 }
 
 func TestEvaluate(t *testing.T) {
@@ -46,7 +50,7 @@ func TestEvaluate(t *testing.T) {
 			expectedResult: true,
 		},
 		{
-			name:           "Nodes- check back slash in key",
+			name:           "Nodes- check all",
 			resource:       constants.Nodes,
 			evalParams:     getSampleEvaluationParamsForNode1(),
 			expectedResult: true,
@@ -70,9 +74,33 @@ func TestEvaluate(t *testing.T) {
 			expectedResult: true,
 		},
 		{
-			name:           "Services- label with qa value ",
+			name:           "Services- label with qa value",
 			resource:       constants.Services,
 			evalParams:     getSampleEvaluationParamsForSvc2(),
+			expectedResult: true,
+		},
+		{
+			name:           "Test dots in key",
+			resource:       "TestDot",
+			evalParams:     getSampleEvaluationParamsForDotInKey(),
+			expectedResult: true,
+		},
+		{
+			name:           "Test dash in key",
+			resource:       "TestDash",
+			evalParams:     getSampleEvaluationParamsForDashInKey(),
+			expectedResult: true,
+		},
+		{
+			name:           "Test slash in key",
+			resource:       "TestSlash",
+			evalParams:     getSampleEvaluationParamsForSlashInKey(),
+			expectedResult: true,
+		},
+		{
+			name:           "Test all supported chars in key and value",
+			resource:       "TestAllChars",
+			evalParams:     getSampleEvaluationParamsForAllSuppCharsInKeyAndValue(),
 			expectedResult: true,
 		},
 	}
@@ -136,7 +164,35 @@ func getSampleEvaluationParamsForSvc2() map[string]interface{} {
 
 func getSampleEvaluationParamsForNode1() map[string]interface{} {
 	labels := make(map[string]interface{})
-	labels["test/qa"] = "abc"
+	labels["testqa"] = "abc"
+	labels["name"] = "node-device"
+	return labels
+}
+
+func getSampleEvaluationParamsForDotInKey() map[string]interface{} {
+	labels := make(map[string]interface{})
+	labels["kubernetes_node"] = "abc"
+	labels["name"] = "node-device"
+	return labels
+}
+
+func getSampleEvaluationParamsForDashInKey() map[string]interface{} {
+	labels := make(map[string]interface{})
+	labels["node_app"] = "TestNode"
+	labels["name"] = "node-device"
+	return labels
+}
+
+func getSampleEvaluationParamsForSlashInKey() map[string]interface{} {
+	labels := make(map[string]interface{})
+	labels["kubernetes/hostname"] = "host_One"
+	labels["name"] = "node-device"
+	return labels
+}
+
+func getSampleEvaluationParamsForAllSuppCharsInKeyAndValue() map[string]interface{} {
+	labels := make(map[string]interface{})
+	labels["kubernetes_io/pod_name"] = "pod_test_01"
 	labels["name"] = "node-device"
 	return labels
 }

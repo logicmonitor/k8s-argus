@@ -279,6 +279,8 @@ func getEvaluationParamsForResource(device *models.Device, labels map[string]str
 	evaluationParams := make(map[string]interface{})
 
 	for key, value := range labels {
+		key = filters.CheckAndReplaceInvlidChars(key)
+		value = filters.CheckAndReplaceInvlidChars(value)
 		evaluationParams[key] = value
 	}
 
