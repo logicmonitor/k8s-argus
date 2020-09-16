@@ -114,8 +114,8 @@ func checkAndReplaceDash(expression string) string {
 	return expression
 }
 
-// CheckAndReplaceInvlidChars replaces unsupported characters with '_'.
-func CheckAndReplaceInvlidChars(expression string) string {
+// CheckAndReplaceInvalidChars replaces unsupported characters with '_'.
+func CheckAndReplaceInvalidChars(expression string) string {
 	expression = checkAndReplaceDot(expression)
 	expression = checkAndReplaceDash(expression)
 
@@ -148,7 +148,7 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 			expr = strings.ReplaceAll(expr, "/", "\\/")
 		}
 
-		expr = CheckAndReplaceInvlidChars(expr)
+		expr = CheckAndReplaceInvalidChars(expr)
 		expression, err := govaluate.NewEvaluableExpression(expr)
 
 		if err != nil {
