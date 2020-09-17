@@ -73,6 +73,14 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			DeleteDevices:         d.Config.DeleteDevices,
 			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 		},
+		{
+			Name:                  constants.HorizontalPodAutoscalerDeviceGroupName,
+			DisableAlerting:       true,
+			AppliesTo:             devicegroup.NewAppliesToBuilder(),
+			Client:                d.LMClient,
+			DeleteDevices:         d.Config.DeleteDevices,
+			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+		},
 	}
 }
 
