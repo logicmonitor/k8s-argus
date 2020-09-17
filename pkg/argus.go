@@ -15,6 +15,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
 	"github.com/logicmonitor/k8s-argus/pkg/facade"
 	"github.com/logicmonitor/k8s-argus/pkg/lmexec"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -217,7 +218,10 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	initSyncer := sync.InitSyncer{
 		DeviceManager: deviceManager,
 	}
-	initSyncer.InitSync()
+
+	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"name": "init-sync"}))
+	initSyncer.InitSync(lctx)
+	initSyncer.RunInitSyncer(10)
 
 	if base.Config.EtcdDiscoveryToken != "" {
 		etcdController := etcd.Controller{
@@ -229,71 +233,6 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		}
 	}
 	log.Debugf("Initialized argus")
-	//	podChannel := make(chan types.ICommand)
-	//	serviceChannel := make(chan types.ICommand)
-	//	deploymentChannel := make(chan types.ICommand)
-	//	nodeChannel := make(chan types.ICommand)
-	//	argus.Watchers = []types.Watcher{
-	//		&namespace.Watcher{
-	//			Base:         base,
-	//			DeviceGroups: deviceGroups,
-	//		},
-	//		&node.Watcher{
-	//			DeviceManager: deviceManager,
-	//			DeviceGroups:  deviceGroups,
-	//			LMClient:      base.LMClient,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    nodeChannel,
-	//					"POST":   nodeChannel,
-	//					"DELETE": nodeChannel,
-	//					"PUT":    nodeChannel,
-	//					"PATCH":  nodeChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//		&service.Watcher{
-	//			DeviceManager: deviceManager,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    serviceChannel,
-	//					"POST":   serviceChannel,
-	//					"DELETE": serviceChannel,
-	//					"PUT":    serviceChannel,
-	//					"PATCH":  serviceChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//		&pod.Watcher{
-	//			DeviceManager: deviceManager,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    podChannel,
-	//					"POST":   podChannel,
-	//					"DELETE": podChannel,
-	//					"PUT":    podChannel,
-	//					"PATCH":  podChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//		&deployment.Watcher{
-	//			DeviceManager: deviceManager,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    deploymentChannel,
-	//					"POST":   deploymentChannel,
-	//					"DELETE": deploymentChannel,
-	//					"PUT":    deploymentChannel,
-	//					"PATCH":  deploymentChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//	}
-
 	return argus, nil
 }
 
