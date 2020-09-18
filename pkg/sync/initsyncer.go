@@ -12,6 +12,7 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/hpa"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
@@ -85,6 +86,16 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID)
 				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 			}()
+		case constants.HorizontalPodAutoscalerDeviceGroupName:
+			go func() {
+				defer wg.Done()
+				if !permission.HasHorizontalPodAutoscalerPermissions() {
+					log.Warnf("Resource HorizontalPodAutoscaler has no permissions, ignore sync")
+					return
+				}
+				i.initSyncHPA(rest.ID)
+				log.Infof("Finish syncing %v", constants.HorizontalPodAutoscalerDeviceGroupName)
+			}()
 		default:
 			func() {
 				defer wg.Done()
@@ -139,8 +150,9 @@ func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceTyp
 
 	// loop every namespace
 	for _, subGroup := range rest.SubGroups {
-		//get pod/service info from k8s
+		//get pod/service/deployment info from k8s
 		var deviceMap map[string]string
+
 		if deviceType == constants.PodDeviceGroupName {
 			deviceMap, err = pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name)
 		} else if deviceType == constants.ServiceDeviceGroupName {
@@ -206,4 +218,33 @@ func (i *InitSyncer) RunInitSyncer(syncTime int) {
 			i.InitSync(lctx)
 		}
 	}()
+}
+
+func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
+
+	deviceType := "HorizontalPodAutoscalers"
+
+	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
+	if err != nil || rest == nil {
+		log.Warnf("Failed to get the %s group", deviceType)
+		return
+	}
+	if rest.SubGroups == nil {
+		return
+	}
+	// loop every namespace
+	for _, subGroup := range rest.SubGroups {
+		//get hpa info from k8s
+		var deviceMap map[string]string
+
+		deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(i.DeviceManager.K8sClient, subGroup.Name)
+
+		if err != nil || deviceMap == nil {
+			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)
+			continue
+		}
+
+		// get and check all the devices in the group
+		i.syncDevices(deviceType, deviceMap, subGroup)
+	}
 }

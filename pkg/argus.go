@@ -20,6 +20,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/hpa"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
@@ -196,6 +197,9 @@ func NewArgus(base *types.Base) (*Argus, error) {
 				ID:         "deployments",
 			},
 		},
+		&hpa.Watcher{
+			DeviceManager: deviceManager,
+		},
 	}
 
 	// Start workers
@@ -308,6 +312,8 @@ func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.I
 		return clientset.AppsV1beta2().RESTClient()
 	case constants.K8sAPIVersionAppsV1:
 		return clientset.AppsV1().RESTClient()
+	case constants.K8sAutoscalingV1:
+		return clientset.AutoscalingV1().RESTClient()
 	default:
 		return clientset.CoreV1().RESTClient()
 	}

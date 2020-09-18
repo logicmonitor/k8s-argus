@@ -1,5 +1,6 @@
 // Package deployment provides the logic for mapping a Kubernetes deployment to a
 // LogicMonitor w.
+// nolint: dupl
 package deployment
 
 import (
