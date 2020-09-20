@@ -122,4 +122,6 @@ const (
 	Services = "services"
 	// Nodes Nodes generic
 	Nodes = "nodes"
+	// HorizontalPodAutoScalers hpa generic
+	HorizontalPodAutoScalers = "horizontalpodautoscalers"
 )

@@ -133,6 +133,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	serviceChannel := make(chan types.ICommand)
 	deploymentChannel := make(chan types.ICommand)
 	nodeChannel := make(chan types.ICommand)
+	hpaChannel := make(chan types.ICommand)
 	argus.Watchers = []types.Watcher{
 		&namespace.Watcher{
 			Base:         base,
@@ -198,6 +199,17 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		},
 		&hpa.Watcher{
 			DeviceManager: deviceManager,
+			WConfig: &types.WConfig{
+				MethodChannels: map[string]chan types.ICommand{
+					"GET":    hpaChannel,
+					"POST":   hpaChannel,
+					"DELETE": hpaChannel,
+					"PUT":    hpaChannel,
+					"PATCH":  hpaChannel,
+				},
+				RetryLimit: 2,
+				ID:         "horizontalpodautoscalers",
+			},
 		},
 	}
 
@@ -233,70 +245,6 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		}
 	}
 	log.Debugf("Initialized argus")
-	//	podChannel := make(chan types.ICommand)
-	//	serviceChannel := make(chan types.ICommand)
-	//	deploymentChannel := make(chan types.ICommand)
-	//	nodeChannel := make(chan types.ICommand)
-	//	argus.Watchers = []types.Watcher{
-	//		&namespace.Watcher{
-	//			Base:         base,
-	//			DeviceGroups: deviceGroups,
-	//		},
-	//		&node.Watcher{
-	//			DeviceManager: deviceManager,
-	//			DeviceGroups:  deviceGroups,
-	//			LMClient:      base.LMClient,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    nodeChannel,
-	//					"POST":   nodeChannel,
-	//					"DELETE": nodeChannel,
-	//					"PUT":    nodeChannel,
-	//					"PATCH":  nodeChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//		&service.Watcher{
-	//			DeviceManager: deviceManager,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    serviceChannel,
-	//					"POST":   serviceChannel,
-	//					"DELETE": serviceChannel,
-	//					"PUT":    serviceChannel,
-	//					"PATCH":  serviceChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//		&pod.Watcher{
-	//			DeviceManager: deviceManager,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    podChannel,
-	//					"POST":   podChannel,
-	//					"DELETE": podChannel,
-	//					"PUT":    podChannel,
-	//					"PATCH":  podChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//		&deployment.Watcher{
-	//			DeviceManager: deviceManager,
-	//			WConfig: types.WConfig{
-	//				MethodChannels: map[string]chan types.ICommand{
-	//					"GET":    deploymentChannel,
-	//					"POST":   deploymentChannel,
-	//					"DELETE": deploymentChannel,
-	//					"PUT":    deploymentChannel,
-	//					"PATCH":  deploymentChannel,
-	//				},
-	//				RetryLimit: 2,
-	//			},
-	//		},
-	//	}
 
 	return argus, nil
 }
@@ -349,18 +297,6 @@ func (a *Argus) Watch() {
 		log.Debugf("Starting watcher of %v", w.Resource())
 		stop := make(chan struct{})
 		go controller.Run(stop)
-		//		c := w.GetConfig()
-		//		if c == nil {
-		//			continue
-		//		}
-		//		wc := worker.NewWorker(c)
-		//		b, err := a.Facade.RegisterWorker(w.Resource(), wc)
-		//		if err != nil {
-		//			log.Errorf("Failed to register worker for resource for: %s", w.Resource())
-		//		}
-		//		if b {
-		//			wc.StartWorker()
-		//		}
 	}
 }
 
