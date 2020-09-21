@@ -1,5 +1,9 @@
 package constants
 
+import (
+	apiv1 "k8s.io/api/core/v1"
+)
+
 var (
 	// Version is the Argus version and is set at build time.
 	Version string
@@ -41,4 +45,15 @@ const (
 	CustomPropertyKubernetesLabelAppValue = "argus"
 	// CustomPropertyAutoClusterName is the custom property for the collector group and collector of the cluster
 	CustomPropertyAutoClusterName = "auto.clustername"
+)
+
+const (
+	// DefaultCollectorImageRepository is the default image repository for collector
+	DefaultCollectorImageRepository = "logicmonitor/collector"
+	// DefaultCollectorImageTag is the default image tag for collector
+	DefaultCollectorImageTag = "latest"
+	// DefaultCollectorImage is the default image for collector
+	DefaultCollectorImage = DefaultCollectorImageRepository + ":" + DefaultCollectorImageTag
+	// DefaultCollectorImagePullPolicy is the default image pull policy for collector
+	DefaultCollectorImagePullPolicy = apiv1.PullAlways
 )
