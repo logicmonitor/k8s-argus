@@ -69,7 +69,7 @@ var watchCmd = &cobra.Command{
 		argus.Watch()
 
 		// start a goroutine to update K8s & Helm properties in cluster device group periodically with the server
-		cronjob.UpdateDeviceGroupK8sAndHelmPropertiesCron(base)
+		cronjob.UpdateTelemetryCron(base)
 
 		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)

@@ -129,12 +129,10 @@ const (
 	CollectorsetController = "collectorset-controller"
 	// KubernetesVersionKey is the key for customProperties
 	KubernetesVersionKey = "kubernetes.version"
-	// KubernetesVersionValue is the default value for Kubernetes Version
-	KubernetesVersionValue = "0.0.0"
 	// DeviceGroupCustomType is the device group of custom type
 	DeviceGroupCustomType = "custom"
-	// PropertyHistoryKey is the key used for maintaining property history
-	PropertyHistoryKey = ".history"
+	// HistorySuffix is the key suffix used for maintaining history
+	HistorySuffix = ".history"
 	// PropertySeparator is the property separator
 	PropertySeparator = ", "
 )

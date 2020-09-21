@@ -12,7 +12,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
-	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -165,7 +164,7 @@ func GetDeploymentsMap(lctx *lmctx.LMContext, k8sClient kubernetes.Interface, na
 }
 
 // GetHelmChartDetailsFromDeployments Fetches helm chart details like chart name & chart revision from deployment labels.
-func GetHelmChartDetailsFromDeployments(lctx *lmctx.LMContext, customProperties []*models.NameAndValue, kubeClient kubernetes.Interface) []*models.NameAndValue {
+func GetHelmChartDetailsFromDeployments(lctx *lmctx.LMContext, customProperties map[string]string, kubeClient kubernetes.Interface) map[string]string {
 	log := lmlog.Logger(lctx)
 
 	// get list of namespace for fetching deployments
@@ -186,8 +185,7 @@ func GetHelmChartDetailsFromDeployments(lctx *lmctx.LMContext, customProperties 
 			for key, value := range labels {
 				if key == constants.HelmChart || key == constants.HelmRevision {
 					name := labels[constants.Chart] + "." + key
-					val := value
-					customProperties = append(customProperties, &models.NameAndValue{Name: &name, Value: &val})
+					customProperties[name] = value
 				}
 			}
 		}

@@ -16,22 +16,23 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// UpdateDeviceGroupK8sAndHelmPropertiesCron a cron job to update K8s & Helm properties in cluster device group
-func UpdateDeviceGroupK8sAndHelmPropertiesCron(base *types.Base) {
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"res": "UpdateDeviceGroupK8sAndHelmPropertiesCron"}))
+// UpdateTelemetryCron a cron job to update K8s & Helm properties in cluster device group
+func UpdateTelemetryCron(base *types.Base) {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"res": "update-telemetry"}))
 	log := lmlog.Logger(lctx)
-	cron := cron.New()
+	c := cron.New()
 	// scheduling is done in the machine's local time zone at midnight
-	_, err := cron.AddFunc("@midnight", func() {
-		updateDeviceGroupK8sAndHelmProperties(lctx, base)
+	// _, err := cron.AddFunc("@midnight", func() {
+	_, err := c.AddFunc("@every 0h3m0s", func() {
+		updateTelemetry(lctx, base)
 	})
 	if err != nil {
 		log.Errorf("Failed to create cron job. Error: %v", err)
 	}
-	cron.Start()
+	c.Start()
 }
 
-func updateDeviceGroupK8sAndHelmProperties(lctx *lmctx.LMContext, base *types.Base) {
+func updateTelemetry(lctx *lmctx.LMContext, base *types.Base) {
 	log := lmlog.Logger(lctx)
 	parentID := base.Config.ClusterGroupID
 	groupName := constants.ClusterDeviceGroupPrefix + base.Config.ClusterName
@@ -40,30 +41,31 @@ func updateDeviceGroupK8sAndHelmProperties(lctx *lmctx.LMContext, base *types.Ba
 		log.Errorf("Failed to fetch device group. Error: %v", err)
 		return
 	}
-	UpdateDeviceGroupK8sAndHelmProperties(lctx, deviceGroup.ID, base.LMClient, base.K8sClient)
+	updateDeviceGroupK8sAndHelmProperties(lctx, deviceGroup.ID, base.LMClient, base.K8sClient)
 }
 
-// UpdateDeviceGroupK8sAndHelmProperties will fetch existing properties and compare with actual values then update in cluster device group
-func UpdateDeviceGroupK8sAndHelmProperties(lctx *lmctx.LMContext, groupID int32, client *client.LMSdkGo, kubeClient kubernetes.Interface) {
+// updateDeviceGroupK8sAndHelmProperties will fetch existing properties and compare with actual values then update in cluster device group
+func updateDeviceGroupK8sAndHelmProperties(lctx *lmctx.LMContext, groupID int32, client *client.LMSdkGo, kubeClient kubernetes.Interface) {
 	existingPropertiesMap := getExistingDeviceGroupPropertiesMap(lctx, groupID, client)
-	customPropertiesMap := getK8sAndHelmPropertiesMap(lctx, kubeClient)
+	customPropertiesMap := getK8sAndHelmProperties(lctx, kubeClient)
 
 	for k, v := range customPropertiesMap {
-		newValue := ""
-		historyKey := k + constants.PropertyHistoryKey
-		historyVal, isHistoryVal := existingPropertiesMap[historyKey]
-		value, isValue := existingPropertiesMap[k]
+		historyKey := k + constants.HistorySuffix
+		historyVal, historyValExists := existingPropertiesMap[historyKey]
+		value, propertyExists := existingPropertiesMap[k]
 
-		if !isValue {
+		if !propertyExists {
 			entityProperty := models.EntityProperty{Name: k, Value: v, Type: constants.DeviceGroupCustomType}
 			devicegroup.AddDeviceGroupProperty(lctx, groupID, &entityProperty, client)
-			if isHistoryVal {
+			newValue := ""
+			if historyValExists {
 				newValue = getUpdatedHistoryValue(historyVal, v)
 				updateProperty(lctx, historyKey, newValue, groupID, client)
 			}
 		} else if value == "" || value != v {
 			updateProperty(lctx, k, v, groupID, client)
-			if !isHistoryVal {
+			newValue := ""
+			if !historyValExists {
 				newValue = getNewHistoryValue(value, v)
 				entityProperty := models.EntityProperty{Name: historyKey, Value: newValue, Type: constants.DeviceGroupCustomType}
 				devicegroup.AddDeviceGroupProperty(lctx, groupID, &entityProperty, client)
@@ -84,34 +86,23 @@ func getExistingDeviceGroupPropertiesMap(lctx *lmctx.LMContext, groupID int32, c
 	return entityPropertiesMap
 }
 
-func getK8sAndHelmPropertiesMap(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) map[string]string {
-	customProperties := []*models.NameAndValue{}
-	customProperties = getK8sAndHelmProperties(lctx, customProperties, kubeClient)
-	customPropertiesMap := make(map[string]string)
-	for _, property := range customProperties {
-		customPropertiesMap[*property.Name] = *property.Value
-	}
-	return customPropertiesMap
-}
-
-func getK8sAndHelmProperties(lctx *lmctx.LMContext, customProperties []*models.NameAndValue, kubeClient kubernetes.Interface) []*models.NameAndValue {
+func getK8sAndHelmProperties(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) map[string]string {
+	customProperties := make(map[string]string)
 	customProperties = getKubernetesVersion(lctx, customProperties, kubeClient)
 	customProperties = deployment.GetHelmChartDetailsFromDeployments(lctx, customProperties, kubeClient)
 	return customProperties
 }
 
 // getKubernetesVersion Fetches Kubernetes version
-func getKubernetesVersion(lctx *lmctx.LMContext, customProperties []*models.NameAndValue, kubeClient kubernetes.Interface) []*models.NameAndValue {
+func getKubernetesVersion(lctx *lmctx.LMContext, customProperties map[string]string, kubeClient kubernetes.Interface) map[string]string {
 	log := lmlog.Logger(lctx)
-	cpName := constants.KubernetesVersionKey
-	cpValue := constants.KubernetesVersionValue
 	serverVersion, err := kubeClient.Discovery().ServerVersion()
 	if err != nil || serverVersion == nil {
 		log.Errorf("Failed to get Kubernetes version. Error: %v", err)
 		return customProperties
 	}
-	cpValue = serverVersion.String()
-	customProperties = append(customProperties, &models.NameAndValue{Name: &cpName, Value: &cpValue})
+	cpValue := serverVersion.String()
+	customProperties[constants.KubernetesVersionKey] = cpValue
 	return customProperties
 }
 
@@ -139,8 +130,10 @@ func getUpdatedHistoryValue(historyVal, v string) string {
 		values = strings.Split(historyVal, constants.PropertySeparator)
 	}
 	length := len(values)
+	// to retain last 10 records, trim last 9 record then append 10th record if not same as last
 	if length > 9 {
-		values = append(values[:0], values[0+1:]...)
+		values = values[length-9 : length]
+		length = len(values) // calculated length again after removing elements from slice
 	}
 	if length == 0 || (length > 0 && values[length-1] != v) {
 		values = append(values, v)
