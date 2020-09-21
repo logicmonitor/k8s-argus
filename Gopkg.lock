@@ -666,6 +666,14 @@
 
 [[projects]]
   branch = "v2"
+  digest = "1:92a9d3d81fc5b50d5ccf0c72b9888cd27acf277894f8aa18f4c9c41de8311555"
+  name = "gopkg.in/robfig/cron.v2"
+  packages = ["."]
+  pruneopts = ""
+  revision = "be2e0b0deed5a68ffee390b4583a13aff8321535"
+
+[[projects]]
+  branch = "v2"
   digest = "1:2efc9662a6a1ff28c65c84fc2f9030f13d3afecdb2ecad445f3b0c80e75fc281"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -951,6 +959,7 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/connectivity",
     "google.golang.org/grpc/health/grpc_health_v1",
+    "gopkg.in/robfig/cron.v2",
     "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",

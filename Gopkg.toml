@@ -80,3 +80,7 @@
 [[constraint]]
   name = "github.com/Knetic/govaluate"
   version = "3.0.0"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/robfig/cron.v2"

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
@@ -246,4 +248,48 @@ func create(name, appliesTo string, disableAlerting bool, parentID int32, client
 	log.Infof("Created device group %q with id %d", name, deviceGroup.ID)
 
 	return deviceGroup, nil
+}
+
+// GetDeviceGroupPropertyList Fetches device group property list
+func GetDeviceGroupPropertyList(lctx *lmctx.LMContext, groupID int32, client *client.LMSdkGo) []*models.EntityProperty {
+	log := lmlog.Logger(lctx)
+	params := lm.NewGetDeviceGroupPropertyListParams()
+	params.SetGid(groupID)
+	restResponse, err := client.LM.GetDeviceGroupPropertyList(params)
+	if err != nil || restResponse == nil {
+		log.Errorf("Failed to fetch device group (id - '%v') property list. Error: %v", groupID, err)
+		return []*models.EntityProperty{}
+	}
+	return restResponse.Payload.Items
+}
+
+// UpdateDeviceGroupPropertyByName Updates device group property by name
+func UpdateDeviceGroupPropertyByName(lctx *lmctx.LMContext, groupID int32, entityProperty *models.EntityProperty, client *client.LMSdkGo) bool {
+	log := lmlog.Logger(lctx)
+	params := lm.NewUpdateDeviceGroupPropertyByNameParams()
+	params.SetBody(entityProperty)
+	params.SetGid(groupID)
+	params.SetName(entityProperty.Name)
+	restResponse, err := client.LM.UpdateDeviceGroupPropertyByName(params)
+	if err != nil || restResponse == nil {
+		log.Errorf("Failed to update device group property '%v'. Error: %v", entityProperty.Name, err)
+		return false
+	}
+	log.Debugf("Successfully updated device group property '%v'", entityProperty.Name)
+	return true
+}
+
+// AddDeviceGroupProperty Adds new property in device group
+func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty *models.EntityProperty, client *client.LMSdkGo) bool {
+	log := lmlog.Logger(lctx)
+	params := lm.NewAddDeviceGroupPropertyParams()
+	params.SetBody(entityProperty)
+	params.SetGid(groupID)
+	restResponse, err := client.LM.AddDeviceGroupProperty(params)
+	if err != nil || restResponse == nil {
+		log.Errorf("Failed to add device group property '%v'. Error: %v", entityProperty.Name, err)
+		return false
+	}
+	log.Debugf("Successfully added device group property '%v'", entityProperty.Name)
+	return true
 }
