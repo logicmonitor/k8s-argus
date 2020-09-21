@@ -3,9 +3,9 @@ package types
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
-	"github.com/logicmonitor/lm-sdk-go/client"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/vkumbhar94/lm-sdk-go/client"
+	"github.com/vkumbhar94/lm-sdk-go/client/lm"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 )

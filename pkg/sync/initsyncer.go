@@ -14,8 +14,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
-	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 )
 
 // InitSyncer implements the initial sync through logicmonitor API
