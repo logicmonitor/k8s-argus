@@ -223,6 +223,8 @@ func (i *InitSyncer) RunInitSyncer(syncTime int) {
 func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
 
 	deviceType := "HorizontalPodAutoscalers"
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "init-sync-hpa"}))
+	log := lmlog.Logger(lctx)
 
 	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
@@ -237,7 +239,7 @@ func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
 		//get hpa info from k8s
 		var deviceMap map[string]string
 
-		deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(i.DeviceManager.K8sClient, subGroup.Name)
+		deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(lctx, i.DeviceManager.K8sClient, subGroup.Name)
 
 		if err != nil || deviceMap == nil {
 			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)
@@ -245,6 +247,6 @@ func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
 		}
 
 		// get and check all the devices in the group
-		i.syncDevices(deviceType, deviceMap, subGroup)
+		i.syncDevices(lctx, deviceType, deviceMap, subGroup)
 	}
 }

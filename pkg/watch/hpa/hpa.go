@@ -8,6 +8,8 @@ import (
 	"strconv"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +26,7 @@ const (
 // Watcher represents a watcher type that watches horizontalPodAutoscalers.
 type Watcher struct {
 	types.DeviceManager
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.
@@ -51,8 +54,10 @@ func (w *Watcher) ObjType() runtime.Object {
 func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		horizontalPodAutoscaler := obj.(*autoscalingv1.HorizontalPodAutoscaler)
+		lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"device_id": resource + "-" + horizontalPodAutoscaler.Name}))
+		log := lmlog.Logger(lctx)
 		log.Infof("Handling add horizontalPodAutoscaler event: %s", horizontalPodAutoscaler.Name)
-		w.add(horizontalPodAutoscaler)
+		w.add(lctx, horizontalPodAutoscaler)
 	}
 }
 
@@ -60,8 +65,11 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*autoscalingv1.HorizontalPodAutoscaler)
+		lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"device_id": resource + "-" + old.Name}))
+		log := lmlog.Logger(lctx)
+		log.Debugf("Handling update horizontalPodAutoscaler event: %s", old.Name)
 		new := newObj.(*autoscalingv1.HorizontalPodAutoscaler)
-		w.update(old, new)
+		w.update(lctx, old, new)
 	}
 }
 
@@ -69,10 +77,13 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		horizontalPodAutoscaler := obj.(*autoscalingv1.HorizontalPodAutoscaler)
+		lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"device_id": resource + "-" + horizontalPodAutoscaler.Name}))
+		log := lmlog.Logger(lctx)
 		log.Debugf("Handling delete horizontalPodAutoscaler event: %s", horizontalPodAutoscaler.Name)
+
 		// Delete the horizontalPodAutoscaler.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)); err != nil {
 				log.Errorf("Failed to delete horizontalPodAutoscaler: %v", err)
 				return
 			}
@@ -81,13 +92,14 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		}
 
 		// Move the horizontalPodAutoscaler.
-		w.move(horizontalPodAutoscaler)
+		w.move(lctx, horizontalPodAutoscaler)
 	}
 }
 
 // nolint: dupl
-func (w *Watcher) add(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
-	if _, err := w.Add(
+func (w *Watcher) add(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.Add(lctx, w.Resource(), horizontalPodAutoscaler.Labels,
 		w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add horizontalPodAutoscaler %q: %v", fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler), err)
@@ -96,9 +108,9 @@ func (w *Watcher) add(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutosc
 	log.Infof("Added horizontalPodAutoscaler %q", fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler))
 }
 
-func (w *Watcher) update(old, new *autoscalingv1.HorizontalPodAutoscaler) {
-	if _, err := w.UpdateAndReplaceByDisplayName(
-		fmtHorizontalPodAutoscalerDisplayName(old),
+func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.HorizontalPodAutoscaler) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "horizontalPodAutoScaler", fmtHorizontalPodAutoscalerDisplayName(old), nil, new.Labels,
 		w.args(new, constants.HorizontalPodAutoscalerCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update horizontalPodAutoscaler %q: %v", fmtHorizontalPodAutoscalerDisplayName(new), err)
@@ -107,8 +119,9 @@ func (w *Watcher) update(old, new *autoscalingv1.HorizontalPodAutoscaler) {
 	log.Infof("Updated horizontalPodAutoscaler %q", fmtHorizontalPodAutoscalerDisplayName(old))
 }
 
-func (w *Watcher) move(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler), constants.CustomPropertiesFieldName, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
+func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
+	log := lmlog.Logger(lctx)
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler), constants.CustomPropertiesFieldName, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move horizontalPodAutoscaler %q: %v", fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler), err)
 		return
 	}
@@ -136,8 +149,8 @@ func fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler *autoscalingv
 }
 
 // GetHorizontalPodAutoscalersMap implements the getting horizontalPodAutoscaler map info from k8s
-func GetHorizontalPodAutoscalersMap(k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
-
+func GetHorizontalPodAutoscalersMap(lctx *lmctx.LMContext, k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+	log := lmlog.Logger(lctx)
 	horizontalPodAutoscalersMap := make(map[string]string)
 	horizontalPodAutoscalerV1List, err := k8sClient.AutoscalingV1().HorizontalPodAutoscalers(namespace).List(v1.ListOptions{})
 	if err != nil || horizontalPodAutoscalerV1List == nil {
