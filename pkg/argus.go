@@ -15,6 +15,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
 	"github.com/logicmonitor/k8s-argus/pkg/facade"
 	"github.com/logicmonitor/k8s-argus/pkg/lmexec"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -233,7 +234,10 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	initSyncer := sync.InitSyncer{
 		DeviceManager: deviceManager,
 	}
-	initSyncer.InitSync()
+
+	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"name": "init-sync"}))
+	initSyncer.InitSync(lctx)
+	initSyncer.RunPeriodicSync(10)
 
 	if base.Config.EtcdDiscoveryToken != "" {
 		etcdController := etcd.Controller{
@@ -245,7 +249,6 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		}
 	}
 	log.Debugf("Initialized argus")
-
 	return argus, nil
 }
 
