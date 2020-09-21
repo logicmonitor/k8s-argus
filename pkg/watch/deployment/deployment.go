@@ -11,6 +11,7 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
@@ -168,7 +169,7 @@ func GetHelmChartDetailsFromDeployments(lctx *lmctx.LMContext, customProperties 
 	log := lmlog.Logger(lctx)
 
 	// get list of namespace for fetching deployments
-	namespaceList := getNamespaceList(lctx, kubeClient)
+	namespaceList := namespace.GetNamespaceList(lctx, kubeClient)
 
 	regex := constants.Chart + " in (" + constants.Argus + ", " + constants.CollectorsetController + ")"
 	opts := v1.ListOptions{
@@ -192,19 +193,4 @@ func GetHelmChartDetailsFromDeployments(lctx *lmctx.LMContext, customProperties 
 		}
 	}
 	return customProperties
-}
-
-// getNamespaceList Fetches list of namespaces name
-func getNamespaceList(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) []string {
-	log := lmlog.Logger(lctx)
-	namespaceList := []string{}
-	namespaces, err := kubeClient.CoreV1().Namespaces().List(v1.ListOptions{})
-	if err != nil || namespaces == nil {
-		log.Warnf("Failed to get namespaces from k8s. Error: %v", err)
-		return namespaceList
-	}
-	for i := range namespaces.Items {
-		namespaceList = append(namespaceList, namespaces.Items[i].GetName())
-	}
-	return namespaceList
 }

@@ -3,10 +3,14 @@ package namespace
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -120,4 +124,19 @@ func getReversedDeviceGroups(deviceGroups map[string]int32) map[int32]string {
 		reversedDeviceGroups[value] = key
 	}
 	return reversedDeviceGroups
+}
+
+// GetNamespaceList Fetches list of namespaces name
+func GetNamespaceList(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) []string {
+	log := lmlog.Logger(lctx)
+	namespaceList := []string{}
+	namespaces, err := kubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil || namespaces == nil {
+		log.Warnf("Failed to get namespaces from k8s. Error: %v", err)
+		return namespaceList
+	}
+	for i := range namespaces.Items {
+		namespaceList = append(namespaceList, namespaces.Items[i].GetName())
+	}
+	return namespaceList
 }
