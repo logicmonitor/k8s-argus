@@ -209,9 +209,9 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 	}
 }
 
-// RunInitSyncer runs synchronization periodically.
-func (i *InitSyncer) RunInitSyncer(syncTime int) {
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "init-sync"}))
+// RunPeriodicSync runs synchronization periodically.
+func (i *InitSyncer) RunPeriodicSync(syncTime int) {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "periodic-sync"}))
 	go func() {
 		for {
 			time.Sleep(time.Duration(syncTime) * time.Minute)
