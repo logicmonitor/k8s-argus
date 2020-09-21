@@ -175,7 +175,12 @@ func (w *Worker) handleCommand(lctx *lmctx.LMContext, command types.ICommand) {
 }
 func getHTTPStatusCode(err error) int {
 	errRegex := regexp.MustCompile(`(?P<api>\[.*\])\[(?P<code>\d+)\].*`)
-	code, err := strconv.Atoi(errRegex.FindStringSubmatch(err.Error())[2])
+	matches := errRegex.FindStringSubmatch(err.Error())
+	if len(matches) < 3 {
+		return -1
+	}
+
+	code, err := strconv.Atoi(matches[2])
 	if err != nil {
 		return -1
 	}
