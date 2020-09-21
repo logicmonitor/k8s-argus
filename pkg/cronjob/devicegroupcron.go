@@ -22,8 +22,7 @@ func UpdateDeviceGroupK8sAndHelmPropertiesCron(base *types.Base) {
 	log := lmlog.Logger(lctx)
 	cron := cron.New()
 	// scheduling is done in the machine's local time zone at midnight
-	// _, err := cron.AddFunc("@midnight", func() {
-	_, err := cron.AddFunc("@every 0h3m0s", func() {
+	_, err := cron.AddFunc("@midnight", func() {
 		updateDeviceGroupK8sAndHelmProperties(lctx, base)
 	})
 	if err != nil {
