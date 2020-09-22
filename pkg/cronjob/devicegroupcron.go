@@ -9,10 +9,10 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
-	"github.com/logicmonitor/lm-sdk-go/client"
-	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/robfig/cron.v2"
+	"github.com/vkumbhar94/lm-sdk-go/client"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -20,16 +20,15 @@ import (
 func UpdateTelemetryCron(base *types.Base) {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"res": "update-telemetry"}))
 	log := lmlog.Logger(lctx)
-	c := cron.New()
-	// scheduling is done in the machine's local time zone at midnight
-	// _, err := cron.AddFunc("@midnight", func() {
-	_, err := c.AddFunc("@every 0h3m0s", func() {
-		updateTelemetry(lctx, base)
-	})
-	if err != nil {
-		log.Errorf("Failed to create cron job. Error: %v", err)
-	}
-	c.Start()
+	cron.New(func(c *cron.Cron) {
+		// scheduling is done in the machine's local time zone at midnight
+		_, err := c.AddFunc("@midnight", func() {
+			updateTelemetry(lctx, base)
+		})
+		if err != nil {
+			log.Errorf("Failed to create cron job. Error: %v", err)
+		}
+	}).Start()
 }
 
 func updateTelemetry(lctx *lmctx.LMContext, base *types.Base) {
