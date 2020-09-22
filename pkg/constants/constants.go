@@ -39,6 +39,8 @@ const (
 	ServiceDeviceGroupName = "Services"
 	// DeploymentDeviceGroupName is the deployment device group name in the cluster device group.
 	DeploymentDeviceGroupName = "Deployments"
+	// HorizontalPodAutoscalerDeviceGroupName is the deployment device group name in the cluster device group.
+	HorizontalPodAutoscalerDeviceGroupName = "HorizontalPodAutoscalers"
 )
 
 const (
@@ -64,6 +66,10 @@ const (
 	PodCategory = "KubernetesPod"
 	// PodDeletedCategory is the system.category used to identity a deleted Kubernetes Pod resource type in LogicMonitor.
 	PodDeletedCategory = "KubernetesPodDeleted"
+	// HorizontalPodAutoscalerCategory is the system.category used to identity the Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
+	HorizontalPodAutoscalerCategory = "KubernetesHorizontalPodAutoscaler"
+	// HorizontalPodAutoscalerDeletedCategory is the system.category used to identity a deleted Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
+	HorizontalPodAutoscalerDeletedCategory = "KubernetesHorizontalPodAutoscalerDeleted"
 	// DeletedDeviceGroup is the name of the device group where deleted devices are optionally moved to.
 	DeletedDeviceGroup = "_deleted"
 	// ClusterDeviceGroupPrefix is the prefix for the top level cluster device group
@@ -103,6 +109,8 @@ const (
 	K8sAPIVersionAppsV1beta2 = "apps/v1beta2"
 	// K8sAPIVersionAppsV1 is the version 'apps/v1' of k8s api
 	K8sAPIVersionAppsV1 = "apps/v1"
+	// K8sAutoscalingV1 is the version 'autoscaling/v1' of k8s api
+	K8sAutoscalingV1 = "autoscaling/v1"
 )
 
 const (
@@ -114,4 +122,6 @@ const (
 	Services = "services"
 	// Nodes Nodes generic
 	Nodes = "nodes"
+	// HorizontalPodAutoScalers hpa generic
+	HorizontalPodAutoScalers = "horizontalpodautoscalers"
 )

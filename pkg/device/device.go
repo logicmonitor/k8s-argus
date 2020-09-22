@@ -15,8 +15,8 @@ import (
 	//"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	cscutils "github.com/logicmonitor/k8s-argus/pkg/utilities"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/vkumbhar94/lm-sdk-go/client/lm"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 )
 
 // Manager implements types.DeviceManager
@@ -279,6 +279,8 @@ func getEvaluationParamsForResource(device *models.Device, labels map[string]str
 	evaluationParams := make(map[string]interface{})
 
 	for key, value := range labels {
+		key = filters.CheckAndReplaceInvalidChars(key)
+		value = filters.CheckAndReplaceInvalidChars(value)
 		evaluationParams[key] = value
 	}
 
@@ -299,7 +301,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
 
 	if filters.Eval(resource, evaluationParams) {
-		log.Infof("Filtering out device %s.", *device.DisplayName)
+		log.Infof("Filtering out %s %s.", resource, *device.DisplayName)
 		// delete existing resource which is mentioned for filtering.
 		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName)
 		if err != nil {

@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/lm-sdk-go/client"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
+	"github.com/vkumbhar94/lm-sdk-go/client"
+	"github.com/vkumbhar94/lm-sdk-go/client/lm"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 )
 
 const (

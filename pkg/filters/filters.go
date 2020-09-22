@@ -96,6 +96,32 @@ func getFilterExpressionForResource(resource string) string {
 	return filter.config.get("filter").get(resource)
 }
 
+func parseFilterExpressions(expression string) []string {
+	return strings.Split(expression, "||")
+}
+
+func checkAndReplaceDot(expression string) string {
+	if strings.Contains(expression, ".") {
+		expression = strings.ReplaceAll(expression, ".", "_")
+	}
+	return expression
+}
+
+func checkAndReplaceDash(expression string) string {
+	if strings.Contains(expression, "-") {
+		expression = strings.ReplaceAll(expression, "-", "_")
+	}
+	return expression
+}
+
+// CheckAndReplaceInvalidChars replaces unsupported characters with '_'.
+func CheckAndReplaceInvalidChars(expression string) string {
+	expression = checkAndReplaceDot(expression)
+	expression = checkAndReplaceDash(expression)
+
+	return expression
+}
+
 // Eval evaluates filtering expression based on specified evaluation parameters
 func Eval(resource string, evaluationParams map[string]interface{}) bool {
 	filterExpression, exists := expressionMap[resource]
@@ -114,22 +140,33 @@ func Eval(resource string, evaluationParams map[string]interface{}) bool {
 		return true
 	}
 
-	expression, err := govaluate.NewEvaluableExpression(filterExpression)
+	parsedExpression := parseFilterExpressions(filterExpression)
+	log.Debugf("parsed expression for resource %s: %q", resource, parsedExpression)
 
-	if err != nil {
-		log.Errorf("Invalid filter expression for resource %s -> %s", resource, filterExpression)
-		return false
+	for _, expr := range parsedExpression {
+		if strings.Contains(expr, "/") {
+			expr = strings.ReplaceAll(expr, "/", "\\/")
+		}
+
+		expr = CheckAndReplaceInvalidChars(expr)
+		expression, err := govaluate.NewEvaluableExpression(expr)
+
+		if err != nil {
+			log.Errorf("Invalid filter expression for resource %s -> %s", resource, expr)
+			return false
+		}
+
+		result, err := expression.Evaluate(evaluationParams)
+		if err != nil {
+			log.Debugf("Error while evaluating expression %s", expr)
+			continue
+		}
+
+		if result.(bool) {
+			return true
+		}
 	}
 
-	result, err := expression.Evaluate(evaluationParams)
-	if err != nil {
-		log.Debugf("Error while evaluating expression %s", filterExpression)
-		return false
-	}
-
-	if result.(bool) {
-		return true
-	}
 	return false
 
 }
