@@ -6,38 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetNewHistoryValue(t *testing.T) {
-	t.Parallel()
-	testCases := []struct {
-		name               string
-		inputExistingValue string
-		inputNewValue      string
-		expectedOutput     string
-	}{
-		{
-			name:               "Empty existing value",
-			inputExistingValue: "",
-			inputNewValue:      "argus-0.14.0",
-			expectedOutput:     "argus-0.14.0",
-		},
-		{
-			name:               "Existing value with new value",
-			inputExistingValue: "argus-0.13.0",
-			inputNewValue:      "argus-0.14.0",
-			expectedOutput:     "argus-0.13.0, argus-0.14.0",
-		},
-	}
-
-	assert := assert.New(t)
-	// nolint: dupl
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			output := getNewHistoryValue(testCase.inputExistingValue, testCase.inputNewValue)
-			assert.Equal(testCase.expectedOutput, output, "TestCase: \"%s\" \nResult: Expected output \"%v\" but got \"%v\"", testCase.name, testCase.expectedOutput, output)
-		})
-	}
-}
-
 func TestGetUpdatedHistoryValue(t *testing.T) {
 	t.Parallel()
 	historyValueTestCases := []struct {

@@ -9,7 +9,6 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
-	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 	"github.com/vkumbhar94/lm-sdk-go/client"
 	"github.com/vkumbhar94/lm-sdk-go/models"
@@ -19,16 +18,8 @@ import (
 // UpdateTelemetryCron a cron job to update K8s & Helm properties in cluster device group
 func UpdateTelemetryCron(base *types.Base) {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"res": "update-telemetry"}))
-	log := lmlog.Logger(lctx)
-	cron.New(func(c *cron.Cron) {
-		// scheduling is done in the machine's local time zone at midnight
-		_, err := c.AddFunc("@midnight", func() {
-			updateTelemetry(lctx, base)
-		})
-		if err != nil {
-			log.Errorf("Failed to create cron job. Error: %v", err)
-		}
-	}).Start()
+	c := RegisterCron(lctx, "@midnight", func() { updateTelemetry(lctx, base) })
+	c.Start()
 }
 
 func updateTelemetry(lctx *lmctx.LMContext, base *types.Base) {
@@ -49,30 +40,12 @@ func updateDeviceGroupK8sAndHelmProperties(lctx *lmctx.LMContext, groupID int32,
 	customPropertiesMap := getK8sAndHelmProperties(lctx, kubeClient)
 
 	for k, v := range customPropertiesMap {
-		historyKey := k + constants.HistorySuffix
-		historyVal, historyValExists := existingPropertiesMap[historyKey]
-		value, propertyExists := existingPropertiesMap[k]
+		updateProperty(lctx, k, v, groupID, client)
 
-		if !propertyExists {
-			entityProperty := models.EntityProperty{Name: k, Value: v, Type: constants.DeviceGroupCustomType}
-			devicegroup.AddDeviceGroupProperty(lctx, groupID, &entityProperty, client)
-			newValue := ""
-			if historyValExists {
-				newValue = getUpdatedHistoryValue(historyVal, v)
-				updateProperty(lctx, historyKey, newValue, groupID, client)
-			}
-		} else if value == "" || value != v {
-			updateProperty(lctx, k, v, groupID, client)
-			newValue := ""
-			if !historyValExists {
-				newValue = getNewHistoryValue(value, v)
-				entityProperty := models.EntityProperty{Name: historyKey, Value: newValue, Type: constants.DeviceGroupCustomType}
-				devicegroup.AddDeviceGroupProperty(lctx, groupID, &entityProperty, client)
-			} else {
-				newValue = getUpdatedHistoryValue(historyVal, v)
-				updateProperty(lctx, historyKey, newValue, groupID, client)
-			}
-		}
+		// update history property
+		historyKey := k + constants.HistorySuffix
+		updatedHistoryVal := getUpdatedHistoryValue(existingPropertiesMap[historyKey], v)
+		updateProperty(lctx, historyKey, updatedHistoryVal, groupID, client)
 	}
 }
 
@@ -114,28 +87,20 @@ func updateProperty(lctx *lmctx.LMContext, key string, value string, groupID int
 	}
 }
 
-func getNewHistoryValue(value, v string) string {
-	values := []string{}
-	if value != "" {
-		values = append(values, value)
-	}
-	values = append(values, v)
-	return strings.Join(values, constants.PropertySeparator)
-}
-
-func getUpdatedHistoryValue(historyVal, v string) string {
+func getUpdatedHistoryValue(historyVal, newValue string) string {
 	values := []string{}
 	if historyVal != "" {
 		values = strings.Split(historyVal, constants.PropertySeparator)
 	}
 	length := len(values)
-	// to retain last 10 records, trim last 9 record then append 10th record if not same as last
-	if length > 9 {
-		values = values[length-9 : length]
-		length = len(values) // calculated length again after removing elements from slice
+	// append record if not same as last
+	if length == 0 || (length > 0 && values[length-1] != newValue) {
+		values = append(values, newValue)
+		length = len(values) // calculate length again after adding record
 	}
-	if length == 0 || (length > 0 && values[length-1] != v) {
-		values = append(values, v)
+	// retain last 10 records
+	if length >= 10 {
+		values = values[length-10 : length]
 	}
 	return strings.Join(values, constants.PropertySeparator)
 }
