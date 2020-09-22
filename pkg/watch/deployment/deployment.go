@@ -1,5 +1,6 @@
 // Package deployment provides the logic for mapping a Kubernetes deployment to a
 // LogicMonitor w.
+// nolint: dupl
 package deployment
 
 import (
@@ -95,7 +96,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(),
+	if _, err := w.Add(lctx, w.Resource(), deployment.Labels,
 		w.args(deployment, constants.DeploymentCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add deployment %q: %v", fmtDeploymentDisplayName(deployment), err)
@@ -107,7 +108,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "deployments",
-		fmtDeploymentDisplayName(old), nil,
+		fmtDeploymentDisplayName(old), nil, new.Labels,
 		w.args(new, constants.DeploymentCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update deployment %q: %v", fmtDeploymentDisplayName(new), err)

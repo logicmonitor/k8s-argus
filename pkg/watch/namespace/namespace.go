@@ -56,6 +56,8 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			case constants.DeploymentDeviceGroupName:
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
+			case constants.HorizontalPodAutoscalerDeviceGroupName:
+				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			default:
 				continue
 			}

@@ -3,9 +3,9 @@ package types
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
-	"github.com/logicmonitor/lm-sdk-go/client"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/vkumbhar94/lm-sdk-go/client"
+	"github.com/vkumbhar94/lm-sdk-go/client/lm"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 )
@@ -71,11 +71,11 @@ type DeviceMapper interface {
 	// FindByDisplayNameAndClusterName searches for device by the specified string by its display name and clusterName. It will return a device if and only if
 	FindByDisplayNameAndClusterName(*lmctx.LMContext, string, string) (*models.Device, error)
 	// Add adds a device to a LogicMonitor account.
-	Add(*lmctx.LMContext, string, ...DeviceOption) (*models.Device, error)
+	Add(*lmctx.LMContext, string, map[string]string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplace updates a device using the 'replace' OpType.
 	UpdateAndReplace(*lmctx.LMContext, string, *models.Device, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
-	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, UpdateFilter, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, UpdateFilter, map[string]string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
 	// specific field of a device.
 	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string, ...DeviceOption) (*models.Device, error)
