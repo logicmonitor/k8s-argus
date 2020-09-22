@@ -125,14 +125,3 @@ const (
 	// HorizontalPodAutoScalers hpa generic
 	HorizontalPodAutoScalers = "horizontalpodautoscalers"
 )
-
-const (
-	// Deployments deployments generic
-	Deployments = "deployments"
-	// Pods pods generic
-	Pods = "pods"
-	// Services Services generic
-	Services = "services"
-	// Nodes Nodes generic
-	Nodes = "nodes"
-)
