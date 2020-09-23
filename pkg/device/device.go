@@ -8,6 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
+	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 
@@ -273,11 +274,41 @@ func (m *Manager) FindByDisplayNameAndClusterName(lctx *lmctx.LMContext, resourc
 	return nil, nil
 }
 
+// getEvaluationParamsForResource generates evaluation parameters based on labels and specified resource
+func getEvaluationParamsForResource(device *models.Device, labels map[string]string) (map[string]interface{}, error) {
+	evaluationParams := make(map[string]interface{})
+
+	for key, value := range labels {
+		key = filters.CheckAndReplaceInvalidChars(key)
+		value = filters.CheckAndReplaceInvalidChars(value)
+		evaluationParams[key] = value
+	}
+
+	evaluationParams["name"] = *device.DisplayName
+	return evaluationParams, nil
+}
+
 // Add implements types.DeviceManager.
-func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
 	log.Debugf("%#v", device)
+
+	evaluationParams, err := getEvaluationParamsForResource(device, labels)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
+
+	if filters.Eval(resource, evaluationParams) {
+		log.Infof("Filtering out %s %s.", resource, *device.DisplayName)
+		// delete existing resource which is mentioned for filtering.
+		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
 
 	params := lm.NewAddDeviceParams()
 	addFromWizard := false
@@ -329,11 +360,11 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource string, name string, filter types.UpdateFilter, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource string, name string, filter types.UpdateFilter, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	if !m.DC.Exists(name) {
 		log.Infof("Missing device %v; adding it now", name)
-		return m.Add(lctx, resource, options...)
+		return m.Add(lctx, resource, labels, options...)
 	}
 	if filter != nil && !filter() {
 		log.Debugf("filtered device update %s", name)
@@ -456,6 +487,7 @@ func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource string, na
 	err2 := m.DeleteByID(lctx, resource, d.ID)
 	if err2 == nil {
 		m.DC.Unset(name)
+		log.Infof("deleted device %q", name)
 	}
 	return err2
 }
