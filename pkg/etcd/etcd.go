@@ -78,7 +78,7 @@ func (c *Controller) addDevice(lctx *lmctx.LMContext, member *Member) {
 	}
 
 	// Add the etcd member.
-	if _, err := c.Add(lctx, "etcd",
+	if _, err := c.Add(lctx, "etcd", nil,
 		c.args(member, constants.EtcdCategory)...,
 	); err != nil {
 		log.Errorf("Failed to add etcd member %q: %v", member.URL.Hostname(), err)
