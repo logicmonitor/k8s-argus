@@ -8,10 +8,11 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/sirupsen/logrus"
 	"github.com/vkumbhar94/lm-sdk-go/client"
 	"github.com/vkumbhar94/lm-sdk-go/models"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -61,7 +62,7 @@ func getExistingDeviceGroupPropertiesMap(lctx *lmctx.LMContext, groupID int32, c
 func getK8sAndHelmProperties(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) map[string]string {
 	customProperties := make(map[string]string)
 	customProperties = getKubernetesVersion(lctx, customProperties, kubeClient)
-	customProperties = deployment.GetHelmChartDetailsFromDeployments(lctx, customProperties, kubeClient)
+	customProperties = getHelmChartDetailsFromConfigMap(lctx, customProperties, kubeClient)
 	return customProperties
 }
 
@@ -75,6 +76,37 @@ func getKubernetesVersion(lctx *lmctx.LMContext, customProperties map[string]str
 	}
 	cpValue := serverVersion.String()
 	customProperties[constants.KubernetesVersionKey] = cpValue
+	return customProperties
+}
+
+// getHelmChartDetailsFromConfigMap fetches configmap from kubernetes cluster and read annotations
+func getHelmChartDetailsFromConfigMap(lctx *lmctx.LMContext, customProperties map[string]string, kubeClient kubernetes.Interface) map[string]string {
+	log := lmlog.Logger(lctx)
+
+	// get list of namespace for fetching deployments
+	namespaceList := namespace.GetNamespaceList(lctx, kubeClient)
+
+	regex := constants.Chart + " in (" + constants.Argus + ", " + constants.CollectorsetController + ")"
+	opts := metav1.ListOptions{
+		LabelSelector: regex,
+	}
+	for i := range namespaceList {
+		configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceList[i]).List(opts)
+		if err != nil || configMapList == nil {
+			log.Errorf("Failed to get the configMap from k8s. Error: %v", err)
+			continue
+		}
+		for i := range configMapList.Items {
+			annotations := configMapList.Items[i].GetAnnotations()
+			labelVal := configMapList.Items[i].GetLabels()[constants.Chart]
+			for key, value := range annotations {
+				if key == constants.HelmChart || key == constants.HelmRevision {
+					name := labelVal + "." + key
+					customProperties[name] = value
+				}
+			}
+		}
+	}
 	return customProperties
 }
 

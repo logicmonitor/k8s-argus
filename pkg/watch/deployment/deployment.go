@@ -12,7 +12,6 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -162,34 +161,4 @@ func GetDeploymentsMap(lctx *lmctx.LMContext, k8sClient kubernetes.Interface, na
 	}
 
 	return deploymentsMap, nil
-}
-
-// GetHelmChartDetailsFromDeployments Fetches helm chart details like chart name & chart revision from deployment labels.
-func GetHelmChartDetailsFromDeployments(lctx *lmctx.LMContext, customProperties map[string]string, kubeClient kubernetes.Interface) map[string]string {
-	log := lmlog.Logger(lctx)
-
-	// get list of namespace for fetching deployments
-	namespaceList := namespace.GetNamespaceList(lctx, kubeClient)
-
-	regex := constants.Chart + " in (" + constants.Argus + ", " + constants.CollectorsetController + ")"
-	opts := v1.ListOptions{
-		LabelSelector: regex,
-	}
-	for i := range namespaceList {
-		deploymentList, err := kubeClient.AppsV1().Deployments(namespaceList[i]).List(opts)
-		if err != nil || deploymentList == nil {
-			log.Errorf("Failed to get the deployments from k8s. Error: %v", err)
-			continue
-		}
-		for i := range deploymentList.Items {
-			labels := deploymentList.Items[i].GetLabels()
-			for key, value := range labels {
-				if key == constants.HelmChart || key == constants.HelmRevision {
-					name := labels[constants.Chart] + "." + key
-					customProperties[name] = value
-				}
-			}
-		}
-	}
-	return customProperties
 }
