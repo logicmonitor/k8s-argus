@@ -19,8 +19,7 @@ import (
 // UpdateTelemetryCron a cron job to update K8s & Helm properties in cluster device group
 func UpdateTelemetryCron(base *types.Base) {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"res": "update-telemetry"}))
-	c := RegisterCron(lctx, "@midnight", func() { updateTelemetry(lctx, base) })
-	c.Start()
+	RegisterFunc(lctx, "@midnight", func() { updateTelemetry(lctx, base) })
 }
 
 func updateTelemetry(lctx *lmctx.LMContext, base *types.Base) {
