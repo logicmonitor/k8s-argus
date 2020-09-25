@@ -27,6 +27,12 @@ func TestGetUpdatedHistoryValue(t *testing.T) {
 			expectedOutput:     "argus-0.13.0, argus-0.14.0",
 		},
 		{
+			name:               "New value same as last value of history value",
+			inputExistingValue: "argus-0.13.0, argus-0.14.0",
+			inputNewValue:      "argus-0.14.0",
+			expectedOutput:     "argus-0.13.0, argus-0.14.0",
+		},
+		{
 			name:               "Existing value with 10 comma separated value",
 			inputExistingValue: "1, 2, 3, 4, 5, 6, 7, 8, 9, 10",
 			inputNewValue:      "11",

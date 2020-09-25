@@ -125,7 +125,7 @@ func getUpdatedHistoryValue(historyVal, newValue string) string {
 	}
 	length := len(values)
 	// append record if not same as last
-	if length == 0 || (length > 0 && values[length-1] != newValue) {
+	if length == 0 || values[length-1] != newValue {
 		values = append(values, newValue)
 		length = len(values) // calculate length again after adding record
 	}

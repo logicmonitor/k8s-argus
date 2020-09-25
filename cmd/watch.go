@@ -68,9 +68,6 @@ var watchCmd = &cobra.Command{
 		// Invoke the watcher.
 		argus.Watch()
 
-		// Start the cron scheduler
-		cronjob.StartCronScheduler()
-
 		// To update K8s & Helm properties in cluster device group periodically with the server
 		cronjob.UpdateTelemetryCron(base)
 
