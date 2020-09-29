@@ -115,3 +115,24 @@ const (
 	// Nodes Nodes generic
 	Nodes = "nodes"
 )
+
+const (
+	// HelmChart is the key for Argus & Collectoeset-controller label
+	HelmChart = "helm-chart"
+	// HelmRevision is the key for Argus & Collectoeset-controller label
+	HelmRevision = "helm-revision"
+	// Chart is the label key in Argus & Collectoeset-controller Deployment
+	Chart = "chart"
+	// Argus is the Argus Deployment label
+	Argus = "argus"
+	// CollectorsetController is the Collectorset-controller Deployment label
+	CollectorsetController = "collectorset-controller"
+	// KubernetesVersionKey is the key for customProperties
+	KubernetesVersionKey = "kubernetes.version"
+	// DeviceGroupCustomType is the device group of custom type
+	DeviceGroupCustomType = "custom"
+	// HistorySuffix is the key suffix used for maintaining history
+	HistorySuffix = ".history"
+	// PropertySeparator is the property separator
+	PropertySeparator = ", "
+)
