@@ -126,6 +126,7 @@ func (w *Watcher) serviceUpdateFilter(old, new *v1.Service) types.UpdateFilter {
 	}
 }
 
+// nolint: dupl
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "services",

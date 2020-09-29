@@ -54,7 +54,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 		deployment := obj.(*appsv1.Deployment)
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + deployment.Name}))
 		log := lmlog.Logger(lctx)
-		log.Infof("Handling add deployment event: %s", deployment.Name)
+		log.Infof("Handling add deployment event: %s", fmtDeploymentDisplayName(deployment))
 		w.add(lctx, deployment)
 	}
 }
@@ -128,7 +128,7 @@ func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 
 func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.DeviceOption {
 	return []types.DeviceOption{
-		w.Name(deployment.Name),
+		w.Name(fmtDeploymentDisplayName(deployment)),
 		w.ResourceLabels(deployment.Labels),
 		w.DisplayName(fmtDeploymentDisplayName(deployment)),
 		w.SystemCategories(category),
