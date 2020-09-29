@@ -40,12 +40,13 @@ func updateDeviceGroupK8sAndHelmProperties(lctx *lmctx.LMContext, groupID int32,
 	customPropertiesMap := getK8sAndHelmProperties(lctx, kubeClient)
 
 	for k, v := range customPropertiesMap {
-		updateProperty(lctx, k, v, groupID, client)
-
 		// update history property
 		historyKey := k + constants.HistorySuffix
 		updatedHistoryVal := getUpdatedHistoryValue(existingPropertiesMap[historyKey], v)
 		updateProperty(lctx, historyKey, updatedHistoryVal, groupID, client)
+
+		// update latest property
+		updateProperty(lctx, k, v, groupID, client)
 	}
 }
 

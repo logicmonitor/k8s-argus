@@ -22,6 +22,7 @@ func RegisterFunc(lctx *lmctx.LMContext, cronSpec string, handlerFunc func()) cr
 	entryID, err := cj.AddFunc(cronSpec, handlerFunc)
 	if err != nil {
 		log.Errorf("Failed to add a func to the cron. Error: %v", err)
+		return 0
 	}
 	return entryID
 }
