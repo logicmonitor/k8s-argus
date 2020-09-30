@@ -10,8 +10,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const hasCategoryOpen = "hasCategory("
-const hasCategoryClose = ")"
+const (
+	hasCategoryOpen = "hasCategory("
+	existsOpen      = "exists("
+	closingBracket  = ")"
+)
 
 // Options are the options for creating a device group.
 type Options struct {
@@ -31,6 +34,7 @@ type AppliesToBuilder interface {
 	And() AppliesToBuilder
 	Or() AppliesToBuilder
 	Equals(string) AppliesToBuilder
+	Exists(string) AppliesToBuilder
 	String() string
 }
 
@@ -58,7 +62,12 @@ func (a *appliesToBuilder) Equals(val string) AppliesToBuilder {
 }
 
 func (a *appliesToBuilder) HasCategory(category string) AppliesToBuilder {
-	a.value += hasCategoryOpen + fmt.Sprintf(`"%s"`, category) + hasCategoryClose
+	a.value += hasCategoryOpen + fmt.Sprintf(`"%s"`, category) + closingBracket
+	return a
+}
+
+func (a *appliesToBuilder) Exists(property string) AppliesToBuilder {
+	a.value += existsOpen + fmt.Sprintf(`"%s"`, property) + closingBracket
 	return a
 }
 
@@ -131,6 +140,26 @@ func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGr
 	return deviceGroup, nil
 }
 
+// FindDeviceGroupsByName searches for a device group by name.
+func FindDeviceGroupsByName(name string, client *client.LMSdkGo) ([]*models.DeviceGroup, error) {
+	params := lm.NewGetDeviceGroupListParams()
+	fields := "name,id,parentId,subGroups"
+	params.SetFields(&fields)
+	filter := fmt.Sprintf("name:\"%s\"", name)
+	params.SetFilter(&filter)
+	restResponse, err := client.LM.GetDeviceGroupList(params)
+	if err != nil {
+		return nil, err
+	}
+
+	var deviceGroups []*models.DeviceGroup
+	if restResponse != nil && restResponse.Payload != nil {
+		deviceGroups = restResponse.Payload.Items
+	}
+
+	return deviceGroups, nil
+}
+
 // Exists returns true if the specified device group exists in the account
 func Exists(parentID int32, name string, client *client.LMSdkGo) bool {
 	deviceGroup, err := Find(parentID, name, client)
@@ -183,6 +212,19 @@ func DeleteSubGroup(deviceGroup *models.DeviceGroup, name string, client *client
 	}
 
 	return nil
+}
+
+// DeleteGroup deletes a device group with the specified deviceGroupID.
+func DeleteGroup(deviceGroup *models.DeviceGroup, client *client.LMSdkGo) error {
+	params := lm.NewDeleteDeviceGroupByIDParams()
+	params.ID = deviceGroup.ID
+	deleteChildren := true
+	params.SetDeleteChildren(&deleteChildren)
+	deleteHard := true
+	params.SetDeleteHard(&deleteHard)
+	log.Infof("Deleting deviceGroup:\"%s\" ID:\"%d\" ParentID:\"%d\"", *deviceGroup.Name, deviceGroup.ID, deviceGroup.ParentID)
+	_, err := client.LM.DeleteDeviceGroupByID(params)
+	return err
 }
 
 func create(name, appliesTo string, disableAlerting bool, parentID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {

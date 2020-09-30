@@ -30,10 +30,20 @@ import (
 )
 
 // setUp is a convenience function for setting up for (most) tests.
-func setUp(t *testing.T, fullMethods bool) (*openapi.Config, *restful.Container, *assert.Assertions) {
+func setUp(t *testing.T, fullMethods bool) (openAPI, *restful.Container, *assert.Assertions) {
 	assert := assert.New(t)
 	config, container := getConfig(fullMethods)
-	return config, container, assert
+	return openAPI{
+		config: config,
+		swagger: &spec.Swagger{
+			SwaggerProps: spec.SwaggerProps{
+				Swagger:     OpenAPIVersion,
+				Definitions: spec.Definitions{},
+				Paths:       &spec.Paths{Paths: map[string]spec.PathItem{}},
+				Info:        config.Info,
+			},
+		},
+	}, container, assert
 }
 
 func noOp(request *restful.Request, response *restful.Response) {}
@@ -415,8 +425,8 @@ func getTestOutputDefinition() spec.Schema {
 	}
 }
 
-func TestBuildOpenAPISpec(t *testing.T) {
-	config, container, assert := setUp(t, true)
+func TestBuildSwaggerSpec(t *testing.T) {
+	o, container, assert := setUp(t, true)
 	expected := &spec.Swagger{
 		SwaggerProps: spec.SwaggerProps{
 			Info: &spec.Info{
@@ -439,7 +449,7 @@ func TestBuildOpenAPISpec(t *testing.T) {
 			},
 		},
 	}
-	swagger, err := BuildOpenAPISpec(container.RegisteredWebServices(), config)
+	err := o.init(container.RegisteredWebServices())
 	if !assert.NoError(err) {
 		return
 	}
@@ -447,27 +457,7 @@ func TestBuildOpenAPISpec(t *testing.T) {
 	if !assert.NoError(err) {
 		return
 	}
-	actual_json, err := json.Marshal(swagger)
-	if !assert.NoError(err) {
-		return
-	}
-	assert.Equal(string(expected_json), string(actual_json))
-}
-
-func TestBuildOpenAPIDefinitionsForResource(t *testing.T) {
-	config, _, assert := setUp(t, true)
-	expected := &spec.Definitions{
-		"builder.TestInput": getTestInputDefinition(),
-	}
-	swagger, err := BuildOpenAPIDefinitionsForResource(TestInput{}, config)
-	if !assert.NoError(err) {
-		return
-	}
-	expected_json, err := json.Marshal(expected)
-	if !assert.NoError(err) {
-		return
-	}
-	actual_json, err := json.Marshal(swagger)
+	actual_json, err := json.Marshal(o.swagger)
 	if !assert.NoError(err) {
 		return
 	}

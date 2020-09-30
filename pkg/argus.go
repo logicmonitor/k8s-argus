@@ -10,8 +10,11 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
+	"github.com/logicmonitor/k8s-argus/pkg/facade"
+	"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -20,7 +23,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
-	"github.com/logicmonitor/k8s-collectorset-controller/api"
+	"github.com/logicmonitor/k8s-argus/pkg/worker"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	log "github.com/sirupsen/logrus"
@@ -34,6 +37,8 @@ import (
 // Argus represents the Argus cli.
 type Argus struct {
 	*types.Base
+	types.LMFacade
+	types.DeviceManager
 	Watchers []types.Watcher
 }
 
@@ -93,30 +98,126 @@ func newK8sClient() (*kubernetes.Clientset, error) {
 }
 
 // NewArgus instantiates and returns argus.
-func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus, error) {
+func NewArgus(base *types.Base) (*Argus, error) {
+	facadeObj := facade.NewFacade()
 	argus := &Argus{
+		Base:     base,
+		LMFacade: facadeObj,
+	}
+	lmExecObj := &lmexec.LMExec{
 		Base: base,
 	}
 
+	dcache := devicecache.NewDeviceCache(base, 5)
+	dcache.Run()
+
 	deviceManager := &device.Manager{
-		Base:             base,
-		ControllerClient: client,
+		Base:       base,
+		LMExecutor: lmExecObj,
+		LMFacade:   facadeObj,
+		DC:         dcache,
 	}
+	argus.DeviceManager = deviceManager
 
 	deviceTree := &tree.DeviceTree{
 		Base: base,
 	}
 
+	deviceGroups, err := deviceTree.CreateDeviceTree()
+	if err != nil {
+		return nil, err
+	}
+
+	podChannel := make(chan types.ICommand)
+	serviceChannel := make(chan types.ICommand)
+	deploymentChannel := make(chan types.ICommand)
+	nodeChannel := make(chan types.ICommand)
+	argus.Watchers = []types.Watcher{
+		&namespace.Watcher{
+			Base:         base,
+			DeviceGroups: deviceGroups,
+		},
+		&node.Watcher{
+			DeviceManager: deviceManager,
+			DeviceGroups:  deviceGroups,
+			LMClient:      base.LMClient,
+			WConfig: &types.WConfig{
+				MethodChannels: map[string]chan types.ICommand{
+					"GET":    nodeChannel,
+					"POST":   nodeChannel,
+					"DELETE": nodeChannel,
+					"PUT":    nodeChannel,
+					"PATCH":  nodeChannel,
+				},
+				RetryLimit: 2,
+				ID:         "nodes",
+			},
+		},
+		&service.Watcher{
+			DeviceManager: deviceManager,
+			WConfig: &types.WConfig{
+				MethodChannels: map[string]chan types.ICommand{
+					"GET":    serviceChannel,
+					"POST":   serviceChannel,
+					"DELETE": serviceChannel,
+					"PUT":    serviceChannel,
+					"PATCH":  serviceChannel,
+				},
+				RetryLimit: 2,
+				ID:         "services",
+			},
+		},
+		&pod.Watcher{
+			DeviceManager: deviceManager,
+			WConfig: &types.WConfig{
+				MethodChannels: map[string]chan types.ICommand{
+					"GET":    podChannel,
+					"POST":   podChannel,
+					"DELETE": podChannel,
+					"PUT":    podChannel,
+					"PATCH":  podChannel,
+				},
+				RetryLimit: 2,
+				ID:         "pods",
+			},
+		},
+		&deployment.Watcher{
+			DeviceManager: deviceManager,
+			WConfig: &types.WConfig{
+				MethodChannels: map[string]chan types.ICommand{
+					"GET":    deploymentChannel,
+					"POST":   deploymentChannel,
+					"DELETE": deploymentChannel,
+					"PUT":    deploymentChannel,
+					"PATCH":  deploymentChannel,
+				},
+				RetryLimit: 2,
+				ID:         "deployments",
+			},
+		},
+	}
+
+	// Start workers
+	for _, w := range argus.Watchers {
+		c := w.GetConfig()
+		if c == nil {
+			log.Warningf("Watcher %v doesn't have worker config, couldn't run worker for it", w.Resource())
+			continue
+		}
+		wc := worker.NewWorker(c)
+		b, err := argus.LMFacade.RegisterWorker(w.Resource(), wc)
+		if err != nil {
+			log.Errorf("Failed to register worker for resource for: %s", w.Resource())
+		}
+		if b {
+			wc.Run()
+		}
+	}
 	// init sync to delete the non-exist resource devices through logicmonitor API
 	initSyncer := sync.InitSyncer{
 		DeviceManager: deviceManager,
 	}
 	initSyncer.InitSync()
-
-	deviceGroups, err := deviceTree.CreateDeviceTree()
-	if err != nil {
-		return nil, err
-	}
 
 	if base.Config.EtcdDiscoveryToken != "" {
 		etcdController := etcd.Controller{
@@ -127,27 +228,71 @@ func NewArgus(base *types.Base, client api.CollectorSetControllerClient) (*Argus
 			return nil, err
 		}
 	}
-
-	argus.Watchers = []types.Watcher{
-		&namespace.Watcher{
-			Base:         base,
-			DeviceGroups: deviceGroups,
-		},
-		&node.Watcher{
-			DeviceManager: deviceManager,
-			DeviceGroups:  deviceGroups,
-			LMClient:      base.LMClient,
-		},
-		&service.Watcher{
-			DeviceManager: deviceManager,
-		},
-		&pod.Watcher{
-			DeviceManager: deviceManager,
-		},
-		&deployment.Watcher{
-			DeviceManager: deviceManager,
-		},
-	}
+	log.Debugf("Initialized argus")
+	//	podChannel := make(chan types.ICommand)
+	//	serviceChannel := make(chan types.ICommand)
+	//	deploymentChannel := make(chan types.ICommand)
+	//	nodeChannel := make(chan types.ICommand)
+	//	argus.Watchers = []types.Watcher{
+	//		&namespace.Watcher{
+	//			Base:         base,
+	//			DeviceGroups: deviceGroups,
+	//		},
+	//		&node.Watcher{
+	//			DeviceManager: deviceManager,
+	//			DeviceGroups:  deviceGroups,
+	//			LMClient:      base.LMClient,
+	//			WConfig: types.WConfig{
+	//				MethodChannels: map[string]chan types.ICommand{
+	//					"GET":    nodeChannel,
+	//					"POST":   nodeChannel,
+	//					"DELETE": nodeChannel,
+	//					"PUT":    nodeChannel,
+	//					"PATCH":  nodeChannel,
+	//				},
+	//				RetryLimit: 2,
+	//			},
+	//		},
+	//		&service.Watcher{
+	//			DeviceManager: deviceManager,
+	//			WConfig: types.WConfig{
+	//				MethodChannels: map[string]chan types.ICommand{
+	//					"GET":    serviceChannel,
+	//					"POST":   serviceChannel,
+	//					"DELETE": serviceChannel,
+	//					"PUT":    serviceChannel,
+	//					"PATCH":  serviceChannel,
+	//				},
+	//				RetryLimit: 2,
+	//			},
+	//		},
+	//		&pod.Watcher{
+	//			DeviceManager: deviceManager,
+	//			WConfig: types.WConfig{
+	//				MethodChannels: map[string]chan types.ICommand{
+	//					"GET":    podChannel,
+	//					"POST":   podChannel,
+	//					"DELETE": podChannel,
+	//					"PUT":    podChannel,
+	//					"PATCH":  podChannel,
+	//				},
+	//				RetryLimit: 2,
+	//			},
+	//		},
+	//		&deployment.Watcher{
+	//			DeviceManager: deviceManager,
+	//			WConfig: types.WConfig{
+	//				MethodChannels: map[string]chan types.ICommand{
+	//					"GET":    deploymentChannel,
+	//					"POST":   deploymentChannel,
+	//					"DELETE": deploymentChannel,
+	//					"PUT":    deploymentChannel,
+	//					"PATCH":  deploymentChannel,
+	//				},
+	//				RetryLimit: 2,
+	//			},
+	//		},
+	//	}
 
 	return argus, nil
 }
@@ -180,6 +325,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 
 // Watch watches the API for events.
 func (a *Argus) Watch() {
+	log.Debugf("Starting watchers")
 	for _, w := range a.Watchers {
 		if !w.Enabled() {
 			log.Warnf("Have no permission for resource %s", w.Resource())
@@ -196,8 +342,21 @@ func (a *Argus) Watch() {
 				UpdateFunc: w.UpdateFunc(),
 			},
 		)
+		log.Debugf("Starting watcher of %v", w.Resource())
 		stop := make(chan struct{})
 		go controller.Run(stop)
+		//		c := w.GetConfig()
+		//		if c == nil {
+		//			continue
+		//		}
+		//		wc := worker.NewWorker(c)
+		//		b, err := a.Facade.RegisterWorker(w.Resource(), wc)
+		//		if err != nil {
+		//			log.Errorf("Failed to register worker for resource for: %s", w.Resource())
+		//		}
+		//		if b {
+		//			wc.StartWorker()
+		//		}
 	}
 }
 
@@ -208,6 +367,8 @@ func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.I
 		return clientset.CoreV1().RESTClient()
 	case constants.K8sAPIVersionAppsV1beta2:
 		return clientset.AppsV1beta2().RESTClient()
+	case constants.K8sAPIVersionAppsV1:
+		return clientset.AppsV1().RESTClient()
 	default:
 		return clientset.CoreV1().RESTClient()
 	}

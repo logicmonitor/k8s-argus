@@ -18,6 +18,7 @@ type Watcher struct {
 	*types.Base
 	// TODO: This should be thread safe.
 	DeviceGroups map[string]int32
+	*types.WConfig
 }
 
 // APIVersion is a function that implements the Watcher interface.
@@ -95,22 +96,28 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		namespace := obj.(*v1.Namespace)
 		log.Debugf("Handle deleting namespace event: %s", namespace.Name)
 
-		for name, parentID := range w.DeviceGroups {
-			deviceGroup, err := devicegroup.Find(parentID, name, w.LMClient)
-			if err != nil {
-				log.Warnf("Failed to find namespace %s: %v", name, err)
-				return
-			}
-			// We should only be returned a device group if it is namespaced.
-			if deviceGroup == nil {
-				continue
-			}
-			err = devicegroup.DeleteSubGroup(deviceGroup, namespace.Name, w.LMClient)
-			if err != nil {
-				log.Errorf("Failed to delete namespace %q: %v", namespace.Name, err)
-				return
-			}
+		deviceGroups, err := devicegroup.FindDeviceGroupsByName(namespace.Name, w.LMClient)
+		if err != nil {
+			log.Errorf("Failed to get device group for namespace:\"%s\" with error: %v", namespace.Name, err)
+			return
 		}
 
+		reversedDeviceGroups := getReversedDeviceGroups(w.DeviceGroups)
+		for _, d := range deviceGroups {
+			if _, ok := reversedDeviceGroups[d.ParentID]; ok {
+				err = devicegroup.DeleteGroup(d, w.LMClient)
+				if err != nil {
+					log.Errorf("Failed to delete device group of namespace:\"%s\" having ID:\"%d\" with error: %v", namespace.Name, d.ID, err)
+				}
+			}
+		}
 	}
+}
+
+func getReversedDeviceGroups(deviceGroups map[string]int32) map[int32]string {
+	reversedDeviceGroups := make(map[int32]string)
+	for key, value := range deviceGroups {
+		reversedDeviceGroups[value] = key
+	}
+	return reversedDeviceGroups
 }

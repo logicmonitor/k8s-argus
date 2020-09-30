@@ -54,21 +54,29 @@
   name = "gopkg.in/yaml.v2"
 
 [[constraint]]
-  branch = "release-1.8"
+  branch = "release-1.17"
   name = "k8s.io/api"
 
 [[constraint]]
-  branch = "release-1.8"
+  branch = "release-1.17"
   name = "k8s.io/apiextensions-apiserver"
 
 [[constraint]]
-  branch = "release-1.8"
+  branch = "release-1.17"
   name = "k8s.io/apimachinery"
 
 [[constraint]]
-  branch = "release-5.0"
+  branch = "release-14.0"
   name = "k8s.io/client-go"
+
+[[constraint]]
+  version = "v1.1.1"
+  name = "github.com/google/uuid"
 
 [[override]]
   name = "github.com/ugorji/go"
   revision = "8c0409fcbb70099c748d71f714529204975f6c3f"
+
+[[constraint]]
+  name = "github.com/Knetic/govaluate"
+  version = "3.0.0"
