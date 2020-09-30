@@ -77,7 +77,7 @@ func createGRPCConnection() (*grpc.ClientConn, error) {
 		select {
 		case <-timeout:
 			return nil, fmt.Errorf("timeout waiting for gRPC connection")
-		case <-ticker.C:
+		default:
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
 			defer cancel()
 			conn, err := grpc.DialContext(ctx, appConfig.Address, grpc.WithBlock(), grpc.WithInsecure())
@@ -86,6 +86,7 @@ func createGRPCConnection() (*grpc.ClientConn, error) {
 			} else {
 				return conn, nil
 			}
+			<-ticker.C
 		}
 	}
 }
@@ -101,12 +102,13 @@ func createCSCClient() (api.CollectorSetControllerClient, error) {
 		select {
 		case <-timeout:
 			return client, fmt.Errorf("timeout waiting for collectors to become available")
-		case <-ticker.C:
+		default:
 			healthCheckResponse := getCSCHealth(hc)
 			if healthCheckResponse.GetStatus() == healthpb.HealthCheckResponse_SERVING {
 				return client, nil
 			}
 			log.Debugf("The collectors are not ready: %v", healthCheckResponse.GetStatus().String())
+			<-ticker.C
 		}
 	}
 }
