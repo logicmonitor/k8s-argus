@@ -12,6 +12,7 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,6 +56,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		horizontalPodAutoscaler := obj.(*autoscalingv1.HorizontalPodAutoscaler)
 		lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"device_id": resource + "-" + horizontalPodAutoscaler.Name}))
+		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
 		log.Infof("Handling add horizontalPodAutoscaler event: %s", horizontalPodAutoscaler.Name)
 		w.add(lctx, horizontalPodAutoscaler)
@@ -66,6 +68,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*autoscalingv1.HorizontalPodAutoscaler)
 		lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"device_id": resource + "-" + old.Name}))
+		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
 		log.Debugf("Handling update horizontalPodAutoscaler event: %s", old.Name)
 		new := newObj.(*autoscalingv1.HorizontalPodAutoscaler)

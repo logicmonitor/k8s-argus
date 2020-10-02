@@ -123,23 +123,9 @@ func (m *Manager) renameAndAddDevice(lctx *lmctx.LMContext, resource string, dev
 	}
 	log.Infof("Rename device: %s -> %s", *device.DisplayName, renameResourceName)
 	device.DisplayName = &renameResourceName
-	params := lm.NewAddDeviceParams()
-	addFromWizard := false
-	params.SetAddFromWizard(&addFromWizard)
-	params.SetBody(device)
-	cmd := &types.HTTPCommand{
-		Command: &types.Command{
-			ExecFun: m.AddDevice(params),
-			LMCtx:   lctx,
-		},
-		Method:   "POST",
-		Category: "device",
-		LMHCErrParse: &types.LMHCErrParse{
-			ParseErrResp: m.AddDeviceErrResp,
-		},
-	}
-	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
-	//restResponse, err := m.LMClient.LM.AddDevice(params)
+
+	restResponse, err := m.addDevice(lctx, resource, device)
+
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +278,10 @@ func getEvaluationParamsForResource(device *models.Device, labels map[string]str
 func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
-	log.Debugf("%#v", device)
+
+	if !m.verifySystemIPsProperty(lctx, device) {
+		return nil, nil
+	}
 
 	evaluationParams, err := getEvaluationParamsForResource(device, labels)
 	if err != nil {
@@ -310,22 +299,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 		return nil, nil
 	}
 
-	params := lm.NewAddDeviceParams()
-	addFromWizard := false
-	params.SetAddFromWizard(&addFromWizard)
-	params.SetBody(device)
-	cmd := &types.HTTPCommand{
-		Command: &types.Command{
-			ExecFun: m.AddDevice(params),
-			LMCtx:   lctx,
-		},
-		Method:   "POST",
-		Category: "device",
-		LMHCErrParse: &types.LMHCErrParse{
-			ParseErrResp: m.AddDeviceErrResp,
-		},
-	}
-	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.addDevice(lctx, resource, device)
 	if err != nil {
 		deviceDefault, ok := err.(*lm.AddDeviceDefault)
 		if !ok {
@@ -348,6 +322,37 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 	m.DC.Set(*resp.Payload.DisplayName)
 	log.Debugf("%#v", resp)
 	return resp.Payload, nil
+}
+
+// verifySystemIPsProperty verifies that 'system.ips' property is present if device ping feature is enabled
+func (m *Manager) verifySystemIPsProperty(lctx *lmctx.LMContext, device *models.Device) bool {
+	log := lmlog.Logger(lctx)
+	isPingEnabled := lctx.Extract(constants.IsPingEnabled)
+	if isPingEnabled != nil && isPingEnabled.(bool) && m.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) == "" {
+		log.Warnf("Property '%s' is empty for device '%s', skipping", constants.K8sSystemIPsPropertyKey, *device.DisplayName)
+		return false
+	}
+	return true
+}
+
+func (m *Manager) addDevice(lctx *lmctx.LMContext, resource string, device *models.Device) (interface{}, error) {
+	params := lm.NewAddDeviceParams()
+	addFromWizard := false
+	params.SetAddFromWizard(&addFromWizard)
+	params.SetBody(device)
+	cmd := &types.HTTPCommand{
+		Command: &types.Command{
+			ExecFun: m.AddDevice(params),
+			LMCtx:   lctx,
+		},
+		Method:   "POST",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.AddDeviceErrResp,
+		},
+	}
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	return restResponse, err
 }
 
 // UpdateAndReplace implements types.DeviceManager.

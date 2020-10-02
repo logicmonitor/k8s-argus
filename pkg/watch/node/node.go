@@ -12,6 +12,7 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/sirupsen/logrus"
 	"github.com/vkumbhar94/lm-sdk-go/client"
 	v1 "k8s.io/api/core/v1"
@@ -57,6 +58,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + node.Name}))
+		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
 
 		log.Debugf("Handling add node event: %s", node.Name)
@@ -75,6 +77,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Node)
 		new := newObj.(*v1.Node)
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
+		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
 
 		log.Debugf("Handling update node event: %s", old.Name)
