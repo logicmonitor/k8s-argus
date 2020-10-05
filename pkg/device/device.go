@@ -279,7 +279,8 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
 
-	if !m.verifySystemIPsProperty(lctx, device) {
+	if !m.checkPingDeviceAndSystemIPs(lctx, device) {
+		log.Warnf("Property '%s' is empty for device '%s', skipping", constants.K8sSystemIPsPropertyKey, *device.DisplayName)
 		return nil, nil
 	}
 
@@ -324,12 +325,12 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 	return resp.Payload, nil
 }
 
-// verifySystemIPsProperty verifies that 'system.ips' property is present if device ping feature is enabled
-func (m *Manager) verifySystemIPsProperty(lctx *lmctx.LMContext, device *models.Device) bool {
-	log := lmlog.Logger(lctx)
-	isPingEnabled := lctx.Extract(constants.IsPingEnabled)
-	if isPingEnabled != nil && isPingEnabled.(bool) && m.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) == "" {
-		log.Warnf("Property '%s' is empty for device '%s', skipping", constants.K8sSystemIPsPropertyKey, *device.DisplayName)
+// checkPingDeviceAndSystemIPs verifies that 'system.ips' property is present if device ping feature is enabled.
+// If hostNetwork is enabled then device hostname is set as resource name instead of IP Address.
+// In this case collector uses 'system.ips' to communicate with the resource.
+func (m *Manager) checkPingDeviceAndSystemIPs(lctx *lmctx.LMContext, device *models.Device) bool {
+	isPingDevice := lctx.Extract(constants.IsPingDevice)
+	if isPingDevice != nil && isPingDevice.(bool) && m.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) == "" {
 		return false
 	}
 	return true

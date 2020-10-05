@@ -150,6 +150,6 @@ const (
 )
 
 const (
-	// IsPingEnabled is the key used in watcher context to pass metadata
-	IsPingEnabled = "ispingenabled"
+	// IsPingDevice is the key used in watcher context to pass metadata
+	IsPingDevice = "ispingdevice"
 )
