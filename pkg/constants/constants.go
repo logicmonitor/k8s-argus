@@ -98,6 +98,8 @@ const (
 	K8sDeviceType = 8
 	// K8sSystemCategoriesPropertyKey is the key of the unique custom property kubernetes system categories
 	K8sSystemCategoriesPropertyKey = "system.categories"
+	// K8sSystemIPsPropertyKey is the key of the system ips property
+	K8sSystemIPsPropertyKey = "system.ips"
 )
 
 const (
@@ -145,4 +147,9 @@ const (
 	HistorySuffix = ".history"
 	// PropertySeparator is the property separator
 	PropertySeparator = ", "
+)
+
+const (
+	// IsPingDevice is the key used in watcher context to pass metadata
+	IsPingDevice = "ispingdevice"
 )
