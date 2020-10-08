@@ -10,6 +10,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,6 +53,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		service := obj.(*v1.Service)
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + service.Name}))
+		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
 
 		log.Infof("Service type is %s", service.Spec.Type)
@@ -71,6 +73,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Service)
 		new := newObj.(*v1.Service)
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
+		lctx = util.WatcherContext(lctx, w)
 
 		// If the old service does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
@@ -126,6 +129,7 @@ func (w *Watcher) serviceUpdateFilter(old, new *v1.Service) types.UpdateFilter {
 	}
 }
 
+// nolint: dupl
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "services",

@@ -11,6 +11,7 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,8 +54,9 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		deployment := obj.(*appsv1.Deployment)
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + deployment.Name}))
+		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
-		log.Infof("Handling add deployment event: %s", deployment.Name)
+		log.Infof("Handling add deployment event: %s", fmtDeploymentDisplayName(deployment))
 		w.add(lctx, deployment)
 	}
 }
@@ -66,6 +68,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		new := newObj.(*appsv1.Deployment)
 
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
+		lctx = util.WatcherContext(lctx, w)
 		w.update(lctx, old, new)
 	}
 }
@@ -128,7 +131,7 @@ func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 
 func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.DeviceOption {
 	return []types.DeviceOption{
-		w.Name(deployment.Name),
+		w.Name(fmtDeploymentDisplayName(deployment)),
 		w.ResourceLabels(deployment.Labels),
 		w.DisplayName(fmtDeploymentDisplayName(deployment)),
 		w.SystemCategories(category),

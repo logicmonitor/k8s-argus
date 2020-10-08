@@ -92,6 +92,8 @@ const (
 	K8sDeviceType = 8
 	// K8sSystemCategoriesPropertyKey is the key of the unique custom property kubernetes system categories
 	K8sSystemCategoriesPropertyKey = "system.categories"
+	// K8sSystemIPsPropertyKey is the key of the system ips property
+	K8sSystemIPsPropertyKey = "system.ips"
 )
 
 const (
@@ -114,4 +116,30 @@ const (
 	Services = "services"
 	// Nodes Nodes generic
 	Nodes = "nodes"
+)
+
+const (
+	// HelmChart is the key for Argus & Collectoeset-controller label
+	HelmChart = "helm-chart"
+	// HelmRevision is the key for Argus & Collectoeset-controller label
+	HelmRevision = "helm-revision"
+	// Chart is the label key in Argus & Collectoeset-controller Deployment
+	Chart = "chart"
+	// Argus is the Argus Deployment label
+	Argus = "argus"
+	// CollectorsetController is the Collectorset-controller Deployment label
+	CollectorsetController = "collectorset-controller"
+	// KubernetesVersionKey is the key for customProperties
+	KubernetesVersionKey = "kubernetes.version"
+	// DeviceGroupCustomType is the device group of custom type
+	DeviceGroupCustomType = "custom"
+	// HistorySuffix is the key suffix used for maintaining history
+	HistorySuffix = ".history"
+	// PropertySeparator is the property separator
+	PropertySeparator = ", "
+)
+
+const (
+	// IsPingDevice is the key used in watcher context to pass metadata
+	IsPingDevice = "ispingdevice"
 )

@@ -9,6 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/connection"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/cronjob"
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
@@ -66,6 +67,9 @@ var watchCmd = &cobra.Command{
 
 		// Invoke the watcher.
 		argus.Watch()
+
+		// To update K8s & Helm properties in cluster device group periodically with the server
+		cronjob.UpdateTelemetryCron(base)
 
 		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)
