@@ -3,6 +3,7 @@ package sync
 import (
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
@@ -14,8 +15,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
-	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 )
 
 // InitSyncer implements the initial sync through logicmonitor API
@@ -24,8 +25,7 @@ type InitSyncer struct {
 }
 
 // InitSync implements the initial sync through logicmonitor API
-func (i *InitSyncer) InitSync() {
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "init-sync"}))
+func (i *InitSyncer) InitSync(lctx *lmctx.LMContext) {
 	log := lmlog.Logger(lctx)
 	log.Infof("Start to sync the resource devices")
 	clusterName := i.DeviceManager.Base.Config.ClusterName
@@ -195,4 +195,15 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			}
 		}
 	}
+}
+
+// RunPeriodicSync runs synchronization periodically.
+func (i *InitSyncer) RunPeriodicSync(syncTime int) {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "periodic-sync"}))
+	go func() {
+		for {
+			time.Sleep(time.Duration(syncTime) * time.Minute)
+			i.InitSync(lctx)
+		}
+	}()
 }

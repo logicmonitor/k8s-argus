@@ -2,8 +2,8 @@ package lmexec
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/vkumbhar94/lm-sdk-go/client/lm"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 )
 
 // LMExec Provides utility function for SDK calls using Base object

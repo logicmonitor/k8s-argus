@@ -109,7 +109,9 @@ func init() {
 	proto.RegisterType((*CollectorIDReply)(nil), "api.CollectorIDReply")
 }
 
-func init() { proto.RegisterFile("api.proto", fileDescriptor_00212fb1f9d3bf1c) }
+func init() {
+	proto.RegisterFile("api.proto", fileDescriptor_00212fb1f9d3bf1c)
+}
 
 var fileDescriptor_00212fb1f9d3bf1c = []byte{
 	// 157 bytes of a gzipped FileDescriptorProto
@@ -127,11 +129,11 @@ var fileDescriptor_00212fb1f9d3bf1c = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // CollectorSetControllerClient is the client API for CollectorSetController service.
 //
@@ -142,10 +144,10 @@ type CollectorSetControllerClient interface {
 }
 
 type collectorSetControllerClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewCollectorSetControllerClient(cc *grpc.ClientConn) CollectorSetControllerClient {
+func NewCollectorSetControllerClient(cc grpc.ClientConnInterface) CollectorSetControllerClient {
 	return &collectorSetControllerClient{cc}
 }
 
