@@ -133,7 +133,6 @@ func (w *Watcher) add(lctx *lmctx.LMContext, pod *v1.Pod) {
 	)
 	if err != nil {
 		log.Errorf("Failed to add pod %q: %v", fmtPodDisplayName(pod), err)
-		return
 	}
 
 	if p == nil {
