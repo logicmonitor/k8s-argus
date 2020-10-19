@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Monitoring - Argus</title>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.71.0" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        <strong>Argus <span class="version">4.2.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -340,11 +340,10 @@
 
 			<p>Argus adds Kubernetes resources into LogicMonitor, but the DataSources that
 apply to those resources are responsible for monitoring. LogicMonitor has a set
- of developed modules for monitoring Kubernetes, which you can import via the
- <a href="https://www.logicmonitor.com/support/settings/logicmodules/lm-exchange/">LM Exchange</a>
- (Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator
-   Code) with these locator codes:</p>
-
+of developed modules for monitoring Kubernetes, which you can import via the
+<a href="https://www.logicmonitor.com/support/settings/logicmodules/lm-exchange/">LM Exchange</a>
+(Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator
+Code) with these locator codes:</p>
 <ul>
 <li>Kubernetes_Nodes: PR4F33</li>
 <li>Kubernetes_Node: 267H63</li>
@@ -356,20 +355,18 @@ apply to those resources are responsible for monitoring. LogicMonitor has a set
 <li>Kubernetes_Container: 3AAJZX</li>
 <li>Kubernetes_PingK8s: 4N99FE</li>
 </ul>
-
 <p>Once you&rsquo;ve imported the DataSources, you should see monitoring for the health
 and performance of your Kubernetes Cluster in LogicMonitor.</p>
-
 <p>Beyond the health and performance of your Kubernetes Cluster resources, you can
- use LogicMonitor DataSources to monitor your applications running in
- Kubernetes. If it&rsquo;s a standard application, LogicMonitor likely already has a
- DataSource that can be used. For custom applications, you should
- <a href="https://www.logicmonitor.com/support/datasources/creating-managing-datasources">create your own DataSource</a> that is specific to your application. Either way, there are a few
-  requirements to ensure that these DataSources will work well for applications
-   running in Kubernetes.</p>
-
+use LogicMonitor DataSources to monitor your applications running in
+Kubernetes. If it&rsquo;s a standard application, LogicMonitor likely already has a
+DataSource that can be used. For custom applications, you should
+<a href="https://www.logicmonitor.com/support/datasources/creating-managing-datasources">create your own DataSource</a> that is specific to your application. Either way, there are a few
+requirements to ensure that these DataSources will work well for applications
+running in Kubernetes.</p>
 <ol>
-<li><p><strong>Applies To:</strong>
+<li>
+<p><strong>Applies To:</strong>
 DataSources usually apply based on property values, such as a
 system.categories or system.sysinfo value. For applications running in
 Kubernetes, the best option is to have Datasources apply based on labels.
@@ -377,21 +374,23 @@ Argus adds labels as resource properties (prepended with kubernetes.label.),
 and you can reference these labels in the Applies To field for any
 DataSources. For example, you may use a label app=shoppingcart, and have a
 DataSource that monitors shopping cart performance with an Applies To of
-&lsquo;kubernetes.label.app==&ldquo;shoppingcart&rdquo;&rsquo;.</p></li>
-
-<li><p><strong>Referencing hostname and IP addresses:</strong>
+&lsquo;kubernetes.label.app==&quot;shoppingcart&rdquo;'.</p>
+</li>
+<li>
+<p><strong>Referencing hostname and IP addresses:</strong>
 Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or
 system name for data collection. This leverages the system.hostname property
 value in LogicMonitor. Argus sets system.hostname for Pods to the name of the
 Pod, but sets system.ips to the IP of the Pod. As such, DataSources that
 monitor applications running in Kubernetes should use ##system.ips## instead
-of ##HOSTNAME##.</p></li>
+of ##HOSTNAME##.</p>
+</li>
 </ol>
 
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
@@ -405,25 +404,25 @@ of ##HOSTNAME##.</p></li>
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
+  </div>
+
+  <div class="next">
+  
       <a href="https://logicmonitor.github.io/k8s-argus/getting-started/" title="Getting Started">
         <span class="direction">
-          Previous
+          Next
         </span>
         <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
           <div class="stretch">
             <div class="title">
               Getting Started
             </div>
           </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
         </div>
       </a>
-  
-  </div>
-
-  <div class="next">
   
   </div>
 </nav>

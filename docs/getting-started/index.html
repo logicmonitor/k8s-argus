@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Getting Started - Argus</title>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.71.0" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        <strong>Argus <span class="version">4.2.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -341,72 +341,79 @@
 		<div class="wrapper">
 			<h1>Getting Started </h1>
 
-			
-
-<p>The simplest way to get started with Argus is to install it using <a href="https://github.com/kubernetes/helm">Helm</a>. Prior to installation, you will need a
-cluster-admin serviceaccount for tiller:</p>
-
-<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace=&quot;kube-system&quot;
-$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-$ helm init --service-account=tiller
-</code></pre>
-
+			<p>The simplest way to get started with Argus is to install it using <a href="https://github.com/kubernetes/helm">Helm</a>. Prior to installation, you will need a cluster-admin serviceaccount for tiller:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl create serviceaccount tiller --namespace<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;kube-system&#34;</span>
+$ kubectl create clusterrolebinding tiller --clusterrole<span style="color:#f92672">=</span>cluster-admin --serviceaccount<span style="color:#f92672">=</span>kube-system:tiller
+$ helm init --service-account<span style="color:#f92672">=</span>tiller
+</code></pre></div><blockquote>
+<p>Note: You can skip above steps if you are installing helm charts with Helm v3.</p>
+</blockquote>
 <p>You&rsquo;ll also need to add the LogicMonitor chart repository:</p>
-
-<pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
-</code></pre>
-
-<p>Now you can install the LogicMonitor Collectorset controller:</p>
-
-<pre><code class="language-bash">$ helm upgrade \
-  --install \
-  --debug \
-  --wait \
-  --set accessID=&quot;$ACCESS_ID&quot; \
-  --set accessKey=&quot;$ACCESS_KEY&quot; \
-  --set account=&quot;$ACCOUNT&quot; \
-  --set clusterName=&quot;$CLUSTER_NAME&quot; \
-  --set imageTag=&quot;$IMAGE_TAG&quot; \
-  collectorset-controller logicmonitor/collectorset-controller
-</code></pre>
-
-<p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a complete
-list of values the Collectorset Controller helm chart supports, and their
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
+</code></pre></div><p>Now you can install the LogicMonitor Collectorset controller:
+While installing Collectorset-controller, you can either set config parameters using <code>--set</code> option or create a custom values yaml file and pass it in the helm command.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm upgrade <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --install <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --debug <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --wait <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set accessID<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$ACCESS_ID<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set accessKey<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$ACCESS_KEY<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set account<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$ACCOUNT<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set clusterName<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$CLUSTER_NAME<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set imageTag<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$IMAGE_TAG<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set proxyURL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$PROXY_URL<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set proxyUser<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$PROXY_USER<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --set proxyPass<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$PROXY_PASS<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  collectorset-controller logicmonitor/collectorset-controller
+</code></pre></div><p>Install Collectorset-controller with custom values yaml file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm upgrade <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --install <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --debug <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --wait <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --namespace<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$NAMESPACE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  -f collectorset-controller-configuration.yaml <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  collectorset-controller logicmonitor/collectorset-controller
+</code></pre></div><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Collectorset Controller helm chart supports, and their
 descriptions.</p>
-
 <blockquote>
 <p>Note: The Collectorset controller should be installed only once per cluster.</p>
 </blockquote>
-
-<p>Next, install Argus:</p>
-
-<pre><code class="language-bash">    $ helm upgrade \
-    --install \
-    --debug \
-    --wait \
-    --set accessID=&quot;$ACCESS_ID&quot; \
-    --set accessKey=&quot;$ACCESS_KEY&quot; \
-    --set account=&quot;$ACCOUNT&quot; \
-    --set clusterGroupID=&quot;$CLUSTER_GROUP_ID&quot; \
-    --set clusterName=&quot;$CLUSTER_NAME&quot; \
-    --set imageTag=&quot;$IMAGE_TAG&quot; \
-    --set collector.replicas=&quot;$COLLECTOR_REPLICAS&quot; \
-    --set collector.size=&quot;$COLLECTOR_SIZE&quot; \
-    argus logicmonitor/argus
-</code></pre>
-
-<p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a complete
-list of values the Argus helm chart supports, and their descriptions.</p>
-
+<p>Next, install Argus:
+While installing Argus, you can either set config parameters using <code>--set</code> option or create a custom values yaml file and pass it in the helm command.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">    $ helm upgrade <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --install <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --debug <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --wait <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set accessID<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$ACCESS_ID<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set accessKey<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$ACCESS_KEY<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set account<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$ACCOUNT<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set clusterGroupID<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$CLUSTER_GROUP_ID<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set clusterName<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$CLUSTER_NAME<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set imageTag<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$IMAGE_TAG<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set proxyURL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$PROXY_URL<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set proxyUser<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$PROXY_USER<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set proxyPass<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$PROXY_PASS<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set collector.replicas<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$COLLECTOR_REPLICAS<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set collector.size<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$COLLECTOR_SIZE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set collector.proxyURL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$COLLECTOR_PROXY_URL<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set collector.proxyUser<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$COLLECTOR_PROXY_USER<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    --set collector.proxyPass<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$COLLECTOR_PROXY_PASS<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    argus logicmonitor/argus
+</code></pre></div><p>Install Argus with custom values yaml file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm upgrade <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --install <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --debug <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --wait <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --namespace<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$NAMESPACE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  -f argus-configuration.yaml <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  argus logicmonitor/argus
+</code></pre></div><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Argus helm chart supports, and their descriptions.</p>
 <blockquote>
 <p>Note: Argus should be installed only once per cluster.</p>
 </blockquote>
-
 <p>After installation is complete, you should make sure you have <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/">DataSources</a> in your account
 that will start monitoring the resources in your cluster.</p>
-
 <h1 id="community">Community</h1>
-
 <ul>
 <li>To report bugs and/or submit feature requests, use <a href="https://github.com/logicmonitor/k8s-argus/issues">GitHub</a>.</li>
 </ul>
@@ -414,7 +421,7 @@ that will start monitoring the resources in your cluster.</p>
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
@@ -428,7 +435,7 @@ that will start monitoring the resources in your cluster.</p>
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/roadmap/" title="Roadmap">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/" title="Monitoring">
         <span class="direction">
           Previous
         </span>
@@ -438,7 +445,7 @@ that will start monitoring the resources in your cluster.</p>
           </div>
           <div class="stretch">
             <div class="title">
-              Roadmap
+              Monitoring
             </div>
           </div>
         </div>
@@ -448,14 +455,14 @@ that will start monitoring the resources in your cluster.</p>
 
   <div class="next">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/" title="Monitoring">
+      <a href="https://logicmonitor.github.io/k8s-argus/roadmap/" title="Roadmap">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Monitoring
+              Roadmap
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

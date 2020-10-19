@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Argus</title>
@@ -39,7 +39,7 @@ Device Groups Argus has an opinionated way of representing a cluster in the Logi
       <guid>https://logicmonitor.github.io/k8s-argus/docs/configuration/</guid>
       <description>Configuring the Collectorset Controller via the Helm Chart The Collectorset controller Helm chart supports the following values:
 Required Values:
- accessID: The LogicMonitor API key ID. accessKey: The LogicMonitor API key. account: The LogicMonitor account name. clusterName: A unique name given to the cluster&amp;rsquo;s device group.  Optional Values:
+ accessID (default: &amp;quot;&amp;quot;): The LogicMonitor API key ID. accessKey (default: &amp;quot;&amp;quot;): The LogicMonitor API key. account (default: &amp;quot;&amp;quot;): The LogicMonitor account name. debug (default: false): Enable debug logging.  Optional Values:
  enableRBAC (default: true): Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</description>
     </item>
     
@@ -67,7 +67,7 @@ Required Values:
       <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description> 0.1.x  Automated device group management Automated device management Automated device property management  0.2.x Automated collector management Support for all etcd discovery methods
+      <description>0.1.x  Automated device group management Automated device management Automated device property management  0.2.x Automated collector management Support for all etcd discovery methods
 0.3.x  Horizontal pod autoscaling based on LogicMonitor metrics.  </description>
     </item>
     
@@ -78,9 +78,9 @@ Required Values:
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
       <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a cluster-admin serviceaccount for tiller:
-$ kubectl create serviceaccount tiller --namespace=&amp;quot;kube-system&amp;quot; $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller $ helm init --service-account=tiller  You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
-$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Now you can install the LogicMonitor Collectorset controller:
-$ helm upgrade \ --install \ --debug \ --wait \ --set accessID=&amp;quot;$ACCESS_ID&amp;quot; \ --set accessKey=&amp;quot;$ACCESS_KEY&amp;quot; \ --set account=&amp;quot;$ACCOUNT&amp;quot; \ --set clusterName=&amp;quot;$CLUSTER_NAME&amp;quot; \ --set imageTag=&amp;quot;$IMAGE_TAG&amp;quot; \ collectorset-controller logicmonitor/collectorset-controller  See the configuration page for a complete list of values the Collectorset Controller helm chart supports, and their descriptions.</description>
+$ kubectl create serviceaccount tiller --namespace=&amp;#34;kube-system&amp;#34; $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller $ helm init --service-account=tiller  Note: You can skip above steps if you are installing helm charts with Helm v3.
+ You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
+$ helm repo add logicmonitor https://logicmonitor.</description>
     </item>
     
     <item>

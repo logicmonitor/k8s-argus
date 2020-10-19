@@ -15,24 +15,25 @@ The Collectorset controller Helm chart supports the following values:
 
 Required Values:
 
-- **accessID:** The LogicMonitor API key ID.
-- **accessKey:** The LogicMonitor API key.
-- **account:** The LogicMonitor account name.
-- **clusterName:** A unique name given to the cluster's device group.
+- **accessID (default: `""`):** The LogicMonitor API key ID.
+- **accessKey (default: `""`):** The LogicMonitor API key.
+- **account (default: `""`):** The LogicMonitor account name.
+- **debug (default: `false`):** Enable debug logging.
 
 Optional Values:
 
 - **enableRBAC (default: `true`):** Enable RBAC. If your cluster does not have
 RBAC enabled, this value should be set to false.
-- **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts
+- **etcdDiscoveryToken (default: `""`):** The public etcd discovery token used to add etcd hosts
  to the cluster device group.
-- **imagePullPolicy (default: `"Always"`):**
-- **imageRepository (default: `"logicmonitor/collectorset-controller"`):** The
-respository to use for the collectorset-controller docker image.
-- **imageTag:** The collectorset-controller [image tag] (https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/) to use.
+ - **imagePullPolicy (default: `"Always"`):** The image pull policy of the Collectorset-controller container.
+- **imageRepository (default: `"logicmonitor/collectorset-controller"`):** The image repository of the [Collectorset-controller](https://hub.docker.com/r/logicmonitor/collectorset-controller) container.
+- **imageTag:** The image tag of the [Collectorset-controller](https://hub.docker.com/r/logicmonitor/collectorset-controller/tags) container.
 - **proxyURL (default: `""`):** The Http/s proxy url.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
+
+See the *[values.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/collectorset-controller/values.yaml)* for a complete list of values the Collectorset-controller helm chart supports, and their descriptions.
 
 # Configuring Argus via the Helm Chart
 
@@ -40,14 +41,19 @@ The Argus Helm chart supports the fololowing values:
 
 Required Values:
 
-- **accessID:** The LogicMonitor API key ID.
-- **accessKey:** The LogicMonitor API key.
-- **account:** The LogicMonitor account name.
-- **clusterGroupID:** A parent group id of the cluster's device group.
-- **clusterName:** A unique name given to the cluster's device group.
-- **collector.replicas:** The number of collectors to create and use with Argus.
-- **collector.size:** The collector size to install. Can be nano, small, medium,
- or large.
+- **accessID (default: `""`):** The LogicMonitor API key ID.
+- **accessKey (default: `""`):** The LogicMonitor API key.
+- **account (default: `""`):** The LogicMonitor account name.
+- **clusterName (default: `""`):** A unique name given to the cluster's device group.
+- **debug (default: `false`):** Enable debug logging.
+- **deleteDevices (default: `true`):** On a delete event, either delete from LogicMonitor or move the device to the `_delted` device group.
+- **disableAlerting (default: `false`):** Disable alerting for all devices added.
+- **collector.replicas (default: `1`):** The number of collectors to create and use with Argus.
+- **collector.size (default: `""`):** The collector size to install. Can be nano, small, medium, or large.
+- **collector.imageRepository (default: `logicmonitor/collector`):** The image repository of the [Collector](https://hub.docker.com/r/logicmonitor/collector) container.
+- **collector.imageTag:** The image tag of the [Collector](https://hub.docker.com/r/logicmonitor/collector/tags) container.
+- **collector.imagePullPolicy (default: `Always`):** The image pull policy of the Collector container.
+- **collector.secretName (default: `"collector"`):** The Secret resource name of the collectors.
 
 Optional Values:
 
@@ -59,13 +65,14 @@ LogicMonitor or move the device to the `_delted` device group.
 RBAC enabled, this value should be set to false.
 - **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts
  to the cluster device group.
-- **imagePullPolicy (default: `"Always"`):**
-- **imageRepository (default: `"logicmonitor/argus"`):** The respository to use
-for the Argus docker image.
-- **imageTag:** The argus container [image tag] (https://hub.docker.com/r/logicmonitor/argus/tags/) to use.
+- **imagePullPolicy (default: `"Always"`):** The image pull policy of the Argus container.
+- **imageRepository (default: `"logicmonitor/argus"`):** The image respository of the [Argus](https://hub.docker.com/r/logicmonitor/argus) container.
+- **imageTag:** The image tag of the [Argus](https://hub.docker.com/r/logicmonitor/argus/tags) container.
 - **proxyURL (default: `""`):** The Http/s proxy url.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
+
+See the *[values.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/argus/values.yaml)* for a complete list of values the Argus helm chart supports, and their descriptions.
 
 # Configuring Argus Manually
 

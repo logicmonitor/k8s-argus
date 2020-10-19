@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Device Tree Management - Argus</title>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.71.0" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        <strong>Argus <span class="version">4.2.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -338,38 +338,28 @@
 		<div class="wrapper">
 			<h1>Device Tree Management </h1>
 
-			
-
-<p>One of the main features of Argus is its ability to represent a Kubernetes cluster in LogicMonitor, and to keep that representation up to date and accurate. Argus achieves this by managing the following.</p>
-
+			<p>One of the main features of Argus is its ability to represent a Kubernetes cluster in LogicMonitor, and to keep that representation up to date and accurate. Argus achieves this by managing the following.</p>
 <h1 id="device-groups">Device Groups</h1>
-
 <p>Argus has an opinionated way of representing a cluster in the LogicMonitor Device Tree.
 It will first create a top level device group with the name of your cluster as specified in the arguments to the chart.
 Under this top level device group, three additional device groups will be created for each resource type that Argus supports:</p>
-
 <ul>
 <li><strong>Nodes:</strong> The nodes that the cluster is comprised of.</li>
 <li><strong>Pods:</strong> Pods running in the cluster.</li>
 <li><strong>Services:</strong> Services running in the cluster.</li>
 </ul>
-
 <p>For namespaced resources (Pods, Services), a device group will be created for each namespace and placed inside the respective resource device group.
 For clusters that use an external etcd cluster, an <strong>Etcd</strong> device group will be created in the cluster&rsquo;s root device group.</p>
-
 <h1 id="devices">Devices</h1>
-
 <p>Argus subscribes to the Kubernetes API event stream for each resource type mentioned in <a href="#device-groups">Device Groups</a>. Upon receiving an event, Argus decides on how to represent the event in LogicMonitor. In the case of nodes, pods, and services, Argus will create a device.</p>
-
 <h2 id="device-properties">Device Properties</h2>
-
 <p>Argus will map Kubernetes metadata to device properties.
 This means that <a href="https://www.logicmonitor.com/support/datasources/">Datasources</a> can be applied based on things like <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/">labels</a>.</p>
 
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
@@ -383,7 +373,7 @@ This means that <a href="https://www.logicmonitor.com/support/datasources/">Data
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/" title="How It Works">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/" title="Configuration">
         <span class="direction">
           Previous
         </span>
@@ -393,7 +383,7 @@ This means that <a href="https://www.logicmonitor.com/support/datasources/">Data
           </div>
           <div class="stretch">
             <div class="title">
-              How It Works
+              Configuration
             </div>
           </div>
         </div>
@@ -403,14 +393,14 @@ This means that <a href="https://www.logicmonitor.com/support/datasources/">Data
 
   <div class="next">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/" title="Configuration">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/" title="How It Works">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Configuration
+              How It Works
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

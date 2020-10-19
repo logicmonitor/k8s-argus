@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Configuration - Argus</title>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.71.0" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        <strong>Argus <span class="version">4.2.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -338,52 +338,48 @@
 		<div class="wrapper">
 			<h1>Configuration </h1>
 
-			
-
-<h1 id="configuring-the-collectorset-controller-via-the-helm-chart">Configuring the Collectorset Controller via the Helm Chart</h1>
-
+			<h1 id="configuring-the-collectorset-controller-via-the-helm-chart">Configuring the Collectorset Controller via the Helm Chart</h1>
 <p>The Collectorset controller Helm chart supports the following values:</p>
-
 <p>Required Values:</p>
-
 <ul>
-<li><strong>accessID:</strong> The LogicMonitor API key ID.</li>
-<li><strong>accessKey:</strong> The LogicMonitor API key.</li>
-<li><strong>account:</strong> The LogicMonitor account name.</li>
-<li><strong>clusterName:</strong> A unique name given to the cluster&rsquo;s device group.</li>
+<li><strong>accessID (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key ID.</li>
+<li><strong>accessKey (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key.</li>
+<li><strong>account (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor account name.</li>
+<li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
 </ul>
-
 <p>Optional Values:</p>
-
 <ul>
 <li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have
 RBAC enabled, this value should be set to false.</li>
-<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts
+<li><strong>etcdDiscoveryToken (default: <code>&quot;&quot;</code>):</strong> The public etcd discovery token used to add etcd hosts
 to the cluster device group.</li>
-<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong></li>
-<li><strong>imageRepository (default: <code>&quot;logicmonitor/collectorset-controller&quot;</code>):</strong> The
-respository to use for the collectorset-controller docker image.</li>
-<li><strong>imageTag:</strong> The collectorset-controller <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/">image tag</a> to use.</li>
+<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Collectorset-controller container.</li>
+<li><strong>imageRepository (default: <code>&quot;logicmonitor/collectorset-controller&quot;</code>):</strong> The image repository of the <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller">Collectorset-controller</a> container.</li>
+<li><strong>imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller/tags">Collectorset-controller</a> container.</li>
+<li><strong>proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url.</li>
+<li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
+<li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
 </ul>
-
+<p>See the <em><a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/collectorset-controller/values.yaml">values.yaml</a></em> for a complete list of values the Collectorset-controller helm chart supports, and their descriptions.</p>
 <h1 id="configuring-argus-via-the-helm-chart">Configuring Argus via the Helm Chart</h1>
-
 <p>The Argus Helm chart supports the fololowing values:</p>
-
 <p>Required Values:</p>
-
 <ul>
-<li><strong>accessID:</strong> The LogicMonitor API key ID.</li>
-<li><strong>accessKey:</strong> The LogicMonitor API key.</li>
-<li><strong>account:</strong> The LogicMonitor account name.</li>
-<li><strong>clusterName:</strong> A unique name given to the cluster&rsquo;s device group.</li>
-<li><strong>collector.replicas:</strong> The number of collectors to create and use with Argus.</li>
-<li><strong>collector.size:</strong> The collector size to install. Can be nano, small, medium,
-or large.</li>
+<li><strong>accessID (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key ID.</li>
+<li><strong>accessKey (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key.</li>
+<li><strong>account (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor account name.</li>
+<li><strong>clusterName (default: <code>&quot;&quot;</code>):</strong> A unique name given to the cluster&rsquo;s device group.</li>
+<li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
+<li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from LogicMonitor or move the device to the <code>_delted</code> device group.</li>
+<li><strong>disableAlerting (default: <code>false</code>):</strong> Disable alerting for all devices added.</li>
+<li><strong>collector.replicas (default: <code>1</code>):</strong> The number of collectors to create and use with Argus.</li>
+<li><strong>collector.size (default: <code>&quot;&quot;</code>):</strong> The collector size to install. Can be nano, small, medium, or large.</li>
+<li><strong>collector.imageRepository (default: <code>logicmonitor/collector</code>):</strong> The image repository of the <a href="https://hub.docker.com/r/logicmonitor/collector">Collector</a> container.</li>
+<li><strong>collector.imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/collector/tags">Collector</a> container.</li>
+<li><strong>collector.imagePullPolicy (default: <code>Always</code>):</strong> The image pull policy of the Collector container.</li>
+<li><strong>collector.secretName (default: <code>&quot;collector&quot;</code>):</strong> The Secret resource name of the collectors.</li>
 </ul>
-
 <p>Optional Values:</p>
-
 <ul>
 <li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
 <li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from
@@ -393,45 +389,39 @@ LogicMonitor or move the device to the <code>_delted</code> device group.</li>
 RBAC enabled, this value should be set to false.</li>
 <li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts
 to the cluster device group.</li>
-<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong></li>
-<li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The respository to use
-for the Argus docker image.</li>
-<li><strong>imageTag:</strong> The argus container <a href="https://hub.docker.com/r/logicmonitor/argus/tags/">image tag</a> to use.</li>
+<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Argus container.</li>
+<li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The image respository of the <a href="https://hub.docker.com/r/logicmonitor/argus">Argus</a> container.</li>
+<li><strong>imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/argus/tags">Argus</a> container.</li>
+<li><strong>proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url.</li>
+<li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
+<li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
 </ul>
-
+<p>See the <em><a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/argus/values.yaml">values.yaml</a></em> for a complete list of values the Argus helm chart supports, and their descriptions.</p>
 <h1 id="configuring-argus-manually">Configuring Argus Manually</h1>
-
 <p>In most applications there are generally two types of configuration options
 available. Options that do not contain sensitive information, and options that
 do contain sensitive information. Argus retrieves its&rsquo; configuration from two
 different sources for each of these types.</p>
-
 <p>For non-sensitive configuration options, Argus will read from a file on disk.
- For sensitive information, Argus will read from environment variables.</p>
-
+For sensitive information, Argus will read from environment variables.</p>
 <p>To configure the non-sensitive information, create a YAML file located at
 <code>/etc/argus/config.yaml</code>. Here is an example file you can modify to your needs:</p>
-
-<pre><code class="language-yaml">cluster_group_id:
-cluster_name:
-debug: false
-delete_devices: true
-disable_alerting: false
-</code></pre>
-
-<p>To configure the sensitive information, export the following environment
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster_group_id</span>:
+<span style="color:#66d9ef">cluster_name</span>:
+<span style="color:#66d9ef">debug</span>: <span style="color:#66d9ef">false</span>
+<span style="color:#66d9ef">delete_devices</span>: <span style="color:#66d9ef">true</span>
+<span style="color:#66d9ef">disable_alerting</span>: <span style="color:#66d9ef">false</span>
+</code></pre></div><p>To configure the sensitive information, export the following environment
 variables:</p>
-
-<pre><code class="language-bash">ACCESS_ID
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ACCESS_ID
 ACCESS_KEY
 ACCOUNT
 ETCD_DISCOVERY_TOKEN
-</code></pre>
-
+</code></pre></div>
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
@@ -445,7 +435,7 @@ ETCD_DISCOVERY_TOKEN
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/" title="Device Tree Management">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/" title="Docs">
         <span class="direction">
           Previous
         </span>
@@ -455,7 +445,7 @@ ETCD_DISCOVERY_TOKEN
           </div>
           <div class="stretch">
             <div class="title">
-              Device Tree Management
+              Docs
             </div>
           </div>
         </div>
@@ -465,14 +455,14 @@ ETCD_DISCOVERY_TOKEN
 
   <div class="next">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/" title="Docs">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/" title="Device Tree Management">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Docs
+              Device Tree Management
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

@@ -12,8 +12,7 @@ menu:
 Argus adds Kubernetes resources into LogicMonitor, but the DataSources that
 apply to those resources are responsible for monitoring. LogicMonitor has a set
  of developed modules for monitoring Kubernetes, which you can import via the
- [LM Exchange]
- (https://www.logicmonitor.com/support/settings/logicmodules/lm-exchange/)
+ [LM Exchange](https://www.logicmonitor.com/support/settings/logicmodules/lm-exchange/)
  (Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator
    Code) with these locator codes:
 
@@ -34,8 +33,7 @@ Beyond the health and performance of your Kubernetes Cluster resources, you can
  use LogicMonitor DataSources to monitor your applications running in
  Kubernetes. If it's a standard application, LogicMonitor likely already has a
  DataSource that can be used. For custom applications, you should
- [create your own DataSource]
-(https://www.logicmonitor.com/support/datasources/creating-managing-datasources
+ [create your own DataSource](https://www.logicmonitor.com/support/datasources/creating-managing-datasources
   ) that is specific to your application. Either way, there are a few
   requirements to ensure that these DataSources will work well for applications
    running in Kubernetes.
