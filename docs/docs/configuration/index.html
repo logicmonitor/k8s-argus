@@ -345,7 +345,7 @@
 <li><strong>accessID (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key ID.</li>
 <li><strong>accessKey (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key.</li>
 <li><strong>account (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor account name.</li>
-<li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
+<li><strong>debug (default: <code>false</code>):</strong> To enable verbose logging at debug level.</li>
 </ul>
 <p>Optional Values:</p>
 <ul>
@@ -360,7 +360,7 @@ to the cluster device group.</li>
 <li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
 <li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
 </ul>
-<p>See the <em><a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/collectorset-controller/values.yaml">values.yaml</a></em> for a complete list of values the Collectorset-controller helm chart supports, and their descriptions.</p>
+<p>Check the <em><a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller">collectorset-controller-config.yaml</a></em> for a complete list of values the Collectorset-controller helm chart supports.</p>
 <h1 id="configuring-argus-via-the-helm-chart">Configuring Argus via the Helm Chart</h1>
 <p>The Argus Helm chart supports the fololowing values:</p>
 <p>Required Values:</p>
@@ -369,9 +369,9 @@ to the cluster device group.</li>
 <li><strong>accessKey (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key.</li>
 <li><strong>account (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor account name.</li>
 <li><strong>clusterName (default: <code>&quot;&quot;</code>):</strong> A unique name given to the cluster&rsquo;s device group.</li>
-<li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
+<li><strong>debug (default: <code>false</code>):</strong> To enable verbose logging at debug level.</li>
 <li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from LogicMonitor or move the device to the <code>_delted</code> device group.</li>
-<li><strong>disableAlerting (default: <code>false</code>):</strong> Disable alerting for all devices added.</li>
+<li><strong>disableAlerting (default: <code>false</code>):</strong> Disables LogicMonitor alerting for all the cluster resources.</li>
 <li><strong>collector.replicas (default: <code>1</code>):</strong> The number of collectors to create and use with Argus.</li>
 <li><strong>collector.size (default: <code>&quot;&quot;</code>):</strong> The collector size to install. Can be nano, small, medium, or large.</li>
 <li><strong>collector.imageRepository (default: <code>logicmonitor/collector</code>):</strong> The image repository of the <a href="https://hub.docker.com/r/logicmonitor/collector">Collector</a> container.</li>
@@ -381,10 +381,10 @@ to the cluster device group.</li>
 </ul>
 <p>Optional Values:</p>
 <ul>
-<li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
+<li><strong>debug (default: <code>false</code>):</strong> To enable verbose logging at debug level.</li>
 <li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from
-LogicMonitor or move the device to the <code>_delted</code> device group.</li>
-<li><strong>disableAlerting (default: <code>false</code>):</strong> Disable alerting for all devices added.</li>
+LogicMonitor or move the device to the <code>_deleted</code> device group.</li>
+<li><strong>disableAlerting (default: <code>false</code>):</strong> Disables LogicMonitor alerting for all the cluster resources.</li>
 <li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have
 RBAC enabled, this value should be set to false.</li>
 <li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts
@@ -396,7 +396,7 @@ to the cluster device group.</li>
 <li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
 <li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
 </ul>
-<p>See the <em><a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/argus/values.yaml">values.yaml</a></em> for a complete list of values the Argus helm chart supports, and their descriptions.</p>
+<p>Check the <em><a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus">argus-config.yaml</a></em> for a complete list of values the Argus helm chart supports.</p>
 <h1 id="configuring-argus-manually">Configuring Argus Manually</h1>
 <p>In most applications there are generally two types of configuration options
 available. Options that do not contain sensitive information, and options that

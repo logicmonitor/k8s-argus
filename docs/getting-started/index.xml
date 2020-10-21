@@ -17,7 +17,7 @@
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a cluster-admin serviceaccount for tiller:
+      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a ClusterRoleBinding &amp;amp; ServiceAccount for tiller:
 $ kubectl create serviceaccount tiller --namespace=&amp;#34;kube-system&amp;#34; $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller $ helm init --service-account=tiller  Note: You can skip above steps if you are installing helm charts with Helm v3.
  You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
 $ helm repo add logicmonitor https://logicmonitor.</description>

@@ -18,7 +18,7 @@ Required Values:
 - **accessID (default: `""`):** The LogicMonitor API key ID.
 - **accessKey (default: `""`):** The LogicMonitor API key.
 - **account (default: `""`):** The LogicMonitor account name.
-- **debug (default: `false`):** Enable debug logging.
+- **debug (default: `false`):** To enable verbose logging at debug level.
 
 Optional Values:
 
@@ -33,7 +33,7 @@ RBAC enabled, this value should be set to false.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
 
-See the *[values.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/collectorset-controller/values.yaml)* for a complete list of values the Collectorset-controller helm chart supports, and their descriptions.
+Check the *[collectorset-controller-config.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller)* for a complete list of values the Collectorset-controller helm chart supports.
 
 # Configuring Argus via the Helm Chart
 
@@ -45,9 +45,9 @@ Required Values:
 - **accessKey (default: `""`):** The LogicMonitor API key.
 - **account (default: `""`):** The LogicMonitor account name.
 - **clusterName (default: `""`):** A unique name given to the cluster's device group.
-- **debug (default: `false`):** Enable debug logging.
+- **debug (default: `false`):** To enable verbose logging at debug level.
 - **deleteDevices (default: `true`):** On a delete event, either delete from LogicMonitor or move the device to the `_delted` device group.
-- **disableAlerting (default: `false`):** Disable alerting for all devices added.
+- **disableAlerting (default: `false`):** Disables LogicMonitor alerting for all the cluster resources.
 - **collector.replicas (default: `1`):** The number of collectors to create and use with Argus.
 - **collector.size (default: `""`):** The collector size to install. Can be nano, small, medium, or large.
 - **collector.imageRepository (default: `logicmonitor/collector`):** The image repository of the [Collector](https://hub.docker.com/r/logicmonitor/collector) container.
@@ -57,10 +57,10 @@ Required Values:
 
 Optional Values:
 
-- **debug (default: `false`):** Enable debug logging.
+- **debug (default: `false`):** To enable verbose logging at debug level.
 - **deleteDevices (default: `true`):** On a delete event, either delete from
-LogicMonitor or move the device to the `_delted` device group.
-- **disableAlerting (default: `false`):** Disable alerting for all devices added.
+LogicMonitor or move the device to the `_deleted` device group.
+- **disableAlerting (default: `false`):** Disables LogicMonitor alerting for all the cluster resources.
 - **enableRBAC (default: `true`):** Enable RBAC. If your cluster does not have
 RBAC enabled, this value should be set to false.
 - **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts
@@ -72,7 +72,7 @@ RBAC enabled, this value should be set to false.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
 
-See the *[values.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/argus/values.yaml)* for a complete list of values the Argus helm chart supports, and their descriptions.
+Check the *[argus-config.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus)* for a complete list of values the Argus helm chart supports.
 
 # Configuring Argus Manually
 

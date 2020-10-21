@@ -39,7 +39,7 @@ Device Groups Argus has an opinionated way of representing a cluster in the Logi
       <guid>https://logicmonitor.github.io/k8s-argus/docs/configuration/</guid>
       <description>Configuring the Collectorset Controller via the Helm Chart The Collectorset controller Helm chart supports the following values:
 Required Values:
- accessID (default: &amp;quot;&amp;quot;): The LogicMonitor API key ID. accessKey (default: &amp;quot;&amp;quot;): The LogicMonitor API key. account (default: &amp;quot;&amp;quot;): The LogicMonitor account name. debug (default: false): Enable debug logging.  Optional Values:
+ accessID (default: &amp;quot;&amp;quot;): The LogicMonitor API key ID. accessKey (default: &amp;quot;&amp;quot;): The LogicMonitor API key. account (default: &amp;quot;&amp;quot;): The LogicMonitor account name. debug (default: false): To enable verbose logging at debug level.  Optional Values:
  enableRBAC (default: true): Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</description>
     </item>
     
@@ -77,7 +77,7 @@ Required Values:
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a cluster-admin serviceaccount for tiller:
+      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a ClusterRoleBinding &amp;amp; ServiceAccount for tiller:
 $ kubectl create serviceaccount tiller --namespace=&amp;#34;kube-system&amp;#34; $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller $ helm init --service-account=tiller  Note: You can skip above steps if you are installing helm charts with Helm v3.
  You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
 $ helm repo add logicmonitor https://logicmonitor.</description>

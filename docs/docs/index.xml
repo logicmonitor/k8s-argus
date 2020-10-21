@@ -39,7 +39,7 @@ Device Groups Argus has an opinionated way of representing a cluster in the Logi
       <guid>https://logicmonitor.github.io/k8s-argus/docs/configuration/</guid>
       <description>Configuring the Collectorset Controller via the Helm Chart The Collectorset controller Helm chart supports the following values:
 Required Values:
- accessID (default: &amp;quot;&amp;quot;): The LogicMonitor API key ID. accessKey (default: &amp;quot;&amp;quot;): The LogicMonitor API key. account (default: &amp;quot;&amp;quot;): The LogicMonitor account name. debug (default: false): Enable debug logging.  Optional Values:
+ accessID (default: &amp;quot;&amp;quot;): The LogicMonitor API key ID. accessKey (default: &amp;quot;&amp;quot;): The LogicMonitor API key. account (default: &amp;quot;&amp;quot;): The LogicMonitor account name. debug (default: false): To enable verbose logging at debug level.  Optional Values:
  enableRBAC (default: true): Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</description>
     </item>
     

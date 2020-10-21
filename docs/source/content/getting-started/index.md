@@ -4,7 +4,7 @@ date: 2017-08-12T16:20:39-07:00
 draft: false
 ---
 
-The simplest way to get started with Argus is to install it using [Helm](https://github.com/kubernetes/helm). Prior to installation, you will need a cluster-admin serviceaccount for tiller:
+The simplest way to get started with Argus is to install it using [Helm](https://github.com/kubernetes/helm). Prior to installation, you will need a ClusterRoleBinding & ServiceAccount for tiller:
 
 ```bash
 $ kubectl create serviceaccount tiller --namespace="kube-system"
@@ -21,25 +21,7 @@ $ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
 ```
 
 Now you can install the LogicMonitor Collectorset controller:
-While installing Collectorset-controller, you can either set config parameters using `--set` option or create a custom values yaml file and pass it in the helm command.
-
-```bash
-$ helm upgrade \
-  --install \
-  --debug \
-  --wait \
-  --set accessID="$ACCESS_ID" \
-  --set accessKey="$ACCESS_KEY" \
-  --set account="$ACCOUNT" \
-  --set clusterName="$CLUSTER_NAME" \
-  --set imageTag="$IMAGE_TAG" \
-  --set proxyURL="$PROXY_URL" \
-  --set proxyUser="$PROXY_USER" \
-  --set proxyPass="$PROXY_PASS" \
-  collectorset-controller logicmonitor/collectorset-controller
-```
-
-Install Collectorset-controller with custom values yaml file:
+Create *[collectorset-controller-configuration.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller)* file and add required values in it then pass the file path in the helm command.
 
 ```bash
 $ helm upgrade \
@@ -57,31 +39,7 @@ descriptions.
 > Note: The Collectorset controller should be installed only once per cluster.
 
 Next, install Argus:
-While installing Argus, you can either set config parameters using `--set` option or create a custom values yaml file and pass it in the helm command.
-
-```bash
-    $ helm upgrade \
-    --install \
-    --debug \
-    --wait \
-    --set accessID="$ACCESS_ID" \
-    --set accessKey="$ACCESS_KEY" \
-    --set account="$ACCOUNT" \
-    --set clusterGroupID="$CLUSTER_GROUP_ID" \
-    --set clusterName="$CLUSTER_NAME" \
-    --set imageTag="$IMAGE_TAG" \
-    --set proxyURL="$PROXY_URL" \
-    --set proxyUser="$PROXY_USER" \
-    --set proxyPass="$PROXY_PASS" \
-    --set collector.replicas="$COLLECTOR_REPLICAS" \
-    --set collector.size="$COLLECTOR_SIZE" \
-    --set collector.proxyURL="$COLLECTOR_PROXY_URL" \
-    --set collector.proxyUser="$COLLECTOR_PROXY_USER" \
-    --set collector.proxyPass="$COLLECTOR_PROXY_PASS" \
-    argus logicmonitor/argus
-```
-
-Install Argus with custom values yaml file:
+Create *[argus-configuration.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus)* file and add required values in it then pass the file path in the helm command.
 
 ```bash
 $ helm upgrade \
