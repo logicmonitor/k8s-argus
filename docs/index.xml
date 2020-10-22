@@ -67,8 +67,7 @@ Required Values:
       <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description>0.1.x  Automated device group management Automated device management Automated device property management  0.2.x Automated collector management Support for all etcd discovery methods
-0.3.x  Horizontal pod autoscaling based on LogicMonitor metrics.  </description>
+      <description>4.3.0  Support to monitor Nodes &amp;amp; Pods running on AWS Fargate.  5.0.0  Fully qualified name for Kubernetes resources.  6.0.0  Horizontal pod autoscaling based on LogicMonitor metrics.  7.0.0  Monitor more Kubernetes resources like replicaset, daemonset, etc.  </description>
     </item>
     
     <item>
@@ -77,10 +76,9 @@ Required Values:
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a ClusterRoleBinding &amp;amp; ServiceAccount for tiller:
-$ kubectl create serviceaccount tiller --namespace=&amp;#34;kube-system&amp;#34; $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller $ helm init --service-account=tiller  Note: You can skip above steps if you are installing helm charts with Helm v3.
- You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
-$ helm repo add logicmonitor https://logicmonitor.</description>
+      <description>The simplest way to get started with Argus is to install it using Helm version 3.
+You&amp;rsquo;ll need to add the LogicMonitor chart repository:
+$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:</description>
     </item>
     
     <item>
@@ -89,8 +87,8 @@ $ helm repo add logicmonitor https://logicmonitor.</description>
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/docs/monitoring/</guid>
-      <description>Argus adds Kubernetes resources into LogicMonitor, but the DataSources that apply to those resources are responsible for monitoring. LogicMonitor has a set of developed modules for monitoring Kubernetes, which you can import via the LM Exchange (Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator Code) with these locator codes:
- Kubernetes_Nodes: PR4F33 Kubernetes_Node: 267H63 Kubernetes_Healthz: KZ463J Kubernetes_ControlPlane: N3GZNX Kubernetes_Service: HPJPRT Kubernetes_Scheduler: FCPJNH Kubernetes_Pod: P9TT2W Kubernetes_Container: 3AAJZX Kubernetes_PingK8s: 4N99FE  Once you&amp;rsquo;ve imported the DataSources, you should see monitoring for the health and performance of your Kubernetes Cluster in LogicMonitor.</description>
+      <description>Argus adds Kubernetes resources into LogicMonitor, but the DataSources that apply to those resources are responsible for monitoring. LogicMonitor has a set of developed modules for monitoring Kubernetes, which you can import via the LM Exchange (Settings | DataSources | Add | From LogicMonitor Exchange). Filter Items with word “Kubernetes”. Add all logicmodules as per your requirements.
+If kubernetes cluster is configured with Istio then you can add “Istio kubernetes” logicmodules as well.</description>
     </item>
     
   </channel>

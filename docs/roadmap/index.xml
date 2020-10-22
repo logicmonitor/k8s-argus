@@ -17,8 +17,7 @@
       <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description>0.1.x  Automated device group management Automated device management Automated device property management  0.2.x Automated collector management Support for all etcd discovery methods
-0.3.x  Horizontal pod autoscaling based on LogicMonitor metrics.  </description>
+      <description>4.3.0  Support to monitor Nodes &amp;amp; Pods running on AWS Fargate.  5.0.0  Fully qualified name for Kubernetes resources.  6.0.0  Horizontal pod autoscaling based on LogicMonitor metrics.  7.0.0  Monitor more Kubernetes resources like replicaset, daemonset, etc.  </description>
     </item>
     
   </channel>

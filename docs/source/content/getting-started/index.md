@@ -4,32 +4,39 @@ date: 2017-08-12T16:20:39-07:00
 draft: false
 ---
 
-The simplest way to get started with Argus is to install it using [Helm](https://github.com/kubernetes/helm). Prior to installation, you will need a ClusterRoleBinding & ServiceAccount for tiller:
+The simplest way to get started with Argus is to install it using [Helm](https://helm.sh/docs) version 3.
 
-```bash
-$ kubectl create serviceaccount tiller --namespace="kube-system"
-$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-$ helm init --service-account=tiller
-```
-
-> Note: You can skip above steps if you are installing helm charts with Helm v3.
-
-You'll also need to add the LogicMonitor chart repository:
+You'll need to add the LogicMonitor chart repository:
 
 ```bash
 $ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
 ```
 
-Now you can install the LogicMonitor Collectorset controller:
-Create *[collectorset-controller-configuration.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller)* file and add required values in it then pass the file path in the helm command.
+> Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:
 
 ```bash
+# Skip these steps if you are using Helm v3 on Kubernetes cluster newer than v1.14.0
+$ kubectl create serviceaccount tiller --namespace="kube-system"
+$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+$ helm init --service-account=tiller
+```
+
+Now you can install the LogicMonitor Collectorset controller:
+
+Get the configuration file downloaded from the LogicMonitor UI or you can create from the template [here](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller).
+
+Update configuration parameters in configuration file.
+
+```bash
+# Export the configuration file path & use it in th helm command.
+$ export COLLECTORSET_CONTROLLER_CONF_FILE=<collectorset-controller-configuration-file-path>
+
 $ helm upgrade \
   --install \
   --debug \
   --wait \
   --namespace="$NAMESPACE" \
-  -f collectorset-controller-configuration.yaml \
+  -f "$COLLECTORSET_CONTROLLER_CONF_FILE" \
   collectorset-controller logicmonitor/collectorset-controller
 ```
 
@@ -39,15 +46,21 @@ descriptions.
 > Note: The Collectorset controller should be installed only once per cluster.
 
 Next, install Argus:
-Create *[argus-configuration.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus)* file and add required values in it then pass the file path in the helm command.
+
+Get the configuration file downloaded from the LogicMonitor UI or you can create from the template [here](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus).
+
+Update configuration parameters in configuration file.
 
 ```bash
+# Export the configuration file path & use it in th helm command.
+$ export ARGUS_CONF_FILE=<argus-configuration-file-path>
+
 $ helm upgrade \
   --install \
   --debug \
   --wait \
   --namespace="$NAMESPACE" \
-  -f argus-configuration.yaml \
+  -f "$ARGUS_CONF_FILE" \
   argus logicmonitor/argus
 ```
 

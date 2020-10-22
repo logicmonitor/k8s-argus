@@ -13,18 +13,9 @@ Argus adds Kubernetes resources into LogicMonitor, but the DataSources that
 apply to those resources are responsible for monitoring. LogicMonitor has a set
  of developed modules for monitoring Kubernetes, which you can import via the
  [LM Exchange](https://www.logicmonitor.com/support/settings/logicmodules/lm-exchange/)
- (Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator
-   Code) with these locator codes:
+ (Settings | DataSources | Add | From LogicMonitor Exchange). Filter Items with word “Kubernetes”. Add all logicmodules as per your requirements.
 
-- Kubernetes_Nodes: PR4F33
-- Kubernetes_Node: 267H63
-- Kubernetes_Healthz: KZ463J
-- Kubernetes_ControlPlane: N3GZNX
-- Kubernetes_Service: HPJPRT
-- Kubernetes_Scheduler: FCPJNH
-- Kubernetes_Pod: P9TT2W
-- Kubernetes_Container: 3AAJZX
-- Kubernetes_PingK8s: 4N99FE
+If kubernetes cluster is configured with Istio then you can add “Istio kubernetes” logicmodules as well.
 
 Once you've imported the DataSources, you should see monitoring for the health
 and performance of your Kubernetes Cluster in LogicMonitor.

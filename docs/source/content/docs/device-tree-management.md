@@ -15,7 +15,7 @@ One of the main features of Argus is its ability to represent a Kubernetes clust
 
 Argus has an opinionated way of representing a cluster in the LogicMonitor Device Tree.
 It will first create a top level device group with the name of your cluster as specified in the arguments to the chart.
-Under this top level device group, three additional device groups will be created for each resource type that Argus supports:
+Under this top level device group, additional device groups will be created for each resource type that Argus supports. To name but a few:
 
 - **Nodes:** The nodes that the cluster is comprised of.
 - **Pods:** Pods running in the cluster.

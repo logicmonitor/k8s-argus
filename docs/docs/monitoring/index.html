@@ -342,19 +342,8 @@
 apply to those resources are responsible for monitoring. LogicMonitor has a set
 of developed modules for monitoring Kubernetes, which you can import via the
 <a href="https://www.logicmonitor.com/support/settings/logicmodules/lm-exchange/">LM Exchange</a>
-(Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator
-Code) with these locator codes:</p>
-<ul>
-<li>Kubernetes_Nodes: PR4F33</li>
-<li>Kubernetes_Node: 267H63</li>
-<li>Kubernetes_Healthz: KZ463J</li>
-<li>Kubernetes_ControlPlane: N3GZNX</li>
-<li>Kubernetes_Service: HPJPRT</li>
-<li>Kubernetes_Scheduler: FCPJNH</li>
-<li>Kubernetes_Pod: P9TT2W</li>
-<li>Kubernetes_Container: 3AAJZX</li>
-<li>Kubernetes_PingK8s: 4N99FE</li>
-</ul>
+(Settings | DataSources | Add | From LogicMonitor Exchange). Filter Items with word “Kubernetes”. Add all logicmodules as per your requirements.</p>
+<p>If kubernetes cluster is configured with Istio then you can add “Istio kubernetes” logicmodules as well.</p>
 <p>Once you&rsquo;ve imported the DataSources, you should see monitoring for the health
 and performance of your Kubernetes Cluster in LogicMonitor.</p>
 <p>Beyond the health and performance of your Kubernetes Cluster resources, you can
