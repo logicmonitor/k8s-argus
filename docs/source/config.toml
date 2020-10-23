@@ -39,12 +39,10 @@ publishDir = "../../docs"
     	text = "Brandon Grotesque"
     	code = "Roboto Mono"
 
-
 [social]
 	twitter = "LogicMonitor"
 	github  = "LogicMonitor"
 	email   = "argus@logicmonitor.com"
-
 
 [[menu.main]]
 	name   = "Argus"
@@ -66,9 +64,22 @@ publishDir = "../../docs"
 	url    = "roadmap/"
 	weight = 4
 
-
 [blackfriday]
 	smartypants	= true
 	fractions = true
 	smartDashes = true
 	plainIDAnchors = true
+
+[markup]
+  [markup.highlight]
+    anchorLineNos = false
+    codeFences = true
+    guessSyntax = false
+    hl_Lines = ""
+    lineAnchors = ""
+    lineNoStart = 1
+    lineNos = false
+    lineNumbersInTable = true
+    noClasses = false
+    style = "monokai"
+    tabWidth = 4

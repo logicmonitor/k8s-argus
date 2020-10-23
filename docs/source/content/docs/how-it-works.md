@@ -31,7 +31,7 @@ The concept of a `Controller` is fundamental to Kubernetes and is at the core of
 
 Now that we know about this event stream, let's look at what it takes to map resources in Kubernetes to objects in LogicMonitor. We start by first implenting the `Watcher` interface and then embedding a `Manager` in the concrete type implementing said interface. A `Watcher` is a simple interface that makes a concrete type compatible with the `NewInformer` function:
 
-```
+```go
 func (a *Argus) Watch() {
     getter := a.K8sClient.Core().RESTClient()
     for _, w := range a.Watchers {
@@ -54,7 +54,7 @@ func (a *Argus) Watch() {
 
 And we can see that the `Watcher` is defined as:
 
-```
+```go
 type Watcher interface {
     Resource() string // The Kubernetes resource that we want to watch (nodes, pods, services, etc.)
     ObjType() runtime.Object // A concrete type that is used for type assertion to an interface's underlying concrete value (Pod{}, Node{}, Service{}, etc.).
@@ -72,7 +72,7 @@ Now that we can watch events for a given resource, we need to implement the logi
 
 Let's imagine that we want to map a Kubernetes `Foo` resource into LogicMonitor as a `Bar` object.
 
-```
+```go
 type FooWatcher struct {
     BarManager
 }
