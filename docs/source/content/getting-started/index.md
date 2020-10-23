@@ -27,7 +27,7 @@ Get the configuration file downloaded from the LogicMonitor UI or you can create
 Update configuration parameters in configuration file.
 
 ```
-# Export the configuration file path & use it in th helm command.
+# Export the configuration file path & use it in the helm command.
 $ export COLLECTORSET_CONTROLLER_CONF_FILE=<collectorset-controller-configuration-file-path>
 
 $ helm upgrade \
@@ -51,7 +51,7 @@ Get the configuration file downloaded from the LogicMonitor UI or you can create
 Update configuration parameters in configuration file.
 
 ```
-# Export the configuration file path & use it in th helm command.
+# Export the configuration file path & use it in the helm command.
 $ export ARGUS_CONF_FILE=<argus-configuration-file-path>
 
 $ helm upgrade \
