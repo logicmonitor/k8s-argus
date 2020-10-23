@@ -46,7 +46,7 @@ Required Values:
 - **account (default: `""`):** The LogicMonitor account name.
 - **clusterName (default: `""`):** A unique name given to the cluster's device group.
 - **debug (default: `false`):** To enable verbose logging at debug level.
-- **deleteDevices (default: `true`):** On a delete event, either delete from LogicMonitor or move the device to the `_delted` device group.
+- **deleteDevices (default: `true`):** On a delete event, either delete from LogicMonitor or move the device to the `_deleted` device group.
 - **disableAlerting (default: `false`):** Disables LogicMonitor alerting for all the cluster resources.
 - **collector.replicas (default: `1`):** The number of collectors to create and use with Argus.
 - **collector.size (default: `""`):** The collector size to install. Can be nano, small, medium, or large.
