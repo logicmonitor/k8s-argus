@@ -406,18 +406,18 @@ different sources for each of these types.</p>
 For sensitive information, Argus will read from environment variables.</p>
 <p>To configure the non-sensitive information, create a YAML file located at
 <code>/etc/argus/config.yaml</code>. Here is an example file you can modify to your needs:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster_group_id</span>:
-<span style="color:#66d9ef">cluster_name</span>:
-<span style="color:#66d9ef">debug</span>: <span style="color:#66d9ef">false</span>
-<span style="color:#66d9ef">delete_devices</span>: <span style="color:#66d9ef">true</span>
-<span style="color:#66d9ef">disable_alerting</span>: <span style="color:#66d9ef">false</span>
-</code></pre></div><p>To configure the sensitive information, export the following environment
+<pre><code>cluster_group_id:
+cluster_name:
+debug: false
+delete_devices: true
+disable_alerting: false
+</code></pre><p>To configure the sensitive information, export the following environment
 variables:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ACCESS_ID
+<pre><code>ACCESS_ID
 ACCESS_KEY
 ACCOUNT
 ETCD_DISCOVERY_TOKEN
-</code></pre></div>
+</code></pre>
 
 			<aside class="copyright" role="note">
 				

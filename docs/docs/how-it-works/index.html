@@ -351,45 +351,45 @@
 <p>The concept of a <code>Controller</code> is fundamental to Kubernetes and is at the core of its design. While Argus isn&rsquo;t a <code>Controller</code> in the sense that it <em>&ldquo;makes changes [to the state of the cluster] attempting to move the current state towards the desired state&rdquo;</em>, it <em>is</em> a <code>Controller</code> in the sense that it moves a LogicMonitor account&rsquo;s state to match that of a cluster&rsquo;s state. Argus abstracts this into the notion of a <code>Watcher</code> that is responsible for watching Kubernetes events for a given resource and syncing the state to LogicMonitor.</p>
 <h1 id="implementing-a-watcher">Implementing a Watcher</h1>
 <p>Now that we know about this event stream, let&rsquo;s look at what it takes to map resources in Kubernetes to objects in LogicMonitor. We start by first implenting the <code>Watcher</code> interface and then embedding a <code>Manager</code> in the concrete type implementing said interface. A <code>Watcher</code> is a simple interface that makes a concrete type compatible with the <code>NewInformer</code> function:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">a</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Argus</span>) <span style="color:#a6e22e">Watch</span>() {
-    <span style="color:#a6e22e">getter</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">K8sClient</span>.<span style="color:#a6e22e">Core</span>().<span style="color:#a6e22e">RESTClient</span>()
-    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">w</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">a</span>.<span style="color:#a6e22e">Watchers</span> {
-        <span style="color:#a6e22e">watchlist</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">NewListWatchFromClient</span>(<span style="color:#a6e22e">getter</span>, <span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">Resource</span>(), <span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">NamespaceAll</span>, <span style="color:#a6e22e">fields</span>.<span style="color:#a6e22e">Everything</span>())
-        <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">controller</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">NewInformer</span>(
-            <span style="color:#a6e22e">watchlist</span>,
-            <span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">ObjType</span>(),
-            <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span><span style="color:#f92672">*</span><span style="color:#ae81ff">0</span>,
-            <span style="color:#a6e22e">cache</span>.<span style="color:#a6e22e">ResourceEventHandlerFuncs</span>{
-                <span style="color:#a6e22e">AddFunc</span>:    <span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">AddFunc</span>(),
-                <span style="color:#a6e22e">DeleteFunc</span>: <span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">DeleteFunc</span>(),
-                <span style="color:#a6e22e">UpdateFunc</span>: <span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">UpdateFunc</span>(),
+<pre><code>func (a *Argus) Watch() {
+    getter := a.K8sClient.Core().RESTClient()
+    for _, w := range a.Watchers {
+        watchlist := cache.NewListWatchFromClient(getter, w.Resource(), v1.NamespaceAll, fields.Everything())
+        _, controller := cache.NewInformer(
+            watchlist,
+            w.ObjType(),
+            time.Second*0,
+            cache.ResourceEventHandlerFuncs{
+                AddFunc:    w.AddFunc(),
+                DeleteFunc: w.DeleteFunc(),
+                UpdateFunc: w.UpdateFunc(),
             },
         )
-        <span style="color:#a6e22e">stop</span> <span style="color:#f92672">:=</span> make(<span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">struct</span>{})
-        <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">controller</span>.<span style="color:#a6e22e">Run</span>(<span style="color:#a6e22e">stop</span>)
+        stop := make(chan struct{})
+        go controller.Run(stop)
     }
 }
-</code></pre></div><p>And we can see that the <code>Watcher</code> is defined as:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Watcher</span> <span style="color:#66d9ef">interface</span> {
-    <span style="color:#a6e22e">Resource</span>() <span style="color:#66d9ef">string</span> <span style="color:#75715e">// The Kubernetes resource that we want to watch (nodes, pods, services, etc.)
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">ObjType</span>() <span style="color:#a6e22e">runtime</span>.<span style="color:#a6e22e">Object</span> <span style="color:#75715e">// A concrete type that is used for type assertion to an interface&#39;s underlying concrete value (Pod{}, Node{}, Service{}, etc.).
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">AddFunc</span>() <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">obj</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#75715e">// A function that is responsible for handling add events for the given resource.
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">UpdateFunc</span>() <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">oldObj</span>, <span style="color:#a6e22e">newObj</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#75715e">// A function that is responsible for handling update events for the given resource.
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">DeleteFunc</span>() <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">obj</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#75715e">// A function that is responsible for handling delete events for the given resource.
-</span><span style="color:#75715e"></span>}
-</code></pre></div><p>With this simple function we can watch each Kubernetes resource we are interested in monitoring and provide custom logic for mapping it into LogicMonitor.</p>
+</code></pre><p>And we can see that the <code>Watcher</code> is defined as:</p>
+<pre><code>type Watcher interface {
+    Resource() string // The Kubernetes resource that we want to watch (nodes, pods, services, etc.)
+    ObjType() runtime.Object // A concrete type that is used for type assertion to an interface's underlying concrete value (Pod{}, Node{}, Service{}, etc.).
+    AddFunc() func(obj interface{}) // A function that is responsible for handling add events for the given resource.
+    UpdateFunc() func(oldObj, newObj interface{}) // A function that is responsible for handling update events for the given resource.
+    DeleteFunc() func(obj interface{}) // A function that is responsible for handling delete events for the given resource.
+}
+</code></pre><p>With this simple function we can watch each Kubernetes resource we are interested in monitoring and provide custom logic for mapping it into LogicMonitor.</p>
 <h2 id="the-manager">The Manager</h2>
 <p>Now that we can watch events for a given resource, we need to implement the logic behind the add, update, and delete events. This is where we introduce the concept of a <code>Manager</code>. There are two functions of a <code>Manager</code>. First, a <code>Manager</code> must provide a way to build a LogicMonitor object given a Kubernetes resource object. Second, a <code>Manager</code> must ensure that the built object gets created in LogicMonitor. These concepts are abstracted into two interfaces, a <code>Builder</code> and a <code>Mapper</code>.</p>
 <p>Let&rsquo;s imagine that we want to map a Kubernetes <code>Foo</code> resource into LogicMonitor as a <code>Bar</code> object.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">FooWatcher</span> <span style="color:#66d9ef">struct</span> {
-    <span style="color:#a6e22e">BarManager</span>
+<pre><code>type FooWatcher struct {
+    BarManager
 }
 
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">BarManager</span> <span style="color:#66d9ef">interface</span> {
-    <span style="color:#a6e22e">BarBuilder</span>
-    <span style="color:#a6e22e">BarMapper</span>
+type BarManager interface {
+    BarBuilder
+    BarMapper
 }
-</code></pre></div><p>Here we can see that the Kuberentes <code>Foo</code> resource is mapped into LogicMonitor via a <code>Watcher</code> that implements the <code>BarManager</code> interface.</p>
+</code></pre><p>Here we can see that the Kuberentes <code>Foo</code> resource is mapped into LogicMonitor via a <code>Watcher</code> that implements the <code>BarManager</code> interface.</p>
 
 
 			<aside class="copyright" role="note">

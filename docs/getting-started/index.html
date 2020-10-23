@@ -343,28 +343,28 @@
 
 			<p>The simplest way to get started with Argus is to install it using <a href="https://helm.sh/docs">Helm</a> version 3.</p>
 <p>You&rsquo;ll need to add the LogicMonitor chart repository:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
-</code></pre></div><blockquote>
+<pre><code>$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
+</code></pre><blockquote>
 <p>Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:</p>
 </blockquote>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Skip these steps if you are using Helm v3 on Kubernetes cluster newer than v1.14.0</span>
-$ kubectl create serviceaccount tiller --namespace<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;kube-system&#34;</span>
-$ kubectl create clusterrolebinding tiller --clusterrole<span style="color:#f92672">=</span>cluster-admin --serviceaccount<span style="color:#f92672">=</span>kube-system:tiller
-$ helm init --service-account<span style="color:#f92672">=</span>tiller
-</code></pre></div><p>Now you can install the LogicMonitor Collectorset controller:</p>
+<pre><code># Skip these steps if you are using Helm v3 on Kubernetes cluster newer than v1.14.0
+$ kubectl create serviceaccount tiller --namespace=&quot;kube-system&quot;
+$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+$ helm init --service-account=tiller
+</code></pre><p>Now you can install the LogicMonitor Collectorset controller:</p>
 <p>Get the configuration file downloaded from the LogicMonitor UI or you can create from the template <a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller">here</a>.</p>
 <p>Update configuration parameters in configuration file.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Export the configuration file path &amp; use it in th helm command.</span>
-$ export COLLECTORSET_CONTROLLER_CONF_FILE<span style="color:#f92672">=</span>&lt;collectorset-controller-configuration-file-path&gt;
+<pre><code># Export the configuration file path &amp; use it in th helm command.
+$ export COLLECTORSET_CONTROLLER_CONF_FILE=&lt;collectorset-controller-configuration-file-path&gt;
 
-$ helm upgrade <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --install <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --debug <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --wait <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --namespace<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$NAMESPACE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  -f <span style="color:#e6db74">&#34;</span>$COLLECTORSET_CONTROLLER_CONF_FILE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  collectorset-controller logicmonitor/collectorset-controller
-</code></pre></div><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Collectorset Controller helm chart supports, and their
+$ helm upgrade \
+  --install \
+  --debug \
+  --wait \
+  --namespace=&quot;$NAMESPACE&quot; \
+  -f &quot;$COLLECTORSET_CONTROLLER_CONF_FILE&quot; \
+  collectorset-controller logicmonitor/collectorset-controller
+</code></pre><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Collectorset Controller helm chart supports, and their
 descriptions.</p>
 <blockquote>
 <p>Note: The Collectorset controller should be installed only once per cluster.</p>
@@ -372,17 +372,17 @@ descriptions.</p>
 <p>Next, install Argus:</p>
 <p>Get the configuration file downloaded from the LogicMonitor UI or you can create from the template <a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus">here</a>.</p>
 <p>Update configuration parameters in configuration file.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># Export the configuration file path &amp; use it in th helm command.</span>
-$ export ARGUS_CONF_FILE<span style="color:#f92672">=</span>&lt;argus-configuration-file-path&gt;
+<pre><code># Export the configuration file path &amp; use it in th helm command.
+$ export ARGUS_CONF_FILE=&lt;argus-configuration-file-path&gt;
 
-$ helm upgrade <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --install <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --debug <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --wait <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --namespace<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$NAMESPACE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  -f <span style="color:#e6db74">&#34;</span>$ARGUS_CONF_FILE<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  argus logicmonitor/argus
-</code></pre></div><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Argus helm chart supports, and their descriptions.</p>
+$ helm upgrade \
+  --install \
+  --debug \
+  --wait \
+  --namespace=&quot;$NAMESPACE&quot; \
+  -f &quot;$ARGUS_CONF_FILE&quot; \
+  argus logicmonitor/argus
+</code></pre><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Argus helm chart supports, and their descriptions.</p>
 <blockquote>
 <p>Note: Argus should be installed only once per cluster.</p>
 </blockquote>

@@ -87,7 +87,7 @@ different sources for each of these types.
 To configure the non-sensitive information, create a YAML file located at
 `/etc/argus/config.yaml`. Here is an example file you can modify to your needs:
 
-```yaml
+```
 cluster_group_id:
 cluster_name:
 debug: false
@@ -98,7 +98,7 @@ disable_alerting: false
 To configure the sensitive information, export the following environment
 variables:
 
-```bash
+```
 ACCESS_ID
 ACCESS_KEY
 ACCOUNT
