@@ -15,7 +15,6 @@ $ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
 > Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:
 
 ```
-# Skip these steps if you are using Helm v3 on Kubernetes cluster newer than v1.14.0
 $ kubectl create serviceaccount tiller --namespace="kube-system"
 $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 $ helm init --service-account=tiller
