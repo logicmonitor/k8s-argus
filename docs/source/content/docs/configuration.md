@@ -22,18 +22,18 @@ Required Values:
 
 Optional Values:
 
-- **enableRBAC (default: `true`):** Enable RBAC. If your cluster does not have
-RBAC enabled, this value should be set to false.
-- **etcdDiscoveryToken (default: `""`):** The public etcd discovery token used to add etcd hosts
- to the cluster device group.
- - **imagePullPolicy (default: `"Always"`):** The image pull policy of the Collectorset-controller container.
+- **enableRBAC (default: `true`):** Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.
+- **etcdDiscoveryToken (default: `""`):** The public etcd discovery token used to add etcd hosts to the cluster device group.
+- **imagePullPolicy (default: `"Always"`):** The image pull policy of the Collectorset-controller container.
 - **imageRepository (default: `"logicmonitor/collectorset-controller"`):** The image repository of the [Collectorset-controller](https://hub.docker.com/r/logicmonitor/collectorset-controller) container.
 - **imageTag:** The image tag of the [Collectorset-controller](https://hub.docker.com/r/logicmonitor/collectorset-controller/tags) container.
 - **proxyURL (default: `""`):** The Http/s proxy url.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
-
-Check the *[collectorset-controller-config.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller)* for a complete list of values the Collectorset-controller helm chart supports.
+- **nodeSelector (default: `{}`):** It provides the simplest way to run Pod on particular Node(s) based on labels on the node.
+- **affinity (default: `{}`):** It allows you to constrain which nodes your pod is eligible to be scheduled on.
+- **priorityClassName (default: `""`):** The priority class name for Pod priority. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.
+- **tolerations (default: `[]`):** Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.
 
 # Configuring Argus via the Helm Chart
 
@@ -57,22 +57,32 @@ Required Values:
 
 Optional Values:
 
-- **debug (default: `false`):** To enable verbose logging at debug level.
-- **deleteDevices (default: `true`):** On a delete event, either delete from
-LogicMonitor or move the device to the `_deleted` device group.
-- **disableAlerting (default: `false`):** Disables LogicMonitor alerting for all the cluster resources.
-- **enableRBAC (default: `true`):** Enable RBAC. If your cluster does not have
-RBAC enabled, this value should be set to false.
-- **etcdDiscoveryToken:** The public etcd discovery token used to add etcd hosts
- to the cluster device group.
+- **enableRBAC (default: `true`):** Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.
+- **clusterGroupID (default: `0`):** A parent group id of the cluster's device group.
+- **etcdDiscoveryToken (default: `""`):** The public etcd discovery token used to add etcd hosts to the cluster device group.
 - **imagePullPolicy (default: `"Always"`):** The image pull policy of the Argus container.
 - **imageRepository (default: `"logicmonitor/argus"`):** The image respository of the [Argus](https://hub.docker.com/r/logicmonitor/argus) container.
 - **imageTag:** The image tag of the [Argus](https://hub.docker.com/r/logicmonitor/argus/tags) container.
 - **proxyURL (default: `""`):** The Http/s proxy url.
 - **proxyUser (default: `""`):** The Http/s proxy username.
 - **proxyPass (default: `""`):** The Http/s proxy password.
-
-Check the *[argus-config.yaml](https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus)* for a complete list of values the Argus helm chart supports.
+- **nodeSelector (default: `{}`):** It provides the simplest way to run Pod on particular Node(s) based on labels on the node.
+- **affinity (default: `{}`):** It allows you to constrain which nodes your pod is eligible to be scheduled on.
+- **priorityClassName (default: `""`):** The priority class name for Pod priority. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.
+- **tolerations (default: `[]`):** Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.
+- **filters.pod (default: `""`):** The filtered expression for Pod device type. Based on this parameter, Pods would be added/deleted for discovery on LM.
+- **filters.service (default: `""`):** The filtered expression for Service device type. Based on this parameter, Services would be added/deleted for discovery on LM.
+- **filters.node (default: `""`):** The filtered expression for Node device type. Based on this parameter, Nodes would be added/deleted for discovery on LM.
+- **filters.deployment (default: `""`):** The filtered expression for Deployment device type. Based on this parameter, Deployments would be added/deleted for discovery on LM.
+- **collector.groupID (default: `0`):** The ID of the group of the collectors.
+- **collector.escalationChainID (default: `0`):** The ID of the escalation chain of the collectors.
+- **collector.collectorVersion (default: `0`):** The version of the collectors.
+- **collector.useEA (default: `false`):** On a collector downloading event, either download the latest EA version or the latest GD version.
+- **collector.proxyURL (default: `""`):** The Http/s proxy url of the collectors.
+- **collector.proxyUser (default: `""`):** The Http/s proxy username of the collectors.
+- **collector.proxyPass (default: `""`):** The Http/s proxy password of the collectors.
+- **collector.priorityClassName (default: `""`):** The priority class name for Pod priority of the collector. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.
+- **collector.tolerations (default: `[]`):** Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.
 
 # Configuring Argus Manually
 

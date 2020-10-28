@@ -7,6 +7,7 @@ canonifyurls = true
 # Enable Google Analytics by entering your tracking id
 googleAnalytics = ""
 publishDir = "../../docs"
+disableKinds = ["taxonomy", "term"]
 
 [params]
 	# General information
@@ -58,11 +59,6 @@ publishDir = "../../docs"
 	name   = "Docs"
 	url    = "docs/"
 	weight = 3
-
-[[menu.main]]
-	name   = "Roadmap"
-	url    = "roadmap/"
-	weight = 4
 
 [blackfriday]
 	smartypants	= true

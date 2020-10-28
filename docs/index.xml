@@ -6,11 +6,7 @@
     <description>Recent content on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 17 Aug 2017 16:31:45 -0700</lastBuildDate>
-    
-	<atom:link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Thu, 17 Aug 2017 16:31:45 -0700</lastBuildDate><atom:link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>How It Works</title>
       <link>https://logicmonitor.github.io/k8s-argus/docs/how-it-works/</link>
@@ -19,16 +15,6 @@
       <guid>https://logicmonitor.github.io/k8s-argus/docs/how-it-works/</guid>
       <description>In this section we will dig into the lower level implementation of Argus to understand how it works, and provide those interested in contributing an introduction to the fundamentals of its design. An understanding of Go interfaces is recommended.
 Running Argus In-Cluster Argus depends on communicating with the Kubernetes API Server. There are two ways to communicate with the API Server. In-cluster, and out-of-cluster. The kubectl CLI would be an example of out-of-cluster communication.</description>
-    </item>
-    
-    <item>
-      <title>Device Tree Management</title>
-      <link>https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/</link>
-      <pubDate>Wed, 16 Aug 2017 17:55:12 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/</guid>
-      <description>One of the main features of Argus is its ability to represent a Kubernetes cluster in LogicMonitor, and to keep that representation up to date and accurate. Argus achieves this by managing the following.
-Device Groups Argus has an opinionated way of representing a cluster in the LogicMonitor Device Tree. It will first create a top level device group with the name of your cluster as specified in the arguments to the chart.</description>
     </item>
     
     <item>
@@ -59,15 +45,6 @@ Required Values:
       
       <guid>https://logicmonitor.github.io/k8s-argus/argus/</guid>
       <description>Argus is a tool that helps users of LogicMonitor keep up with the highly dynamic nature of a Kubernetes cluster. Argus runs as a Pod in your cluster, and uses LogicMonitor&amp;rsquo;s API to add Nodes, Pods, and Services into monitoring. Once in monitoring, data collection starts automatically. Data is collected for Nodes, Pods, Containers, and Services via the Kubernetes API. Additionally, you can leverage LogicMonitor DataSources to monitor your applications running within the cluster.</description>
-    </item>
-    
-    <item>
-      <title>Roadmap</title>
-      <link>https://logicmonitor.github.io/k8s-argus/roadmap/</link>
-      <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description>4.3.0  Support to monitor Nodes &amp;amp; Pods running on AWS Fargate.  5.0.0  Fully qualified name for Kubernetes resources.  6.0.0  Horizontal pod autoscaling based on LogicMonitor metrics.  7.0.0  Monitor more Kubernetes resources like replicaset, daemonset, etc.  </description>
     </item>
     
     <item>

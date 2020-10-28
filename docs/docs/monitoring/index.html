@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Monitoring - Argus</title>
-    <meta name="generator" content="Hugo 0.71.0" />
+    <meta name="generator" content="Hugo 0.76.5" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -250,19 +250,6 @@
 
 
 
-<a  title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
-	
-	Device Tree Management
-</a>
-
-
-
-      
-        
-        
-
-
-
 <a  title="How It Works" href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/">
 	
 	How It Works
@@ -272,24 +259,6 @@
 
       
     </ul>
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Roadmap" href="https://logicmonitor.github.io/k8s-argus/roadmap/">
-	
-	Roadmap
-</a>
-
-
-
   
 </li>
 
@@ -356,23 +325,17 @@ running in Kubernetes.</p>
 <ol>
 <li>
 <p><strong>Applies To:</strong>
-DataSources usually apply based on property values, such as a
-system.categories or system.sysinfo value. For applications running in
-Kubernetes, the best option is to have Datasources apply based on labels.
-Argus adds labels as resource properties (prepended with kubernetes.label.),
-and you can reference these labels in the Applies To field for any
-DataSources. For example, you may use a label app=shoppingcart, and have a
-DataSource that monitors shopping cart performance with an Applies To of
-&lsquo;kubernetes.label.app==&quot;shoppingcart&rdquo;'.</p>
+DataSources usually apply based on property values, such as a <em>system.categories</em> or <em>system.sysinfo</em> value.
+For applications running in Kubernetes, the best option is to have Datasources apply based on labels.
+Argus adds labels as resource properties (prepended with kubernetes.label.), and you can reference these labels in the Applies To field for any DataSources.
+For example, you may use a label app=shoppingcart, and have a DataSource that monitors shopping cart performance with an Applies To of <em>kubernetes.label.app==&ldquo;shoppingcart&rdquo;</em>.</p>
 </li>
 <li>
 <p><strong>Referencing hostname and IP addresses:</strong>
-Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or
-system name for data collection. This leverages the system.hostname property
-value in LogicMonitor. Argus sets system.hostname for Pods to the name of the
-Pod, but sets system.ips to the IP of the Pod. As such, DataSources that
-monitor applications running in Kubernetes should use ##system.ips## instead
-of ##HOSTNAME##.</p>
+Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or system name for data collection.
+This leverages the <em>system.hostname</em> property value in LogicMonitor.
+Argus sets <em>system.hostname</em> and <em>system.ips</em> to the IP of the Pod but if Pod&rsquo;s host network is enabled then it sets <em>system.hostname</em> to the name of the Pod.
+As such, DataSources that monitor applications running in Kubernetes should use ##system.ips## instead of ##HOSTNAME##.</p>
 </li>
 </ol>
 

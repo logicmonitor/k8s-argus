@@ -30,19 +30,13 @@ Beyond the health and performance of your Kubernetes Cluster resources, you can
    running in Kubernetes.
 
 1. **Applies To:**
-  DataSources usually apply based on property values, such as a
-  system.categories or system.sysinfo value. For applications running in
-  Kubernetes, the best option is to have Datasources apply based on labels.
-  Argus adds labels as resource properties (prepended with kubernetes.label.),
-  and you can reference these labels in the Applies To field for any
-  DataSources. For example, you may use a label app=shoppingcart, and have a
-  DataSource that monitors shopping cart performance with an Applies To of
-  'kubernetes.label.app=="shoppingcart"'.
+  DataSources usually apply based on property values, such as a *system.categories* or *system.sysinfo* value. 
+  For applications running in Kubernetes, the best option is to have Datasources apply based on labels.
+  Argus adds labels as resource properties (prepended with kubernetes.label.), and you can reference these labels in the Applies To field for any DataSources. 
+  For example, you may use a label app=shoppingcart, and have a DataSource that monitors shopping cart performance with an Applies To of *kubernetes.label.app=="shoppingcart"*.
 
 2. **Referencing hostname and IP addresses:**
-  Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or
-  system name for data collection. This leverages the system.hostname property
-  value in LogicMonitor. Argus sets system.hostname for Pods to the name of the
-   Pod, but sets system.ips to the IP of the Pod. As such, DataSources that
-   monitor applications running in Kubernetes should use ##system.ips## instead
-    of ##HOSTNAME##.
+  Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or system name for data collection. 
+  This leverages the *system.hostname* property value in LogicMonitor. 
+  Argus sets *system.hostname* and *system.ips* to the IP of the Pod but if Pod's host network is enabled then it sets *system.hostname* to the name of the Pod. 
+  As such, DataSources that monitor applications running in Kubernetes should use ##system.ips## instead of ##HOSTNAME##.
