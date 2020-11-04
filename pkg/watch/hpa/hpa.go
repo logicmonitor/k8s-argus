@@ -113,7 +113,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalin
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "horizontalPodAutoScaler", fmtHorizontalPodAutoscalerDisplayName(old), nil, new.Labels,
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(old), nil, new.Labels,
 		w.args(new, constants.HorizontalPodAutoscalerCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update horizontalPodAutoscaler %q: %v", fmtHorizontalPodAutoscalerDisplayName(new), err)
@@ -133,7 +133,7 @@ func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscali
 
 func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, category string) []types.DeviceOption {
 	return []types.DeviceOption{
-		w.Name(horizontalPodAutoscaler.Name),
+		w.Name(fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)),
 		w.ResourceLabels(horizontalPodAutoscaler.Labels),
 		w.DisplayName(fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)),
 		w.SystemCategories(category),
