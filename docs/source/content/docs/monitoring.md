@@ -38,5 +38,5 @@ Beyond the health and performance of your Kubernetes Cluster resources, you can
 2. **Referencing hostname and IP addresses:**
   Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or system name for data collection. 
   This leverages the *system.hostname* property value in LogicMonitor. 
-  Argus sets *system.hostname* and *system.ips* to the IP of the Pod but if Pod's host network is enabled then it sets *system.hostname* to the name of the Pod. 
+  Argus sets both *system.hostname* and *system.ips* to the Pod IP except host network enabled Pods. Argus sets *system.hostname* to the Pod name for hostNetwork enabled Pods. 
   As such, DataSources that monitor applications running in Kubernetes should use ##system.ips## instead of ##HOSTNAME##.
