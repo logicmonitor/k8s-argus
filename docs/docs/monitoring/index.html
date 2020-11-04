@@ -334,7 +334,7 @@ For example, you may use a label app=shoppingcart, and have a DataSource that mo
 <p><strong>Referencing hostname and IP addresses:</strong>
 Most LogicMonitor DataSources use ##HOSTNAME## to reference the IP, DNS, or system name for data collection.
 This leverages the <em>system.hostname</em> property value in LogicMonitor.
-Argus sets both <em>system.hostname</em> and <em>system.ips</em> to the Pod IP except host network enabled Pods. Argus sets <em>system.hostname</em> to the Pod name for hostNetwork enabled Pods.
+Argus sets both <em>system.hostname</em> and <em>system.ips</em> to the Pod IP except hostNetwork enabled Pods. Argus sets <em>system.hostname</em> to the Pod name for hostNetwork enabled Pods.
 As such, DataSources that monitor applications running in Kubernetes should use ##system.ips## instead of ##HOSTNAME##.</p>
 </li>
 </ol>
