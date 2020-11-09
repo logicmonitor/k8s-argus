@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Argus</title>
@@ -6,11 +6,7 @@
     <description>Recent content on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 17 Aug 2017 16:31:45 -0700</lastBuildDate>
-    
-	<atom:link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Thu, 17 Aug 2017 16:31:45 -0700</lastBuildDate><atom:link href="https://logicmonitor.github.io/k8s-argus/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>How It Works</title>
       <link>https://logicmonitor.github.io/k8s-argus/docs/how-it-works/</link>
@@ -22,16 +18,6 @@ Running Argus In-Cluster Argus depends on communicating with the Kubernetes API 
     </item>
     
     <item>
-      <title>Device Tree Management</title>
-      <link>https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/</link>
-      <pubDate>Wed, 16 Aug 2017 17:55:12 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/</guid>
-      <description>One of the main features of Argus is its ability to represent a Kubernetes cluster in LogicMonitor, and to keep that representation up to date and accurate. Argus achieves this by managing the following.
-Device Groups Argus has an opinionated way of representing a cluster in the LogicMonitor Device Tree. It will first create a top level device group with the name of your cluster as specified in the arguments to the chart.</description>
-    </item>
-    
-    <item>
       <title>Configuration</title>
       <link>https://logicmonitor.github.io/k8s-argus/docs/configuration/</link>
       <pubDate>Wed, 16 Aug 2017 17:54:55 -0700</pubDate>
@@ -39,7 +25,7 @@ Device Groups Argus has an opinionated way of representing a cluster in the Logi
       <guid>https://logicmonitor.github.io/k8s-argus/docs/configuration/</guid>
       <description>Configuring the Collectorset Controller via the Helm Chart The Collectorset controller Helm chart supports the following values:
 Required Values:
- accessID: The LogicMonitor API key ID. accessKey: The LogicMonitor API key. account: The LogicMonitor account name. clusterName: A unique name given to the cluster&amp;rsquo;s device group.  Optional Values:
+ accessID (default: &amp;quot;&amp;quot;): The LogicMonitor API key ID. accessKey (default: &amp;quot;&amp;quot;): The LogicMonitor API key. account (default: &amp;quot;&amp;quot;): The LogicMonitor account name. debug (default: false): To enable verbose logging at debug level.  Optional Values:
  enableRBAC (default: true): Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</description>
     </item>
     
@@ -62,25 +48,14 @@ Required Values:
     </item>
     
     <item>
-      <title>Roadmap</title>
-      <link>https://logicmonitor.github.io/k8s-argus/roadmap/</link>
-      <pubDate>Sat, 12 Aug 2017 16:31:31 -0700</pubDate>
-      
-      <guid>https://logicmonitor.github.io/k8s-argus/roadmap/</guid>
-      <description> 0.1.x  Automated device group management Automated device management Automated device property management  0.2.x Automated collector management Support for all etcd discovery methods
-0.3.x  Horizontal pod autoscaling based on LogicMonitor metrics.  </description>
-    </item>
-    
-    <item>
       <title>Getting Started</title>
       <link>https://logicmonitor.github.io/k8s-argus/getting-started/</link>
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a cluster-admin serviceaccount for tiller:
-$ kubectl create serviceaccount tiller --namespace=&amp;quot;kube-system&amp;quot; $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller $ helm init --service-account=tiller  You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
-$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Now you can install the LogicMonitor Collectorset controller:
-$ helm upgrade \ --install \ --debug \ --wait \ --set accessID=&amp;quot;$ACCESS_ID&amp;quot; \ --set accessKey=&amp;quot;$ACCESS_KEY&amp;quot; \ --set account=&amp;quot;$ACCOUNT&amp;quot; \ --set clusterName=&amp;quot;$CLUSTER_NAME&amp;quot; \ --set imageTag=&amp;quot;$IMAGE_TAG&amp;quot; \ collectorset-controller logicmonitor/collectorset-controller  See the configuration page for a complete list of values the Collectorset Controller helm chart supports, and their descriptions.</description>
+      <description>The simplest way to get started with Argus is to install it using Helm version 3.
+You&amp;rsquo;ll need to add the LogicMonitor chart repository:
+$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:</description>
     </item>
     
     <item>
@@ -89,8 +64,8 @@ $ helm upgrade \ --install \ --debug \ --wait \ --set accessID=&amp;quot;$ACCESS
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/docs/monitoring/</guid>
-      <description>Argus adds Kubernetes resources into LogicMonitor, but the DataSources that apply to those resources are responsible for monitoring. LogicMonitor has a set of developed modules for monitoring Kubernetes, which you can import via the LM Exchange (Settings | DataSources | Add | From LogicMonitor Exchange | Add by Locator Code) with these locator codes:
- Kubernetes_Nodes: PR4F33 Kubernetes_Node: 267H63 Kubernetes_Healthz: KZ463J Kubernetes_ControlPlane: N3GZNX Kubernetes_Service: HPJPRT Kubernetes_Scheduler: FCPJNH Kubernetes_Pod: P9TT2W Kubernetes_Container: 3AAJZX Kubernetes_PingK8s: 4N99FE  Once you&amp;rsquo;ve imported the DataSources, you should see monitoring for the health and performance of your Kubernetes Cluster in LogicMonitor.</description>
+      <description>Argus adds Kubernetes resources into LogicMonitor, but the DataSources that apply to those resources are responsible for monitoring. LogicMonitor has a set of developed modules for monitoring Kubernetes, which you can import via the LM Exchange (Settings | DataSources | Add | From LogicMonitor Exchange). Filter Items with word “Kubernetes”. Add all logicmodules as per your requirements.
+If kubernetes cluster is configured with Istio then you can add “Istio kubernetes” logicmodules as well.</description>
     </item>
     
   </channel>

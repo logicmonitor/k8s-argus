@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>How It Works - Argus</title>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.76.5" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        <strong>Argus <span class="version">4.2.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -250,19 +250,6 @@
 
 
 
-<a  title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
-	
-	Device Tree Management
-</a>
-
-
-
-      
-        
-        
-
-
-
 <a  title="How It Works" href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/">
 	
 	How It Works
@@ -272,24 +259,6 @@
 
       
     </ul>
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Roadmap" href="https://logicmonitor.github.io/k8s-argus/roadmap/">
-	
-	Roadmap
-</a>
-
-
-
   
 </li>
 
@@ -338,87 +307,63 @@
 		<div class="wrapper">
 			<h1>How It Works </h1>
 
-			
-
-<p>In this section we will dig into the lower level implementation of Argus to understand how it works, and provide those interested in contributing an introduction to the fundamentals of its design. An understanding of Go interfaces is recommended.</p>
-
+			<p>In this section we will dig into the lower level implementation of Argus to understand how it works, and provide those interested in contributing an introduction to the fundamentals of its design. An understanding of Go interfaces is recommended.</p>
 <h1 id="running-argus-in-cluster">Running Argus In-Cluster</h1>
-
 <p>Argus depends on communicating with the Kubernetes API Server. There are two ways to communicate with the API Server. In-cluster, and out-of-cluster. The <code>kubectl</code> CLI would be an example of out-of-cluster communication. Argus takes the former approach.</p>
-
 <p>Running Argus in-cluster has advantages over running it out-of-cluster. For starters, you get all of the features that come with deploying an application in Kubernetes. Additionally, you can secure Argus using a <code>ServiceAccount</code> with <code>RBAC</code> policies allowing access only to what is required for Argus to function. Technically this <em>is</em> possible out-of-cluster, but by being in-cluster, Kubernetes will take care of ensuring Argus has the <code>ServiceAccountToken</code> available at runtime. This simplifies things operationally and developmentally.</p>
-
 <p>Finally, we need Argus on the same overlay network as the various Kubernetes resources. Since the collector comes with Argus, and the collector is on the overlay network, it can do its job without ever having to be Kubernetes aware.</p>
-
 <h1 id="watching-kubernetes-events">Watching Kubernetes Events</h1>
-
 <p>One of the basic functions of Argus is to represent the state of a Kubernetes cluster in LogicMonitor. To do that, it must be able to keep up with rapid changes of a constantly evolving cluster. Argus acheives this by registering event handlers for each resource we are instersted in representing in LogicMonitor. To understand how Argus can automate the management of various LogicMonitor resources, we need to understand what a <code>Controller</code> is. To quote the <a href="https://kubernetes.io/docs/admin/kube-controller-manager/">documentation</a>:</p>
-
 <blockquote>
 <p>In Kubernetes, a controller is a control loop that watches the shared state of the cluster through the apiserver and makes changes attempting to move the current state towards the desired state. Examples of controllers that ship with Kubernetes today are the replication controller, endpoints controller, namespace controller, and serviceaccounts controller.</p>
 </blockquote>
-
 <p>The concept of a <code>Controller</code> is fundamental to Kubernetes and is at the core of its design. While Argus isn&rsquo;t a <code>Controller</code> in the sense that it <em>&ldquo;makes changes [to the state of the cluster] attempting to move the current state towards the desired state&rdquo;</em>, it <em>is</em> a <code>Controller</code> in the sense that it moves a LogicMonitor account&rsquo;s state to match that of a cluster&rsquo;s state. Argus abstracts this into the notion of a <code>Watcher</code> that is responsible for watching Kubernetes events for a given resource and syncing the state to LogicMonitor.</p>
-
 <h1 id="implementing-a-watcher">Implementing a Watcher</h1>
-
 <p>Now that we know about this event stream, let&rsquo;s look at what it takes to map resources in Kubernetes to objects in LogicMonitor. We start by first implenting the <code>Watcher</code> interface and then embedding a <code>Manager</code> in the concrete type implementing said interface. A <code>Watcher</code> is a simple interface that makes a concrete type compatible with the <code>NewInformer</code> function:</p>
-
-<pre><code class="language-go">func (a *Argus) Watch() {
-    getter := a.K8sClient.Core().RESTClient()
-    for _, w := range a.Watchers {
-        watchlist := cache.NewListWatchFromClient(getter, w.Resource(), v1.NamespaceAll, fields.Everything())
-        _, controller := cache.NewInformer(
-            watchlist,
-            w.ObjType(),
-            time.Second*0,
-            cache.ResourceEventHandlerFuncs{
-                AddFunc:    w.AddFunc(),
-                DeleteFunc: w.DeleteFunc(),
-                UpdateFunc: w.UpdateFunc(),
-            },
-        )
-        stop := make(chan struct{})
-        go controller.Run(stop)
-    }
-}
-</code></pre>
-
-<p>And we can see that the <code>Watcher</code> is defined as:</p>
-
-<pre><code class="language-go">type Watcher interface {
-    Resource() string // The Kubernetes resource that we want to watch (nodes, pods, services, etc.)
-    ObjType() runtime.Object // A concrete type that is used for type assertion to an interface's underlying concrete value (Pod{}, Node{}, Service{}, etc.).
-    AddFunc() func(obj interface{}) // A function that is responsible for handling add events for the given resource.
-    UpdateFunc() func(oldObj, newObj interface{}) // A function that is responsible for handling update events for the given resource.
-    DeleteFunc() func(obj interface{}) // A function that is responsible for handling delete events for the given resource.
-}
-</code></pre>
-
-<p>With this simple function we can watch each Kubernetes resource we are interested in monitoring and provide custom logic for mapping it into LogicMonitor.</p>
-
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">Argus</span><span class="p">)</span> <span class="nf">Watch</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">getter</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">K8sClient</span><span class="p">.</span><span class="nf">Core</span><span class="p">().</span><span class="nf">RESTClient</span><span class="p">()</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">w</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span><span class="p">.</span><span class="nx">Watchers</span> <span class="p">{</span>
+        <span class="nx">watchlist</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nf">NewListWatchFromClient</span><span class="p">(</span><span class="nx">getter</span><span class="p">,</span> <span class="nx">w</span><span class="p">.</span><span class="nf">Resource</span><span class="p">(),</span> <span class="nx">v1</span><span class="p">.</span><span class="nx">NamespaceAll</span><span class="p">,</span> <span class="nx">fields</span><span class="p">.</span><span class="nf">Everything</span><span class="p">())</span>
+        <span class="nx">_</span><span class="p">,</span> <span class="nx">controller</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nf">NewInformer</span><span class="p">(</span>
+            <span class="nx">watchlist</span><span class="p">,</span>
+            <span class="nx">w</span><span class="p">.</span><span class="nf">ObjType</span><span class="p">(),</span>
+            <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="o">*</span><span class="mi">0</span><span class="p">,</span>
+            <span class="nx">cache</span><span class="p">.</span><span class="nx">ResourceEventHandlerFuncs</span><span class="p">{</span>
+                <span class="nx">AddFunc</span><span class="p">:</span>    <span class="nx">w</span><span class="p">.</span><span class="nf">AddFunc</span><span class="p">(),</span>
+                <span class="nx">DeleteFunc</span><span class="p">:</span> <span class="nx">w</span><span class="p">.</span><span class="nf">DeleteFunc</span><span class="p">(),</span>
+                <span class="nx">UpdateFunc</span><span class="p">:</span> <span class="nx">w</span><span class="p">.</span><span class="nf">UpdateFunc</span><span class="p">(),</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="nx">stop</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+        <span class="k">go</span> <span class="nx">controller</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">stop</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>And we can see that the <code>Watcher</code> is defined as:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Watcher</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nf">Resource</span><span class="p">()</span> <span class="kt">string</span> <span class="c1">// The Kubernetes resource that we want to watch (nodes, pods, services, etc.)
+</span><span class="c1"></span>    <span class="nf">ObjType</span><span class="p">()</span> <span class="nx">runtime</span><span class="p">.</span><span class="nx">Object</span> <span class="c1">// A concrete type that is used for type assertion to an interface&#39;s underlying concrete value (Pod{}, Node{}, Service{}, etc.).
+</span><span class="c1"></span>    <span class="nf">AddFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">obj</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling add events for the given resource.
+</span><span class="c1"></span>    <span class="nf">UpdateFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">oldObj</span><span class="p">,</span> <span class="nx">newObj</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling update events for the given resource.
+</span><span class="c1"></span>    <span class="nf">DeleteFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">obj</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling delete events for the given resource.
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><p>With this simple function we can watch each Kubernetes resource we are interested in monitoring and provide custom logic for mapping it into LogicMonitor.</p>
 <h2 id="the-manager">The Manager</h2>
-
 <p>Now that we can watch events for a given resource, we need to implement the logic behind the add, update, and delete events. This is where we introduce the concept of a <code>Manager</code>. There are two functions of a <code>Manager</code>. First, a <code>Manager</code> must provide a way to build a LogicMonitor object given a Kubernetes resource object. Second, a <code>Manager</code> must ensure that the built object gets created in LogicMonitor. These concepts are abstracted into two interfaces, a <code>Builder</code> and a <code>Mapper</code>.</p>
-
 <p>Let&rsquo;s imagine that we want to map a Kubernetes <code>Foo</code> resource into LogicMonitor as a <code>Bar</code> object.</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">FooWatcher</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">BarManager</span>
+<span class="p">}</span>
 
-<pre><code class="language-go">type FooWatcher struct {
-    BarManager
-}
-
-type BarManager interface {
-    BarBuilder
-    BarMapper
-}
-</code></pre>
-
-<p>Here we can see that the Kuberentes <code>Foo</code> resource is mapped into LogicMonitor via a <code>Watcher</code> that implements the <code>BarManager</code> interface.</p>
+<span class="kd">type</span> <span class="nx">BarManager</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nx">BarBuilder</span>
+    <span class="nx">BarMapper</span>
+<span class="p">}</span>
+</code></pre></div><p>Here we can see that the Kuberentes <code>Foo</code> resource is mapped into LogicMonitor via a <code>Watcher</code> that implements the <code>BarManager</code> interface.</p>
 
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
@@ -432,25 +377,25 @@ type BarManager interface {
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-  </div>
-
-  <div class="next">
-  
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/" title="Device Tree Management">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/" title="Configuration">
         <span class="direction">
-          Next
+          Previous
         </span>
         <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
           <div class="stretch">
             <div class="title">
-              Device Tree Management
+              Configuration
             </div>
-          </div>
-          <div class="button button-next" role="button" aria-label="Next">
-            <i class="icon icon-forward"></i>
           </div>
         </div>
       </a>
+  
+  </div>
+
+  <div class="next">
   
   </div>
 </nav>

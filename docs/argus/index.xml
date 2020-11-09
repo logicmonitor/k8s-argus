@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Argus</title>
@@ -6,11 +6,7 @@
     <description>Recent content on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 12 Aug 2017 17:16:07 -0700</lastBuildDate>
-    
-	<atom:link href="https://logicmonitor.github.io/k8s-argus/argus/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 12 Aug 2017 17:16:07 -0700</lastBuildDate><atom:link href="https://logicmonitor.github.io/k8s-argus/argus/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Argus</title>
       <link>https://logicmonitor.github.io/k8s-argus/argus/</link>
