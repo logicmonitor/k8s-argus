@@ -82,6 +82,7 @@ func (m *Manager) checkAndUpdateExistingDevice(lctx *lmctx.LMContext, resource s
 			// the device which is not changed will be ignored
 			if m.getDisplayNameWithNamespace(existingDevice) == displayNameWithNamespace {
 				log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
+				m.DC.Set(m.GetFullDisplayName(existingDevice))
 				return nil, nil
 			}
 			// the clusterName is the same and hostName is not the same, need update
