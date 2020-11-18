@@ -186,7 +186,8 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, fmtPodDisplayName(pod)),
 	}
-	if pod.Spec.HostNetwork {
+	// Pod running on fargate doesn't support HostNetwork so check fargate profile label, if label exists then mark hostNetwork as true
+	if pod.Spec.HostNetwork || pod.Labels[constants.LabelFargateProfile] != "" {
 		options = append(options, w.Custom("kubernetes.pod.hostNetwork", "true"))
 	}
 	return options
@@ -198,8 +199,8 @@ func fmtPodDisplayName(pod *v1.Pod) string {
 }
 
 func getPodDNSName(pod *v1.Pod) string {
-	// if the pod is configured as "hostnetwork=true", we will use the pod name as the IP/DNS name of the pod device
-	if pod.Spec.HostNetwork {
+	// if the pod is configured as "hostnetwork=true" or running on fargate, we will use the pod name as the IP/DNS name of the pod device
+	if pod.Spec.HostNetwork || pod.Labels[constants.LabelFargateProfile] != "" {
 		return pod.Name
 	}
 	return pod.Status.PodIP

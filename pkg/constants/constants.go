@@ -24,6 +24,8 @@ const (
 	LabelCustomPropertyPrefix = "kubernetes.label."
 	// LabelNullPlaceholder is the string used to represent null values in custom properties
 	LabelNullPlaceholder = "null"
+	// LabelFargateProfile is the label name used for fargate profile to distinguish between fargate & other Pods
+	LabelFargateProfile = "eks.amazonaws.com/fargate-profile"
 )
 
 const (
