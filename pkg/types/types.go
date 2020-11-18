@@ -86,6 +86,8 @@ type DeviceMapper interface {
 	DeleteByID(*lmctx.LMContext, string, int32) error
 	// DeleteByDisplayName deletes a device by device display name.
 	DeleteByDisplayName(*lmctx.LMContext, string, string) error
+	// GetDesiredDisplayName returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
+	GetDesiredDisplayName(string, string) string
 }
 
 // DeviceOption is the function definition for the functional options pattern.

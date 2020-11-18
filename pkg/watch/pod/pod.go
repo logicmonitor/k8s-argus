@@ -55,7 +55,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + pod.Name}))
 		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
-		log.Debugf("Handling add pod event: %s", pod.Name)
+		log.Debugf("Handling add pod event: %s", w.getDesiredDisplayName(pod))
 
 		// Require an IP address.
 		if pod.Status.PodIP == "" {
@@ -74,7 +74,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
 		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
-		log.Debugf("Handling update pod event: %s", old.Name)
+		log.Debugf("Handling update pod event: %s", w.getDesiredDisplayName(new))
 
 		// If the old pod does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new w.
@@ -84,11 +84,11 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		}
 
 		if new.Status.Phase == v1.PodSucceeded {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), fmtPodDisplayName(old)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old)); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
-			log.Infof("Deleted pod %s", fmtPodDisplayName(old))
+			log.Infof("Deleted pod %s", w.getDesiredDisplayName(old))
 			return
 		}
 
@@ -106,15 +106,15 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + pod.Name}))
 		log := lmlog.Logger(lctx)
 
-		log.Debugf("Handling delete pod event: %s", fmtPodDisplayName(pod))
+		log.Debugf("Handling delete pod event: %s", w.getDesiredDisplayName(pod))
 
 		// Delete the pod.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), fmtPodDisplayName(pod)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod)); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
-			log.Infof("Deleted pod %s", fmtPodDisplayName(pod))
+			log.Infof("Deleted pod %s", w.getDesiredDisplayName(pod))
 			return
 		}
 
@@ -124,22 +124,21 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 }
 
 // nolint: dupl
-
 func (w *Watcher) add(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
-
 	p, err := w.Add(lctx, w.Resource(), pod.Labels,
 		w.args(pod, constants.PodCategory)...,
 	)
 	if err != nil {
-		log.Errorf("Failed to add pod %q: %v", fmtPodDisplayName(pod), err)
+		log.Errorf("Failed to add pod %q: %v", w.getDesiredDisplayName(pod), err)
 		return
 	}
 
 	if p == nil {
-		log.Infof("pod %q is not added as it is mentioned for filtering.", fmtPodDisplayName(pod))
+		log.Debugf("pod %q is not added as it is mentioned for filtering.", w.getDesiredDisplayName(pod))
+		return
 	}
-	log.Infof("Added pod %q", fmtPodDisplayName(pod))
+	log.Infof("Added pod %q", *p.DisplayName)
 }
 
 func (w *Watcher) podUpdateFilter(old, new *v1.Pod) types.UpdateFilter {
@@ -151,31 +150,31 @@ func (w *Watcher) podUpdateFilter(old, new *v1.Pod) types.UpdateFilter {
 // nolint: dupl
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "pods",
-		fmtPodDisplayName(old), w.podUpdateFilter(old, new), new.Labels,
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(),
+		fmtPodDisplayName(old, w.Config().ClusterName), w.podUpdateFilter(old, new), new.Labels,
 		w.args(new, constants.PodCategory)...,
 	); err != nil {
-		log.Errorf("Failed to update pod %q: %v", fmtPodDisplayName(new), err)
+		log.Errorf("Failed to update pod %q: %v", w.getDesiredDisplayName(new), err)
 		return
 	}
-	log.Infof("Updated pod %q", fmtPodDisplayName(old))
+	log.Infof("Updated pod %q", w.getDesiredDisplayName(old))
 }
 
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), fmtPodDisplayName(pod), constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
-		log.Errorf("Failed to move pod %q: %v", fmtPodDisplayName(pod), err)
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod), constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
+		log.Errorf("Failed to move pod %q: %v", w.getDesiredDisplayName(pod), err)
 		return
 	}
-	log.Infof("Moved pod %q", fmtPodDisplayName(pod))
+	log.Infof("Moved pod %q", w.getDesiredDisplayName(pod))
 }
 
 func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 	options := []types.DeviceOption{
 		w.Name(getPodDNSName(pod)),
 		w.ResourceLabels(pod.Labels),
-		w.DisplayName(fmtPodDisplayName(pod)),
+		w.DisplayName(w.getDesiredDisplayName(pod)),
 		w.SystemCategories(category),
 		w.Auto("name", pod.Name),
 		w.Auto("namespace", pod.Namespace),
@@ -184,7 +183,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
-		w.Custom(constants.K8sResourceNamePropertyKey, fmtPodDisplayName(pod)),
+		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(pod)),
 	}
 	if pod.Spec.HostNetwork {
 		options = append(options, w.Custom("kubernetes.pod.hostNetwork", "true"))
@@ -192,9 +191,13 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 	return options
 }
 
+func (w *Watcher) getDesiredDisplayName(pod *v1.Pod) string {
+	return w.DeviceManager.GetDesiredDisplayName(pod.Name, pod.Namespace)
+}
+
 // fmtPodDisplayName implements the conversion for the pod display name
-func fmtPodDisplayName(pod *v1.Pod) string {
-	return fmt.Sprintf("%s-%s", pod.Name, pod.Namespace)
+func fmtPodDisplayName(pod *v1.Pod, clusterName string) string {
+	return fmt.Sprintf("%s-%s-%s", pod.Name, pod.Namespace, clusterName)
 }
 
 func getPodDNSName(pod *v1.Pod) string {
@@ -206,7 +209,7 @@ func getPodDNSName(pod *v1.Pod) string {
 }
 
 // GetPodsMap implements the getting pods map info from k8s
-func GetPodsMap(k8sClient kubernetes.Interface, namespace string) (map[string]string, error) {
+func GetPodsMap(k8sClient kubernetes.Interface, namespace string, clusterName string) (map[string]string, error) {
 	podsMap := make(map[string]string)
 	podList, err := k8sClient.CoreV1().Pods(namespace).List(metav1.ListOptions{})
 	if err != nil || podList == nil {
@@ -214,7 +217,7 @@ func GetPodsMap(k8sClient kubernetes.Interface, namespace string) (map[string]st
 	}
 	for i := range podList.Items {
 		// TODO: we should improve the value of the map to the ip of the pod when changing the name of the device to the ip
-		podsMap[fmtPodDisplayName(&podList.Items[i])] = getPodDNSName(&podList.Items[i])
+		podsMap[fmtPodDisplayName(&podList.Items[i], clusterName)] = getPodDNSName(&podList.Items[i])
 	}
 
 	return podsMap, nil

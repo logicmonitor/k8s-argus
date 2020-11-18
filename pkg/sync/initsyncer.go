@@ -7,6 +7,7 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
+	d "github.com/logicmonitor/k8s-argus/pkg/device"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
@@ -152,13 +153,14 @@ func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceTyp
 	for _, subGroup := range rest.SubGroups {
 		//get pod/service/deployment info from k8s
 		var deviceMap map[string]string
+		clusterName := i.DeviceManager.Config().ClusterName
 
 		if deviceType == constants.PodDeviceGroupName {
-			deviceMap, err = pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name)
+			deviceMap, err = pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name, clusterName)
 		} else if deviceType == constants.ServiceDeviceGroupName {
-			deviceMap, err = service.GetServicesMap(lctx, i.DeviceManager.K8sClient, subGroup.Name)
+			deviceMap, err = service.GetServicesMap(lctx, i.DeviceManager.K8sClient, subGroup.Name, clusterName)
 		} else if deviceType == constants.DeploymentDeviceGroupName {
-			deviceMap, err = deployment.GetDeploymentsMap(lctx, i.DeviceManager.K8sClient, subGroup.Name)
+			deviceMap, err = deployment.GetDeploymentsMap(lctx, i.DeviceManager.K8sClient, subGroup.Name, clusterName)
 		} else {
 			return
 		}
@@ -186,24 +188,36 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 	for _, device := range devices {
 		// the "auto.clustername" property checking is used to prevent unexpected deletion of the normal non-k8s device
 		// which may be assigned to the cluster group
-		autoClusterName := i.DeviceManager.GetPropertyValue(device, constants.K8sClusterNamePropertyKey)
+		autoClusterName := d.GetPropertyValue(device, constants.K8sClusterNamePropertyKey)
 		if autoClusterName != i.DeviceManager.Config().ClusterName {
 			log.Infof("Ignore the device (%v) which does not have property %v:%v",
 				*device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
 			continue
 		}
-		// the displayName may be renamed, we should use the constants.K8sResourceNamePropertyKey property value
-		resourceName := i.DeviceManager.GetPropertyValue(device, constants.K8sResourceNamePropertyKey)
-		// for compatibility, if resourceName is empty, use display name
-		if resourceName == "" {
-			resourceName = *device.DisplayName
-		}
-		_, exist := resourcesMap[resourceName]
-		if !exist {
+
+		// get name and namespace prop values from devices
+		autoName := d.GetPropertyValue(device, constants.K8sDeviceNamePropertyKey)
+		namespace := d.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
+
+		// the displayName may be renamed, we should use the complete displayName for comparision.
+		fullDisplayName := i.DeviceManager.GetFullDisplayName(device)
+		_, exist := resourcesMap[fullDisplayName]
+		if !exist && i.DeviceManager.Config().DeleteDevices {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
 			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
 			if err != nil {
 				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
+			}
+			return
+		}
+		desirecDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace)
+		isConflictDevice := d.IsConflictingDevice(device)
+		if *device.DisplayName != desirecDisplayName && !isConflictDevice {
+			log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desirecDisplayName)
+			err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desirecDisplayName)
+			if err != nil {
+				log.Errorf("Failed to rename the existing device %s", *device.DisplayName)
+				return
 			}
 		}
 	}
@@ -239,7 +253,7 @@ func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
 		//get hpa info from k8s
 		var deviceMap map[string]string
 
-		deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(lctx, i.DeviceManager.K8sClient, subGroup.Name)
+		deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(lctx, i.DeviceManager.K8sClient, subGroup.Name, i.DeviceManager.Config().ClusterName)
 
 		if err != nil || deviceMap == nil {
 			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)

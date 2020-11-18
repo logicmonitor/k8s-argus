@@ -86,7 +86,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the horizontalPodAutoscaler.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler)); err != nil {
 				log.Errorf("Failed to delete horizontalPodAutoscaler: %v", err)
 				return
 			}
@@ -102,57 +102,68 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(), horizontalPodAutoscaler.Labels,
+	hpa, err := w.Add(lctx, w.Resource(), horizontalPodAutoscaler.Labels,
 		w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerCategory)...,
-	); err != nil {
-		log.Errorf("Failed to add horizontalPodAutoscaler %q: %v", fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler), err)
+	)
+	if err != nil {
+		log.Errorf("Failed to add horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(horizontalPodAutoscaler), err)
 		return
 	}
-	log.Infof("Added horizontalPodAutoscaler %q", fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler))
+
+	if hpa == nil {
+		log.Debugf("horizontalPodAutoscaler %q is not added as it is mentioned for filtering.", w.getDesiredDisplayName(horizontalPodAutoscaler))
+		return
+	}
+
+	log.Infof("Added horizontalPodAutoscaler %q", w.getDesiredDisplayName(horizontalPodAutoscaler))
 }
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(old), nil, new.Labels,
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(old, w.Config().ClusterName), nil, new.Labels,
 		w.args(new, constants.HorizontalPodAutoscalerCategory)...,
 	); err != nil {
-		log.Errorf("Failed to update horizontalPodAutoscaler %q: %v", fmtHorizontalPodAutoscalerDisplayName(new), err)
+		log.Errorf("Failed to update horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(new), err)
 		return
 	}
-	log.Infof("Updated horizontalPodAutoscaler %q", fmtHorizontalPodAutoscalerDisplayName(old))
+	log.Infof("Updated horizontalPodAutoscaler %q", w.getDesiredDisplayName(old))
 }
 
 func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler), constants.CustomPropertiesFieldName, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
-		log.Errorf("Failed to move horizontalPodAutoscaler %q: %v", fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler), err)
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler), constants.CustomPropertiesFieldName, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
+		log.Errorf("Failed to move horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(horizontalPodAutoscaler), err)
 		return
 	}
-	log.Infof("Moved horizontalPodAutoscaler %q", fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler))
+	log.Infof("Moved horizontalPodAutoscaler %q", w.getDesiredDisplayName(horizontalPodAutoscaler))
 }
 
 func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, category string) []types.DeviceOption {
 	return []types.DeviceOption{
-		w.Name(fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)),
+		w.Name(w.getDesiredDisplayName(horizontalPodAutoscaler)),
 		w.ResourceLabels(horizontalPodAutoscaler.Labels),
-		w.DisplayName(fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)),
+		w.DisplayName(w.getDesiredDisplayName(horizontalPodAutoscaler)),
 		w.SystemCategories(category),
 		w.Auto("name", horizontalPodAutoscaler.Name),
 		w.Auto("namespace", horizontalPodAutoscaler.Namespace),
 		w.Auto("selflink", horizontalPodAutoscaler.SelfLink),
 		w.Auto("uid", string(horizontalPodAutoscaler.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(horizontalPodAutoscaler.CreationTimestamp.Unix(), 10)),
-		w.Custom(constants.K8sResourceNamePropertyKey, fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)),
+		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(horizontalPodAutoscaler)),
 	}
 }
 
 // FmthorizontalPodAutoscalerDisplayName implements the conversion for the horizontalPodAutoscaler display name
-func fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) string {
-	return fmt.Sprintf("%s.%s.hpa-%s", horizontalPodAutoscaler.Name, horizontalPodAutoscaler.Namespace, string(horizontalPodAutoscaler.UID))
+func fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, clusterName string) string {
+	return fmt.Sprintf("%s-%s-%s", horizontalPodAutoscaler.Name, horizontalPodAutoscaler.Namespace, clusterName)
+}
+
+func (w *Watcher) getDesiredDisplayName(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) string {
+	return w.DeviceManager.GetDesiredDisplayName(horizontalPodAutoscaler.Name, horizontalPodAutoscaler.Namespace)
 }
 
 // GetHorizontalPodAutoscalersMap implements the getting horizontalPodAutoscaler map info from k8s
-func GetHorizontalPodAutoscalersMap(lctx *lmctx.LMContext, k8sClient *kubernetes.Clientset, namespace string) (map[string]string, error) {
+func GetHorizontalPodAutoscalersMap(lctx *lmctx.LMContext, k8sClient *kubernetes.Clientset, namespace string, clusterName string) (map[string]string, error) {
 	log := lmlog.Logger(lctx)
 	horizontalPodAutoscalersMap := make(map[string]string)
 	horizontalPodAutoscalerV1List, err := k8sClient.AutoscalingV1().HorizontalPodAutoscalers(namespace).List(v1.ListOptions{})
@@ -162,7 +173,7 @@ func GetHorizontalPodAutoscalersMap(lctx *lmctx.LMContext, k8sClient *kubernetes
 	}
 
 	for _, horizontalPodAutoscalerInfo := range horizontalPodAutoscalerV1List.Items {
-		horizontalPodAutoscalersMap[fmtHorizontalPodAutoscalerDisplayName(&horizontalPodAutoscalerInfo)] = horizontalPodAutoscalerInfo.Name
+		horizontalPodAutoscalersMap[fmtHorizontalPodAutoscalerDisplayName(&horizontalPodAutoscalerInfo, clusterName)] = horizontalPodAutoscalerInfo.Name
 	}
 
 	return horizontalPodAutoscalersMap, nil

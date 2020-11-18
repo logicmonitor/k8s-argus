@@ -1,6 +1,7 @@
 package devicecache
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/vkumbhar94/lm-sdk-go/client/lm"
+	"github.com/vkumbhar94/lm-sdk-go/models"
 )
 
 // DeviceCache to maintain a device cache to calcuate delta between device presence on server and on cluster
@@ -86,10 +88,32 @@ func (dc *DeviceCache) getAllDevices(b *types.Base) map[string]interface{} {
 			continue
 		}
 		for _, device := range resp.Payload.Items {
-			m[*device.DisplayName] = true
+			fullname := dc.getFullDisplayName(device)
+			log.Debugf("devicecase added entry for - %v", fullname)
+			m[fullname] = true
 		}
 	}
 	return m
+}
+
+func (dc *DeviceCache) getFullDisplayName(device *models.Device) string {
+	name := getPropertyValue(device, constants.K8sDeviceNamePropertyKey)
+	namespace := getPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
+	return fmt.Sprintf("%s-%s-%s", name, namespace, dc.base.Config.ClusterName)
+}
+
+func getPropertyValue(device *models.Device, propertyName string) string {
+	if device == nil {
+		return ""
+	}
+	if len(device.CustomProperties) > 0 {
+		for _, cp := range device.CustomProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
+			}
+		}
+	}
+	return ""
 }
 
 func (dc *DeviceCache) resyncCache(m map[string]interface{}) {

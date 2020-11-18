@@ -126,12 +126,17 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(), node.Labels, w.args(node, constants.NodeCategory)...); err != nil {
+	n, err := w.Add(lctx, w.Resource(), node.Labels, w.args(node, constants.NodeCategory)...)
+	if err != nil {
 		log.Errorf("Failed to add node %q: %v", node.Name, err)
-	} else {
-		log.Infof("Added node %q", node.Name)
+		return
+	}
+	if n == nil {
+		log.Debugf("node %q is not added as it is mentioned for filtering.", node.Name)
+		return
 	}
 
+	log.Infof("Added node %q", node.Name)
 	w.createRoleDeviceGroup(lctx, node.Labels)
 }
 
@@ -143,7 +148,7 @@ func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "nodes", old.Name, w.nodeUpdateFilter(old, new), new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), old.Name, w.nodeUpdateFilter(old, new), new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", new.Name, err)
 	} else {
 		log.Infof("Updated node %q", old.Name)

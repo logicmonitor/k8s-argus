@@ -22,6 +22,7 @@ const (
 type Options struct {
 	AppliesTo             AppliesToBuilder
 	AppliesToDeletedGroup AppliesToBuilder
+	AppliesToConflict     AppliesToBuilder
 	Client                *client.LMSdkGo
 	Name                  string
 	ParentID              int32
@@ -113,7 +114,28 @@ func Create(opts *Options) (int32, error) {
 
 	}
 
+	err = createConflictDynamicGroup(opts, clusterDeviceGroup.ID)
+	if err != nil {
+		return 0, err
+	}
+
 	return clusterDeviceGroup.ID, nil
+}
+
+func createConflictDynamicGroup(opts *Options, clusterGrpID int32) error {
+	if opts.AppliesToConflict != nil {
+		conflictingDeviceGroup, err := Find(clusterGrpID, constants.ConflictDeviceGroup, opts.Client)
+		if err != nil {
+			return err
+		}
+		if conflictingDeviceGroup == nil {
+			_, err := create(constants.ConflictDeviceGroup, opts.AppliesToConflict.String(), true, clusterGrpID, opts.Client)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Find searches for a device group identified by the parent ID and name.
