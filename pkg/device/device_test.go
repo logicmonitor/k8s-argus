@@ -8,7 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/vkumbhar94/lm-sdk-go/models"
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 var (

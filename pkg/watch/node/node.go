@@ -14,7 +14,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/sirupsen/logrus"
-	"github.com/vkumbhar94/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/client"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
