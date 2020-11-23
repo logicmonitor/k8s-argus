@@ -175,11 +175,11 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 
 // FmtServiceDisplayName implements the conversion for the service display name
 func fmtServiceDisplayName(service *v1.Service, clusterName string) string {
-	return fmt.Sprintf("%s-%s-%s", service.Name, service.Namespace, clusterName)
+	return fmt.Sprintf("%s-svc-%s-%s", service.Name, service.Namespace, clusterName)
 }
 
 func (w *Watcher) getDesiredDisplayName(service *v1.Service) string {
-	return w.DeviceManager.GetDesiredDisplayName(service.Name, service.Namespace)
+	return w.DeviceManager.GetDesiredDisplayName(service.Name, service.Namespace, constants.Services)
 }
 
 // GetServicesMap implements the getting services map info from k8s

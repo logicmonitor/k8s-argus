@@ -153,11 +153,11 @@ func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.D
 
 // fmtDeploymentDisplayName implements the conversion for the deployment display name
 func fmtDeploymentDisplayName(deployment *appsv1.Deployment, clusterName string) string {
-	return fmt.Sprintf("%s-%s-%s", deployment.Name, deployment.Namespace, clusterName)
+	return fmt.Sprintf("%s-deploy-%s-%s", deployment.Name, deployment.Namespace, clusterName)
 }
 
 func (w *Watcher) getDesiredDisplayName(deployment *appsv1.Deployment) string {
-	return w.DeviceManager.GetDesiredDisplayName(deployment.Name, deployment.Namespace)
+	return w.DeviceManager.GetDesiredDisplayName(deployment.Name, deployment.Namespace, constants.Deployments)
 }
 
 // GetDeploymentsMap implements the getting deployments map info from k8s

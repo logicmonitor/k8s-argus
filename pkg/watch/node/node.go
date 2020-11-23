@@ -3,6 +3,7 @@
 package node
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -148,7 +149,7 @@ func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), old.Name, w.nodeUpdateFilter(old, new), new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), fmtNodeDisplayName(old, w.Config().ClusterName), w.nodeUpdateFilter(old, new), new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", new.Name, err)
 	} else {
 		log.Infof("Updated node %q", old.Name)
@@ -176,7 +177,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	return []types.DeviceOption{
 		w.Name(getInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
-		w.DisplayName(node.Name),
+		w.DisplayName(fmtNodeDisplayName(node, w.Config().ClusterName)),
 		w.SystemCategories(category),
 		w.Auto("name", node.Name),
 		w.Auto("selflink", node.SelfLink),
@@ -184,6 +185,14 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, node.Name),
 	}
+}
+
+func fmtNodeDisplayName(node *v1.Node, clusterName string) string {
+	return fmt.Sprintf("%s-node-%s-%s", node.Name, node.Namespace, clusterName)
+}
+
+func (w *Watcher) getDesiredDisplayName(node *v1.Node) string {
+	return w.DeviceManager.GetDesiredDisplayName(node.Name, node.Namespace, constants.Nodes)
 }
 
 // getInternalAddress finds the node's internal address.
@@ -237,7 +246,7 @@ func (w *Watcher) createRoleDeviceGroup(lctx *lmctx.LMContext, labels map[string
 }
 
 // GetNodesMap implements the getting nodes map info from k8s
-func GetNodesMap(k8sClient kubernetes.Interface) (map[string]string, error) {
+func GetNodesMap(k8sClient kubernetes.Interface, clusterName string) (map[string]string, error) {
 	nodesMap := make(map[string]string)
 	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil || nodeList == nil {
@@ -248,7 +257,7 @@ func GetNodesMap(k8sClient kubernetes.Interface) (map[string]string, error) {
 		if address == nil {
 			continue
 		}
-		nodesMap[nodeInfo.Name] = address.Address
+		nodesMap[fmtNodeDisplayName(&nodeInfo, clusterName)] = address.Address
 	}
 
 	return nodesMap, nil

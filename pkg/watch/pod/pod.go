@@ -192,12 +192,12 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 }
 
 func (w *Watcher) getDesiredDisplayName(pod *v1.Pod) string {
-	return w.DeviceManager.GetDesiredDisplayName(pod.Name, pod.Namespace)
+	return w.DeviceManager.GetDesiredDisplayName(pod.Name, pod.Namespace, constants.Pods)
 }
 
 // fmtPodDisplayName implements the conversion for the pod display name
 func fmtPodDisplayName(pod *v1.Pod, clusterName string) string {
-	return fmt.Sprintf("%s-%s-%s", pod.Name, pod.Namespace, clusterName)
+	return fmt.Sprintf("%s-pod-%s-%s", pod.Name, pod.Namespace, clusterName)
 }
 
 func getPodDNSName(pod *v1.Pod) string {

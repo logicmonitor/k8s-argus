@@ -155,11 +155,11 @@ func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutos
 
 // FmthorizontalPodAutoscalerDisplayName implements the conversion for the horizontalPodAutoscaler display name
 func fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, clusterName string) string {
-	return fmt.Sprintf("%s-%s-%s", horizontalPodAutoscaler.Name, horizontalPodAutoscaler.Namespace, clusterName)
+	return fmt.Sprintf("%s-hpa-%s-%s", horizontalPodAutoscaler.Name, horizontalPodAutoscaler.Namespace, clusterName)
 }
 
 func (w *Watcher) getDesiredDisplayName(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) string {
-	return w.DeviceManager.GetDesiredDisplayName(horizontalPodAutoscaler.Name, horizontalPodAutoscaler.Namespace)
+	return w.DeviceManager.GetDesiredDisplayName(horizontalPodAutoscaler.Name, horizontalPodAutoscaler.Namespace, constants.HorizontalPodAutoScalers)
 }
 
 // GetHorizontalPodAutoscalersMap implements the getting horizontalPodAutoscaler map info from k8s

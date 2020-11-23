@@ -123,7 +123,7 @@ func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32) {
 	}
 
 	//get node info from k8s
-	nodesMap, err := node.GetNodesMap(i.DeviceManager.K8sClient)
+	nodesMap, err := node.GetNodesMap(i.DeviceManager.K8sClient, i.DeviceManager.Config().ClusterName)
 	if err != nil || nodesMap == nil {
 		log.Warnf("Failed to get the nodes from k8s, err: %v", err)
 		return
@@ -200,7 +200,7 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 		namespace := d.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
 
 		// the displayName may be renamed, we should use the complete displayName for comparision.
-		fullDisplayName := i.DeviceManager.GetFullDisplayName(device)
+		fullDisplayName := i.DeviceManager.GetFullDisplayName(device, resourceType)
 		_, exist := resourcesMap[fullDisplayName]
 		if !exist && i.DeviceManager.Config().DeleteDevices {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
@@ -210,8 +210,8 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			}
 			return
 		}
-		desirecDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace)
-		isConflictDevice := d.IsConflictingDevice(device)
+		desirecDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace, resourceType)
+		isConflictDevice := d.IsConflictingDevice(device, resourceType)
 		if *device.DisplayName != desirecDisplayName && !isConflictDevice {
 			log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desirecDisplayName)
 			err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desirecDisplayName)
