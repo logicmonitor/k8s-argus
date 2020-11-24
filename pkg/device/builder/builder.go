@@ -5,8 +5,8 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	log "github.com/sirupsen/logrus"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	log "github.com/sirupsen/logrus"
 )
 
 // Builder implements types.DeviceBuilder
