@@ -82,7 +82,7 @@ func TestGetPodsMap(t *testing.T) {
 	assert := assert.New(t)
 	for _, testCase := range podTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			podsMap, err := GetPodsMap(testCase.clientSet, testCase.inputNamespace)
+			podsMap, err := GetPodsMap(testCase.clientSet, testCase.inputNamespace, "cluster1")
 
 			// check if err not nil
 			if err != nil {
@@ -101,5 +101,5 @@ func TestGetPodsMap(t *testing.T) {
 }
 
 func getPodDisplayName(name string, namespace string) string {
-	return fmt.Sprintf("%s-%s", name, namespace)
+	return fmt.Sprintf("%s-pod-%s-cluster1", name, namespace)
 }

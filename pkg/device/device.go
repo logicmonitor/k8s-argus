@@ -11,6 +11,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 
 	//"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -67,38 +68,34 @@ func buildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, opti
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
 func (m *Manager) checkAndUpdateExistingDevice(lctx *lmctx.LMContext, resource string, device *models.Device) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
-	displayNameWithNamespace := m.getDisplayNameWithNamespace(device, resource)
-	existingDevices, err := m.FindByDisplayNames(lctx, resource, *device.DisplayName, displayNameWithNamespace, m.GetFullDisplayName(device, resource))
+	currentCluster := m.Config().ClusterName
+	displayNameWithNamespace := util.GetDisplayNameWithNamespace(device, resource)
+	existingDevices, err := m.FindByDisplayNames(lctx, resource, *device.DisplayName, displayNameWithNamespace, util.GetFullDisplayName(device, resource, currentCluster))
 
 	if err != nil {
 		return nil, err
 	}
 	if len(existingDevices) == 0 {
-		return nil, fmt.Errorf("cannot find devices with names: %s , %s , %s", *device.DisplayName, displayNameWithNamespace, m.GetFullDisplayName(device, resource))
+		return nil, fmt.Errorf("cannot find devices with names: %s , %s , %s", *device.DisplayName, displayNameWithNamespace, util.GetFullDisplayName(device, resource, currentCluster))
 	}
 	for _, existingDevice := range existingDevices {
-		clusterName := GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey)
-		if clusterName == m.Config().ClusterName {
+		clusterName := util.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey)
+		if clusterName == currentCluster {
 			// the device which is not changed will be ignored
-			if m.getDisplayNameWithNamespace(existingDevice, resource) == displayNameWithNamespace {
+			if util.GetDisplayNameWithNamespace(existingDevice, resource) == displayNameWithNamespace {
 				log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
-				m.DC.Set(m.GetFullDisplayName(existingDevice, resource))
+				m.DC.Set(util.GetFullDisplayName(existingDevice, resource, currentCluster))
 				return nil, nil
 			}
-			// the clusterName is the same and hostName is not the same, need update
-			*existingDevice.DisplayName = m.GetFullDisplayName(existingDevice, resource)
-			log.Infof("Updating and moving to conflicts group - existing device (%s)", *existingDevice.DisplayName)
-			options := []types.DeviceOption{
-				m.SystemCategories(getCategoryByResourceType(resource)),
-				m.DisplayName(m.GetFullDisplayName(existingDevice, resource)),
-			}
-			newDevice, err2 := m.UpdateAndReplace(lctx, resource, existingDevice, options...)
 
+			log.Infof("Updating and moving to conflicts group - existing device (%s)", *existingDevice.DisplayName)
+			newDevice, err2 := m.moveDeviceToConflictGroup(lctx, existingDevice, resource)
 			if err2 != nil {
+				log.Errorf("%v", err2)
 				return nil, err2
 			}
 
-			m.DC.Set(m.GetFullDisplayName(newDevice, resource))
+			m.DC.Set(util.GetFullDisplayName(newDevice, resource, currentCluster))
 			return newDevice, nil
 		}
 	}
@@ -130,13 +127,7 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
 			log.Infof("Device with displayName %s already exists, moving it to conflicts group.", *device.DisplayName)
 
-			options := []types.DeviceOption{
-				m.SystemCategories(getCategoryByResourceType(resource)),
-				m.DisplayName(m.GetFullDisplayName(device, resource)),
-			}
-			newDevice, err2 := m.UpdateAndReplace(lctx, resource, device, options...)
-			//*device.DisplayName = m.GetFullDisplayName(device)
-			//newDevice, err2 := m.updateAndReplace(lctx, resource, device.ID, device)
+			newDevice, err2 := m.moveDeviceToConflictGroup(lctx, device, resource)
 			if err2 != nil {
 				log.Errorf("%v", err2)
 				return err2
@@ -148,92 +139,13 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 		log.Errorf("%v", err)
 		return err
 	}
-	m.DC.Set(m.GetFullDisplayName(device, resource))
+	m.DC.Set(util.GetFullDisplayName(device, resource, m.Config().ClusterName))
 	return nil
-}
-
-//IsConflictingDevice checks wheather there is conflicts in device names.
-func IsConflictingDevice(d *models.Device, resourceType string) bool {
-	sysCategory := GetPropertyValue(d, constants.K8sSystemCategoriesPropertyKey)
-	return strings.Contains(sysCategory, getCategoryByResourceType(resourceType))
 }
 
 // GetDesiredDisplayName returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
 func (m *Manager) GetDesiredDisplayName(name, namespace, resource string) string {
-	desiredName := getNameWithResourceType(name, resource)
-	if m.Config().FullDisplayNameIncludeClusterName {
-		return fmt.Sprintf("%s-%s-%s", desiredName, namespace, m.Config().ClusterName)
-	}
-	if m.Config().FullDisplayNameIncludeNamespace {
-		return fmt.Sprintf("%s-%s", desiredName, namespace)
-	}
-	return desiredName
-}
-
-// GetFullDisplayName returns complete display name for a device.
-func (m *Manager) GetFullDisplayName(d *models.Device, resource string) string {
-	displayNameWithNamespace := m.getDisplayNameWithNamespace(d, resource)
-	return fmt.Sprintf("%s-%s", displayNameWithNamespace, m.Config().ClusterName)
-}
-
-func (m *Manager) getDisplayNameWithNamespace(device *models.Device, resource string) string {
-	nameWithResourceType := getNameWithResourceType(GetPropertyValue(device, constants.K8sDeviceNamePropertyKey), resource)
-	namespace := GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
-	return fmt.Sprintf("%s-%s", nameWithResourceType, namespace)
-}
-
-func getNameWithResourceType(name, resource string) string {
-	switch strings.ToLower(resource) {
-	case constants.Pods:
-		return fmt.Sprintf("%s-%s", name, "pod")
-	case constants.Deployments:
-		return fmt.Sprintf("%s-%s", name, "deploy")
-	case constants.Services:
-		return fmt.Sprintf("%s-%s", name, "svc")
-	case constants.Nodes:
-		return fmt.Sprintf("%s-%s", name, "node")
-	case constants.HorizontalPodAutoScalers:
-		return fmt.Sprintf("%s-%s", name, "hpa")
-	}
-	return name
-}
-
-func getCategoryByResourceType(resource string) string {
-	switch strings.ToLower(resource) {
-	case constants.Pods:
-		return constants.PodConflictCategory
-	case constants.Deployments:
-		return constants.DeploymentConflictCategory
-	case constants.Services:
-		return constants.ServiceConflictCategory
-	case constants.Nodes:
-		return constants.NodeConflictCategory
-	case constants.HorizontalPodAutoScalers:
-		return constants.HorizontalPodAutoscalerConflictCategory
-	}
-	return ""
-}
-
-// GetPropertyValue get device property value by property name
-func GetPropertyValue(device *models.Device, propertyName string) string {
-	if device == nil {
-		return ""
-	}
-	if len(device.CustomProperties) > 0 {
-		for _, cp := range device.CustomProperties {
-			if *cp.Name == propertyName {
-				return *cp.Value
-			}
-		}
-	}
-	if len(device.SystemProperties) > 0 {
-		for _, cp := range device.SystemProperties {
-			if *cp.Name == propertyName {
-				return *cp.Value
-			}
-		}
-	}
-	return ""
+	return util.GetDesiredDisplayNameByResourceAndConfig(name, namespace, m.Config().ClusterName, resource, m.Config().FullDisplayNameIncludeNamespace, m.Config().FullDisplayNameIncludeClusterName)
 }
 
 func (m *Manager) updateAndReplace(lctx *lmctx.LMContext, resource string, id int32, device *models.Device) (*models.Device, error) {
@@ -335,7 +247,7 @@ func (m *Manager) FindByDisplayNameAndClusterName(lctx *lmctx.LMContext, resourc
 		return nil, err
 	}
 	for _, device := range devices {
-		if m.Config().ClusterName == GetPropertyValue(device, constants.K8sClusterNamePropertyKey) {
+		if m.Config().ClusterName == util.GetPropertyValue(device, constants.K8sClusterNamePropertyKey) {
 			return device, nil
 		}
 	}
@@ -390,39 +302,56 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 		}
 		// handle the device existing case
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
-
-			log.Infof("Check and Update the existing device: %s", *device.DisplayName)
-			updatedevice, err := m.checkAndUpdateExistingDevice(lctx, resource, device)
+			newdevice, err := m.addConflictingDevice(lctx, device, resource, options...)
 			if err != nil {
-				log.Errorf("failed to updated device: %v", err)
-				return nil, fmt.Errorf("failed to updated device")
+				return nil, err
 			}
-
-			if updatedevice == nil {
-				return device, nil
-			}
-
-			log.Infof("Adding new device %s and moving to conflicts group.", *device.DisplayName)
-			options = append(options, m.SystemCategories(getCategoryByResourceType(resource)))
-			newDevice := buildDevice(lctx, m.Config(), device, options...)
-			*newDevice.DisplayName = m.GetFullDisplayName(device, resource)
-			renamedDevice, err := m.renameAndAddDevice(lctx, resource, newDevice)
-
-			if err != nil {
-				log.Errorf("add new device failed: %v", err)
-				return nil, fmt.Errorf("add new device failed")
-			}
-
-			m.DC.Set(m.GetFullDisplayName(renamedDevice, resource))
-			return renamedDevice, nil
+			return newdevice, nil
 		}
-
 		return nil, err
 	}
 	resp := restResponse.(*lm.AddDeviceOK)
-	m.DC.Set(m.GetFullDisplayName(resp.Payload, resource))
+	m.DC.Set(util.GetFullDisplayName(resp.Payload, resource, m.Config().ClusterName))
 	log.Debugf("%#v", resp)
 	return resp.Payload, nil
+}
+
+func (m *Manager) addConflictingDevice(lctx *lmctx.LMContext, device *models.Device, resource string, options ...types.DeviceOption) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	log.Infof("Check and Update the existing device: %s", *device.DisplayName)
+	updatedevice, err := m.checkAndUpdateExistingDevice(lctx, resource, device)
+	if err != nil {
+		log.Errorf("failed to updated device: %v", err)
+		return nil, fmt.Errorf("failed to updated device")
+	}
+
+	if updatedevice == nil {
+		return device, nil
+	}
+
+	currentCluster := m.Config().ClusterName
+	log.Infof("Adding new device %s and moving to conflicts group.", *device.DisplayName)
+	options = append(options, m.SystemCategories(util.GetConflictCategoryByResourceType(resource)))
+	newDevice := buildDevice(lctx, m.Config(), device, options...)
+	*newDevice.DisplayName = util.GetFullDisplayName(device, resource, currentCluster)
+	renamedDevice, err := m.renameAndAddDevice(lctx, resource, newDevice)
+
+	if err != nil {
+		log.Errorf("add new device failed: %v", err)
+		return nil, fmt.Errorf("add new device failed")
+	}
+
+	m.DC.Set(util.GetFullDisplayName(renamedDevice, resource, currentCluster))
+	return renamedDevice, nil
+}
+
+func (m *Manager) moveDeviceToConflictGroup(lctx *lmctx.LMContext, device *models.Device, resource string) (*models.Device, error) {
+	options := []types.DeviceOption{
+		m.SystemCategories(util.GetConflictCategoryByResourceType(resource)),
+		m.DisplayName(util.GetFullDisplayName(device, resource, m.Config().ClusterName)),
+	}
+	newDevice, err := m.UpdateAndReplace(lctx, resource, device, options...)
+	return newDevice, err
 }
 
 // checkPingDeviceAndSystemIPs verifies that 'system.ips' property is present if device ping feature is enabled.
@@ -430,7 +359,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 // In this case collector uses 'system.ips' to communicate with the resource.
 func (m *Manager) checkPingDeviceAndSystemIPs(lctx *lmctx.LMContext, device *models.Device) bool {
 	isPingDevice := lctx.Extract(constants.IsPingDevice)
-	if isPingDevice != nil && isPingDevice.(bool) && GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) == "" {
+	if isPingDevice != nil && isPingDevice.(bool) && util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) == "" {
 		return false
 	}
 	return true
@@ -495,7 +424,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource 
 
 		return nil, err
 	}
-	m.DC.Set(m.GetFullDisplayName(device, resource))
+	m.DC.Set(util.GetFullDisplayName(device, resource, m.Config().ClusterName))
 	return device, nil
 }
 

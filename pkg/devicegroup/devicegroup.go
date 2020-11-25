@@ -20,14 +20,15 @@ const (
 
 // Options are the options for creating a device group.
 type Options struct {
-	AppliesTo             AppliesToBuilder
-	AppliesToDeletedGroup AppliesToBuilder
-	AppliesToConflict     AppliesToBuilder
-	Client                *client.LMSdkGo
-	Name                  string
-	ParentID              int32
-	DisableAlerting       bool
-	DeleteDevices         bool
+	AppliesTo                         AppliesToBuilder
+	AppliesToDeletedGroup             AppliesToBuilder
+	AppliesToConflict                 AppliesToBuilder
+	Client                            *client.LMSdkGo
+	Name                              string
+	ParentID                          int32
+	DisableAlerting                   bool
+	DeleteDevices                     bool
+	FullDisplayNameIncludeClusterName bool
 }
 
 // AppliesToBuilder is an interface for building an appliesTo string.
@@ -123,7 +124,7 @@ func Create(opts *Options) (int32, error) {
 }
 
 func createConflictDynamicGroup(opts *Options, clusterGrpID int32) error {
-	if opts.AppliesToConflict != nil {
+	if opts.AppliesToConflict != nil && !opts.FullDisplayNameIncludeClusterName {
 		conflictingDeviceGroup, err := Find(clusterGrpID, constants.ConflictDeviceGroup, opts.Client)
 		if err != nil {
 			return err

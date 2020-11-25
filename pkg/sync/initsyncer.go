@@ -7,11 +7,11 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
-	d "github.com/logicmonitor/k8s-argus/pkg/device"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/hpa"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
@@ -176,6 +176,10 @@ func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceTyp
 
 func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData) {
 	log := lmlog.Logger(lctx)
+	if len(resourcesMap) == 0 {
+		return
+	}
+
 	devices, err := i.DeviceManager.GetListByGroupID(lctx, strings.ToLower(resourceType), subGroup.ID)
 	if err != nil {
 		log.Warnf("Failed to get the devices in the group: %v", subGroup.FullPath)
@@ -188,7 +192,7 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 	for _, device := range devices {
 		// the "auto.clustername" property checking is used to prevent unexpected deletion of the normal non-k8s device
 		// which may be assigned to the cluster group
-		autoClusterName := d.GetPropertyValue(device, constants.K8sClusterNamePropertyKey)
+		autoClusterName := util.GetPropertyValue(device, constants.K8sClusterNamePropertyKey)
 		if autoClusterName != i.DeviceManager.Config().ClusterName {
 			log.Infof("Ignore the device (%v) which does not have property %v:%v",
 				*device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
@@ -196,13 +200,13 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 		}
 
 		// get name and namespace prop values from devices
-		autoName := d.GetPropertyValue(device, constants.K8sDeviceNamePropertyKey)
-		namespace := d.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
+		autoName := util.GetPropertyValue(device, constants.K8sDeviceNamePropertyKey)
+		namespace := util.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
 
-		// the displayName may be renamed, we should use the complete displayName for comparision.
-		fullDisplayName := i.DeviceManager.GetFullDisplayName(device, resourceType)
+		// the displayName may be renamed, we should use the complete displayName for comparison.
+		fullDisplayName := util.GetFullDisplayName(device, resourceType, autoClusterName)
 		_, exist := resourcesMap[fullDisplayName]
-		if !exist && i.DeviceManager.Config().DeleteDevices {
+		if !exist {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
 			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
 			if err != nil {
@@ -210,15 +214,20 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			}
 			return
 		}
-		desirecDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace, resourceType)
-		isConflictDevice := d.IsConflictingDevice(device, resourceType)
-		if *device.DisplayName != desirecDisplayName && !isConflictDevice {
-			log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desirecDisplayName)
-			err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desirecDisplayName)
-			if err != nil {
-				log.Errorf("Failed to rename the existing device %s", *device.DisplayName)
-				return
-			}
+		desiredDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace, resourceType)
+		i.renameDeviceToDesiredName(lctx, device, desiredDisplayName, resourceType)
+	}
+}
+
+func (i *InitSyncer) renameDeviceToDesiredName(lctx *lmctx.LMContext, device *models.Device, desiredName, resourceType string) {
+	log := lmlog.Logger(lctx)
+	isConflictDevice := util.IsConflictingDevice(device, resourceType)
+	if *device.DisplayName != desiredName && !isConflictDevice {
+		log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desiredName)
+		err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desiredName)
+		if err != nil {
+			log.Errorf("Failed to rename the existing device %s", *device.DisplayName)
+			return
 		}
 	}
 }
