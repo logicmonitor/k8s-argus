@@ -104,19 +104,19 @@ func (dc *DeviceCache) getFullDisplayName(device *models.Device) string {
 
 func getResourceTypeFromSystemCateogries(category string) string {
 	if strings.Contains(category, constants.PodCategory) {
-		return "pod"
+		return constants.Pods
 	}
 	if strings.Contains(category, constants.DeploymentCategory) {
-		return "deploy"
+		return constants.Deployments
 	}
 	if strings.Contains(category, constants.ServiceCategory) {
-		return "svc"
+		return constants.Services
 	}
 	if strings.Contains(category, constants.NodeCategory) {
-		return "node"
+		return constants.Nodes
 	}
 	if strings.Contains(category, constants.HorizontalPodAutoscalerCategory) {
-		return "hpa"
+		return constants.HorizontalPodAutoScalers
 	}
 	return ""
 }
