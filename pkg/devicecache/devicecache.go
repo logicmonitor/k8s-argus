@@ -1,12 +1,13 @@
 package devicecache
 
 import (
-	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	log "github.com/sirupsen/logrus"
 	"github.com/vkumbhar94/lm-sdk-go/client/lm"
 	"github.com/vkumbhar94/lm-sdk-go/models"
@@ -97,21 +98,25 @@ func (dc *DeviceCache) getAllDevices(b *types.Base) map[string]interface{} {
 }
 
 func (dc *DeviceCache) getFullDisplayName(device *models.Device) string {
-	name := getPropertyValue(device, constants.K8sDeviceNamePropertyKey)
-	namespace := getPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
-	return fmt.Sprintf("%s-%s-%s", name, namespace, dc.base.Config.ClusterName)
+	syscategory := util.GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
+	return util.GetFullDisplayName(device, getResourceTypeFromSystemCateogries(syscategory), dc.base.Config.ClusterName)
 }
 
-func getPropertyValue(device *models.Device, propertyName string) string {
-	if device == nil {
-		return ""
+func getResourceTypeFromSystemCateogries(category string) string {
+	if strings.Contains(category, constants.PodCategory) {
+		return "pod"
 	}
-	if len(device.CustomProperties) > 0 {
-		for _, cp := range device.CustomProperties {
-			if *cp.Name == propertyName {
-				return *cp.Value
-			}
-		}
+	if strings.Contains(category, constants.DeploymentCategory) {
+		return "deploy"
+	}
+	if strings.Contains(category, constants.ServiceCategory) {
+		return "svc"
+	}
+	if strings.Contains(category, constants.NodeCategory) {
+		return "node"
+	}
+	if strings.Contains(category, constants.HorizontalPodAutoscalerCategory) {
+		return "hpa"
 	}
 	return ""
 }

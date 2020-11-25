@@ -177,6 +177,7 @@ func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceTyp
 func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData) {
 	log := lmlog.Logger(lctx)
 	if len(resourcesMap) == 0 {
+		log.Debugf("Ignoring sub group %v for synchronization", subGroup.FullPath)
 		return
 	}
 
