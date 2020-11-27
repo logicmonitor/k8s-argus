@@ -27,7 +27,7 @@ type InitSyncer struct {
 }
 
 // InitSync implements the initial sync through logicmonitor API
-func (i *InitSyncer) InitSync(lctx *lmctx.LMContext) {
+func (i *InitSyncer) InitSync(lctx *lmctx.LMContext, isRestart bool) {
 	log := lmlog.Logger(lctx)
 	log.Infof("Start to sync the resource devices")
 	clusterName := i.DeviceManager.Base.Config.ClusterName
@@ -43,12 +43,12 @@ func (i *InitSyncer) InitSync(lctx *lmctx.LMContext) {
 	}
 	// get the node, pod, service, deployment info
 	if rest.SubGroups != nil && len(rest.SubGroups) != 0 {
-		i.runSync(lctx, rest)
+		i.runSync(lctx, rest, isRestart)
 	}
 	log.Infof("Finished syncing the resource devices")
 }
 
-func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
+func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup, isRestart bool) {
 	log := lmlog.Logger(lctx)
 	wg := sync.WaitGroup{}
 	wg.Add(len(rest.SubGroups))
@@ -58,7 +58,7 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 			go func() {
 				defer wg.Done()
 				lctxNodes := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-nodes"}))
-				i.initSyncNodes(lctxNodes, rest.ID)
+				i.initSyncNodes(lctxNodes, rest.ID, isRestart)
 				log.Infof("Finish syncing %v", constants.NodeDeviceGroupName)
 			}()
 		// nolint: dupl
@@ -66,14 +66,14 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 			go func() {
 				defer wg.Done()
 				lctxPods := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-pods"}))
-				i.initSyncNamespacedResource(lctxPods, constants.PodDeviceGroupName, rest.ID)
+				i.initSyncNamespacedResource(lctxPods, constants.PodDeviceGroupName, rest.ID, isRestart)
 				log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
 			}()
 		case constants.ServiceDeviceGroupName:
 			go func() {
 				defer wg.Done()
 				lctxServices := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-services"}))
-				i.initSyncNamespacedResource(lctxServices, constants.ServiceDeviceGroupName, rest.ID)
+				i.initSyncNamespacedResource(lctxServices, constants.ServiceDeviceGroupName, rest.ID, isRestart)
 				log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
 			}()
 		case constants.DeploymentDeviceGroupName:
@@ -84,7 +84,7 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 					log.Warnf("Resource deployments has no permissions, ignore sync")
 					return
 				}
-				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID)
+				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID, isRestart)
 				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 			}()
 		case constants.HorizontalPodAutoscalerDeviceGroupName:
@@ -94,7 +94,7 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 					log.Warnf("Resource HorizontalPodAutoscaler has no permissions, ignore sync")
 					return
 				}
-				i.initSyncHPA(rest.ID)
+				i.initSyncHPA(rest.ID, isRestart)
 				log.Infof("Finish syncing %v", constants.HorizontalPodAutoscalerDeviceGroupName)
 			}()
 		default:
@@ -111,7 +111,7 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup) {
 	log.Debugf("Completed sync")
 }
 
-func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32) {
+func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32, isRestart bool) {
 	log := lmlog.Logger(lctx)
 	rest, err := devicegroup.Find(parentGroupID, constants.NodeDeviceGroupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
@@ -134,11 +134,11 @@ func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32) {
 		if subGroup.Name != constants.AllNodeDeviceGroupName {
 			continue
 		}
-		i.syncDevices(lctx, constants.NodeDeviceGroupName, nodesMap, subGroup)
+		i.syncDevices(lctx, constants.NodeDeviceGroupName, nodesMap, subGroup, isRestart)
 	}
 }
 
-func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceType string, parentGroupID int32) {
+func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceType string, parentGroupID int32, isRestart bool) {
 	log := lmlog.Logger(lctx)
 	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
@@ -170,11 +170,11 @@ func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceTyp
 		}
 
 		// get and check all the devices in the group
-		i.syncDevices(lctx, deviceType, deviceMap, subGroup)
+		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart)
 	}
 }
 
-func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData) {
+func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData, isRestart bool) {
 	log := lmlog.Logger(lctx)
 	if len(resourcesMap) == 0 {
 		log.Debugf("Ignoring sub group %v for synchronization", subGroup.FullPath)
@@ -200,10 +200,6 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			continue
 		}
 
-		// get name and namespace prop values from devices
-		autoName := util.GetPropertyValue(device, constants.K8sDeviceNamePropertyKey)
-		namespace := util.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
-
 		// the displayName may be renamed, we should use the complete displayName for comparison.
 		fullDisplayName := util.GetFullDisplayName(device, resourceType, autoClusterName)
 		_, exist := resourcesMap[fullDisplayName]
@@ -215,17 +211,23 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			}
 			return
 		}
-		desiredDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace, resourceType)
-		i.renameDeviceToDesiredName(lctx, device, desiredDisplayName, resourceType)
+		// Rename devices as per config parameters only on Argus restart.
+		if isRestart {
+			i.renameDeviceToDesiredName(lctx, device, resourceType)
+		}
 	}
 }
 
-func (i *InitSyncer) renameDeviceToDesiredName(lctx *lmctx.LMContext, device *models.Device, desiredName, resourceType string) {
+func (i *InitSyncer) renameDeviceToDesiredName(lctx *lmctx.LMContext, device *models.Device, resourceType string) {
 	log := lmlog.Logger(lctx)
-	isConflictDevice := util.IsConflictingDevice(device, resourceType)
-	if *device.DisplayName != desiredName && !isConflictDevice {
-		log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desiredName)
-		err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desiredName)
+	// get name and namespace prop values from devices
+	autoName := util.GetPropertyValue(device, constants.K8sDeviceNamePropertyKey)
+	namespace := util.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
+	desiredDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace, resourceType)
+
+	if *device.DisplayName != desiredDisplayName {
+		log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desiredDisplayName)
+		err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desiredDisplayName)
 		if err != nil {
 			log.Errorf("Failed to rename the existing device %s", *device.DisplayName)
 			return
@@ -239,12 +241,12 @@ func (i *InitSyncer) RunPeriodicSync(syncTime int) {
 	go func() {
 		for {
 			time.Sleep(time.Duration(syncTime) * time.Minute)
-			i.InitSync(lctx)
+			i.InitSync(lctx, false)
 		}
 	}()
 }
 
-func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
+func (i *InitSyncer) initSyncHPA(parentGroupID int32, isRestart bool) {
 
 	deviceType := "HorizontalPodAutoscalers"
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "init-sync-hpa"}))
@@ -271,6 +273,6 @@ func (i *InitSyncer) initSyncHPA(parentGroupID int32) {
 		}
 
 		// get and check all the devices in the group
-		i.syncDevices(lctx, deviceType, deviceMap, subGroup)
+		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart)
 	}
 }

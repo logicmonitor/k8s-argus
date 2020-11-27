@@ -126,7 +126,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, service *v1.Service) {
 		log.Debugf("service %q is not added as it is mentioned for filtering.", w.getDesiredDisplayName(service))
 		return
 	}
-	log.Infof("Added service %q", w.getDesiredDisplayName(service))
+	log.Infof("Added service %q", *serv.DisplayName)
 }
 
 func (w *Watcher) serviceUpdateFilter(old, new *v1.Service) types.UpdateFilter {

@@ -111,7 +111,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 		log.Debugf("deployment %q is not added as it is mentioned for filtering.", w.getDesiredDisplayName(deployment))
 		return
 	}
-	log.Infof("Added deployment %q", w.getDesiredDisplayName(deployment))
+	log.Infof("Added deployment %q", *dep.DisplayName)
 }
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {

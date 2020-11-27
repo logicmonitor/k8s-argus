@@ -31,8 +31,8 @@ func GetPropertyValue(device *models.Device, propertyName string) string {
 }
 
 //IsConflictingDevice checks wheather there is conflicts in device names.
-func IsConflictingDevice(d *models.Device, resourceType string) bool {
-	sysCategory := GetPropertyValue(d, constants.K8sSystemCategoriesPropertyKey)
+func IsConflictingDevice(device *models.Device, resourceType string) bool {
+	sysCategory := GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
 	return strings.Contains(sysCategory, GetConflictCategoryByResourceType(resourceType))
 }
 
@@ -49,8 +49,8 @@ func GetDesiredDisplayNameByResourceAndConfig(name, namespace, clusterName, reso
 }
 
 // GetFullDisplayName returns complete display name for a device.
-func GetFullDisplayName(d *models.Device, resource, clusterName string) string {
-	displayNameWithNamespace := GetDisplayNameWithNamespace(d, resource)
+func GetFullDisplayName(device *models.Device, resource, clusterName string) string {
+	displayNameWithNamespace := GetDisplayNameWithNamespace(device, resource)
 	return fmt.Sprintf("%s-%s", displayNameWithNamespace, clusterName)
 }
 

@@ -115,7 +115,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalin
 		return
 	}
 
-	log.Infof("Added horizontalPodAutoscaler %q", w.getDesiredDisplayName(horizontalPodAutoscaler))
+	log.Infof("Added horizontalPodAutoscaler %q", *hpa.DisplayName)
 }
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.HorizontalPodAutoscaler) {

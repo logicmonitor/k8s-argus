@@ -125,8 +125,8 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 		log.Errorf("%v", err)
 		// handle the device existing case
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
+			*device.DisplayName = util.GetFullDisplayName(device, resource, m.Config().ClusterName)
 			log.Infof("Device with displayName %s already exists, moving it to conflicts group.", *device.DisplayName)
-
 			newDevice, err2 := m.moveDeviceToConflictGroup(lctx, device, resource)
 			if err2 != nil {
 				log.Errorf("%v", err2)
@@ -332,8 +332,8 @@ func (m *Manager) addConflictingDevice(lctx *lmctx.LMContext, device *models.Dev
 	currentCluster := m.Config().ClusterName
 	log.Infof("Adding new device %s and moving to conflicts group.", *device.DisplayName)
 	options = append(options, m.SystemCategories(util.GetConflictCategoryByResourceType(resource)))
+	*device.DisplayName = util.GetFullDisplayName(device, resource, currentCluster)
 	newDevice := buildDevice(lctx, m.Config(), device, options...)
-	*newDevice.DisplayName = util.GetFullDisplayName(device, resource, currentCluster)
 	renamedDevice, err := m.renameAndAddDevice(lctx, resource, newDevice)
 
 	if err != nil {
@@ -348,7 +348,6 @@ func (m *Manager) addConflictingDevice(lctx *lmctx.LMContext, device *models.Dev
 func (m *Manager) moveDeviceToConflictGroup(lctx *lmctx.LMContext, device *models.Device, resource string) (*models.Device, error) {
 	options := []types.DeviceOption{
 		m.SystemCategories(util.GetConflictCategoryByResourceType(resource)),
-		m.DisplayName(util.GetFullDisplayName(device, resource, m.Config().ClusterName)),
 	}
 	newDevice, err := m.UpdateAndReplace(lctx, resource, device, options...)
 	return newDevice, err
