@@ -199,7 +199,7 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			resourceName = *device.DisplayName
 		}
 		_, exist := resourcesMap[resourceName]
-		if !exist {
+		if !exist && i.DeviceManager.GetPropertyValue(device, constants.K8sResourceDeletedOnPropertyKey) == "" {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
 			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
 			if err != nil {

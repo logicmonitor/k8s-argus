@@ -96,6 +96,8 @@ const (
 	K8sResourceNamePropertyKey = "auto.resourcename"
 	// K8sResourceCreatedOnPropertyKey is the key of the custom property used to record resource create timestamp
 	K8sResourceCreatedOnPropertyKey = "kubernetes.resourceCreatedOn"
+	// K8sResourceDeletedOnPropertyKey is the key of the custom property used to record resource deleted timestamp
+	K8sResourceDeletedOnPropertyKey = "kubernetes.resourceDeletedOn"
 	// K8sDeviceType is the type value of the k8s device
 	K8sDeviceType = 8
 	// K8sSystemCategoriesPropertyKey is the key of the unique custom property kubernetes system categories

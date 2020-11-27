@@ -449,7 +449,8 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, reso
 	}
 	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
-	device, err := m.UpdateAndReplaceField(lctx, resource, d, field, options...)
+	// device, err := m.UpdateAndReplaceField(lctx, resource, d, field, options...)
+	device, err := m.UpdateAndReplace(lctx, resource, d, options...)
 	if err != nil {
 		return nil, err
 	}

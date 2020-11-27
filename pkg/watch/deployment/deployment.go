@@ -131,6 +131,10 @@ func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 }
 
 func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.DeviceOption {
+	resourceDeletedOn := ""
+	if deployment.DeletionTimestamp != nil {
+		resourceDeletedOn = strconv.FormatInt(deployment.DeletionTimestamp.Unix(), 10)
+	}
 	return []types.DeviceOption{
 		w.Name(fmtDeploymentDisplayName(deployment)),
 		w.ResourceLabels(deployment.Labels),
@@ -141,6 +145,7 @@ func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.D
 		w.Auto("selflink", deployment.SelfLink),
 		w.Auto("uid", string(deployment.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(deployment.CreationTimestamp.Unix(), 10)),
+		w.Custom(constants.K8sResourceDeletedOnPropertyKey, resourceDeletedOn),
 		w.Custom(constants.K8sResourceNamePropertyKey, fmtDeploymentDisplayName(deployment)),
 	}
 }
