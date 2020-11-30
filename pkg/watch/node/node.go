@@ -111,7 +111,8 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the node.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
+				fmtNodeDisplayName(node, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
 				return
 			}
@@ -149,7 +150,9 @@ func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), fmtNodeDisplayName(old, w.Config().ClusterName), w.nodeUpdateFilter(old, new), new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
+		fmtNodeDisplayName(old, w.Config().ClusterName), w.nodeUpdateFilter(old, new),
+		new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
 		log.Errorf("Failed to update node %q: %v", w.getDesiredDisplayName(new), err)
 	} else {
 		log.Infof("Updated node %q", w.getDesiredDisplayName(old))
@@ -166,7 +169,9 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node), constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
+		fmtNodeDisplayName(node, w.Config().ClusterName), constants.CustomPropertiesFieldName,
+		w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", w.getDesiredDisplayName(node), err)
 		return
 	}

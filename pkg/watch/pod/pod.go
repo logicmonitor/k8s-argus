@@ -84,7 +84,8 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 		}
 
 		if new.Status.Phase == v1.PodSucceeded {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
+				fmtPodDisplayName(old, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
@@ -110,7 +111,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the pod.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod), fmtPodDisplayName(pod, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
@@ -150,7 +151,7 @@ func (w *Watcher) podUpdateFilter(old, new *v1.Pod) types.UpdateFilter {
 // nolint: dupl
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(),
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
 		fmtPodDisplayName(old, w.Config().ClusterName), w.podUpdateFilter(old, new), new.Labels,
 		w.args(new, constants.PodCategory)...,
 	); err != nil {
@@ -163,7 +164,9 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod), constants.CustomPropertiesFieldName, w.args(pod, constants.PodDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod),
+		fmtPodDisplayName(pod, w.Config().ClusterName), constants.CustomPropertiesFieldName,
+		w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", w.getDesiredDisplayName(pod), err)
 		return
 	}

@@ -83,7 +83,8 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log.Debugf("Handling delete deployment event: %s", deployment.Name)
 		// Delete the deployment.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
+				fmtDeploymentDisplayName(deployment, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete deployment: %v", err)
 				return
 			}
@@ -116,7 +117,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(),
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
 		fmtDeploymentDisplayName(old, w.Config().ClusterName), nil, new.Labels,
 		w.args(new, constants.DeploymentCategory)...,
 	); err != nil {
@@ -129,7 +130,9 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment), constants.CustomPropertiesFieldName, w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
+		fmtDeploymentDisplayName(deployment, w.Config().ClusterName), constants.CustomPropertiesFieldName,
+		w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move deployment %q: %v", w.getDesiredDisplayName(deployment), err)
 		return
 	}

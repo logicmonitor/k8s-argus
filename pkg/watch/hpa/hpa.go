@@ -86,7 +86,8 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		// Delete the horizontalPodAutoscaler.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler),
+				fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete horizontalPodAutoscaler: %v", err)
 				return
 			}
@@ -120,7 +121,8 @@ func (w *Watcher) add(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalin
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), fmtHorizontalPodAutoscalerDisplayName(old, w.Config().ClusterName), nil, new.Labels,
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
+		fmtHorizontalPodAutoscalerDisplayName(old, w.Config().ClusterName), nil, new.Labels,
 		w.args(new, constants.HorizontalPodAutoscalerCategory)...,
 	); err != nil {
 		log.Errorf("Failed to update horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(new), err)
@@ -131,7 +133,9 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.Horizont
 
 func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler), constants.CustomPropertiesFieldName, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler),
+		fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName), constants.CustomPropertiesFieldName,
+		w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(horizontalPodAutoscaler), err)
 		return
 	}

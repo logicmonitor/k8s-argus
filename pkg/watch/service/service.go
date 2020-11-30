@@ -98,7 +98,8 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log := lmlog.Logger(lctx)
 		// Delete the service.
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service),
+				fmtServiceDisplayName(service, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete service: %v", err)
 				return
 			}
@@ -138,7 +139,7 @@ func (w *Watcher) serviceUpdateFilter(old, new *v1.Service) types.UpdateFilter {
 // nolint: dupl
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(),
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
 		fmtServiceDisplayName(old, w.Config().ClusterName), w.serviceUpdateFilter(old, new), new.Labels,
 		w.args(new, constants.ServiceCategory)...,
 	); err != nil {
@@ -151,7 +152,9 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, service *v1.Service) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service), constants.CustomPropertiesFieldName, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service),
+		fmtServiceDisplayName(service, w.Config().ClusterName), constants.CustomPropertiesFieldName,
+		w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", w.getDesiredDisplayName(service), err)
 		return
 	}
