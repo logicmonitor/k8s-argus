@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/vkumbhar94/lm-sdk-go/models"
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // GetPropertyValue get device property value by property name

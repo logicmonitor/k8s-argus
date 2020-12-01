@@ -113,8 +113,9 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		// Delete the pod.
 		// nolint: dupl
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod),
-				fmtPodDisplayName(pod, w.Config().ClusterName)); err != nil {
+			err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod),
+				fmtPodDisplayName(pod, w.Config().ClusterName))
+			if err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}

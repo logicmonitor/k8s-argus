@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/stretchr/testify/assert"
-	"github.com/vkumbhar94/lm-sdk-go/models"
 )
 
 var (
