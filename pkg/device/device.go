@@ -119,7 +119,7 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 	device.PreferredCollectorID = &collectorID
 
 	*device.DisplayName = desiredDisplayName
-	_, err := m.updateAndReplace(lctx, resource, device.ID, device)
+	updatedDevice, err := m.updateAndReplace(lctx, resource, device.ID, device)
 	if err != nil {
 		deviceDefault, _ := err.(*lm.UpdateDeviceDefault)
 		log.Errorf("%v", err)
