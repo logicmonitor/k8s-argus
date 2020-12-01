@@ -398,43 +398,6 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource 
 	return device, nil
 }
 
-// TODO: this method needs to be removed in DEV-50496
-
-// UpdateAndReplaceField implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
-	log := lmlog.Logger(lctx)
-	device := buildDevice(lctx, m.Config(), d, options...)
-	log.Debugf("%#v", device)
-
-	params := lm.NewPatchDeviceParams()
-	params.SetID(d.ID)
-	params.SetBody(device)
-	opType := "replace"
-	params.SetOpType(&opType)
-	cmd := &types.HTTPCommand{
-		Command: &types.Command{
-			ExecFun: m.PatchDevice(params),
-			LMCtx:   lctx,
-		},
-		Method:   "PATCH",
-		Category: "device",
-		LMHCErrParse: &types.LMHCErrParse{
-			ParseErrResp: m.PatchDeviceErrResp,
-		},
-	}
-	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
-	//restResponse, err := m.LMClient.LM.PatchDevice(params)
-	if err != nil {
-		return nil, err
-	}
-	resp := restResponse.(*lm.PatchDeviceOK)
-	log.Debugf("%#v", resp)
-
-	return resp.Payload, nil
-}
-
-// TODO: this method needs to be removed in DEV-50496
-
 // UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
 func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, resource string, name string, field string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
@@ -449,7 +412,6 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, reso
 	}
 	options = append(options, m.DisplayName(*d.DisplayName))
 	// Update the device.
-	// device, err := m.UpdateAndReplaceField(lctx, resource, d, field, options...)
 	device, err := m.UpdateAndReplace(lctx, resource, d, options...)
 	if err != nil {
 		return nil, err
