@@ -141,7 +141,7 @@ func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 
 func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.DeviceOption {
 	return []types.DeviceOption{
-		w.Name(w.getDesiredDisplayName(deployment)),
+		w.Name(fmtDeploymentDisplayName(deployment, w.Config().ClusterName)),
 		w.ResourceLabels(deployment.Labels),
 		w.DisplayName(w.getDesiredDisplayName(deployment)),
 		w.SystemCategories(category),
