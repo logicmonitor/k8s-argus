@@ -38,7 +38,7 @@ func IsConflictingDevice(device *models.Device, resourceType string) bool {
 
 // GetDesiredDisplayNameByResourceAndConfig returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
 func GetDesiredDisplayNameByResourceAndConfig(name, namespace, clusterName, resource string, displayNameIncludeNamespace, displayNameIncludeClusterName bool) string {
-	desiredName := GetNameWithResourceType(name, resource)
+	desiredName := getNameWithResourceType(name, resource)
 	if displayNameIncludeClusterName {
 		return fmt.Sprintf("%s-%s-%s", desiredName, namespace, clusterName)
 	}
@@ -56,13 +56,13 @@ func GetFullDisplayName(device *models.Device, resource, clusterName string) str
 
 //GetDisplayNameWithNamespace return displayName in the format - name-type-namespace
 func GetDisplayNameWithNamespace(device *models.Device, resource string) string {
-	nameWithResourceType := GetNameWithResourceType(GetPropertyValue(device, constants.K8sDeviceNamePropertyKey), resource)
+	nameWithResourceType := getNameWithResourceType(GetPropertyValue(device, constants.K8sDeviceNamePropertyKey), resource)
 	namespace := GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
 	return fmt.Sprintf("%s-%s", nameWithResourceType, namespace)
 }
 
 //GetNameWithResourceType return resourcename with its respetive type.
-func GetNameWithResourceType(name, resource string) string {
+func getNameWithResourceType(name, resource string) string {
 	switch strings.ToLower(resource) {
 	case constants.Pods:
 		return fmt.Sprintf("%s-%s", name, "pod")

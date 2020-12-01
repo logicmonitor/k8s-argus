@@ -110,6 +110,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log.Debugf("Handling delete node event: %s", w.getDesiredDisplayName(node))
 
 		// Delete the node.
+		// nolint: dupl
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
 				fmtNodeDisplayName(node, w.Config().ClusterName)); err != nil {

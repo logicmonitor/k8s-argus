@@ -220,7 +220,7 @@ func TestGetNameWithResourceType(t *testing.T) {
 	// nolint: dupl
 	for _, testCase := range TestCases {
 		t.Run(testCase.testcasename, func(t *testing.T) {
-			result := GetNameWithResourceType(testCase.name, testCase.resource)
+			result := getNameWithResourceType(testCase.name, testCase.resource)
 
 			// check expected evaluation result
 			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)

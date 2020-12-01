@@ -83,6 +83,7 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 			return
 		}
 
+		// nolint: dupl
 		if new.Status.Phase == v1.PodSucceeded {
 			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
 				fmtPodDisplayName(old, w.Config().ClusterName)); err != nil {
@@ -110,8 +111,10 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log.Debugf("Handling delete pod event: %s", w.getDesiredDisplayName(pod))
 
 		// Delete the pod.
+		// nolint: dupl
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod), fmtPodDisplayName(pod, w.Config().ClusterName)); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod),
+				fmtPodDisplayName(pod, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete pod: %v", err)
 				return
 			}
