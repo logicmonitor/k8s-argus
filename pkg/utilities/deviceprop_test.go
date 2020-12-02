@@ -10,10 +10,10 @@ import (
 
 var (
 	deviceName             = "test-device"
-	customPropertiesName1  = "name1"
-	customPropertiesValue1 = "value1"
-	customPropertiesName2  = "name2"
-	customPropertiesValue2 = "value2"
+	customPropertiesName1  = "auto.name"
+	customPropertiesValue1 = "test-device"
+	customPropertiesName2  = "auto.namespace"
+	customPropertiesValue2 = "default"
 
 	systemPropertiesName1  = "system-name1"
 	systemPropertiesValue1 = "system-value1"
@@ -163,6 +163,36 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			displayNameIncludeClusterName: true,
 			expectedResult:                "hpa-device-hpa-default-cluster1",
 		},
+		{
+			testcasename:                  "Get displayName for node when full name is disabled.",
+			name:                          "node-device",
+			namespace:                     "",
+			clusterName:                   "cluster1",
+			resource:                      constants.Nodes,
+			displayNameIncludeNamespace:   false,
+			displayNameIncludeClusterName: false,
+			expectedResult:                "node-device-node",
+		},
+		{
+			testcasename:                  "Get displayName for node when namespace is included",
+			name:                          "node-device",
+			namespace:                     "",
+			clusterName:                   "cluster1",
+			resource:                      constants.Nodes,
+			displayNameIncludeNamespace:   true,
+			displayNameIncludeClusterName: false,
+			expectedResult:                "node-device-node",
+		},
+		{
+			testcasename:                  "Get displayName for node when full name is enabled.",
+			name:                          "node-device",
+			namespace:                     "",
+			clusterName:                   "cluster1",
+			resource:                      constants.Nodes,
+			displayNameIncludeNamespace:   true,
+			displayNameIncludeClusterName: true,
+			expectedResult:                "node-device-node-cluster1",
+		},
 	}
 
 	assert := assert.New(t)
@@ -170,6 +200,63 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 	for _, testCase := range TestCases {
 		t.Run(testCase.testcasename, func(t *testing.T) {
 			result := GetDesiredDisplayNameByResourceAndConfig(testCase.name, testCase.namespace, testCase.clusterName, testCase.resource, testCase.displayNameIncludeNamespace, testCase.displayNameIncludeClusterName)
+
+			// check expected evaluation result
+			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
+		})
+	}
+}
+
+func TestGetFullDislayName(t *testing.T) {
+	t.Parallel()
+	TestCases := []struct {
+		testcasename   string
+		device         *models.Device
+		resource       string
+		cluster        string
+		expectedResult string
+	}{
+		{
+			testcasename:   "get full display name for pods",
+			device:         getDevice(),
+			resource:       constants.Pods,
+			cluster:        "cluster1",
+			expectedResult: "test-device-pod-default-cluster1",
+		},
+		{
+			testcasename:   "get full display name for nodes",
+			device:         getDevice(),
+			resource:       constants.Nodes,
+			cluster:        "cluster1",
+			expectedResult: "test-device-node-cluster1",
+		},
+		{
+			testcasename:   "get full display name for services",
+			device:         getDevice(),
+			resource:       constants.Services,
+			cluster:        "cluster1",
+			expectedResult: "test-device-svc-default-cluster1",
+		},
+		{
+			testcasename:   "get full display name for deployment",
+			device:         getDevice(),
+			resource:       constants.Deployments,
+			cluster:        "cluster1",
+			expectedResult: "test-device-deploy-default-cluster1",
+		},
+		{
+			testcasename:   "get full display name for hpa",
+			device:         getDevice(),
+			resource:       constants.HorizontalPodAutoScalers,
+			cluster:        "cluster1",
+			expectedResult: "test-device-hpa-default-cluster1",
+		},
+	}
+	assert := assert.New(t)
+	// nolint: dupl
+	for _, testCase := range TestCases {
+		t.Run(testCase.testcasename, func(t *testing.T) {
+			result := GetFullDisplayName(testCase.device, testCase.resource, testCase.cluster)
 
 			// check expected evaluation result
 			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
@@ -221,51 +308,6 @@ func TestGetNameWithResourceType(t *testing.T) {
 	for _, testCase := range TestCases {
 		t.Run(testCase.testcasename, func(t *testing.T) {
 			result := getNameWithResourceType(testCase.name, testCase.resource)
-
-			// check expected evaluation result
-			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
-		})
-	}
-}
-
-func TestGetConflictCategoryByResourceType(t *testing.T) {
-	t.Parallel()
-	TestCases := []struct {
-		testcasename   string
-		resource       string
-		expectedResult string
-	}{
-		{
-			testcasename:   "Get conflict category for Pod",
-			resource:       constants.Pods,
-			expectedResult: constants.PodConflictCategory,
-		},
-		{
-			testcasename:   "Get conflict category for Service",
-			resource:       constants.Services,
-			expectedResult: constants.ServiceConflictCategory,
-		},
-		{
-			testcasename:   "Get conflict category for Deployment",
-			resource:       constants.Deployments,
-			expectedResult: constants.DeploymentConflictCategory,
-		},
-		{
-			testcasename:   "Get conflict category for Node",
-			resource:       constants.Nodes,
-			expectedResult: constants.NodeConflictCategory,
-		},
-		{
-			testcasename:   "Get conflict category for HPA",
-			resource:       constants.HorizontalPodAutoScalers,
-			expectedResult: constants.HorizontalPodAutoscalerConflictCategory,
-		},
-	}
-	assert := assert.New(t)
-	// nolint: dupl
-	for _, testCase := range TestCases {
-		t.Run(testCase.testcasename, func(t *testing.T) {
-			result := GetConflictCategoryByResourceType(testCase.resource)
 
 			// check expected evaluation result
 			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)

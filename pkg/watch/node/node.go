@@ -109,7 +109,6 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 
 		log.Debugf("Handling delete node event: %s", w.getDesiredDisplayName(node))
 
-		// Delete the node.
 		// nolint: dupl
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
@@ -194,7 +193,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 }
 
 func fmtNodeDisplayName(node *v1.Node, clusterName string) string {
-	return fmt.Sprintf("%s-node-%s-%s", node.Name, node.Namespace, clusterName)
+	return fmt.Sprintf("%s-node-%s", node.Name, clusterName)
 }
 
 func (w *Watcher) getDesiredDisplayName(node *v1.Node) string {
