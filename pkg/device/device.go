@@ -270,7 +270,7 @@ func getEvaluationParamsForResource(device *models.Device, labels map[string]str
 		evaluationParams[key] = value
 	}
 
-	evaluationParams["name"] = *device.DisplayName
+	evaluationParams["name"] = filters.CheckAndReplaceInvalidChars(*device.DisplayName)
 	return evaluationParams, nil
 }
 
