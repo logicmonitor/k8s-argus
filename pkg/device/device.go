@@ -130,7 +130,6 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 	updatedDevice, err := m.updateAndReplace(lctx, resource, device.ID, device)
 	if err != nil {
 		deviceDefault, _ := err.(*lm.UpdateDeviceDefault)
-		log.Errorf("%v", err)
 		// handle the device existing case
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
 			log.Infof("Device with displayName %s already exists, moving it to conflicts group.", *device.DisplayName)
@@ -405,7 +404,7 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 	}
 
 	if existingDevice == nil {
-		log.Infof("Could not find device %q", name)
+		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
 
@@ -469,7 +468,7 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, reso
 	}
 
 	if existingDevice == nil {
-		log.Infof("Could not find device %q", name)
+		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
 
@@ -532,12 +531,12 @@ func (m *Manager) getExisitingDeviceByGivenProperties(lctx *lmctx.LMContext, nam
 	existingDevices, err := m.FindByDisplayNames(lctx, resource, name, fullName)
 
 	if err != nil {
-		log.Errorf("%v", err)
+		log.Errorf("Error finding devices with names: %s, %s - %v", name, fullName, err)
 		return nil, err
 	}
 
 	if len(existingDevices) == 0 {
-		log.Infof("Could not find device %q", name)
+		log.Debugf("Could not find device %q", name)
 		return nil, nil
 	}
 

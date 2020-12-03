@@ -89,9 +89,7 @@ func (dc *DeviceCache) getAllDevices(b *types.Base) map[string]interface{} {
 			continue
 		}
 		for _, device := range resp.Payload.Items {
-			fullname := dc.getFullDisplayName(device)
-			log.Debugf("devicecase added entry for - %v", fullname)
-			m[fullname] = true
+			m[dc.getFullDisplayName(device)] = true
 		}
 	}
 	return m
