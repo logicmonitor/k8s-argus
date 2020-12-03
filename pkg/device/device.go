@@ -133,8 +133,8 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 		log.Errorf("%v", err)
 		// handle the device existing case
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
-			*device.DisplayName = util.GetFullDisplayName(device, resource, m.Config().ClusterName)
 			log.Infof("Device with displayName %s already exists, moving it to conflicts group.", *device.DisplayName)
+			*device.DisplayName = util.GetFullDisplayName(device, resource, m.Config().ClusterName)
 			newDevice, err2 := m.moveDeviceToConflictGroup(lctx, device, resource)
 			if err2 != nil {
 				log.Errorf("%v", err2)

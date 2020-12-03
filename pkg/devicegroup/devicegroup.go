@@ -36,6 +36,7 @@ type AppliesToBuilder interface {
 	HasCategory(string) AppliesToBuilder
 	Auto(string) AppliesToBuilder
 	And() AppliesToBuilder
+	Custom(string) AppliesToBuilder
 	Or() AppliesToBuilder
 	Equals(string) AppliesToBuilder
 	Exists(string) AppliesToBuilder
@@ -77,6 +78,11 @@ func (a *appliesToBuilder) Exists(property string) AppliesToBuilder {
 
 func (a *appliesToBuilder) Auto(property string) AppliesToBuilder {
 	a.value += "auto." + property
+	return a
+}
+
+func (a *appliesToBuilder) Custom(property string) AppliesToBuilder {
+	a.value += property
 	return a
 }
 

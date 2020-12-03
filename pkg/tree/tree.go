@@ -39,7 +39,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:                         devicegroup.NewAppliesToBuilder(),
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeCategory).And().Auto("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeCategory).And().Custom("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 		},
 		{
@@ -59,7 +59,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceCategory).And().Auto("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceCategory).And().Custom("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 		},
 		{
@@ -69,7 +69,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.PodDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Auto("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Custom("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 		},
 		{
@@ -79,7 +79,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentCategory).And().Auto("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentCategory).And().Custom("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 		},
 		{
@@ -89,7 +89,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerCategory).And().Auto("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerCategory).And().Custom("name-conflict").Equals("true").And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 		},
 	}
