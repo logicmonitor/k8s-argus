@@ -168,10 +168,6 @@ func (w *Watcher) move(lctx *lmctx.LMContext, node *v1.Node) {
 }
 
 func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
-	resourceDeletedOn := ""
-	if node.DeletionTimestamp != nil {
-		resourceDeletedOn = strconv.FormatInt(node.DeletionTimestamp.Unix(), 10)
-	}
 	return []types.DeviceOption{
 		w.Name(getInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
@@ -181,7 +177,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.Auto("selflink", node.SelfLink),
 		w.Auto("uid", string(node.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
-		w.Custom(constants.K8sResourceDeletedOnPropertyKey, resourceDeletedOn),
+		w.DeletedOn(node.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, node.Name),
 	}
 }

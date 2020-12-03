@@ -132,10 +132,6 @@ func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscali
 }
 
 func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, category string) []types.DeviceOption {
-	resourceDeletedOn := ""
-	if horizontalPodAutoscaler.DeletionTimestamp != nil {
-		resourceDeletedOn = strconv.FormatInt(horizontalPodAutoscaler.DeletionTimestamp.Unix(), 10)
-	}
 	return []types.DeviceOption{
 		w.Name(fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)),
 		w.ResourceLabels(horizontalPodAutoscaler.Labels),
@@ -146,7 +142,7 @@ func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutos
 		w.Auto("selflink", horizontalPodAutoscaler.SelfLink),
 		w.Auto("uid", string(horizontalPodAutoscaler.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(horizontalPodAutoscaler.CreationTimestamp.Unix(), 10)),
-		w.Custom(constants.K8sResourceDeletedOnPropertyKey, resourceDeletedOn),
+		w.DeletedOn(horizontalPodAutoscaler.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler)),
 	}
 }

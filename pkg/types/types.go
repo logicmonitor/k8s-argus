@@ -6,6 +6,7 @@ import (
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 )
@@ -106,6 +107,8 @@ type DeviceBuilder interface {
 	System(string, string) DeviceOption
 	// System adds a custom property to the device.
 	Custom(string, string) DeviceOption
+	// DeletedOn adds kubernetes.resourceDeletedOn property to the device.
+	DeletedOn(*v1.Time) DeviceOption
 }
 
 // UpdateFilter is a boolean function to run predicate and return boolean value

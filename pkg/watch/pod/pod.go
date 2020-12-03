@@ -172,10 +172,6 @@ func (w *Watcher) move(lctx *lmctx.LMContext, pod *v1.Pod) {
 }
 
 func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
-	resourceDeletedOn := ""
-	if pod.DeletionTimestamp != nil {
-		resourceDeletedOn = strconv.FormatInt(pod.DeletionTimestamp.Unix(), 10)
-	}
 	options := []types.DeviceOption{
 		w.Name(getPodDNSName(pod)),
 		w.ResourceLabels(pod.Labels),
@@ -188,7 +184,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
-		w.Custom(constants.K8sResourceDeletedOnPropertyKey, resourceDeletedOn),
+		w.DeletedOn(pod.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, fmtPodDisplayName(pod)),
 	}
 	// Pod running on fargate doesn't support HostNetwork so check fargate profile label, if label exists then mark hostNetwork as true
