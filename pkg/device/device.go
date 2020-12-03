@@ -117,8 +117,8 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 	collectorID := cscutils.GetCollectorID()
 	device.PreferredCollectorID = &collectorID
 
-	// remove conflict category from sys-category of device
-	if util.IsConflictingDevice(device, resource) {
+	// remove conflict category from sys-category of device.
+	if util.IsConflictingDevice(device) {
 		log.Infof("remove conflict category")
 		options := []types.DeviceOption{
 			m.Custom(constants.K8sDeviceNameConflictPropertyKey, "false"),

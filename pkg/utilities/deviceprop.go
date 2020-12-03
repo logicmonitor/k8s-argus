@@ -32,9 +32,12 @@ func GetPropertyValue(device *models.Device, propertyName string) string {
 }
 
 //IsConflictingDevice checks wheather there is conflicts in device names.
-func IsConflictingDevice(device *models.Device, resourceType string) bool {
+func IsConflictingDevice(device *models.Device) bool {
 	nameconflictProp := GetPropertyValue(device, constants.K8sDeviceNameConflictPropertyKey)
-	result, _ := strconv.ParseBool(nameconflictProp)
+	result, err := strconv.ParseBool(nameconflictProp)
+	if err != nil {
+		return false
+	}
 	return result
 }
 
