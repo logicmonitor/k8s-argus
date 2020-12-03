@@ -108,6 +108,9 @@ func setProperty(name, value string) types.DeviceOption {
 		}
 		for _, prop := range device.CustomProperties {
 			if *prop.Name == name && value != "" {
+				if *prop.Value == value {
+					return
+				}
 				if *prop.Name == constants.K8sSystemCategoriesPropertyKey {
 					value = getUpdatedSystemCategories(*prop.Value, value)
 				}
