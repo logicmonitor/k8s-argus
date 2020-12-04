@@ -225,7 +225,7 @@ func (i *InitSyncer) renameDeviceToDesiredName(lctx *lmctx.LMContext, device *mo
 	namespace := util.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
 	desiredDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace, resourceType)
 
-	if *device.DisplayName != desiredDisplayName {
+	if i.DeviceManager.Config().FullDisplayNameIncludeClusterName || *device.DisplayName != desiredDisplayName {
 		log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desiredDisplayName)
 		err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desiredDisplayName)
 		if err != nil {
