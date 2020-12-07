@@ -14,7 +14,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/logicmonitor/k8s-collectorset-controller v2.0.0+incompatible
-	github.com/logicmonitor/lm-sdk-go v2.0.0+incompatible
+	github.com/logicmonitor/lm-sdk-go v2.0.0-argus1+incompatible
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.3
