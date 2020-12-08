@@ -83,6 +83,8 @@ type PatchDeviceParams struct {
 	End *int64
 	/*ID*/
 	ID int32
+	/*PatchFields*/
+	PatchFields *string
 	/*NetflowFilter*/
 	NetflowFilter *string
 	/*OpType*/
@@ -161,6 +163,17 @@ func (o *PatchDeviceParams) SetID(id int32) {
 	o.ID = id
 }
 
+// WithPatchFields adds the patchFields to the patch device params
+func (o *PatchDeviceParams) WithPatchFields(patchFields *string) *PatchDeviceParams {
+	o.SetPatchFields(patchFields)
+	return o
+}
+
+// SetPatchFields adds the patchFields to the patch device params
+func (o *PatchDeviceParams) SetPatchFields(patchFields *string) {
+	o.PatchFields = patchFields
+}
+
 // WithNetflowFilter adds the netflowFilter to the patch device params
 func (o *PatchDeviceParams) WithNetflowFilter(netflowFilter *string) *PatchDeviceParams {
 	o.SetNetflowFilter(netflowFilter)
@@ -227,6 +240,22 @@ func (o *PatchDeviceParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	// path param id
 	if err := r.SetPathParam("id", swag.FormatInt32(o.ID)); err != nil {
 		return err
+	}
+
+	if o.PatchFields != nil {
+
+		// query param patchFields
+		var qrPatchFields string
+		if o.PatchFields != nil {
+			qrPatchFields = *o.PatchFields
+		}
+		qPatchFields := qrPatchFields
+		if qPatchFields != "" {
+			if err := r.SetQueryParam("patchFields", qPatchFields); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if o.NetflowFilter != nil {
