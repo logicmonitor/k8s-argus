@@ -465,7 +465,7 @@ func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, 
 	return resp.Payload, nil
 }
 
-// UpdateDevicePropertyByName updates the specifed property value for a device.
+// UpdateDevicePropertyByName updates the specified property value for a device.
 func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int32, entityProperty *models.EntityProperty, resource string) error {
 	log := lmlog.Logger(lctx)
 	params := lm.NewUpdateDevicePropertyByNameParams()
@@ -487,10 +487,10 @@ func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int
 	//restResponse, err := client.LM.UpdateDevicePropertyByName(params)
 
 	if err != nil {
-		return fmt.Errorf("Failed to update device property '%v'. Error: %v", entityProperty.Name, err)
+		return fmt.Errorf("failed to update device property '%v'. Error: %v", entityProperty.Name, err)
 	}
 	resp := restResponse.(*lm.UpdateDevicePropertyByNameOK)
-	log.Debugf("Update property response payload : %#v", resp.Payload)
+	log.Debugf("update property response payload : %#v", resp.Payload)
 
 	return nil
 }
