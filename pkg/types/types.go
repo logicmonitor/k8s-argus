@@ -127,6 +127,7 @@ type LMExecutor interface {
 
 	UpdateDevice(*lm.UpdateDeviceParams) ExecRequest
 	UpdateDeviceErrResp(error) *models.ErrorResponse
+	UpdateDevicePropertyByName(*lm.UpdateDevicePropertyByNameParams) ExecRequest
 
 	GetDeviceList(*lm.GetDeviceListParams) ExecRequest
 	GetDeviceListErrResp(error) *models.ErrorResponse

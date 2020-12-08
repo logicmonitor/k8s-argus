@@ -88,14 +88,14 @@ func (m *Manager) checkAndUpdateExistingDevice(lctx *lmctx.LMContext, resource s
 			}
 
 			log.Infof("Updating and moving to conflicts group - existing device (%s)", *existingDevice.DisplayName)
-			newDevice, err2 := m.moveDeviceToConflictGroup(lctx, existingDevice, resource)
+			err2 := m.moveDeviceToConflictGroup(lctx, existingDevice, resource)
 			if err2 != nil {
 				log.Errorf("%v", err2)
 				return nil, err2
 			}
 
-			m.DC.Set(util.GetFullDisplayName(newDevice, resource, currentCluster))
-			return newDevice, nil
+			m.DC.Set(util.GetFullDisplayName(existingDevice, resource, currentCluster))
+			return existingDevice, nil
 		}
 	}
 	return nil, nil
@@ -117,35 +117,39 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 	collectorID := cscutils.GetCollectorID()
 	device.PreferredCollectorID = &collectorID
 
-	// remove conflict category from sys-category of device.
-	if util.IsConflictingDevice(device) {
-		log.Infof("remove conflict category")
-		options := []types.DeviceOption{
-			m.Custom(constants.K8sDeviceNameConflictPropertyKey, "false"),
-		}
-		device = buildDevice(lctx, m.Config(), device, options...)
-	}
-
 	*device.DisplayName = desiredDisplayName
 	updatedDevice, err := m.updateAndReplace(lctx, resource, device.ID, device)
+
+	// remove conflict category from sys-category of device.
+	if util.IsConflictingDevice(updatedDevice, resource) {
+		currentCategories := getCurrentSystemCategoriesForDevice(updatedDevice)
+		updatedCategories := strings.ReplaceAll(currentCategories, util.GetConflictCategoryByResourceType(resource), "")
+		entityProperty := models.EntityProperty{Name: constants.K8sSystemCategoriesPropertyKey, Value: updatedCategories, Type: "system"}
+		err1 := m.updateDevicePropertyByName(lctx, updatedDevice.ID, &entityProperty, resource)
+		if err1 != nil {
+			return err1
+		}
+	}
+
 	if err != nil {
 		deviceDefault, _ := err.(*lm.UpdateDeviceDefault)
 		// handle the device existing case
 		if deviceDefault != nil && deviceDefault.Code() == 409 {
 			log.Infof("Device with displayName %s already exists, moving it to conflicts group.", *device.DisplayName)
 			*device.DisplayName = util.GetFullDisplayName(device, resource, m.Config().ClusterName)
-			newDevice, err2 := m.moveDeviceToConflictGroup(lctx, device, resource)
+			err2 := m.moveDeviceToConflictGroup(lctx, device, resource)
 			if err2 != nil {
 				log.Errorf("%v", err2)
 				return err2
 			}
 
-			m.DC.Set(*newDevice.DisplayName)
+			m.DC.Set(*device.DisplayName)
 			return nil
 		}
 		log.Errorf("%v", err)
 		return err
 	}
+
 	m.DC.Set(util.GetFullDisplayName(updatedDevice, resource, m.Config().ClusterName))
 	return nil
 }
@@ -323,7 +327,7 @@ func (m *Manager) addConflictingDevice(lctx *lmctx.LMContext, device *models.Dev
 
 	currentCluster := m.Config().ClusterName
 	log.Infof("Adding new device %s and moving to conflicts group.", *device.DisplayName)
-	options = append(options, m.Custom(constants.K8sDeviceNameConflictPropertyKey, "true"))
+	options = append(options, m.Custom(constants.K8sSystemCategoriesPropertyKey, util.GetConflictCategoryByResourceType(resource)))
 	*device.DisplayName = util.GetFullDisplayName(device, resource, currentCluster)
 	newDevice := buildDevice(lctx, m.Config(), device, options...)
 	renamedDevice, err := m.renameAndAddDevice(lctx, resource, newDevice)
@@ -337,12 +341,18 @@ func (m *Manager) addConflictingDevice(lctx *lmctx.LMContext, device *models.Dev
 	return renamedDevice, nil
 }
 
-func (m *Manager) moveDeviceToConflictGroup(lctx *lmctx.LMContext, device *models.Device, resource string) (*models.Device, error) {
-	options := []types.DeviceOption{
-		m.Custom(constants.K8sDeviceNameConflictPropertyKey, "true"),
+func (m *Manager) moveDeviceToConflictGroup(lctx *lmctx.LMContext, device *models.Device, resource string) error {
+	updatedCategories := fmt.Sprintf(getCurrentSystemCategoriesForDevice(device) + "," + util.GetConflictCategoryByResourceType(resource))
+	entityProperty := models.EntityProperty{Name: constants.K8sSystemCategoriesPropertyKey, Value: updatedCategories, Type: "system"}
+	err := m.updateDevicePropertyByName(lctx, device.ID, &entityProperty, resource)
+	if err != nil {
+		return err
 	}
-	newDevice, err := m.UpdateAndReplace(lctx, resource, device, options...)
-	return newDevice, err
+	return nil
+}
+
+func getCurrentSystemCategoriesForDevice(device *models.Device) string {
+	return util.GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
 }
 
 // checkPingDeviceAndSystemIPs verifies that 'system.ips' property is present if device ping feature is enabled.
@@ -453,6 +463,36 @@ func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, 
 	log.Debugf("%#v", resp)
 
 	return resp.Payload, nil
+}
+
+// UpdateDevicePropertyByName updates the specifed property value for a device.
+func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int32, entityProperty *models.EntityProperty, resource string) error {
+	log := lmlog.Logger(lctx)
+	params := lm.NewUpdateDevicePropertyByNameParams()
+	params.SetBody(entityProperty)
+	params.SetDeviceID(deviceID)
+	params.SetName(entityProperty.Name)
+	cmd := &types.HTTPCommand{
+		Command: &types.Command{
+			ExecFun: m.UpdateDevicePropertyByName(params),
+			LMCtx:   lctx,
+		},
+		Method:   "PUT",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.UpdateDeviceErrResp,
+		},
+	}
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	//restResponse, err := client.LM.UpdateDevicePropertyByName(params)
+
+	if err != nil {
+		return fmt.Errorf("Failed to update device property '%v'. Error: %v", entityProperty.Name, err)
+	}
+	resp := restResponse.(*lm.UpdateDevicePropertyByNameOK)
+	log.Debugf("Update property response payload : %#v", resp.Payload)
+
+	return nil
 }
 
 // TODO: this method needs to be removed in DEV-50496

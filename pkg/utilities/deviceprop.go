@@ -2,7 +2,6 @@ package utilities
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -32,13 +31,9 @@ func GetPropertyValue(device *models.Device, propertyName string) string {
 }
 
 //IsConflictingDevice checks wheather there is conflicts in device names.
-func IsConflictingDevice(device *models.Device) bool {
-	nameconflictProp := GetPropertyValue(device, constants.K8sDeviceNameConflictPropertyKey)
-	result, err := strconv.ParseBool(nameconflictProp)
-	if err != nil {
-		return false
-	}
-	return result
+func IsConflictingDevice(device *models.Device, resourceType string) bool {
+	sysCategory := GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
+	return strings.Contains(sysCategory, GetConflictCategoryByResourceType(resourceType))
 }
 
 // GetDesiredDisplayNameByResourceAndConfig returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
@@ -88,4 +83,21 @@ func getNameWithResourceType(name, resource string) string {
 		return fmt.Sprintf("%s-%s", name, "hpa")
 	}
 	return name
+}
+
+//GetConflictCategoryByResourceType return conflict system category by its respetive type.
+func GetConflictCategoryByResourceType(resource string) string {
+	switch strings.ToLower(resource) {
+	case constants.Pods:
+		return constants.PodConflictCategory
+	case constants.Deployments:
+		return constants.DeploymentConflictCategory
+	case constants.Services:
+		return constants.ServiceConflictCategory
+	case constants.Nodes:
+		return constants.NodeConflictCategory
+	case constants.HorizontalPodAutoScalers:
+		return constants.HorizontalPodAutoscalerConflictCategory
+	}
+	return ""
 }
