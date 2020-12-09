@@ -64,6 +64,11 @@ func (lmexec *LMExec) UpdateDeviceErrResp(err error) *models.ErrorResponse {
 	return err.(*lm.UpdateDeviceDefault).Payload
 }
 
+// UpdateDevicePropertyErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) UpdateDevicePropertyErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.UpdateDevicePropertyByNameDefault).Payload
+}
+
 //UpdateDevicePropertyByName updates specified device property.
 func (lmexec *LMExec) UpdateDevicePropertyByName(params *lm.UpdateDevicePropertyByNameParams) types.ExecRequest {
 	return func() (interface{}, error) {

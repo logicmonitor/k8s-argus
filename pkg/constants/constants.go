@@ -119,8 +119,6 @@ const (
 	K8sDeviceNamePropertyKey = "auto.name"
 	// K8sDeviceNamespacePropertyKey is the key of the unique auto property kubernetes device namespace.
 	K8sDeviceNamespacePropertyKey = "auto.namespace"
-	//K8sDeviceNameConflictPropertyKey is the key to define if device is conflicting device
-	K8sDeviceNameConflictPropertyKey = "name-conflict"
 )
 
 const (

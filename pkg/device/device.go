@@ -480,7 +480,7 @@ func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int
 		Method:   "PUT",
 		Category: "device",
 		LMHCErrParse: &types.LMHCErrParse{
-			ParseErrResp: m.UpdateDeviceErrResp,
+			ParseErrResp: m.UpdateDevicePropertyErrResp,
 		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
