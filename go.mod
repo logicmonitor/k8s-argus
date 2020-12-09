@@ -14,13 +14,12 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/logicmonitor/k8s-collectorset-controller v2.0.0+incompatible
-	github.com/logicmonitor/lm-sdk-go v2.0.0+incompatible
+	github.com/logicmonitor/lm-sdk-go v2.0.0-argus2+incompatible
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.6.1
-	github.com/vkumbhar94/lm-sdk-go v2.0.1+incompatible // indirect
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	google.golang.org/grpc v1.27.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
