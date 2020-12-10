@@ -236,7 +236,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	}
 
 	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"name": "init-sync"}))
-	initSyncer.InitSync(lctx)
+	initSyncer.InitSync(lctx, true)
 	initSyncer.RunPeriodicSync(10)
 
 	if base.Config.EtcdDiscoveryToken != "" {

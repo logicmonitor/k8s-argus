@@ -3,6 +3,7 @@
 package node
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -61,7 +62,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
 
-		log.Debugf("Handling add node event: %s", node.Name)
+		log.Debugf("Handling add node event: %s", w.getDesiredDisplayName(node))
 
 		// Require an IP address.
 		if getInternalAddress(node.Status.Addresses) == nil {
@@ -76,11 +77,11 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		old := oldObj.(*v1.Node)
 		new := newObj.(*v1.Node)
-		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + old.Name}))
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + w.getDesiredDisplayName(old)}))
 		lctx = util.WatcherContext(lctx, w)
 		log := lmlog.Logger(lctx)
 
-		log.Debugf("Handling update node event: %s", old.Name)
+		log.Debugf("Handling update node event: %s", w.getDesiredDisplayName(old))
 
 		// If the old node does not have an IP, then there is no way we could
 		// have added it to LogicMonitor. Therefore, it must be a new device.
@@ -103,18 +104,19 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		node := obj.(*v1.Node)
-		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + node.Name}))
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + w.getDesiredDisplayName(node)}))
 		log := lmlog.Logger(lctx)
 
-		log.Debugf("Handling delete node event: %s", node.Name)
+		log.Debugf("Handling delete node event: %s", w.getDesiredDisplayName(node))
 
-		// Delete the node.
+		// nolint: dupl
 		if w.Config().DeleteDevices {
-			if err := w.DeleteByDisplayName(lctx, w.Resource(), node.Name); err != nil {
+			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
+				fmtNodeDisplayName(node, w.Config().ClusterName)); err != nil {
 				log.Errorf("Failed to delete node: %v", err)
 				return
 			}
-			log.Infof("Deleted node %s", node.Name)
+			log.Infof("Deleted node %s", w.getDesiredDisplayName(node))
 			return
 		}
 
@@ -126,12 +128,17 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 // nolint: dupl
 func (w *Watcher) add(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.Add(lctx, w.Resource(), node.Labels, w.args(node, constants.NodeCategory)...); err != nil {
-		log.Errorf("Failed to add node %q: %v", node.Name, err)
-	} else {
-		log.Infof("Added node %q", node.Name)
+	n, err := w.Add(lctx, w.Resource(), node.Labels, w.args(node, constants.NodeCategory)...)
+	if err != nil {
+		log.Errorf("Failed to add node %q: %v", w.getDesiredDisplayName(node), err)
+		return
+	}
+	if n == nil {
+		log.Debugf("node %q is not added as it is mentioned for filtering.", w.getDesiredDisplayName(node))
+		return
 	}
 
+	log.Infof("Added node %q", *n.DisplayName)
 	w.createRoleDeviceGroup(lctx, node.Labels)
 }
 
@@ -143,10 +150,12 @@ func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
 
 func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceByDisplayName(lctx, "nodes", old.Name, w.nodeUpdateFilter(old, new), new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
-		log.Errorf("Failed to update node %q: %v", new.Name, err)
+	if _, err := w.UpdateAndReplaceByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(old),
+		fmtNodeDisplayName(old, w.Config().ClusterName), w.nodeUpdateFilter(old, new),
+		new.Labels, w.args(new, constants.NodeCategory)...); err != nil {
+		log.Errorf("Failed to update node %q: %v", w.getDesiredDisplayName(new), err)
 	} else {
-		log.Infof("Updated node %q", old.Name)
+		log.Infof("Updated node %q", w.getDesiredDisplayName(old))
 	}
 
 	// determine if we need to add a new node role device group
@@ -160,18 +169,20 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), node.Name, constants.CustomPropertiesFieldName, w.args(node, constants.NodeDeletedCategory)...); err != nil {
-		log.Errorf("Failed to move node %q: %v", node.Name, err)
+	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
+		fmtNodeDisplayName(node, w.Config().ClusterName), constants.CustomPropertiesFieldName,
+		w.args(node, constants.NodeDeletedCategory)...); err != nil {
+		log.Errorf("Failed to move node %q: %v", w.getDesiredDisplayName(node), err)
 		return
 	}
-	log.Infof("Moved node %q", node.Name)
+	log.Infof("Moved node %q", w.getDesiredDisplayName(node))
 }
 
 func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 	return []types.DeviceOption{
 		w.Name(getInternalAddress(node.Status.Addresses).Address),
 		w.ResourceLabels(node.Labels),
-		w.DisplayName(node.Name),
+		w.DisplayName(w.getDesiredDisplayName(node)),
 		w.SystemCategories(category),
 		w.Auto("name", node.Name),
 		w.Auto("selflink", node.SelfLink),
@@ -179,6 +190,14 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, node.Name),
 	}
+}
+
+func fmtNodeDisplayName(node *v1.Node, clusterName string) string {
+	return fmt.Sprintf("%s-node-%s", node.Name, clusterName)
+}
+
+func (w *Watcher) getDesiredDisplayName(node *v1.Node) string {
+	return w.DeviceManager.GetDesiredDisplayName(node.Name, node.Namespace, constants.Nodes)
 }
 
 // getInternalAddress finds the node's internal address.
@@ -232,7 +251,7 @@ func (w *Watcher) createRoleDeviceGroup(lctx *lmctx.LMContext, labels map[string
 }
 
 // GetNodesMap implements the getting nodes map info from k8s
-func GetNodesMap(k8sClient kubernetes.Interface) (map[string]string, error) {
+func GetNodesMap(k8sClient kubernetes.Interface, clusterName string) (map[string]string, error) {
 	nodesMap := make(map[string]string)
 	nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil || nodeList == nil {
@@ -243,7 +262,7 @@ func GetNodesMap(k8sClient kubernetes.Interface) (map[string]string, error) {
 		if address == nil {
 			continue
 		}
-		nodesMap[nodeInfo.Name] = address.Address
+		nodesMap[fmtNodeDisplayName(&nodeInfo, clusterName)] = address.Address
 	}
 
 	return nodesMap, nil

@@ -1,12 +1,15 @@
 package devicecache
 
 import (
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -86,10 +89,34 @@ func (dc *DeviceCache) getAllDevices(b *types.Base) map[string]interface{} {
 			continue
 		}
 		for _, device := range resp.Payload.Items {
-			m[*device.DisplayName] = true
+			m[dc.getFullDisplayName(device)] = true
 		}
 	}
 	return m
+}
+
+func (dc *DeviceCache) getFullDisplayName(device *models.Device) string {
+	syscategory := util.GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
+	return util.GetFullDisplayName(device, getResourceTypeFromSystemCateogries(syscategory), dc.base.Config.ClusterName)
+}
+
+func getResourceTypeFromSystemCateogries(category string) string {
+	if strings.Contains(category, constants.PodCategory) {
+		return constants.Pods
+	}
+	if strings.Contains(category, constants.DeploymentCategory) {
+		return constants.Deployments
+	}
+	if strings.Contains(category, constants.ServiceCategory) {
+		return constants.Services
+	}
+	if strings.Contains(category, constants.NodeCategory) {
+		return constants.Nodes
+	}
+	if strings.Contains(category, constants.HorizontalPodAutoscalerCategory) {
+		return constants.HorizontalPodAutoScalers
+	}
+	return ""
 }
 
 func (dc *DeviceCache) resyncCache(m map[string]interface{}) {
