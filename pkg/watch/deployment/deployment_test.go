@@ -49,7 +49,7 @@ func TestGetDeploymentsMap(t *testing.T) {
 	for _, testCase := range deploymentTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": "get_deploys_map_test"}))
-			deploymentsMap, err := GetDeploymentsMap(lctx, testCase.clientSet, testCase.inputNamespace)
+			deploymentsMap, err := GetDeploymentsMap(lctx, testCase.clientSet, testCase.inputNamespace, "cluster1")
 
 			// check if err not nil
 			if err != nil {

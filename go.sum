@@ -224,6 +224,8 @@ github.com/logicmonitor/lm-sdk-go v2.0.0-argus1+incompatible h1:/aHD5h0X5PxKVB7N
 github.com/logicmonitor/lm-sdk-go v2.0.0-argus1+incompatible/go.mod h1:gpLvWtDkb4lq+ezlvG79A953MZHoq/3XLTff4AIUF+M=
 github.com/logicmonitor/lm-sdk-go v2.0.0-argus2+incompatible h1:BPoEW3DbfjtiBRgpygjOo1S0vj7+nWV7i+wprziuCxQ=
 github.com/logicmonitor/lm-sdk-go v2.0.0-argus2+incompatible/go.mod h1:gpLvWtDkb4lq+ezlvG79A953MZHoq/3XLTff4AIUF+M=
+github.com/logicmonitor/lm-sdk-go v2.0.0-argus3+incompatible h1:Z5LJO+g30WyL4rG8bOsu6X3dwUpO0pHWtP6ZoCJFQh0=
+github.com/logicmonitor/lm-sdk-go v2.0.0-argus3+incompatible/go.mod h1:gpLvWtDkb4lq+ezlvG79A953MZHoq/3XLTff4AIUF+M=
 github.com/logicmonitor/lm-sdk-go v2.0.0+incompatible h1:g/8iONuJKtUWGQ3MVdSRXhE5ovtxF2voi4OCZFwEDDM=
 github.com/logicmonitor/lm-sdk-go v2.0.0+incompatible/go.mod h1:gpLvWtDkb4lq+ezlvG79A953MZHoq/3XLTff4AIUF+M=
 github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDePerRcY=
