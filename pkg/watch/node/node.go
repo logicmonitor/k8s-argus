@@ -170,8 +170,7 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 func (w *Watcher) move(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
-		fmtNodeDisplayName(node, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(node, constants.NodeDeletedCategory)...); err != nil {
+		fmtNodeDisplayName(node, w.Config().ClusterName), constants.CustomPropertiesFieldName, node.DeletionTimestamp, w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", w.getDesiredDisplayName(node), err)
 		return
 	}
@@ -188,7 +187,6 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.Auto("selflink", node.SelfLink),
 		w.Auto("uid", string(node.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
-		w.DeletedOn(node.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, node.Name),
 	}
 }

@@ -209,7 +209,7 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			if err != nil {
 				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
 			}
-			return
+			continue
 		}
 		// Rename devices as per config parameters only on Argus restart.
 		if isRestart {

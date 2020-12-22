@@ -134,8 +134,7 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.Horizont
 func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler),
-		fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
+		fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName), constants.CustomPropertiesFieldName, horizontalPodAutoscaler.DeletionTimestamp, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(horizontalPodAutoscaler), err)
 		return
 	}
@@ -153,7 +152,6 @@ func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutos
 		w.Auto("selflink", horizontalPodAutoscaler.SelfLink),
 		w.Auto("uid", string(horizontalPodAutoscaler.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(horizontalPodAutoscaler.CreationTimestamp.Unix(), 10)),
-		w.DeletedOn(horizontalPodAutoscaler.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(horizontalPodAutoscaler)),
 	}
 }

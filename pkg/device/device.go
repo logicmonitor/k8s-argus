@@ -2,7 +2,9 @@ package device
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -12,6 +14,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	//"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -495,10 +498,8 @@ func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int
 	return nil
 }
 
-// TODO: this method needs to be removed in DEV-50496
-
 // UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, resource, name, fullName, field string, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, resource, name, fullName, field string, deletionTimestamp *v1.Time, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 
 	existingDevice, err := m.getExisitingDeviceByGivenProperties(lctx, name, fullName, resource)
@@ -511,7 +512,14 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, reso
 		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
-	options = append(options, m.DisplayName(*existingDevice.DisplayName))
+
+	// add resource deletion timestamp
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	if deletionTimestamp != nil {
+		timestamp = strconv.FormatInt(deletionTimestamp.Unix(), 10)
+	}
+	options = append(options, m.DeletedOn(constants.K8sResourceDeletedOnPropertyKey, timestamp))
+
 	device := buildDevice(lctx, m.Config(), existingDevice, options...)
 	// TODO: Use PATCH API once issue is fixed & don't pass complete device object
 	// updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, device, field)

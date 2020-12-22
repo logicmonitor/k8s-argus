@@ -1,14 +1,12 @@
 package builder
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Builder implements types.DeviceBuilder
@@ -91,11 +89,24 @@ func (b *Builder) Custom(name, value string) types.DeviceOption {
 }
 
 // DeletedOn impletements types.DeviceBuilder
-func (b *Builder) DeletedOn(timestamp *v1.Time) types.DeviceOption {
-	if timestamp == nil {
-		return func(device *models.Device) {}
+func (b *Builder) DeletedOn(name string, value string) types.DeviceOption {
+	return func(device *models.Device) {
+		if device == nil {
+			return
+		}
+		if device.CustomProperties == nil {
+			device.CustomProperties = []*models.NameAndValue{}
+		}
+		for _, prop := range device.CustomProperties {
+			if *prop.Name == name {
+				return
+			}
+		}
+		device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
+			Name:  &name,
+			Value: &value,
+		})
 	}
-	return setProperty(constants.K8sResourceDeletedOnPropertyKey, strconv.FormatInt(timestamp.Unix(), 10))
 }
 
 func setProperty(name, value string) types.DeviceOption {
@@ -108,9 +119,6 @@ func setProperty(name, value string) types.DeviceOption {
 		}
 		for _, prop := range device.CustomProperties {
 			if *prop.Name == name && value != "" {
-				if *prop.Value == value {
-					return
-				}
 				if *prop.Name == constants.K8sSystemCategoriesPropertyKey {
 					value = getUpdatedSystemCategories(*prop.Value, value)
 				}

@@ -153,8 +153,7 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 func (w *Watcher) move(lctx *lmctx.LMContext, service *v1.Service) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service),
-		fmtServiceDisplayName(service, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+		fmtServiceDisplayName(service, w.Config().ClusterName), constants.CustomPropertiesFieldName, service.DeletionTimestamp, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", w.getDesiredDisplayName(service), err)
 		return
 	}
@@ -172,7 +171,6 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 		w.Auto("selflink", service.SelfLink),
 		w.Auto("uid", string(service.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(service.CreationTimestamp.Unix(), 10)),
-		w.DeletedOn(service.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(service)),
 	}
 }

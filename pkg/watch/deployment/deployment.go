@@ -131,8 +131,7 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
-		fmtDeploymentDisplayName(deployment, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
+		fmtDeploymentDisplayName(deployment, w.Config().ClusterName), constants.CustomPropertiesFieldName, deployment.DeletionTimestamp, w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move deployment %q: %v", w.getDesiredDisplayName(deployment), err)
 		return
 	}
@@ -150,7 +149,6 @@ func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.D
 		w.Auto("selflink", deployment.SelfLink),
 		w.Auto("uid", string(deployment.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(deployment.CreationTimestamp.Unix(), 10)),
-		w.DeletedOn(deployment.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(deployment)),
 	}
 }

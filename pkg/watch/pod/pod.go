@@ -169,8 +169,7 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
 func (w *Watcher) move(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
 	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod),
-		fmtPodDisplayName(pod, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(pod, constants.PodDeletedCategory)...); err != nil {
+		fmtPodDisplayName(pod, w.Config().ClusterName), constants.CustomPropertiesFieldName, pod.DeletionTimestamp, w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", w.getDesiredDisplayName(pod), err)
 		return
 	}
@@ -190,7 +189,6 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
-		w.DeletedOn(pod.DeletionTimestamp),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(pod)),
 	}
 	// Pod running on fargate doesn't support HostNetwork so check fargate profile label, if label exists then mark hostNetwork as true

@@ -80,7 +80,7 @@ type DeviceMapper interface {
 	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string) (*models.Device, error)
 	// UpdateAndReplaceFieldByDisplayName updates a device using the 'replace' OpType for a
 	// specific field of a device.
-	UpdateAndReplaceFieldByDisplayName(*lmctx.LMContext, string, string, string, string, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceFieldByDisplayName(*lmctx.LMContext, string, string, string, string, *v1.Time, ...DeviceOption) (*models.Device, error)
 	// DeleteByID deletes a device by device ID.
 	DeleteByID(*lmctx.LMContext, string, int32) error
 	// DeleteByDisplayName deletes a device by device display name.
@@ -111,7 +111,7 @@ type DeviceBuilder interface {
 	// System adds a custom property to the device.
 	Custom(string, string) DeviceOption
 	// DeletedOn adds kubernetes.resourceDeletedOn property to the device.
-	DeletedOn(*v1.Time) DeviceOption
+	DeletedOn(string, string) DeviceOption
 }
 
 // UpdateFilter is a boolean function to run predicate and return boolean value
