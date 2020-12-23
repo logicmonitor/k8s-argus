@@ -498,21 +498,31 @@ func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int
 	return nil
 }
 
-// UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, resource, name, fullName, field string, deletionTimestamp *v1.Time, options ...types.DeviceOption) (*models.Device, error) {
+// MoveToDeletedGroup implements types.DeviceManager.
+func (m *Manager) MoveToDeletedGroup(lctx *lmctx.LMContext, resource, name, fullName string, deletionTimestamp *v1.Time, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
-
 	existingDevice, err := m.getExisitingDeviceByGivenProperties(lctx, name, fullName, resource)
-
 	if err != nil {
 		return nil, err
 	}
-
 	if existingDevice == nil {
 		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
 
+	device := m.updateFields(lctx, deletionTimestamp, existingDevice, options...)
+	// fields := constants.CustomPropertiesFieldName + "," + constants.NameFieldName + "," + constants.DisplayNameFieldName
+
+	// TODO: Use PATCH API once issue is fixed & don't pass complete device object
+	// updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, device, fields)
+	updatedDevice, err := m.updateAndReplace(lctx, resource, device.ID, device)
+	if err != nil {
+		return nil, err
+	}
+	return updatedDevice, nil
+}
+
+func (m *Manager) updateFields(lctx *lmctx.LMContext, deletionTimestamp *v1.Time, existingDevice *models.Device, options ...types.DeviceOption) *models.Device {
 	// add resource deletion timestamp
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	if deletionTimestamp != nil {
@@ -520,14 +530,12 @@ func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, reso
 	}
 	options = append(options, m.DeletedOn(constants.K8sResourceDeletedOnPropertyKey, timestamp))
 
-	device := buildDevice(lctx, m.Config(), existingDevice, options...)
-	// TODO: Use PATCH API once issue is fixed & don't pass complete device object
-	// updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, device, field)
-	updatedDevice, err := m.updateAndReplace(lctx, resource, device.ID, device)
-	if err != nil {
-		return nil, err
-	}
-	return updatedDevice, nil
+	// rename device to resolve conflicts for new devices
+	shortUUID := strconv.FormatUint(uint64(util.GetShortUUID()), 10)
+	options = append(options, m.Name(*existingDevice.Name+"-"+shortUUID))
+	options = append(options, m.DisplayName(*existingDevice.DisplayName+"-"+shortUUID))
+
+	return buildDevice(lctx, m.Config(), existingDevice, options...)
 }
 
 // DeleteByID implements types.DeviceManager.

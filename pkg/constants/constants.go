@@ -15,6 +15,10 @@ const (
 	RootDeviceGroupID = 1
 	// CustomPropertiesFieldName is the field name for a device's custom properties.
 	CustomPropertiesFieldName = "customProperties"
+	// NameFieldName is the field name for a device's name.
+	NameFieldName = "name"
+	// DisplayNameFieldName is the field name for a device's display name.
+	DisplayNameFieldName = "displayName"
 )
 
 const (

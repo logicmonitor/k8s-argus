@@ -78,9 +78,8 @@ type DeviceMapper interface {
 	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
 	// specific field of a device.
 	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string) (*models.Device, error)
-	// UpdateAndReplaceFieldByDisplayName updates a device using the 'replace' OpType for a
-	// specific field of a device.
-	UpdateAndReplaceFieldByDisplayName(*lmctx.LMContext, string, string, string, string, *v1.Time, ...DeviceOption) (*models.Device, error)
+	// MoveToDeletedGroup moves a device to _deleted group and replace fields
+	MoveToDeletedGroup(*lmctx.LMContext, string, string, string, *v1.Time, ...DeviceOption) (*models.Device, error)
 	// DeleteByID deletes a device by device ID.
 	DeleteByID(*lmctx.LMContext, string, int32) error
 	// DeleteByDisplayName deletes a device by device display name.

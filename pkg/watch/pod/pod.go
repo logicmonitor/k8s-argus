@@ -168,8 +168,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod),
-		fmtPodDisplayName(pod, w.Config().ClusterName), constants.CustomPropertiesFieldName, pod.DeletionTimestamp, w.args(pod, constants.PodDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(pod),
+		fmtPodDisplayName(pod, w.Config().ClusterName), pod.DeletionTimestamp, w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", w.getDesiredDisplayName(pod), err)
 		return
 	}

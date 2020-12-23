@@ -152,8 +152,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, service *v1.Service) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service),
-		fmtServiceDisplayName(service, w.Config().ClusterName), constants.CustomPropertiesFieldName, service.DeletionTimestamp, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(service),
+		fmtServiceDisplayName(service, w.Config().ClusterName), service.DeletionTimestamp, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", w.getDesiredDisplayName(service), err)
 		return
 	}
