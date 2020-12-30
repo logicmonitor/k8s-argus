@@ -532,8 +532,10 @@ func (m *Manager) updateFields(lctx *lmctx.LMContext, deletionTimestamp *v1.Time
 
 	// rename device to resolve conflicts for new devices
 	shortUUID := strconv.FormatUint(uint64(util.GetShortUUID()), 10)
-	options = append(options, m.Name(*existingDevice.Name+"-"+shortUUID))
-	options = append(options, m.DisplayName(*existingDevice.DisplayName+"-"+shortUUID))
+	deviceName := util.TrimName(*existingDevice.Name)
+	options = append(options, m.Name(deviceName+"-"+shortUUID))
+	deviceDisplayName := util.TrimName(util.GetPropertyValue(existingDevice, constants.K8sDeviceNamePropertyKey))
+	options = append(options, m.DisplayName(deviceDisplayName+"-"+shortUUID))
 
 	return buildDevice(lctx, m.Config(), existingDevice, options...)
 }

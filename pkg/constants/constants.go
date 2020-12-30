@@ -19,6 +19,8 @@ const (
 	NameFieldName = "name"
 	// DisplayNameFieldName is the field name for a device's display name.
 	DisplayNameFieldName = "displayName"
+	// MaxResourceLength is the max length of the resource name
+	MaxResourceLength = 244
 )
 
 const (
