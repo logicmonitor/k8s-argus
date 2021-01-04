@@ -510,7 +510,7 @@ func (m *Manager) MoveToDeletedGroup(lctx *lmctx.LMContext, resource, name, full
 		return nil, nil
 	}
 
-	device := m.updateFields(lctx, deletionTimestamp, existingDevice, options...)
+	device := m.buildDeviceBeforeDeletion(lctx, deletionTimestamp, existingDevice, options...)
 	// fields := constants.CustomPropertiesFieldName + "," + constants.NameFieldName + "," + constants.DisplayNameFieldName
 
 	// TODO: Use PATCH API once issue is fixed & don't pass complete device object
@@ -522,7 +522,7 @@ func (m *Manager) MoveToDeletedGroup(lctx *lmctx.LMContext, resource, name, full
 	return updatedDevice, nil
 }
 
-func (m *Manager) updateFields(lctx *lmctx.LMContext, deletionTimestamp *v1.Time, existingDevice *models.Device, options ...types.DeviceOption) *models.Device {
+func (m *Manager) buildDeviceBeforeDeletion(lctx *lmctx.LMContext, deletionTimestamp *v1.Time, existingDevice *models.Device, options ...types.DeviceOption) *models.Device {
 	// add resource deletion timestamp
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	if deletionTimestamp != nil {
