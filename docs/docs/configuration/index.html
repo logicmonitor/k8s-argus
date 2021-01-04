@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Configuration - Argus</title>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.76.5" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        <strong>Argus <span class="version">4.2.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -250,19 +250,6 @@
 
 
 
-<a  title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
-	
-	Device Tree Management
-</a>
-
-
-
-      
-        
-        
-
-
-
 <a  title="How It Works" href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/">
 	
 	How It Works
@@ -272,24 +259,6 @@
 
       
     </ul>
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Roadmap" href="https://logicmonitor.github.io/k8s-argus/roadmap/">
-	
-	Roadmap
-</a>
-
-
-
   
 </li>
 
@@ -338,100 +307,102 @@
 		<div class="wrapper">
 			<h1>Configuration </h1>
 
-			
-
-<h1 id="configuring-the-collectorset-controller-via-the-helm-chart">Configuring the Collectorset Controller via the Helm Chart</h1>
-
+			<h1 id="configuring-the-collectorset-controller-via-the-helm-chart">Configuring the Collectorset Controller via the Helm Chart</h1>
 <p>The Collectorset controller Helm chart supports the following values:</p>
-
 <p>Required Values:</p>
-
 <ul>
-<li><strong>accessID:</strong> The LogicMonitor API key ID.</li>
-<li><strong>accessKey:</strong> The LogicMonitor API key.</li>
-<li><strong>account:</strong> The LogicMonitor account name.</li>
-<li><strong>clusterName:</strong> A unique name given to the cluster&rsquo;s device group.</li>
+<li><strong>accessID (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key ID.</li>
+<li><strong>accessKey (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key.</li>
+<li><strong>account (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor account name.</li>
+<li><strong>debug (default: <code>false</code>):</strong> To enable verbose logging at debug level.</li>
 </ul>
-
 <p>Optional Values:</p>
-
 <ul>
-<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have
-RBAC enabled, this value should be set to false.</li>
-<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts
-to the cluster device group.</li>
-<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong></li>
-<li><strong>imageRepository (default: <code>&quot;logicmonitor/collectorset-controller&quot;</code>):</strong> The
-respository to use for the collectorset-controller docker image.</li>
-<li><strong>imageTag:</strong> The collectorset-controller <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/">image tag</a> to use.</li>
+<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</li>
+<li><strong>etcdDiscoveryToken (default: <code>&quot;&quot;</code>):</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
+<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Collectorset-controller container.</li>
+<li><strong>imageRepository (default: <code>&quot;logicmonitor/collectorset-controller&quot;</code>):</strong> The image repository of the <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller">Collectorset-controller</a> container.</li>
+<li><strong>imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller/tags">Collectorset-controller</a> container.</li>
+<li><strong>proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url.</li>
+<li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
+<li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
+<li><strong>nodeSelector (default: <code>{}</code>):</strong> It provides the simplest way to run Pod on particular Node(s) based on labels on the node.</li>
+<li><strong>affinity (default: <code>{}</code>):</strong> It allows you to constrain which nodes your pod is eligible to be scheduled on.</li>
+<li><strong>priorityClassName (default: <code>&quot;&quot;</code>):</strong> The priority class name for Pod priority. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.</li>
+<li><strong>tolerations (default: <code>[]</code>):</strong> Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.</li>
 </ul>
-
 <h1 id="configuring-argus-via-the-helm-chart">Configuring Argus via the Helm Chart</h1>
-
 <p>The Argus Helm chart supports the fololowing values:</p>
-
 <p>Required Values:</p>
-
 <ul>
-<li><strong>accessID:</strong> The LogicMonitor API key ID.</li>
-<li><strong>accessKey:</strong> The LogicMonitor API key.</li>
-<li><strong>account:</strong> The LogicMonitor account name.</li>
-<li><strong>clusterName:</strong> A unique name given to the cluster&rsquo;s device group.</li>
-<li><strong>collector.replicas:</strong> The number of collectors to create and use with Argus.</li>
-<li><strong>collector.size:</strong> The collector size to install. Can be nano, small, medium,
-or large.</li>
+<li><strong>accessID (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key ID.</li>
+<li><strong>accessKey (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key.</li>
+<li><strong>account (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor account name.</li>
+<li><strong>clusterName (default: <code>&quot;&quot;</code>):</strong> A unique name given to the cluster&rsquo;s device group.</li>
+<li><strong>debug (default: <code>false</code>):</strong> To enable verbose logging at debug level.</li>
+<li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from LogicMonitor or move the device to the <code>_deleted</code> device group.</li>
+<li><strong>disableAlerting (default: <code>false</code>):</strong> Disables LogicMonitor alerting for all the cluster resources.</li>
+<li><strong>collector.replicas (default: <code>1</code>):</strong> The number of collectors to create and use with Argus.</li>
+<li><strong>collector.size (default: <code>&quot;&quot;</code>):</strong> The collector size to install. Can be nano, small, medium, or large.</li>
+<li><strong>collector.imageRepository (default: <code>logicmonitor/collector</code>):</strong> The image repository of the <a href="https://hub.docker.com/r/logicmonitor/collector">Collector</a> container.</li>
+<li><strong>collector.imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/collector/tags">Collector</a> container.</li>
+<li><strong>collector.imagePullPolicy (default: <code>Always</code>):</strong> The image pull policy of the Collector container.</li>
+<li><strong>collector.secretName (default: <code>&quot;collector&quot;</code>):</strong> The Secret resource name of the collectors.</li>
 </ul>
-
 <p>Optional Values:</p>
-
 <ul>
-<li><strong>debug (default: <code>false</code>):</strong> Enable debug logging.</li>
-<li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from
-LogicMonitor or move the device to the <code>_delted</code> device group.</li>
-<li><strong>disableAlerting (default: <code>false</code>):</strong> Disable alerting for all devices added.</li>
-<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have
-RBAC enabled, this value should be set to false.</li>
-<li><strong>etcdDiscoveryToken:</strong> The public etcd discovery token used to add etcd hosts
-to the cluster device group.</li>
-<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong></li>
-<li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The respository to use
-for the Argus docker image.</li>
-<li><strong>imageTag:</strong> The argus container <a href="https://hub.docker.com/r/logicmonitor/argus/tags/">image tag</a> to use.</li>
+<li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</li>
+<li><strong>clusterGroupID (default: <code>0</code>):</strong> A parent group id of the cluster&rsquo;s device group.</li>
+<li><strong>etcdDiscoveryToken (default: <code>&quot;&quot;</code>):</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
+<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Argus container.</li>
+<li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The image respository of the <a href="https://hub.docker.com/r/logicmonitor/argus">Argus</a> container.</li>
+<li><strong>imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/argus/tags">Argus</a> container.</li>
+<li><strong>proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url.</li>
+<li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
+<li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
+<li><strong>nodeSelector (default: <code>{}</code>):</strong> It provides the simplest way to run Pod on particular Node(s) based on labels on the node.</li>
+<li><strong>affinity (default: <code>{}</code>):</strong> It allows you to constrain which nodes your pod is eligible to be scheduled on.</li>
+<li><strong>priorityClassName (default: <code>&quot;&quot;</code>):</strong> The priority class name for Pod priority. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.</li>
+<li><strong>tolerations (default: <code>[]</code>):</strong> Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.</li>
+<li><strong>filters.pod (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Pod device type. Based on this parameter, Pods would be added/deleted for discovery on LM.</li>
+<li><strong>filters.service (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Service device type. Based on this parameter, Services would be added/deleted for discovery on LM.</li>
+<li><strong>filters.node (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Node device type. Based on this parameter, Nodes would be added/deleted for discovery on LM.</li>
+<li><strong>filters.deployment (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Deployment device type. Based on this parameter, Deployments would be added/deleted for discovery on LM.</li>
+<li><strong>collector.groupID (default: <code>0</code>):</strong> The ID of the group of the collectors.</li>
+<li><strong>collector.escalationChainID (default: <code>0</code>):</strong> The ID of the escalation chain of the collectors.</li>
+<li><strong>collector.collectorVersion (default: <code>0</code>):</strong> The version of the collectors.</li>
+<li><strong>collector.useEA (default: <code>false</code>):</strong> On a collector downloading event, either download the latest EA version or the latest GD version.</li>
+<li><strong>collector.proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url of the collectors.</li>
+<li><strong>collector.proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username of the collectors.</li>
+<li><strong>collector.proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password of the collectors.</li>
+<li><strong>collector.priorityClassName (default: <code>&quot;&quot;</code>):</strong> The priority class name for Pod priority of the collector. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.</li>
+<li><strong>collector.tolerations (default: <code>[]</code>):</strong> Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.</li>
 </ul>
-
 <h1 id="configuring-argus-manually">Configuring Argus Manually</h1>
-
 <p>In most applications there are generally two types of configuration options
 available. Options that do not contain sensitive information, and options that
-do contain sensitive information. Argus retrieves its&rsquo; configuration from two
+do contain sensitive information. Argus retrieves its' configuration from two
 different sources for each of these types.</p>
-
 <p>For non-sensitive configuration options, Argus will read from a file on disk.
- For sensitive information, Argus will read from environment variables.</p>
-
+For sensitive information, Argus will read from environment variables.</p>
 <p>To configure the non-sensitive information, create a YAML file located at
 <code>/etc/argus/config.yaml</code>. Here is an example file you can modify to your needs:</p>
-
-<pre><code class="language-yaml">cluster_group_id:
-cluster_name:
-debug: false
-delete_devices: true
-disable_alerting: false
-</code></pre>
-
-<p>To configure the sensitive information, export the following environment
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nt">cluster_group_id</span><span class="p">:</span><span class="w">
+</span><span class="w"></span><span class="nt">cluster_name</span><span class="p">:</span><span class="w">
+</span><span class="w"></span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w"></span><span class="nt">delete_devices</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span><span class="nt">disable_alerting</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span></code></pre></div><p>To configure the sensitive information, export the following environment
 variables:</p>
-
-<pre><code class="language-bash">ACCESS_ID
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">ACCESS_ID
 ACCESS_KEY
 ACCOUNT
 ETCD_DISCOVERY_TOKEN
-</code></pre>
-
+</code></pre></div>
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
@@ -445,7 +416,7 @@ ETCD_DISCOVERY_TOKEN
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/" title="Device Tree Management">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/" title="Docs">
         <span class="direction">
           Previous
         </span>
@@ -455,7 +426,7 @@ ETCD_DISCOVERY_TOKEN
           </div>
           <div class="stretch">
             <div class="title">
-              Device Tree Management
+              Docs
             </div>
           </div>
         </div>
@@ -465,14 +436,14 @@ ETCD_DISCOVERY_TOKEN
 
   <div class="next">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/" title="Docs">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/" title="How It Works">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Docs
+              How It Works
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

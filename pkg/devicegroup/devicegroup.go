@@ -6,6 +6,9 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/vkumbhar94/lm-sdk-go/client"
 	"github.com/vkumbhar94/lm-sdk-go/client/lm"
@@ -20,13 +23,15 @@ const (
 
 // Options are the options for creating a device group.
 type Options struct {
-	AppliesTo             AppliesToBuilder
-	AppliesToDeletedGroup AppliesToBuilder
-	Client                *client.LMSdkGo
-	Name                  string
-	ParentID              int32
-	DisableAlerting       bool
-	DeleteDevices         bool
+	AppliesTo                         AppliesToBuilder
+	AppliesToDeletedGroup             AppliesToBuilder
+	AppliesToConflict                 AppliesToBuilder
+	Client                            *client.LMSdkGo
+	Name                              string
+	ParentID                          int32
+	DisableAlerting                   bool
+	DeleteDevices                     bool
+	FullDisplayNameIncludeClusterName bool
 }
 
 // AppliesToBuilder is an interface for building an appliesTo string.
@@ -34,6 +39,7 @@ type AppliesToBuilder interface {
 	HasCategory(string) AppliesToBuilder
 	Auto(string) AppliesToBuilder
 	And() AppliesToBuilder
+	Custom(string) AppliesToBuilder
 	Or() AppliesToBuilder
 	Equals(string) AppliesToBuilder
 	Exists(string) AppliesToBuilder
@@ -78,6 +84,11 @@ func (a *appliesToBuilder) Auto(property string) AppliesToBuilder {
 	return a
 }
 
+func (a *appliesToBuilder) Custom(property string) AppliesToBuilder {
+	a.value += property
+	return a
+}
+
 func (a *appliesToBuilder) String() string {
 	return a.value
 }
@@ -113,7 +124,28 @@ func Create(opts *Options) (int32, error) {
 
 	}
 
+	err = createConflictDynamicGroup(opts, clusterDeviceGroup.ID)
+	if err != nil {
+		return 0, err
+	}
+
 	return clusterDeviceGroup.ID, nil
+}
+
+func createConflictDynamicGroup(opts *Options, clusterGrpID int32) error {
+	if opts.AppliesToConflict != nil && !opts.FullDisplayNameIncludeClusterName {
+		conflictingDeviceGroup, err := Find(clusterGrpID, constants.ConflictDeviceGroup, opts.Client)
+		if err != nil {
+			return err
+		}
+		if conflictingDeviceGroup == nil {
+			_, err := create(constants.ConflictDeviceGroup, opts.AppliesToConflict.String(), true, clusterGrpID, opts.Client)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Find searches for a device group identified by the parent ID and name.

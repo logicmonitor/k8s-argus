@@ -2,8 +2,8 @@ package lmexec
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/vkumbhar94/lm-sdk-go/client/lm"
-	"github.com/vkumbhar94/lm-sdk-go/models"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // LMExec Provides utility function for SDK calls using Base object
@@ -62,6 +62,18 @@ func (lmexec *LMExec) AddDeviceErrResp(err error) *models.ErrorResponse {
 // UpdateDeviceErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) UpdateDeviceErrResp(err error) *models.ErrorResponse {
 	return err.(*lm.UpdateDeviceDefault).Payload
+}
+
+// UpdateDevicePropertyErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) UpdateDevicePropertyErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.UpdateDevicePropertyByNameDefault).Payload
+}
+
+//UpdateDevicePropertyByName updates specified device property.
+func (lmexec *LMExec) UpdateDevicePropertyByName(params *lm.UpdateDevicePropertyByNameParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.UpdateDevicePropertyByName(params)
+	}
 }
 
 // GetDeviceListErrResp parse error object and returns models.ErrorResponse
