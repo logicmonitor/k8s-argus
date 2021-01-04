@@ -29,8 +29,6 @@ import (
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	log "github.com/sirupsen/logrus"
-	"github.com/vkumbhar94/lm-sdk-go/client"
-	"github.com/vkumbhar94/lm-sdk-go/client/lm"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"

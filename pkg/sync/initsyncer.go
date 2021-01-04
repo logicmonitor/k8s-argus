@@ -276,14 +276,3 @@ func (i *InitSyncer) initSyncHPA(parentGroupID int32, isRestart bool) {
 		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart)
 	}
 }
-
-// RunPeriodicSync runs synchronization periodically.
-func (i *InitSyncer) RunPeriodicSync(syncTime int) {
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "periodic-sync"}))
-	go func() {
-		for {
-			time.Sleep(time.Duration(syncTime) * time.Minute)
-			i.InitSync(lctx)
-		}
-	}()
-}
