@@ -510,19 +510,17 @@ func (m *Manager) MoveToDeletedGroup(lctx *lmctx.LMContext, resource, name, full
 		return nil, nil
 	}
 
-	device := m.buildDeviceBeforeDeletion(lctx, deletionTimestamp, existingDevice, options...)
-	// fields := constants.CustomPropertiesFieldName + "," + constants.NameFieldName + "," + constants.DisplayNameFieldName
+	device := m.buildDeviceBeforeDeletion(deletionTimestamp, existingDevice, options...)
+	fields := constants.CustomPropertiesFieldName + "," + constants.NameFieldName + "," + constants.DisplayNameFieldName
 
-	// TODO: Use PATCH API once issue is fixed & don't pass complete device object
-	// updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, device, fields)
-	updatedDevice, err := m.updateAndReplace(lctx, resource, device.ID, device)
+	updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, device, fields)
 	if err != nil {
 		return nil, err
 	}
 	return updatedDevice, nil
 }
 
-func (m *Manager) buildDeviceBeforeDeletion(lctx *lmctx.LMContext, deletionTimestamp *v1.Time, existingDevice *models.Device, options ...types.DeviceOption) *models.Device {
+func (m *Manager) buildDeviceBeforeDeletion(deletionTimestamp *v1.Time, existingDevice *models.Device, options ...types.DeviceOption) *models.Device {
 	// add resource deletion timestamp
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	if deletionTimestamp != nil {
@@ -537,7 +535,21 @@ func (m *Manager) buildDeviceBeforeDeletion(lctx *lmctx.LMContext, deletionTimes
 	deviceDisplayName := util.TrimName(util.GetPropertyValue(existingDevice, constants.K8sDeviceNamePropertyKey))
 	options = append(options, m.DisplayName(deviceDisplayName+"-"+shortUUID))
 
-	return buildDevice(lctx, m.Config(), existingDevice, options...)
+	// build device with specific fields that needs to be updated
+	// ID & PreferredCollectorID are required, if not passed then considered as 0 & API throws an error
+	device := &models.Device{
+		ID:                   existingDevice.ID,
+		Name:                 existingDevice.Name,
+		DisplayName:          existingDevice.DisplayName,
+		CustomProperties:     existingDevice.CustomProperties,
+		PreferredCollectorID: existingDevice.PreferredCollectorID,
+	}
+
+	for _, option := range options {
+		option(device)
+	}
+
+	return device
 }
 
 // DeleteByID implements types.DeviceManager.
