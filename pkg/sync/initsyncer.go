@@ -200,10 +200,16 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			continue
 		}
 
+		// ignore the device if it is moved in _deleted group
+		if util.GetPropertyValue(device, constants.K8sResourceDeletedOnPropertyKey) != "" {
+			log.Debugf("Ignore the device (%v) for synchronization as it is moved in _deleted group", *device.DisplayName)
+			continue
+		}
+
 		// the displayName may be renamed, we should use the complete displayName for comparison.
 		fullDisplayName := util.GetFullDisplayName(device, resourceType, autoClusterName)
 		_, exist := resourcesMap[fullDisplayName]
-		if !exist && util.GetPropertyValue(device, constants.K8sResourceDeletedOnPropertyKey) == "" {
+		if !exist {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
 			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
 			if err != nil {
