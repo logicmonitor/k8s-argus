@@ -18,7 +18,7 @@ func isResourcePingEnabled(resource string) bool {
 	switch resource {
 	case constants.Pods:
 		return true
-	case constants.Deployments, constants.Services, constants.Nodes:
+	case constants.Deployments, constants.Services, constants.Nodes, constants.HorizontalPodAutoScalers:
 		return false
 	default:
 		return true

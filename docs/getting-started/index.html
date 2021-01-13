@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Getting Started - Argus</title>
-    <meta name="generator" content="Hugo 0.48" />
+    <meta name="generator" content="Hugo 0.76.5" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">0.2.0-alpha.1</span></strong>
+        <strong>Argus <span class="version">4.2.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -253,19 +253,6 @@
 
 
 
-<a  title="Device Tree Management" href="https://logicmonitor.github.io/k8s-argus/docs/device-tree-management/">
-	
-	Device Tree Management
-</a>
-
-
-
-      
-        
-        
-
-
-
 <a  title="How It Works" href="https://logicmonitor.github.io/k8s-argus/docs/how-it-works/">
 	
 	How It Works
@@ -275,24 +262,6 @@
 
       
     </ul>
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Roadmap" href="https://logicmonitor.github.io/k8s-argus/roadmap/">
-	
-	Roadmap
-</a>
-
-
-
   
 </li>
 
@@ -341,72 +310,53 @@
 		<div class="wrapper">
 			<h1>Getting Started </h1>
 
-			
+			<p>The simplest way to get started with Argus is to install it using <a href="https://helm.sh/docs">Helm</a> version 3.</p>
+<p>You&rsquo;ll need to add the LogicMonitor chart repository:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
+</code></pre></div><blockquote>
+<p>Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ kubectl create serviceaccount tiller --namespace<span class="o">=</span><span class="s2">&#34;kube-system&#34;</span>
+$ kubectl create clusterrolebinding tiller --clusterrole<span class="o">=</span>cluster-admin --serviceaccount<span class="o">=</span>kube-system:tiller
+$ helm init --service-account<span class="o">=</span>tiller
+</code></pre></div><p>Now you can install the LogicMonitor Collectorset controller:</p>
+<p>Get the configuration file downloaded from the LogicMonitor UI or you can create from the template <a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller">here</a>.</p>
+<p>Update configuration parameters in configuration file.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Export the configuration file path &amp; use it in the helm command.</span>
+$ <span class="nb">export</span> <span class="nv">COLLECTORSET_CONTROLLER_CONF_FILE</span><span class="o">=</span>&lt;collectorset-controller-configuration-file-path&gt;
 
-<p>The simplest way to get started with Argus is to install it using <a href="https://github.com/kubernetes/helm">Helm</a>. Prior to installation, you will need a
-cluster-admin serviceaccount for tiller:</p>
-
-<pre><code class="language-bash">$ kubectl create serviceaccount tiller --namespace=&quot;kube-system&quot;
-$ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-$ helm init --service-account=tiller
-</code></pre>
-
-<p>You&rsquo;ll also need to add the LogicMonitor chart repository:</p>
-
-<pre><code class="language-bash">$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
-</code></pre>
-
-<p>Now you can install the LogicMonitor Collectorset controller:</p>
-
-<pre><code class="language-bash">$ helm upgrade \
-  --install \
-  --debug \
-  --wait \
-  --set accessID=&quot;$ACCESS_ID&quot; \
-  --set accessKey=&quot;$ACCESS_KEY&quot; \
-  --set account=&quot;$ACCOUNT&quot; \
-  --set clusterName=&quot;$CLUSTER_NAME&quot; \
-  --set imageTag=&quot;$IMAGE_TAG&quot; \
-  collectorset-controller logicmonitor/collectorset-controller
-</code></pre>
-
-<p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a complete
-list of values the Collectorset Controller helm chart supports, and their
+$ helm upgrade <span class="se">\
+</span><span class="se"></span>  --install <span class="se">\
+</span><span class="se"></span>  --debug <span class="se">\
+</span><span class="se"></span>  --wait <span class="se">\
+</span><span class="se"></span>  --namespace<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$NAMESPACE</span><span class="s2">&#34;</span> <span class="se">\
+</span><span class="se"></span>  -f <span class="s2">&#34;</span><span class="nv">$COLLECTORSET_CONTROLLER_CONF_FILE</span><span class="s2">&#34;</span> <span class="se">\
+</span><span class="se"></span>  collectorset-controller logicmonitor/collectorset-controller
+</code></pre></div><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Collectorset Controller helm chart supports, and their
 descriptions.</p>
-
 <blockquote>
 <p>Note: The Collectorset controller should be installed only once per cluster.</p>
 </blockquote>
-
 <p>Next, install Argus:</p>
+<p>Get the configuration file downloaded from the LogicMonitor UI or you can create from the template <a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus">here</a>.</p>
+<p>Update configuration parameters in configuration file.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Export the configuration file path &amp; use it in the helm command.</span>
+$ <span class="nb">export</span> <span class="nv">ARGUS_CONF_FILE</span><span class="o">=</span>&lt;argus-configuration-file-path&gt;
 
-<pre><code class="language-bash">    $ helm upgrade \
-    --install \
-    --debug \
-    --wait \
-    --set accessID=&quot;$ACCESS_ID&quot; \
-    --set accessKey=&quot;$ACCESS_KEY&quot; \
-    --set account=&quot;$ACCOUNT&quot; \
-    --set clusterGroupID=&quot;$CLUSTER_GROUP_ID&quot; \
-    --set clusterName=&quot;$CLUSTER_NAME&quot; \
-    --set imageTag=&quot;$IMAGE_TAG&quot; \
-    --set collector.replicas=&quot;$COLLECTOR_REPLICAS&quot; \
-    --set collector.size=&quot;$COLLECTOR_SIZE&quot; \
-    argus logicmonitor/argus
-</code></pre>
-
-<p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a complete
-list of values the Argus helm chart supports, and their descriptions.</p>
-
+$ helm upgrade <span class="se">\
+</span><span class="se"></span>  --install <span class="se">\
+</span><span class="se"></span>  --debug <span class="se">\
+</span><span class="se"></span>  --wait <span class="se">\
+</span><span class="se"></span>  --namespace<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$NAMESPACE</span><span class="s2">&#34;</span> <span class="se">\
+</span><span class="se"></span>  -f <span class="s2">&#34;</span><span class="nv">$ARGUS_CONF_FILE</span><span class="s2">&#34;</span> <span class="se">\
+</span><span class="se"></span>  argus logicmonitor/argus
+</code></pre></div><p>See the <a href="https://logicmonitor.github.io/k8s-argus/docs/configuration/">configuration page</a> for a list of values the Argus helm chart supports, and their descriptions.</p>
 <blockquote>
 <p>Note: Argus should be installed only once per cluster.</p>
 </blockquote>
-
 <p>After installation is complete, you should make sure you have <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/">DataSources</a> in your account
 that will start monitoring the resources in your cluster.</p>
-
 <h1 id="community">Community</h1>
-
 <ul>
 <li>To report bugs and/or submit feature requests, use <a href="https://github.com/logicmonitor/k8s-argus/issues">GitHub</a>.</li>
 </ul>
@@ -414,7 +364,7 @@ that will start monitoring the resources in your cluster.</p>
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
@@ -428,7 +378,7 @@ that will start monitoring the resources in your cluster.</p>
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/roadmap/" title="Roadmap">
+      <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/" title="Monitoring">
         <span class="direction">
           Previous
         </span>
@@ -438,7 +388,7 @@ that will start monitoring the resources in your cluster.</p>
           </div>
           <div class="stretch">
             <div class="title">
-              Roadmap
+              Monitoring
             </div>
           </div>
         </div>
@@ -448,14 +398,14 @@ that will start monitoring the resources in your cluster.</p>
 
   <div class="next">
   
-      <a href="https://logicmonitor.github.io/k8s-argus/docs/monitoring/" title="Monitoring">
+      <a href="https://logicmonitor.github.io/k8s-argus/argus/" title="Argus">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Monitoring
+              Argus
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

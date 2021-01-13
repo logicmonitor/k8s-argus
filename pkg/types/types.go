@@ -3,9 +3,9 @@ package types
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
-	"github.com/vkumbhar94/lm-sdk-go/client"
-	"github.com/vkumbhar94/lm-sdk-go/client/lm"
-	"github.com/vkumbhar94/lm-sdk-go/models"
+	"github.com/logicmonitor/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/logicmonitor/lm-sdk-go/models"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 )
@@ -68,24 +68,24 @@ type DeviceMapper interface {
 	FindByDisplayName(*lmctx.LMContext, string, string) (*models.Device, error)
 	// FindByDisplayNames searches for devices by the specified string by its display name. It will return the device list.
 	FindByDisplayNames(*lmctx.LMContext, string, ...string) ([]*models.Device, error)
-	// FindByDisplayNameAndClusterName searches for device by the specified string by its display name and clusterName. It will return a device if and only if
-	FindByDisplayNameAndClusterName(*lmctx.LMContext, string, string) (*models.Device, error)
 	// Add adds a device to a LogicMonitor account.
 	Add(*lmctx.LMContext, string, map[string]string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplace updates a device using the 'replace' OpType.
 	UpdateAndReplace(*lmctx.LMContext, string, *models.Device, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
-	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, UpdateFilter, map[string]string, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, string, UpdateFilter, map[string]string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
 	// specific field of a device.
 	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceFieldByDisplayName updates a device using the 'replace' OpType for a
 	// specific field of a device.
-	UpdateAndReplaceFieldByDisplayName(*lmctx.LMContext, string, string, string, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceFieldByDisplayName(*lmctx.LMContext, string, string, string, string, ...DeviceOption) (*models.Device, error)
 	// DeleteByID deletes a device by device ID.
 	DeleteByID(*lmctx.LMContext, string, int32) error
 	// DeleteByDisplayName deletes a device by device display name.
-	DeleteByDisplayName(*lmctx.LMContext, string, string) error
+	DeleteByDisplayName(*lmctx.LMContext, string, string, string) error
+	// GetDesiredDisplayName returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
+	GetDesiredDisplayName(string, string, string) string
 }
 
 // DeviceOption is the function definition for the functional options pattern.
@@ -127,6 +127,8 @@ type LMExecutor interface {
 
 	UpdateDevice(*lm.UpdateDeviceParams) ExecRequest
 	UpdateDeviceErrResp(error) *models.ErrorResponse
+	UpdateDevicePropertyByName(*lm.UpdateDevicePropertyByNameParams) ExecRequest
+	UpdateDevicePropertyErrResp(error) *models.ErrorResponse
 
 	GetDeviceList(*lm.GetDeviceListParams) ExecRequest
 	GetDeviceListErrResp(error) *models.ErrorResponse

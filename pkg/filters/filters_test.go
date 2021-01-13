@@ -21,6 +21,7 @@ func initFilterExprMap() {
 	expressionMap["TestDash"] = "node-app =~ 'TestNode'"
 	expressionMap["TestSlash"] = "kubernetes/hostname =~ 'host-One'"
 	expressionMap["TestAllChars"] = "kubernetes.io/pod-name =~ 'pod-test-01'"
+	expressionMap["TestPodName"] = "name =~ 'pod-device'"
 }
 
 func TestEvaluate(t *testing.T) {
@@ -103,6 +104,12 @@ func TestEvaluate(t *testing.T) {
 			evalParams:     getSampleEvaluationParamsForAllSuppCharsInKeyAndValue(),
 			expectedResult: true,
 		},
+		{
+			name:           "Test special chars in resource name",
+			resource:       "TestPodName",
+			evalParams:     getSampleEvaluationParamsForPod1(),
+			expectedResult: true,
+		},
 	}
 
 	assert := assert.New(t)
@@ -120,7 +127,7 @@ func TestEvaluate(t *testing.T) {
 func getSampleEvaluationParamsForPod1() map[string]interface{} {
 	labels := make(map[string]interface{})
 	labels["p1"] = "v1"
-	labels["name"] = "pod-device"
+	labels["name"] = "pod_device"
 	return labels
 }
 

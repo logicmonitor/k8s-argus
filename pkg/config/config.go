@@ -11,14 +11,16 @@ import (
 // Config represents the application's configuration file.
 type Config struct {
 	*Secrets
-	Address         string `yaml:"address"`
-	ClusterCategory string `yaml:"cluster_category"`
-	ClusterName     string `yaml:"cluster_name"`
-	Debug           bool   `yaml:"debug"`
-	DeleteDevices   bool   `yaml:"delete_devices"`
-	DisableAlerting bool   `yaml:"disable_alerting"`
-	ClusterGroupID  int32  `yaml:"cluster_group_id"`
-	ProxyURL        string `yaml:"proxy_url"`
+	Address                           string `yaml:"address"`
+	ClusterCategory                   string `yaml:"cluster_category"`
+	ClusterName                       string `yaml:"cluster_name"`
+	Debug                             bool   `yaml:"debug"`
+	DeleteDevices                     bool   `yaml:"delete_devices"`
+	DisableAlerting                   bool   `yaml:"disable_alerting"`
+	FullDisplayNameIncludeNamespace   bool   `yaml:"displayName_include_namespace"`
+	FullDisplayNameIncludeClusterName bool   `yaml:"displayName_include_clustername"`
+	ClusterGroupID                    int32  `yaml:"cluster_group_id"`
+	ProxyURL                          string `yaml:"proxy_url"`
 }
 
 // Secrets represents the application's sensitive configuration file.

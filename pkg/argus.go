@@ -20,14 +20,15 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/hpa"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
 	"github.com/logicmonitor/k8s-argus/pkg/worker"
+	"github.com/logicmonitor/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	log "github.com/sirupsen/logrus"
-	"github.com/vkumbhar94/lm-sdk-go/client"
-	"github.com/vkumbhar94/lm-sdk-go/client/lm"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
@@ -133,6 +134,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	serviceChannel := make(chan types.ICommand)
 	deploymentChannel := make(chan types.ICommand)
 	nodeChannel := make(chan types.ICommand)
+	hpaChannel := make(chan types.ICommand)
 	argus.Watchers = []types.Watcher{
 		&namespace.Watcher{
 			Base:         base,
@@ -196,6 +198,20 @@ func NewArgus(base *types.Base) (*Argus, error) {
 				ID:         "deployments",
 			},
 		},
+		&hpa.Watcher{
+			DeviceManager: deviceManager,
+			WConfig: &types.WConfig{
+				MethodChannels: map[string]chan types.ICommand{
+					"GET":    hpaChannel,
+					"POST":   hpaChannel,
+					"DELETE": hpaChannel,
+					"PUT":    hpaChannel,
+					"PATCH":  hpaChannel,
+				},
+				RetryLimit: 2,
+				ID:         "horizontalpodautoscalers",
+			},
+		},
 	}
 
 	// Start workers
@@ -220,7 +236,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 	}
 
 	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"name": "init-sync"}))
-	initSyncer.InitSync(lctx)
+	initSyncer.InitSync(lctx, true)
 	initSyncer.RunPeriodicSync(10)
 
 	if base.Config.EtcdDiscoveryToken != "" {
@@ -308,6 +324,8 @@ func getK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.I
 		return clientset.AppsV1beta2().RESTClient()
 	case constants.K8sAPIVersionAppsV1:
 		return clientset.AppsV1().RESTClient()
+	case constants.K8sAutoscalingV1:
+		return clientset.AutoscalingV1().RESTClient()
 	default:
 		return clientset.CoreV1().RESTClient()
 	}

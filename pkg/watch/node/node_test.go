@@ -90,7 +90,7 @@ func TestGetNodesMap(t *testing.T) {
 	assert := assert.New(t)
 	for _, testCase := range nodeTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			nodesMap, err := GetNodesMap(testCase.clientSet)
+			nodesMap, err := GetNodesMap(testCase.clientSet, "cluster1")
 
 			// check if err not nil
 			if err != nil {
