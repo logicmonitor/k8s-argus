@@ -39,6 +39,7 @@ type filterExpression struct {
 	SERVICES   string `yaml:"services"`
 	DEPLOYMENT string `yaml:"deployments"`
 	NODE       string `yaml:"nodes"`
+	HPA        string `yaml:"horizontalpodautoscalers"`
 }
 
 func (config config) get(resource string) filterExpression {
@@ -59,6 +60,8 @@ func (expression filterExpression) get(resource string) string {
 		return expression.SERVICES
 	case constants.Nodes:
 		return expression.NODE
+	case constants.HorizontalPodAutoScalers:
+		return expression.HPA
 	}
 	return ""
 }
@@ -90,6 +93,7 @@ func compileExpressionMap() {
 	expressionMap[constants.Deployments] = getFilterExpressionForResource(constants.Deployments)
 	expressionMap[constants.Nodes] = getFilterExpressionForResource(constants.Nodes)
 	expressionMap[constants.Services] = getFilterExpressionForResource(constants.Services)
+	expressionMap[constants.HorizontalPodAutoScalers] = getFilterExpressionForResource(constants.HorizontalPodAutoScalers)
 }
 
 func getFilterExpressionForResource(resource string) string {

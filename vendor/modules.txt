@@ -110,6 +110,11 @@ github.com/konsorten/go-windows-terminal-sequences
 ## explicit
 github.com/logicmonitor/k8s-collectorset-controller/api
 github.com/logicmonitor/k8s-collectorset-controller/pkg/constants
+# github.com/logicmonitor/lm-sdk-go v2.0.0-argus3+incompatible
+## explicit
+github.com/logicmonitor/lm-sdk-go/client
+github.com/logicmonitor/lm-sdk-go/client/lm
+github.com/logicmonitor/lm-sdk-go/models
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
 # github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e
@@ -150,11 +155,6 @@ github.com/spf13/viper
 # github.com/stretchr/testify v1.6.1
 ## explicit
 github.com/stretchr/testify/assert
-# github.com/vkumbhar94/lm-sdk-go v2.0.1+incompatible
-## explicit
-github.com/vkumbhar94/lm-sdk-go/client
-github.com/vkumbhar94/lm-sdk-go/client/lm
-github.com/vkumbhar94/lm-sdk-go/models
 # go.mongodb.org/mongo-driver v1.1.1
 go.mongodb.org/mongo-driver/bson
 go.mongodb.org/mongo-driver/bson/bsoncodec

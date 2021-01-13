@@ -24,6 +24,8 @@ const (
 	LabelCustomPropertyPrefix = "kubernetes.label."
 	// LabelNullPlaceholder is the string used to represent null values in custom properties
 	LabelNullPlaceholder = "null"
+	// LabelFargateProfile is the label name used for fargate profile to distinguish between fargate & other Pods
+	LabelFargateProfile = "eks.amazonaws.com/fargate-profile"
 )
 
 const (
@@ -39,6 +41,8 @@ const (
 	ServiceDeviceGroupName = "Services"
 	// DeploymentDeviceGroupName is the deployment device group name in the cluster device group.
 	DeploymentDeviceGroupName = "Deployments"
+	// HorizontalPodAutoscalerDeviceGroupName is the deployment device group name in the cluster device group.
+	HorizontalPodAutoscalerDeviceGroupName = "HorizontalPodAutoscalers"
 )
 
 const (
@@ -52,22 +56,38 @@ const (
 	NodeCategory = "KubernetesNode"
 	// NodeDeletedCategory is the system.category used to identity a deleted Kubernetes Node resource type in LogicMonitor.
 	NodeDeletedCategory = "KubernetesNodeDeleted"
+	// NodeConflictCategory is the system.category used to identity a conflicting Kubernetes Node resource type in LogicMonitor.
+	NodeConflictCategory = "KubernetesNodeConflict"
 	// ServiceCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
 	ServiceCategory = "KubernetesService"
 	// ServiceDeletedCategory is the system.category used to identity a deleted Kubernetes Service resource type in LogicMonitor.
 	ServiceDeletedCategory = "KubernetesServiceDeleted"
+	// ServiceConflictCategory is the system.category used to identity a conflicting Kubernetes Service resource type in LogicMonitor.
+	ServiceConflictCategory = "KubernetesServiceConflict"
 	// DeploymentCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
 	DeploymentCategory = "KubernetesDeployment"
 	// DeploymentDeletedCategory is the system.category used to identity a deleted Kubernetes Service resource type in LogicMonitor.
 	DeploymentDeletedCategory = "KubernetesDeploymentDeleted"
+	// DeploymentConflictCategory is the system.category used to identity a conflicting Kubernetes Deployment resource type in LogicMonitor.
+	DeploymentConflictCategory = "KubernetesDeploymentConflict"
 	// PodCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
 	PodCategory = "KubernetesPod"
 	// PodDeletedCategory is the system.category used to identity a deleted Kubernetes Pod resource type in LogicMonitor.
 	PodDeletedCategory = "KubernetesPodDeleted"
+	// PodConflictCategory is the system.category used to identity a conflicting Kubernetes Pod resource type in LogicMonitor.
+	PodConflictCategory = "KubernetesPodConflict"
+	// HorizontalPodAutoscalerCategory is the system.category used to identity the Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
+	HorizontalPodAutoscalerCategory = "KubernetesHorizontalPodAutoscaler"
+	// HorizontalPodAutoscalerDeletedCategory is the system.category used to identity a deleted Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
+	HorizontalPodAutoscalerDeletedCategory = "KubernetesHorizontalPodAutoscalerDeleted"
+	// HorizontalPodAutoscalerConflictCategory is the system.category used to identity a conflicting Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
+	HorizontalPodAutoscalerConflictCategory = "KubernetesHorizontalPodAutoscalerConflict"
 	// DeletedDeviceGroup is the name of the device group where deleted devices are optionally moved to.
 	DeletedDeviceGroup = "_deleted"
 	// ClusterDeviceGroupPrefix is the prefix for the top level cluster device group
 	ClusterDeviceGroupPrefix = "Kubernetes Cluster: "
+	//ConflictDeviceGroup is the name of the device group where conflicting devices are optionally moved to.
+	ConflictDeviceGroup = "_conflict"
 )
 
 const (
@@ -94,6 +114,11 @@ const (
 	K8sSystemCategoriesPropertyKey = "system.categories"
 	// K8sSystemIPsPropertyKey is the key of the system ips property
 	K8sSystemIPsPropertyKey = "system.ips"
+
+	// K8sDeviceNamePropertyKey is the key of the unique auto property kubernetes device name.
+	K8sDeviceNamePropertyKey = "auto.name"
+	// K8sDeviceNamespacePropertyKey is the key of the unique auto property kubernetes device namespace.
+	K8sDeviceNamespacePropertyKey = "auto.namespace"
 )
 
 const (
@@ -105,6 +130,8 @@ const (
 	K8sAPIVersionAppsV1beta2 = "apps/v1beta2"
 	// K8sAPIVersionAppsV1 is the version 'apps/v1' of k8s api
 	K8sAPIVersionAppsV1 = "apps/v1"
+	// K8sAutoscalingV1 is the version 'autoscaling/v1' of k8s api
+	K8sAutoscalingV1 = "autoscaling/v1"
 )
 
 const (
@@ -116,6 +143,8 @@ const (
 	Services = "services"
 	// Nodes Nodes generic
 	Nodes = "nodes"
+	// HorizontalPodAutoScalers hpa generic
+	HorizontalPodAutoScalers = "horizontalpodautoscalers"
 )
 
 const (
