@@ -130,9 +130,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
-		fmtDeploymentDisplayName(deployment, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
+		fmtDeploymentDisplayName(deployment, w.Config().ClusterName), deployment.DeletionTimestamp, w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move deployment %q: %v", w.getDesiredDisplayName(deployment), err)
 		return
 	}

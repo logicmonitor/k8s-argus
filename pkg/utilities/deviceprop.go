@@ -101,3 +101,11 @@ func GetConflictCategoryByResourceType(resource string) string {
 	}
 	return ""
 }
+
+// TrimName it will trim the name to 244 char if greater than 244
+func TrimName(name string) string {
+	if len(name) > constants.MaxResourceLength {
+		name = name[:constants.MaxResourceLength]
+	}
+	return name
+}

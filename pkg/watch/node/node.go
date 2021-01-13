@@ -169,9 +169,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
-		fmtNodeDisplayName(node, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(node, constants.NodeDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(node),
+		fmtNodeDisplayName(node, w.Config().ClusterName), node.DeletionTimestamp, w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", w.getDesiredDisplayName(node), err)
 		return
 	}

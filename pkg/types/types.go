@@ -6,6 +6,7 @@ import (
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 )
@@ -76,10 +77,9 @@ type DeviceMapper interface {
 	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, string, UpdateFilter, map[string]string, ...DeviceOption) (*models.Device, error)
 	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
 	// specific field of a device.
-	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string, ...DeviceOption) (*models.Device, error)
-	// UpdateAndReplaceFieldByDisplayName updates a device using the 'replace' OpType for a
-	// specific field of a device.
-	UpdateAndReplaceFieldByDisplayName(*lmctx.LMContext, string, string, string, string, ...DeviceOption) (*models.Device, error)
+	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string) (*models.Device, error)
+	// MoveToDeletedGroup moves a device to _deleted group and replace fields
+	MoveToDeletedGroup(*lmctx.LMContext, string, string, string, *v1.Time, ...DeviceOption) (*models.Device, error)
 	// DeleteByID deletes a device by device ID.
 	DeleteByID(*lmctx.LMContext, string, int32) error
 	// DeleteByDisplayName deletes a device by device display name.
@@ -109,6 +109,8 @@ type DeviceBuilder interface {
 	System(string, string) DeviceOption
 	// System adds a custom property to the device.
 	Custom(string, string) DeviceOption
+	// DeletedOn adds kubernetes.resourceDeletedOn property to the device.
+	DeletedOn(string, string) DeviceOption
 }
 
 // UpdateFilter is a boolean function to run predicate and return boolean value

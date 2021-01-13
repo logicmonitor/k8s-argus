@@ -133,9 +133,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.Horizont
 
 func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler),
-		fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler),
+		fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName), horizontalPodAutoscaler.DeletionTimestamp, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(horizontalPodAutoscaler), err)
 		return
 	}

@@ -200,6 +200,12 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			continue
 		}
 
+		// ignore the device if it is moved in _deleted group
+		if util.GetPropertyValue(device, constants.K8sResourceDeletedOnPropertyKey) != "" {
+			log.Debugf("Ignore the device (%v) for synchronization as it is moved in _deleted group", *device.DisplayName)
+			continue
+		}
+
 		// the displayName may be renamed, we should use the complete displayName for comparison.
 		fullDisplayName := util.GetFullDisplayName(device, resourceType, autoClusterName)
 		_, exist := resourcesMap[fullDisplayName]
@@ -209,7 +215,7 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			if err != nil {
 				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
 			}
-			return
+			continue
 		}
 		// Rename devices as per config parameters only on Argus restart.
 		if isRestart {
