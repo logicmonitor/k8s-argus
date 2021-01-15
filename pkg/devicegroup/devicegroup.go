@@ -2,6 +2,7 @@ package devicegroup
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -92,6 +93,7 @@ func (a *appliesToBuilder) String() string {
 
 // Create creates a device group.
 func Create(opts *Options) (int32, error) {
+	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"res": "create-device-group"}))
 	clusterDeviceGroup, err := Find(opts.ParentID, opts.Name, opts.Client)
 	if err != nil {
 		return 0, err
@@ -99,12 +101,15 @@ func Create(opts *Options) (int32, error) {
 
 	if clusterDeviceGroup == nil {
 		log.Infof("Could not find device group %q", opts.Name)
-		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.Client)
+		customProperties := addDefaultCustomProperties(opts)
+		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, customProperties, opts.Client)
 		if err != nil {
 			return 0, err
 		}
 
 		clusterDeviceGroup = cdg
+	} else {
+		checkDeleteAfterDurationProperty(lctx, *clusterDeviceGroup.Name, clusterDeviceGroup.ID, opts.Client)
 	}
 
 	if !opts.DeleteDevices && opts.AppliesToDeletedGroup != nil {
@@ -113,7 +118,7 @@ func Create(opts *Options) (int32, error) {
 			return 0, err
 		}
 		if deletedDeviceGroup == nil {
-			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, opts.Client)
+			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, nil, opts.Client)
 			if err != nil {
 				return 0, err
 			}
@@ -136,7 +141,7 @@ func createConflictDynamicGroup(opts *Options, clusterGrpID int32) error {
 			return err
 		}
 		if conflictingDeviceGroup == nil {
-			_, err := create(constants.ConflictDeviceGroup, opts.AppliesToConflict.String(), true, clusterGrpID, opts.Client)
+			_, err := create(constants.ConflictDeviceGroup, opts.AppliesToConflict.String(), true, clusterGrpID, nil, opts.Client)
 			if err != nil {
 				return err
 			}
@@ -258,14 +263,15 @@ func DeleteGroup(deviceGroup *models.DeviceGroup, client *client.LMSdkGo) error 
 	return err
 }
 
-func create(name, appliesTo string, disableAlerting bool, parentID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {
+func create(name, appliesTo string, disableAlerting bool, parentID int32, customProperties []*models.NameAndValue, client *client.LMSdkGo) (*models.DeviceGroup, error) {
 	params := lm.NewAddDeviceGroupParams()
 	params.SetBody(&models.DeviceGroup{
-		Name:            &name,
-		Description:     "A dynamic device group for Kubernetes.",
-		ParentID:        parentID,
-		AppliesTo:       appliesTo,
-		DisableAlerting: disableAlerting,
+		Name:             &name,
+		Description:      "A dynamic device group for Kubernetes.",
+		ParentID:         parentID,
+		AppliesTo:        appliesTo,
+		DisableAlerting:  disableAlerting,
+		CustomProperties: customProperties,
 	})
 
 	restResponse, err := client.LM.AddDeviceGroup(params)
@@ -321,4 +327,40 @@ func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty
 	}
 	log.Debugf("Successfully added device group property '%v'", entityProperty.Name)
 	return true
+}
+
+func addDefaultCustomProperties(opts *Options) []*models.NameAndValue {
+	customProperties := []*models.NameAndValue{}
+	// add K8sResourceDeleteAfterDurationProperty on parent cluster group
+	if strings.HasPrefix(opts.Name, constants.ClusterDeviceGroupPrefix) {
+		name := constants.K8sResourceDeleteAfterDurationPropertyKey
+		value := constants.K8sResourceDeleteAfterDurationPropertyValue
+		customProperties = append(customProperties, &models.NameAndValue{Name: &name, Value: &value})
+	}
+	return customProperties
+}
+
+func checkDeleteAfterDurationProperty(lctx *lmctx.LMContext, deviceGroupName string, deviceGroupID int32, client *client.LMSdkGo) {
+	if !strings.HasPrefix(deviceGroupName, constants.ClusterDeviceGroupPrefix) {
+		return
+	}
+	entityProperties := GetDeviceGroupPropertyList(lctx, deviceGroupID, client)
+	propertyExists := false
+	propertyValueEmpty := false
+	for _, prop := range entityProperties {
+		if prop.Name == constants.K8sResourceDeleteAfterDurationPropertyKey {
+			propertyExists = true
+			if prop.Value == "" {
+				propertyValueEmpty = true
+			}
+			break
+		}
+	}
+	entityProperty := models.EntityProperty{Name: constants.K8sResourceDeleteAfterDurationPropertyKey, Value: constants.K8sResourceDeleteAfterDurationPropertyValue, Type: constants.DeviceGroupCustomType}
+	if !propertyExists {
+		AddDeviceGroupProperty(lctx, deviceGroupID, &entityProperty, client)
+	}
+	if propertyValueEmpty {
+		UpdateDeviceGroupPropertyByName(lctx, deviceGroupID, &entityProperty, client)
+	}
 }
