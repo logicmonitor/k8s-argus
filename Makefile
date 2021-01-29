@@ -1,14 +1,31 @@
 NAMESPACE  := logicmonitor
 REPOSITORY := argus
-VERSION    := 1.0.0
+VERSION       ?= $(shell git describe --tags --always --dirty)
 
-all:
-	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):v2latest .
-	docker tag $(NAMESPACE)/$(REPOSITORY):v2latest $(NAMESPACE)/$(REPOSITORY):$(VERSION)
+default: build
 
-dev:
-	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):v2latest -f Dockerfile.dev .
-	docker tag $(NAMESPACE)/$(REPOSITORY):v2latest $(NAMESPACE)/$(REPOSITORY):$(VERSION)
+lint:
+ifeq ($(shell uname -s), Darwin)
+	find pkg/ -type f | grep go | egrep -v "mocks|gomock" | xargs gofmt -l -d -s -w
+	find pkg/ -type f | grep go | egrep -v "mocks|gomock" | xargs goimports -l -d -w
+endif
+
+build: lint
+
+	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) .
+
+dev: lint
+	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.dev .
+
+mockgen:
+	go generate ./...
+test: mockgen lint
+	go test ./... -v -coverprofile=coverage.txt -race
+	go tool cover -html=coverage.txt -o coverage.html
+
+devsetup:
+	go get github.com/golang/mock/mockgen
+
 
 .PHONY: docs
 docs:
