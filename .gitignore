@@ -1,2 +1,5 @@
 build
 coverage.txt
+coverage.html
+pkg/mocks
+**/gomock*

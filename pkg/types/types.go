@@ -1,5 +1,7 @@
 package types
 
+//go:generate mockgen -destination=../mocks/mock_types.go -package=mocks github.com/logicmonitor/k8s-argus/pkg/types LMFacade,Watcher,DeviceManager,DeviceMapper,DeviceBuilder
+
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
