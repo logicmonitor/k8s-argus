@@ -49,6 +49,11 @@ func (w *Watcher) Resource() string {
 	return resource
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return false
+}
+
 // ObjType is a function that implements the Watcher interface.
 func (w *Watcher) ObjType() runtime.Object {
 	return &v1.Node{}
@@ -184,7 +189,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.DisplayName(w.getDesiredDisplayName(node)),
 		w.SystemCategories(category),
 		w.Auto("name", node.Name),
-		w.Auto("selflink", node.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), node.ObjectMeta)),
 		w.Auto("uid", string(node.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, node.Name),

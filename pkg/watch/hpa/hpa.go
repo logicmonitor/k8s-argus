@@ -40,6 +40,11 @@ func (w *Watcher) Enabled() bool {
 	return permission.HasHorizontalPodAutoscalerPermissions()
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource
@@ -149,7 +154,7 @@ func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutos
 		w.SystemCategories(category),
 		w.Auto("name", horizontalPodAutoscaler.Name),
 		w.Auto("namespace", horizontalPodAutoscaler.Namespace),
-		w.Auto("selflink", horizontalPodAutoscaler.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), horizontalPodAutoscaler.ObjectMeta)),
 		w.Auto("uid", string(horizontalPodAutoscaler.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(horizontalPodAutoscaler.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(horizontalPodAutoscaler)),
