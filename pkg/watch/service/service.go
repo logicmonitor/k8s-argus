@@ -38,6 +38,11 @@ func (w *Watcher) Enabled() bool {
 	return true
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource
@@ -97,6 +102,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + service.Name}))
 		log := lmlog.Logger(lctx)
 		// Delete the service.
+		// nolint: dupl
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service),
 				fmtServiceDisplayName(service, w.Config().ClusterName)); err != nil {
@@ -168,7 +174,7 @@ func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOptio
 		w.SystemCategories(category),
 		w.Auto("name", service.Name),
 		w.Auto("namespace", service.Namespace),
-		w.Auto("selflink", service.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), service.ObjectMeta)),
 		w.Auto("uid", string(service.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(service.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(service)),

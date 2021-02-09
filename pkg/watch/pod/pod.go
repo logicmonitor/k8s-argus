@@ -43,6 +43,11 @@ func (w *Watcher) Resource() string {
 	return resource
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // ObjType is a function that implements the Watcher interface.
 func (w *Watcher) ObjType() runtime.Object {
 	return &v1.Pod{}
@@ -185,7 +190,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("name", pod.Name),
 		w.Auto("namespace", pod.Namespace),
 		w.Auto("nodename", pod.Spec.NodeName),
-		w.Auto("selflink", pod.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), pod.ObjectMeta)),
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),

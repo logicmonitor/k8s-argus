@@ -45,6 +45,7 @@ func (wc *WConfig) GetChannel(command ICommand) chan ICommand {
 // Watcher is the LogicMonitor Watcher interface.
 type Watcher interface {
 	APIVersion() string
+	Namespaced() bool
 	Enabled() bool
 	Resource() string
 	ObjType() runtime.Object
