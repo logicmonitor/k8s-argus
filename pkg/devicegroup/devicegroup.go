@@ -30,6 +30,7 @@ type Options struct {
 	DisableAlerting                   bool
 	DeleteDevices                     bool
 	FullDisplayNameIncludeClusterName bool
+	CustomProperties                  []*models.NameAndValue
 }
 
 // AppliesToBuilder is an interface for building an appliesTo string.
@@ -93,7 +94,8 @@ func (a *appliesToBuilder) String() string {
 
 // Create creates a device group.
 func Create(opts *Options) (int32, error) {
-	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"res": "create-device-group"}))
+	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"res": "create-device-group", "device_group_name": opts.Name}))
+	log := lmlog.Logger(lctx)
 	clusterDeviceGroup, err := Find(opts.ParentID, opts.Name, opts.Client)
 	if err != nil {
 		return 0, err
@@ -101,8 +103,7 @@ func Create(opts *Options) (int32, error) {
 
 	if clusterDeviceGroup == nil {
 		log.Infof("Could not find device group %q", opts.Name)
-		customProperties := addDefaultCustomProperties(opts)
-		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, customProperties, opts.Client)
+		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties, opts.Client)
 		if err != nil {
 			return 0, err
 		}
@@ -327,17 +328,6 @@ func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty
 	}
 	log.Debugf("Successfully added device group property '%v'", entityProperty.Name)
 	return true
-}
-
-func addDefaultCustomProperties(opts *Options) []*models.NameAndValue {
-	customProperties := []*models.NameAndValue{}
-	// add K8sResourceDeleteAfterDurationProperty on parent cluster group
-	if strings.HasPrefix(opts.Name, constants.ClusterDeviceGroupPrefix) {
-		name := constants.K8sResourceDeleteAfterDurationPropertyKey
-		value := constants.K8sResourceDeleteAfterDurationPropertyValue
-		customProperties = append(customProperties, &models.NameAndValue{Name: &name, Value: &value})
-	}
-	return customProperties
 }
 
 func checkDeleteAfterDurationProperty(lctx *lmctx.LMContext, deviceGroupName string, deviceGroupID int32, client *client.LMSdkGo) {

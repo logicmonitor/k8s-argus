@@ -5,6 +5,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // DeviceTree manages the device tree representation of a Kubernetes cluster in LogicMonitor.
@@ -17,12 +18,13 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 	// The device group at index 0 will be the root device group for all subsequent device groups.
 	return []*devicegroup.Options{
 		{
-			Name:            constants.ClusterDeviceGroupPrefix + d.Config.ClusterName,
-			ParentID:        d.Config.ClusterGroupID,
-			DisableAlerting: d.Config.DisableAlerting,
-			AppliesTo:       devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			Client:          d.LMClient,
-			DeleteDevices:   d.Config.DeleteDevices,
+			Name:             constants.ClusterDeviceGroupPrefix + d.Config.ClusterName,
+			ParentID:         d.Config.ClusterGroupID,
+			DisableAlerting:  d.Config.DisableAlerting,
+			AppliesTo:        devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			Client:           d.LMClient,
+			DeleteDevices:    d.Config.DeleteDevices,
+			CustomProperties: getClusterGroupsCustomProperties(),
 		},
 		{
 			Name:                  constants.EtcdDeviceGroupName,
@@ -122,4 +124,12 @@ func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 	}
 
 	return deviceGroups, nil
+}
+
+func getClusterGroupsCustomProperties() []*models.NameAndValue {
+	customProperties := []*models.NameAndValue{}
+	name := constants.K8sResourceDeleteAfterDurationPropertyKey
+	value := constants.K8sResourceDeleteAfterDurationPropertyValue
+	customProperties = append(customProperties, &models.NameAndValue{Name: &name, Value: &value})
+	return customProperties
 }
