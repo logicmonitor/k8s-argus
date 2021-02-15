@@ -72,11 +72,12 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 			}
 
 			opts := &devicegroup.Options{
-				AppliesTo:       appliesTo,
-				Client:          w.LMClient,
-				DisableAlerting: w.Config.DisableAlerting,
-				Name:            namespace.Name,
-				ParentID:        parentID,
+				AppliesTo:        appliesTo,
+				Client:           w.LMClient,
+				DisableAlerting:  w.Config.DisableAlerting,
+				Name:             namespace.Name,
+				ParentID:         parentID,
+				CustomProperties: devicegroup.NewPropertyBuilder(),
 			}
 
 			log.Debugf("%v", opts)

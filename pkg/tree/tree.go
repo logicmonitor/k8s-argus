@@ -5,7 +5,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // DeviceTree manages the device tree representation of a Kubernetes cluster in LogicMonitor.
@@ -24,7 +23,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:        devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:           d.LMClient,
 			DeleteDevices:    d.Config.DeleteDevices,
-			CustomProperties: getClusterGroupsCustomProperties(),
+			CustomProperties: devicegroup.NewPropertyBuilder().Add(constants.K8sResourceDeleteAfterDurationPropertyKey, constants.K8sResourceDeleteAfterDurationPropertyValue),
 		},
 		{
 			Name:                  constants.EtcdDeviceGroupName,
@@ -33,6 +32,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			Client:                d.LMClient,
 			DeleteDevices:         d.Config.DeleteDevices,
 			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			CustomProperties:      devicegroup.NewPropertyBuilder(),
 		},
 
 		{
@@ -43,6 +43,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			DeleteDevices:                     d.Config.DeleteDevices,
 			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
+			CustomProperties:                  devicegroup.NewPropertyBuilder(),
 		},
 		{
 			Name:                              constants.AllNodeDeviceGroupName,
@@ -52,6 +53,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			DeleteDevices:                     d.Config.DeleteDevices,
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
+			CustomProperties:                  devicegroup.NewPropertyBuilder(),
 		},
 
 		{
@@ -63,6 +65,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
+			CustomProperties:                  devicegroup.NewPropertyBuilder(),
 		},
 		{
 			Name:                              constants.PodDeviceGroupName,
@@ -73,6 +76,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.PodDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.PodConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
+			CustomProperties:                  devicegroup.NewPropertyBuilder(),
 		},
 		{
 			Name:                              constants.DeploymentDeviceGroupName,
@@ -83,6 +87,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
+			CustomProperties:                  devicegroup.NewPropertyBuilder(),
 		},
 		{
 			Name:                              constants.HorizontalPodAutoscalerDeviceGroupName,
@@ -93,6 +98,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
+			CustomProperties:                  devicegroup.NewPropertyBuilder(),
 		},
 	}
 }
@@ -124,12 +130,4 @@ func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
 	}
 
 	return deviceGroups, nil
-}
-
-func getClusterGroupsCustomProperties() []*models.NameAndValue {
-	customProperties := []*models.NameAndValue{}
-	name := constants.K8sResourceDeleteAfterDurationPropertyKey
-	value := constants.K8sResourceDeleteAfterDurationPropertyValue
-	customProperties = append(customProperties, &models.NameAndValue{Name: &name, Value: &value})
-	return customProperties
 }

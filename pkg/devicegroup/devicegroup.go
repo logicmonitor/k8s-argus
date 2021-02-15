@@ -30,7 +30,7 @@ type Options struct {
 	DisableAlerting                   bool
 	DeleteDevices                     bool
 	FullDisplayNameIncludeClusterName bool
-	CustomProperties                  []*models.NameAndValue
+	CustomProperties                  PropertyBuilder
 }
 
 // AppliesToBuilder is an interface for building an appliesTo string.
@@ -92,6 +92,34 @@ func (a *appliesToBuilder) String() string {
 	return a.value
 }
 
+// PropertyBuilder is an interface for building properties
+type PropertyBuilder interface {
+	Add(string, string) PropertyBuilder
+	Convert() []*models.NameAndValue
+}
+
+type propertyBuilder struct {
+	properties map[string]string
+}
+
+// NewPropertyBuilder is the builder for properties
+func NewPropertyBuilder() PropertyBuilder {
+	return &propertyBuilder{properties: make(map[string]string)}
+}
+
+func (p *propertyBuilder) Add(key string, value string) PropertyBuilder {
+	p.properties[key] = value
+	return p
+}
+
+func (p *propertyBuilder) Convert() []*models.NameAndValue {
+	props := []*models.NameAndValue{}
+	for k, v := range p.properties {
+		props = append(props, &models.NameAndValue{Name: &k, Value: &v})
+	}
+	return props
+}
+
 // Create creates a device group.
 func Create(opts *Options) (int32, error) {
 	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"res": "create-device-group", "device_group_name": opts.Name}))
@@ -103,7 +131,7 @@ func Create(opts *Options) (int32, error) {
 
 	if clusterDeviceGroup == nil {
 		log.Infof("Could not find device group %q", opts.Name)
-		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties, opts.Client)
+		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties.Convert(), opts.Client)
 		if err != nil {
 			return 0, err
 		}
@@ -119,7 +147,7 @@ func Create(opts *Options) (int32, error) {
 			return 0, err
 		}
 		if deletedDeviceGroup == nil {
-			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, nil, opts.Client)
+			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, NewPropertyBuilder().Convert(), opts.Client)
 			if err != nil {
 				return 0, err
 			}
@@ -338,7 +366,7 @@ func checkDeleteAfterDurationProperty(lctx *lmctx.LMContext, deviceGroupName str
 	propertyExists := false
 	propertyValueEmpty := false
 	for _, prop := range entityProperties {
-		if prop.Name == constants.K8sResourceDeleteAfterDurationPropertyKey {
+		if strings.EqualFold(prop.Name, constants.K8sResourceDeleteAfterDurationPropertyKey) {
 			propertyExists = true
 			if prop.Value == "" {
 				propertyValueEmpty = true
