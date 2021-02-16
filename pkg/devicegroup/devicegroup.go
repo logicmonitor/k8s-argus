@@ -2,6 +2,7 @@ package devicegroup
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -29,6 +30,7 @@ type Options struct {
 	DisableAlerting                   bool
 	DeleteDevices                     bool
 	FullDisplayNameIncludeClusterName bool
+	CustomProperties                  PropertyBuilder
 }
 
 // AppliesToBuilder is an interface for building an appliesTo string.
@@ -90,8 +92,38 @@ func (a *appliesToBuilder) String() string {
 	return a.value
 }
 
+// PropertyBuilder is an interface for building properties
+type PropertyBuilder interface {
+	Add(string, string) PropertyBuilder
+	Convert() []*models.NameAndValue
+}
+
+type propertyBuilder struct {
+	properties map[string]string
+}
+
+// NewPropertyBuilder is the builder for properties
+func NewPropertyBuilder() PropertyBuilder {
+	return &propertyBuilder{properties: make(map[string]string)}
+}
+
+func (p *propertyBuilder) Add(key string, value string) PropertyBuilder {
+	p.properties[key] = value
+	return p
+}
+
+func (p *propertyBuilder) Convert() []*models.NameAndValue {
+	props := []*models.NameAndValue{}
+	for k, v := range p.properties {
+		props = append(props, &models.NameAndValue{Name: &k, Value: &v})
+	}
+	return props
+}
+
 // Create creates a device group.
 func Create(opts *Options) (int32, error) {
+	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"res": "create-device-group", "device_group_name": opts.Name}))
+	log := lmlog.Logger(lctx)
 	clusterDeviceGroup, err := Find(opts.ParentID, opts.Name, opts.Client)
 	if err != nil {
 		return 0, err
@@ -99,12 +131,14 @@ func Create(opts *Options) (int32, error) {
 
 	if clusterDeviceGroup == nil {
 		log.Infof("Could not find device group %q", opts.Name)
-		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.Client)
+		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties.Convert(), opts.Client)
 		if err != nil {
 			return 0, err
 		}
 
 		clusterDeviceGroup = cdg
+	} else {
+		checkDeleteAfterDurationProperty(lctx, *clusterDeviceGroup.Name, clusterDeviceGroup.ID, opts.Client)
 	}
 
 	if !opts.DeleteDevices && opts.AppliesToDeletedGroup != nil {
@@ -113,7 +147,7 @@ func Create(opts *Options) (int32, error) {
 			return 0, err
 		}
 		if deletedDeviceGroup == nil {
-			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, opts.Client)
+			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, NewPropertyBuilder().Convert(), opts.Client)
 			if err != nil {
 				return 0, err
 			}
@@ -136,7 +170,7 @@ func createConflictDynamicGroup(opts *Options, clusterGrpID int32) error {
 			return err
 		}
 		if conflictingDeviceGroup == nil {
-			_, err := create(constants.ConflictDeviceGroup, opts.AppliesToConflict.String(), true, clusterGrpID, opts.Client)
+			_, err := create(constants.ConflictDeviceGroup, opts.AppliesToConflict.String(), true, clusterGrpID, nil, opts.Client)
 			if err != nil {
 				return err
 			}
@@ -258,14 +292,15 @@ func DeleteGroup(deviceGroup *models.DeviceGroup, client *client.LMSdkGo) error 
 	return err
 }
 
-func create(name, appliesTo string, disableAlerting bool, parentID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {
+func create(name, appliesTo string, disableAlerting bool, parentID int32, customProperties []*models.NameAndValue, client *client.LMSdkGo) (*models.DeviceGroup, error) {
 	params := lm.NewAddDeviceGroupParams()
 	params.SetBody(&models.DeviceGroup{
-		Name:            &name,
-		Description:     "A dynamic device group for Kubernetes.",
-		ParentID:        parentID,
-		AppliesTo:       appliesTo,
-		DisableAlerting: disableAlerting,
+		Name:             &name,
+		Description:      "A dynamic device group for Kubernetes.",
+		ParentID:         parentID,
+		AppliesTo:        appliesTo,
+		DisableAlerting:  disableAlerting,
+		CustomProperties: customProperties,
 	})
 
 	restResponse, err := client.LM.AddDeviceGroup(params)
@@ -321,4 +356,29 @@ func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty
 	}
 	log.Debugf("Successfully added device group property '%v'", entityProperty.Name)
 	return true
+}
+
+func checkDeleteAfterDurationProperty(lctx *lmctx.LMContext, deviceGroupName string, deviceGroupID int32, client *client.LMSdkGo) {
+	if !strings.HasPrefix(deviceGroupName, constants.ClusterDeviceGroupPrefix) {
+		return
+	}
+	entityProperties := GetDeviceGroupPropertyList(lctx, deviceGroupID, client)
+	propertyExists := false
+	propertyValueEmpty := false
+	for _, prop := range entityProperties {
+		if strings.EqualFold(prop.Name, constants.K8sResourceDeleteAfterDurationPropertyKey) {
+			propertyExists = true
+			if prop.Value == "" {
+				propertyValueEmpty = true
+			}
+			break
+		}
+	}
+	entityProperty := models.EntityProperty{Name: constants.K8sResourceDeleteAfterDurationPropertyKey, Value: constants.K8sResourceDeleteAfterDurationPropertyValue, Type: constants.DeviceGroupCustomType}
+	if !propertyExists {
+		AddDeviceGroupProperty(lctx, deviceGroupID, &entityProperty, client)
+	}
+	if propertyValueEmpty {
+		UpdateDeviceGroupPropertyByName(lctx, deviceGroupID, &entityProperty, client)
+	}
 }

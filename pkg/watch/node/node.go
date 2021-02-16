@@ -241,6 +241,7 @@ func (w *Watcher) createRoleDeviceGroup(lctx *lmctx.LMContext, labels map[string
 		Client:                w.LMClient,
 		DeleteDevices:         w.Config().DeleteDevices,
 		AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().Exists(constants.LabelCustomPropertyPrefix + label).And().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(w.Config().ClusterName),
+		CustomProperties:      devicegroup.NewPropertyBuilder(),
 	}
 
 	log.Debugf("%v", opts)
