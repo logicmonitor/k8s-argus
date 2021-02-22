@@ -21,6 +21,7 @@ type Config struct {
 	FullDisplayNameIncludeClusterName bool   `yaml:"displayName_include_clustername"`
 	ClusterGroupID                    int32  `yaml:"cluster_group_id"`
 	ProxyURL                          string `yaml:"proxy_url"`
+	IgnoreSSL						  bool   `yaml:"ignore_ssl"`
 }
 
 // Secrets represents the application's sensitive configuration file.

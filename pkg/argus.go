@@ -52,6 +52,10 @@ func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
 	config.SetAccountDomain(&domain)
 	//config.UserAgent = constants.UserAgentBase + constants.Version
 	if argusConfig.ProxyURL == "" {
+		//return client.New(config), nil
+		if argusConfig.IgnoreSSL{
+			return newLMClientWithoutSSL(config)
+		}
 		return client.New(config), nil
 	}
 	return newLMClientWithProxy(config, argusConfig)
@@ -81,6 +85,22 @@ func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*c
 	client.Transport = transport
 	client.LM = lm.New(transport, strfmt.Default, authInfo)
 	return client, nil
+}
+
+func newLMClientWithoutSSL(config *client.Config) (*client.LMSdkGo, error){
+	
+	var opts = httptransport.TLSClientOptions{InsecureSkipVerify: true}
+	var httpClient, err = httptransport.TLSClient(opts)
+
+	if err != nil {
+		return nil, err
+	}
+	transport := httptransport.NewWithClient(config.TransportCfg.Host, config.TransportCfg.BasePath, config.TransportCfg.Schemes, httpClient)
+	authInfo := client.LMv1Auth(*config.AccessID, *config.AccessKey)
+	cli := new(client.LMSdkGo)
+	cli.Transport = transport
+	cli.LM = lm.New(transport, strfmt.Default, authInfo)
+	return cli, nil
 }
 
 func newK8sClient() (*kubernetes.Clientset, error) {
