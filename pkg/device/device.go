@@ -98,7 +98,7 @@ func (m *Manager) checkAndUpdateExistingDevice(lctx *lmctx.LMContext, resource s
 			return existingDevice, nil
 		}
 	}
-	return nil, nil
+	return device, nil
 }
 
 // renameAndAddDevice rename display name and then add the device
