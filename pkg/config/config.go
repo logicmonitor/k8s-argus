@@ -5,10 +5,11 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // Config represents the application's configuration file.
+// nolint: maligned
 type Config struct {
 	*Secrets
 	Address                           string `yaml:"address"`
@@ -21,7 +22,7 @@ type Config struct {
 	FullDisplayNameIncludeClusterName bool   `yaml:"displayName_include_clustername"`
 	ClusterGroupID                    int32  `yaml:"cluster_group_id"`
 	ProxyURL                          string `yaml:"proxy_url"`
-	IgnoreSSL						  bool   `yaml:"ignore_ssl"`
+	IgnoreSSL                         bool   `yaml:"ignore_ssl"`
 }
 
 // Secrets represents the application's sensitive configuration file.

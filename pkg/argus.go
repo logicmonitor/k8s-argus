@@ -53,7 +53,7 @@ func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
 	//config.UserAgent = constants.UserAgentBase + constants.Version
 	if argusConfig.ProxyURL == "" {
 		//return client.New(config), nil
-		if argusConfig.IgnoreSSL{
+		if argusConfig.IgnoreSSL {
 			return newLMClientWithoutSSL(config)
 		}
 		return client.New(config), nil
@@ -87,8 +87,8 @@ func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*c
 	return client, nil
 }
 
-func newLMClientWithoutSSL(config *client.Config) (*client.LMSdkGo, error){
-	
+func newLMClientWithoutSSL(config *client.Config) (*client.LMSdkGo, error) {
+
 	var opts = httptransport.TLSClientOptions{InsecureSkipVerify: true}
 	var httpClient, err = httptransport.TLSClient(opts)
 

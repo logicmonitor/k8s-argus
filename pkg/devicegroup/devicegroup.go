@@ -95,16 +95,19 @@ func (a *appliesToBuilder) String() string {
 // PropertyBuilder is an interface for building properties
 type PropertyBuilder interface {
 	Add(string, string) PropertyBuilder
-	Convert() []*models.NameAndValue
+	AddDeleteAfter(string) PropertyBuilder
+	GetDeleteAfter() string
+	Build() []*models.NameAndValue
 }
 
 type propertyBuilder struct {
-	properties map[string]string
+	deleteAfter string
+	properties  map[string]string
 }
 
 // NewPropertyBuilder is the builder for properties
 func NewPropertyBuilder() PropertyBuilder {
-	return &propertyBuilder{properties: make(map[string]string)}
+	return &propertyBuilder{deleteAfter: "", properties: make(map[string]string)}
 }
 
 func (p *propertyBuilder) Add(key string, value string) PropertyBuilder {
@@ -112,7 +115,16 @@ func (p *propertyBuilder) Add(key string, value string) PropertyBuilder {
 	return p
 }
 
-func (p *propertyBuilder) Convert() []*models.NameAndValue {
+func (p *propertyBuilder) AddDeleteAfter(deleteAfter string) PropertyBuilder {
+	p.deleteAfter = deleteAfter
+	return p
+}
+
+func (p *propertyBuilder) GetDeleteAfter() string {
+	return p.deleteAfter
+}
+
+func (p *propertyBuilder) Build() []*models.NameAndValue {
 	props := []*models.NameAndValue{}
 	for k, v := range p.properties {
 		props = append(props, &models.NameAndValue{Name: &k, Value: &v})
@@ -131,14 +143,14 @@ func Create(opts *Options) (int32, error) {
 
 	if clusterDeviceGroup == nil {
 		log.Infof("Could not find device group %q", opts.Name)
-		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties.Convert(), opts.Client)
+		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties.Build(), opts.Client)
 		if err != nil {
 			return 0, err
 		}
 
 		clusterDeviceGroup = cdg
 	} else {
-		checkDeleteAfterDurationProperty(lctx, *clusterDeviceGroup.Name, clusterDeviceGroup.ID, opts.Client)
+		checkDeleteAfterDurationProperty(lctx, clusterDeviceGroup, opts)
 	}
 
 	if !opts.DeleteDevices && opts.AppliesToDeletedGroup != nil {
@@ -147,7 +159,7 @@ func Create(opts *Options) (int32, error) {
 			return 0, err
 		}
 		if deletedDeviceGroup == nil {
-			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, NewPropertyBuilder().Convert(), opts.Client)
+			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, NewPropertyBuilder().Build(), opts.Client)
 			if err != nil {
 				return 0, err
 			}
@@ -182,7 +194,7 @@ func createConflictDynamicGroup(opts *Options, clusterGrpID int32) error {
 // Find searches for a device group identified by the parent ID and name.
 func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGroup, error) {
 	params := lm.NewGetDeviceGroupListParams()
-	fields := "name,id,parentId,subGroups"
+	fields := "name,id,parentId,subGroups,customProperties"
 	params.SetFields(&fields)
 	filter := fmt.Sprintf("name:\"%s\"", name)
 	params.SetFilter(&filter)
@@ -358,27 +370,26 @@ func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty
 	return true
 }
 
-func checkDeleteAfterDurationProperty(lctx *lmctx.LMContext, deviceGroupName string, deviceGroupID int32, client *client.LMSdkGo) {
-	if !strings.HasPrefix(deviceGroupName, constants.ClusterDeviceGroupPrefix) {
+func checkDeleteAfterDurationProperty(lctx *lmctx.LMContext, clusterDeviceGroup *models.DeviceGroup, opts *Options) {
+	if opts.CustomProperties.GetDeleteAfter() == "" {
 		return
 	}
-	entityProperties := GetDeviceGroupPropertyList(lctx, deviceGroupID, client)
 	propertyExists := false
 	propertyValueEmpty := false
-	for _, prop := range entityProperties {
-		if strings.EqualFold(prop.Name, constants.K8sResourceDeleteAfterDurationPropertyKey) {
+	for _, prop := range clusterDeviceGroup.CustomProperties {
+		if strings.EqualFold(*prop.Name, constants.K8sResourceDeleteAfterDurationPropertyKey) {
 			propertyExists = true
-			if prop.Value == "" {
+			if *prop.Value == "" {
 				propertyValueEmpty = true
 			}
 			break
 		}
 	}
-	entityProperty := models.EntityProperty{Name: constants.K8sResourceDeleteAfterDurationPropertyKey, Value: constants.K8sResourceDeleteAfterDurationPropertyValue, Type: constants.DeviceGroupCustomType}
+	entityProperty := models.EntityProperty{Name: constants.K8sResourceDeleteAfterDurationPropertyKey, Value: opts.CustomProperties.GetDeleteAfter(), Type: constants.DeviceGroupCustomType}
 	if !propertyExists {
-		AddDeviceGroupProperty(lctx, deviceGroupID, &entityProperty, client)
+		AddDeviceGroupProperty(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
 	}
 	if propertyValueEmpty {
-		UpdateDeviceGroupPropertyByName(lctx, deviceGroupID, &entityProperty, client)
+		UpdateDeviceGroupPropertyByName(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
 	}
 }

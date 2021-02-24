@@ -23,7 +23,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:        devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:           d.LMClient,
 			DeleteDevices:    d.Config.DeleteDevices,
-			CustomProperties: devicegroup.NewPropertyBuilder().Add(constants.K8sResourceDeleteAfterDurationPropertyKey, constants.K8sResourceDeleteAfterDurationPropertyValue),
+			CustomProperties: devicegroup.NewPropertyBuilder().AddDeleteAfter(constants.K8sResourceDeleteAfterDurationPropertyValue),
 		},
 		{
 			Name:                  constants.EtcdDeviceGroupName,
