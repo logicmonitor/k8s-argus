@@ -130,6 +130,7 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 		entityProperty := models.EntityProperty{Name: constants.K8sSystemCategoriesPropertyKey, Value: updatedCategories, Type: "system"}
 		err1 := m.updateDevicePropertyByName(lctx, updatedDevice.ID, &entityProperty, resource)
 		if err1 != nil {
+			log.Errorf("Failed to remove device %s from conflicts group. %v", *updatedDevice.DisplayName, err1)
 			return err1
 		}
 	}
@@ -144,15 +145,16 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 			}
 			newDevice, err := m.UpdateAndReplace(lctx, resource, device, options...)
 			if err != nil {
+				log.Errorf("Failed to update the device %s : %v", *device.DisplayName, err)
 				return err
 			}
 			err2 := m.moveDeviceToConflictGroup(lctx, newDevice, resource)
 			if err2 != nil {
-				log.Errorf("%v", err2)
+				log.Errorf("Failed to move device %s to conflicts group: %v", *newDevice.DisplayName, err2)
 				return err2
 			}
 
-			m.DC.Set(*device.DisplayName)
+			m.DC.Set(util.GetFullDisplayName(newDevice, resource, m.Config().ClusterName))
 			return nil
 		}
 		log.Errorf("%v", err)
@@ -408,7 +410,7 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource, name, fullName string, filter types.UpdateFilter, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	if !m.DC.Exists(fullName) {
-		log.Infof("Missing device %v; adding it now", name)
+		log.Infof("Missing device %v; (full name = %v) adding it now", name, fullName)
 		return m.Add(lctx, resource, labels, options...)
 	}
 	if filter != nil && !filter() {
