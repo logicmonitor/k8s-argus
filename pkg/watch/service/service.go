@@ -167,8 +167,13 @@ func (w *Watcher) move(lctx *lmctx.LMContext, service *v1.Service) {
 }
 
 func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOption {
+	clusterIP := service.Spec.ClusterIP
+	// headless services set clusterip to None: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
+	if service.Spec.ClusterIP == "None" {
+		clusterIP = fmt.Sprintf("%s-svc-%s", service.Name, service.Namespace)
+	}
 	return []types.DeviceOption{
-		w.Name(service.Spec.ClusterIP),
+		w.Name(clusterIP),
 		w.ResourceLabels(service.Labels),
 		w.DisplayName(w.getDesiredDisplayName(service)),
 		w.SystemCategories(category),
