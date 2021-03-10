@@ -160,6 +160,8 @@ const (
 )
 
 const (
+	// ArgusAppVersion is the key for Argus app version
+	ArgusAppVersion = "argus.app-version"
 	// HelmChart is the key for Argus & Collectoeset-controller label
 	HelmChart = "helm-chart"
 	// HelmRevision is the key for Argus & Collectoeset-controller label
