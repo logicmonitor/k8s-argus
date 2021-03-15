@@ -12,17 +12,18 @@ import (
 // nolint: maligned
 type Config struct {
 	*Secrets
-	Address                           string `yaml:"address"`
-	ClusterCategory                   string `yaml:"cluster_category"`
-	ClusterName                       string `yaml:"cluster_name"`
-	Debug                             bool   `yaml:"debug"`
-	DeleteDevices                     bool   `yaml:"delete_devices"`
-	DisableAlerting                   bool   `yaml:"disable_alerting"`
-	FullDisplayNameIncludeNamespace   bool   `yaml:"displayName_include_namespace"`
-	FullDisplayNameIncludeClusterName bool   `yaml:"displayName_include_clustername"`
-	ClusterGroupID                    int32  `yaml:"cluster_group_id"`
-	ProxyURL                          string `yaml:"proxy_url"`
-	IgnoreSSL                         bool   `yaml:"ignore_ssl"`
+	DeviceGroupProperties             DeviceGroupProperties `yaml:"device_group_props"`
+	Address                           string                `yaml:"address"`
+	ClusterCategory                   string                `yaml:"cluster_category"`
+	ClusterName                       string                `yaml:"cluster_name"`
+	Debug                             bool                  `yaml:"debug"`
+	DeleteDevices                     bool                  `yaml:"delete_devices"`
+	DisableAlerting                   bool                  `yaml:"disable_alerting"`
+	FullDisplayNameIncludeNamespace   bool                  `yaml:"displayName_include_namespace"`
+	FullDisplayNameIncludeClusterName bool                  `yaml:"displayName_include_clustername"`
+	ClusterGroupID                    int32                 `yaml:"cluster_group_id"`
+	ProxyURL                          string                `yaml:"proxy_url"`
+	IgnoreSSL                         bool                  `yaml:"ignore_ssl"`
 }
 
 // Secrets represents the application's sensitive configuration file.
@@ -33,6 +34,17 @@ type Secrets struct {
 	EtcdDiscoveryToken string `envconfig:"ETCD_DISCOVERY_TOKEN"`
 	ProxyUser          string `envconfig:"PROXY_USER"`
 	ProxyPass          string `envconfig:"PROXY_PASS"`
+}
+
+// DeviceGroupProperties represents the properties applied on device groups
+type DeviceGroupProperties struct {
+	Cluster     []map[string]interface{} `yaml:"cluster"`
+	Pods        []map[string]interface{} `yaml:"pods"`
+	Services    []map[string]interface{} `yaml:"services"`
+	Deployments []map[string]interface{} `yaml:"deployments"`
+	Nodes       []map[string]interface{} `yaml:"nodes"`
+	ETCD        []map[string]interface{} `yaml:"etcd"`
+	HPA         []map[string]interface{} `yaml:"hpas"`
 }
 
 // GetConfig returns the application configuration specified by the config file.

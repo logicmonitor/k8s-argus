@@ -2,7 +2,6 @@ package devicegroup
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -94,40 +93,51 @@ func (a *appliesToBuilder) String() string {
 
 // PropertyBuilder is an interface for building properties
 type PropertyBuilder interface {
-	Add(string, string) PropertyBuilder
-	AddDeleteAfter(string) PropertyBuilder
-	GetDeleteAfter() string
-	Build() []*models.NameAndValue
+	Add(string, string, bool) PropertyBuilder
+	AddProperties([]map[string]interface{}) PropertyBuilder
+	Build([]*models.NameAndValue) []*models.NameAndValue
 }
 
 type propertyBuilder struct {
-	deleteAfter string
-	properties  map[string]string
+	properties []map[string]interface{}
 }
 
 // NewPropertyBuilder is the builder for properties
 func NewPropertyBuilder() PropertyBuilder {
-	return &propertyBuilder{deleteAfter: "", properties: make(map[string]string)}
+	return &propertyBuilder{}
 }
 
-func (p *propertyBuilder) Add(key string, value string) PropertyBuilder {
-	p.properties[key] = value
+func (p *propertyBuilder) Add(key string, value string, override bool) PropertyBuilder {
+	m := make(map[string]interface{})
+	m["name"] = key
+	m["value"] = value
+	m["override"] = override
+	p.properties = append(p.properties, m)
 	return p
 }
 
-func (p *propertyBuilder) AddDeleteAfter(deleteAfter string) PropertyBuilder {
-	p.deleteAfter = deleteAfter
+func (p *propertyBuilder) AddProperties(properties []map[string]interface{}) PropertyBuilder {
+	p.properties = append(p.properties, properties...)
 	return p
 }
 
-func (p *propertyBuilder) GetDeleteAfter() string {
-	return p.deleteAfter
-}
-
-func (p *propertyBuilder) Build() []*models.NameAndValue {
+func (p *propertyBuilder) Build(existingProps []*models.NameAndValue) []*models.NameAndValue {
 	props := []*models.NameAndValue{}
-	for k, v := range p.properties {
-		props = append(props, &models.NameAndValue{Name: &k, Value: &v})
+	exProps := make(map[string]string)
+	for _, elm := range existingProps {
+		exProps[*elm.Name] = *elm.Value
+	}
+	for _, prop := range p.properties {
+		key := prop["name"].(string)
+		value := prop["value"].(string)
+		override := true
+		if v := prop["override"]; v != nil {
+			override = v.(bool)
+		}
+		if val, ok := exProps[key]; !override && ok {
+			value = val
+		}
+		props = append(props, &models.NameAndValue{Name: &key, Value: &value})
 	}
 	return props
 }
@@ -143,14 +153,14 @@ func Create(opts *Options) (int32, error) {
 
 	if clusterDeviceGroup == nil {
 		log.Infof("Could not find device group %q", opts.Name)
-		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties.Build(), opts.Client)
+		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties.Build(nil), opts.Client)
 		if err != nil {
 			return 0, err
 		}
 
 		clusterDeviceGroup = cdg
 	} else {
-		checkDeleteAfterDurationProperty(lctx, clusterDeviceGroup, opts)
+		replaceCustomProperty(lctx, clusterDeviceGroup, opts)
 	}
 
 	if !opts.DeleteDevices && opts.AppliesToDeletedGroup != nil {
@@ -159,7 +169,7 @@ func Create(opts *Options) (int32, error) {
 			return 0, err
 		}
 		if deletedDeviceGroup == nil {
-			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, NewPropertyBuilder().Build(), opts.Client)
+			_, err := create(constants.DeletedDeviceGroup, opts.AppliesToDeletedGroup.String(), true, clusterDeviceGroup.ID, NewPropertyBuilder().Build(nil), opts.Client)
 			if err != nil {
 				return 0, err
 			}
@@ -203,7 +213,7 @@ func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGr
 		return nil, fmt.Errorf("failed to get device group list when searching for %q: %v", name, err)
 	}
 
-	log.Debugf("%#v", restResponse)
+	log.Debugf("Find devicegroup response: %#v", restResponse)
 
 	var deviceGroup *models.DeviceGroup
 	for _, d := range restResponse.Payload.Items {
@@ -262,7 +272,7 @@ func ExistsByID(groupID int32, client *client.LMSdkGo) bool {
 		return false
 	}
 
-	log.Debugf("%#v", restResponse)
+	log.Debugf("Exists device group by id response:%#v", restResponse)
 
 	if restResponse.Payload != nil && restResponse.Payload.ID == groupID {
 		return true
@@ -370,26 +380,22 @@ func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty
 	return true
 }
 
-func checkDeleteAfterDurationProperty(lctx *lmctx.LMContext, clusterDeviceGroup *models.DeviceGroup, opts *Options) {
-	if opts.CustomProperties.GetDeleteAfter() == "" {
-		return
+// replaceCustomProperty adds/replaces the custom properties for device group
+func replaceCustomProperty(lctx *lmctx.LMContext, clusterDeviceGroup *models.DeviceGroup, opts *Options) {
+	existingGroupProperties := make(map[string]string)
+	customProperties := opts.CustomProperties.Build(clusterDeviceGroup.CustomProperties)
+	for _, v := range clusterDeviceGroup.CustomProperties {
+		existingGroupProperties[*v.Name] = *v.Value
 	}
-	propertyExists := false
-	propertyValueEmpty := false
-	for _, prop := range clusterDeviceGroup.CustomProperties {
-		if strings.EqualFold(*prop.Name, constants.K8sResourceDeleteAfterDurationPropertyKey) {
-			propertyExists = true
-			if *prop.Value == "" {
-				propertyValueEmpty = true
-			}
-			break
+	for _, v := range customProperties {
+		value, exists := existingGroupProperties[*v.Name]
+		entityProperty := models.EntityProperty{Name: *v.Name, Value: *v.Value, Type: constants.DeviceGroupCustomType}
+		if !exists {
+			// Add property if property does not exists
+			AddDeviceGroupProperty(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
+		} else if value == "" || value != *v.Value {
+			// Update value if it is empty or not equal to value in configmap
+			UpdateDeviceGroupPropertyByName(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
 		}
-	}
-	entityProperty := models.EntityProperty{Name: constants.K8sResourceDeleteAfterDurationPropertyKey, Value: opts.CustomProperties.GetDeleteAfter(), Type: constants.DeviceGroupCustomType}
-	if !propertyExists {
-		AddDeviceGroupProperty(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
-	}
-	if propertyValueEmpty {
-		UpdateDeviceGroupPropertyByName(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
 	}
 }
