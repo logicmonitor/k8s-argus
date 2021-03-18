@@ -11,6 +11,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
+	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
@@ -187,7 +188,11 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 			resourceName = *device.DisplayName
 		}
 		_, exist := resourcesMap[resourceName]
-		if !exist {
+		name := i.DeviceManager.GetPropertyValue(device, "auto.name")
+		namespaceName := i.DeviceManager.GetPropertyValue(device, "auto.namespace")
+		UID := i.DeviceManager.GetPropertyValue(device, "auto.uid")
+		displayName := utilities.GetResourceDisplayName(resourceType, name, namespaceName, UID)
+		if !exist || displayName != *device.DisplayName {
 			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
 			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
 			if err != nil {
