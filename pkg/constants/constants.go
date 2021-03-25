@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 var (
 	// Version is the Argus version and is set at build time.
 	Version string
@@ -185,4 +187,15 @@ const (
 const (
 	// IsPingDevice is the key used in watcher context to pass metadata
 	IsPingDevice = "ispingdevice"
+)
+
+const (
+	// DefaultPeriodicSyncInterval Default interval for Periodic Discovery.
+	DefaultPeriodicSyncInterval = time.Minute * 30
+
+	// DefaultPeriodicDeleteInterval Default interval for Periodic delete.
+	DefaultPeriodicDeleteInterval = time.Minute * 30
+
+	// DefaultCacheResyncInterval Default interval for cache resync.
+	DefaultCacheResyncInterval = time.Minute * 5
 )

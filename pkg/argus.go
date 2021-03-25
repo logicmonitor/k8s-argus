@@ -3,7 +3,6 @@ package argus
 import (
 	"net/http"
 	"net/url"
-	"time"
 
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
@@ -130,7 +129,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		Base: base,
 	}
 
-	dcache := devicecache.NewDeviceCache(base, 5)
+	dcache := devicecache.NewDeviceCache(base, base.Config.GetCacheSyncInterval())
 	dcache.Run()
 
 	deviceManager := &device.Manager{
@@ -257,7 +256,9 @@ func NewArgus(base *types.Base) (*Argus, error) {
 
 	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"name": "init-sync"}))
 	initSyncer.InitSync(lctx, true)
-	initSyncer.RunPeriodicSync(10)
+
+	// periodically delete the non-exist resource devices through logicmonitor API based on specified time interval.
+	initSyncer.RunPeriodicSync(base.Config.GetPeriodicDeleteInterval())
 
 	if base.Config.EtcdDiscoveryToken != "" {
 		etcdController := etcd.Controller{
@@ -300,6 +301,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 
 // Watch watches the API for events.
 func (a *Argus) Watch() {
+	syncInterval := a.Base.Config.GetPeriodicSyncInterval()
 	log.Debugf("Starting watchers")
 	for _, w := range a.Watchers {
 		if !w.Enabled() {
@@ -310,7 +312,7 @@ func (a *Argus) Watch() {
 		_, controller := cache.NewInformer(
 			watchlist,
 			w.ObjType(),
-			time.Minute*10,
+			syncInterval,
 			cache.ResourceEventHandlerFuncs{
 				AddFunc:    w.AddFunc(),
 				DeleteFunc: w.DeleteFunc(),

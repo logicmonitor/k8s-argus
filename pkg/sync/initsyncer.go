@@ -242,11 +242,11 @@ func (i *InitSyncer) renameDeviceToDesiredName(lctx *lmctx.LMContext, device *mo
 }
 
 // RunPeriodicSync runs synchronization periodically.
-func (i *InitSyncer) RunPeriodicSync(syncTime int) {
+func (i *InitSyncer) RunPeriodicSync(syncTime time.Duration) {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "periodic-sync"}))
 	go func() {
 		for {
-			time.Sleep(time.Duration(syncTime) * time.Minute)
+			time.Sleep(syncTime)
 			i.InitSync(lctx, false)
 		}
 	}()

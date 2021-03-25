@@ -2,9 +2,11 @@ package config
 
 import (
 	"io/ioutil"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -13,6 +15,7 @@ import (
 type Config struct {
 	*Secrets
 	DeviceGroupProperties             DeviceGroupProperties `yaml:"device_group_props"`
+	Intervals                         Intervals             `yaml:"app_intervals"`
 	Address                           string                `yaml:"address"`
 	ClusterCategory                   string                `yaml:"cluster_category"`
 	ClusterName                       string                `yaml:"cluster_name"`
@@ -47,6 +50,16 @@ type DeviceGroupProperties struct {
 	HPA         []map[string]interface{} `yaml:"hpas"`
 }
 
+// Intervals represents default and min values for periodic sync, periodic delete and device cache sycn intervals
+type Intervals struct {
+	PeriodicSyncInterval      time.Duration `yaml:"periodic_sync_interval"`
+	PeriodicDeleteInterval    time.Duration `yaml:"periodic_delete_interval"`
+	CacheSyncInterval         time.Duration `yaml:"cache_sync_interval"`
+	PeriodicSyncMinInterval   time.Duration `yaml:"periodic_sync_min_interval"`
+	PeriodicDeleteMinInterval time.Duration `yaml:"periodic_delete_min_interval"`
+	CacheSyncMinInterval      time.Duration `yaml:"cache_sync_min_interval"`
+}
+
 // GetConfig returns the application configuration specified by the config file.
 func GetConfig() (*Config, error) {
 	configBytes, err := ioutil.ReadFile(constants.ConfigPath)
@@ -66,4 +79,36 @@ func GetConfig() (*Config, error) {
 	}
 
 	return c, nil
+}
+
+// GetCacheSyncInterval gets cache resync interval
+func (config Config) GetCacheSyncInterval() time.Duration {
+	cacheInterval := validateAndGetIntervalValue("cache_sync_interval", config.Intervals.CacheSyncInterval, config.Intervals.CacheSyncMinInterval, constants.DefaultCacheResyncInterval)
+	log.Debugf("cache_sync_interval - %v ", cacheInterval)
+	return cacheInterval
+}
+
+// GetPeriodicSyncInterval gets periodic sync interval
+func (config Config) GetPeriodicSyncInterval() time.Duration {
+	periodicSyncInterval := validateAndGetIntervalValue("periodic_sync_interval", config.Intervals.PeriodicSyncInterval, config.Intervals.PeriodicSyncMinInterval, constants.DefaultPeriodicSyncInterval)
+	log.Debugf("periodic_sync_interval - %v ", periodicSyncInterval)
+	return periodicSyncInterval
+}
+
+// GetPeriodicDeleteInterval gets periodic delete interval
+func (config Config) GetPeriodicDeleteInterval() time.Duration {
+	periodicDeleteInterval := validateAndGetIntervalValue("periodic_delete_interval", config.Intervals.PeriodicDeleteInterval, config.Intervals.PeriodicDeleteMinInterval, constants.DefaultPeriodicDeleteInterval)
+	log.Debugf("periodic_delete_interval - %v ", periodicDeleteInterval)
+	return periodicDeleteInterval
+}
+
+// ValidateAndGetIntervalValue parses given interval into duration format. Returns default value if any errors.
+func validateAndGetIntervalValue(intervalName string, syncInterval, minInterval, defaultValue time.Duration) time.Duration {
+	if syncInterval < minInterval {
+		log.Warnf("Please provide valid value for %s. Since invalid value is configured, forcefully setting it to default %v. ", intervalName, defaultValue)
+		syncInterval = defaultValue
+	}
+
+	return syncInterval
+
 }
