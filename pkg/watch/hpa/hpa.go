@@ -148,7 +148,7 @@ func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscali
 
 func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, category string) []types.DeviceOption {
 	return []types.DeviceOption{
-		w.Name(w.getDesiredDisplayName(horizontalPodAutoscaler)),
+		w.Name(util.GetNameWithResourceTypeAndNamespace(horizontalPodAutoscaler.Name, w.Resource(), horizontalPodAutoscaler.Namespace)),
 		w.ResourceLabels(horizontalPodAutoscaler.Labels),
 		w.DisplayName(w.getDesiredDisplayName(horizontalPodAutoscaler)),
 		w.SystemCategories(category),

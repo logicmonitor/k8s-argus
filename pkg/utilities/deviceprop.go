@@ -109,3 +109,20 @@ func TrimName(name string) string {
 	}
 	return name
 }
+
+// GetNameWithResourceTypeAndNamespace return name with resource_type and namespace
+func GetNameWithResourceTypeAndNamespace(name, resource, namespace string) string {
+	switch strings.ToLower(resource) {
+	case constants.Pods:
+		return fmt.Sprintf("%s-%s-%s", name, "pod", namespace)
+	case constants.Deployments:
+		return fmt.Sprintf("%s-%s-%s", name, "deploy", namespace)
+	case constants.Services:
+		return fmt.Sprintf("%s-%s-%s", name, "svc", namespace)
+	case constants.Nodes:
+		return fmt.Sprintf("%s-%s-%s", name, "node", namespace)
+	case constants.HorizontalPodAutoScalers:
+		return fmt.Sprintf("%s-%s-%s", name, "hpa", namespace)
+	}
+	return name
+}
