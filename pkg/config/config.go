@@ -109,6 +109,10 @@ func validateAndGetIntervalValue(intervalName string, syncInterval, minInterval,
 		syncInterval = defaultValue
 	}
 
-	return syncInterval
+	if syncInterval == 0 || minInterval == 0 {
+		log.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting %s to its default : %v", intervalName, defaultValue)
+		syncInterval = defaultValue
+	}
 
+	return syncInterval
 }
