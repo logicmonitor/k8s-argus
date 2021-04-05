@@ -2,7 +2,9 @@ package device
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -12,6 +14,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	//"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -127,6 +130,7 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 		entityProperty := models.EntityProperty{Name: constants.K8sSystemCategoriesPropertyKey, Value: updatedCategories, Type: "system"}
 		err1 := m.updateDevicePropertyByName(lctx, updatedDevice.ID, &entityProperty, resource)
 		if err1 != nil {
+			log.Errorf("Failed to remove device %s from conflicts group. %v", *updatedDevice.DisplayName, err1)
 			return err1
 		}
 	}
@@ -141,15 +145,16 @@ func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, 
 			}
 			newDevice, err := m.UpdateAndReplace(lctx, resource, device, options...)
 			if err != nil {
+				log.Errorf("Failed to update the device %s : %v", *device.DisplayName, err)
 				return err
 			}
 			err2 := m.moveDeviceToConflictGroup(lctx, newDevice, resource)
 			if err2 != nil {
-				log.Errorf("%v", err2)
+				log.Errorf("Failed to move device %s to conflicts group: %v", *newDevice.DisplayName, err2)
 				return err2
 			}
 
-			m.DC.Set(*device.DisplayName)
+			m.DC.Set(util.GetFullDisplayName(newDevice, resource, m.Config().ClusterName))
 			return nil
 		}
 		log.Errorf("%v", err)
@@ -405,7 +410,7 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource, name, fullName string, filter types.UpdateFilter, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	if !m.DC.Exists(fullName) {
-		log.Infof("Missing device %v; adding it now", name)
+		log.Infof("Missing device %v; (full name = %v) adding it now", name, fullName)
 		return m.Add(lctx, resource, labels, options...)
 	}
 	if filter != nil && !filter() {
@@ -436,19 +441,15 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 	return device, nil
 }
 
-// TODO: this method needs to be removed in DEV-50496
-
 // UpdateAndReplaceField implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
-	log := lmlog.Logger(lctx)
-	device := buildDevice(lctx, m.Config(), d, options...)
-	log.Debugf("%#v", device)
-
+func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, device *models.Device, fields string) (*models.Device, error) {
 	params := lm.NewPatchDeviceParams()
-	params.SetID(d.ID)
+	params.SetID(device.ID)
+	params.SetPatchFields(&fields)
 	params.SetBody(device)
 	opType := "replace"
 	params.SetOpType(&opType)
+
 	cmd := &types.HTTPCommand{
 		Command: &types.Command{
 			ExecFun: m.PatchDevice(params),
@@ -460,14 +461,12 @@ func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, 
 			ParseErrResp: m.PatchDeviceErrResp,
 		},
 	}
+
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
-	//restResponse, err := m.LMClient.LM.PatchDevice(params)
 	if err != nil {
 		return nil, err
 	}
 	resp := restResponse.(*lm.PatchDeviceOK)
-	log.Debugf("%#v", resp)
-
 	return resp.Payload, nil
 }
 
@@ -501,31 +500,58 @@ func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int
 	return nil
 }
 
-// TODO: this method needs to be removed in DEV-50496
-
-// UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, resource, name, fullName, field string, options ...types.DeviceOption) (*models.Device, error) {
+// MoveToDeletedGroup implements types.DeviceManager.
+func (m *Manager) MoveToDeletedGroup(lctx *lmctx.LMContext, resource, name, fullName string, deletionTimestamp *v1.Time, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
-
 	existingDevice, err := m.getExisitingDeviceByGivenProperties(lctx, name, fullName, resource)
-
 	if err != nil {
 		return nil, err
 	}
-
 	if existingDevice == nil {
 		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
 
-	options = append(options, m.DisplayName(*existingDevice.DisplayName))
-	// Update the device.
-	device, err := m.UpdateAndReplaceField(lctx, resource, existingDevice, field, options...)
+	device := m.buildDeviceBeforeDeletion(deletionTimestamp, existingDevice, options...)
+	fields := constants.CustomPropertiesFieldName + "," + constants.NameFieldName + "," + constants.DisplayNameFieldName
+
+	updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, device, fields)
 	if err != nil {
 		return nil, err
 	}
+	return updatedDevice, nil
+}
 
-	return device, nil
+func (m *Manager) buildDeviceBeforeDeletion(deletionTimestamp *v1.Time, existingDevice *models.Device, options ...types.DeviceOption) *models.Device {
+	// add resource deletion timestamp
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	if deletionTimestamp != nil {
+		timestamp = strconv.FormatInt(deletionTimestamp.Unix(), 10)
+	}
+	options = append(options, m.DeletedOn(constants.K8sResourceDeletedOnPropertyKey, timestamp))
+
+	// rename device to resolve conflicts for new devices
+	shortUUID := strconv.FormatUint(uint64(util.GetShortUUID()), 10)
+	deviceName := util.TrimName(*existingDevice.Name)
+	options = append(options, m.Name(deviceName+"-"+shortUUID))
+	deviceDisplayName := util.TrimName(util.GetPropertyValue(existingDevice, constants.K8sDeviceNamePropertyKey))
+	options = append(options, m.DisplayName(deviceDisplayName+"-"+shortUUID))
+
+	// build device with specific fields that needs to be updated
+	// ID & PreferredCollectorID are required, if not passed then considered as 0 & API throws an error
+	device := &models.Device{
+		ID:                   existingDevice.ID,
+		Name:                 existingDevice.Name,
+		DisplayName:          existingDevice.DisplayName,
+		CustomProperties:     existingDevice.CustomProperties,
+		PreferredCollectorID: existingDevice.PreferredCollectorID,
+	}
+
+	for _, option := range options {
+		option(device)
+	}
+
+	return device
 }
 
 // DeleteByID implements types.DeviceManager.

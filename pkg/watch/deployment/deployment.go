@@ -35,6 +35,11 @@ func (w *Watcher) APIVersion() string {
 	return constants.K8sAPIVersionAppsV1
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // Enabled is a function that check the resource can watch.
 func (w *Watcher) Enabled() bool {
 	return permission.HasDeploymentPermissions()
@@ -130,9 +135,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *appsv1.Deployment) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, deployment *appsv1.Deployment) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
-		fmtDeploymentDisplayName(deployment, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
+		fmtDeploymentDisplayName(deployment, w.Config().ClusterName), deployment.DeletionTimestamp, w.args(deployment, constants.DeploymentDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move deployment %q: %v", w.getDesiredDisplayName(deployment), err)
 		return
 	}
@@ -147,7 +151,7 @@ func (w *Watcher) args(deployment *appsv1.Deployment, category string) []types.D
 		w.SystemCategories(category),
 		w.Auto("name", deployment.Name),
 		w.Auto("namespace", deployment.Namespace),
-		w.Auto("selflink", deployment.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), deployment.ObjectMeta)),
 		w.Auto("uid", string(deployment.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(deployment.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(deployment)),

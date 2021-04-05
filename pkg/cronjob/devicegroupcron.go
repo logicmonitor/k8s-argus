@@ -61,6 +61,8 @@ func getExistingDeviceGroupPropertiesMap(lctx *lmctx.LMContext, groupID int32, c
 
 func getK8sAndHelmProperties(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) map[string]string {
 	customProperties := make(map[string]string)
+	// add Argus app version
+	customProperties[constants.ArgusAppVersion] = constants.Version
 	customProperties = getKubernetesVersion(lctx, customProperties, kubeClient)
 	customProperties = getHelmChartDetailsFromConfigMap(lctx, customProperties, kubeClient)
 	return customProperties

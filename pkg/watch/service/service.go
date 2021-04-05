@@ -38,6 +38,11 @@ func (w *Watcher) Enabled() bool {
 	return true
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource
@@ -97,6 +102,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + service.Name}))
 		log := lmlog.Logger(lctx)
 		// Delete the service.
+		// nolint: dupl
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service),
 				fmtServiceDisplayName(service, w.Config().ClusterName)); err != nil {
@@ -152,9 +158,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Service) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, service *v1.Service) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(service),
-		fmtServiceDisplayName(service, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(service, constants.ServiceDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(service),
+		fmtServiceDisplayName(service, w.Config().ClusterName), service.DeletionTimestamp, w.args(service, constants.ServiceDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move service %q: %v", w.getDesiredDisplayName(service), err)
 		return
 	}
@@ -162,14 +167,19 @@ func (w *Watcher) move(lctx *lmctx.LMContext, service *v1.Service) {
 }
 
 func (w *Watcher) args(service *v1.Service, category string) []types.DeviceOption {
+	clusterIP := service.Spec.ClusterIP
+	// headless services set clusterip to None: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
+	if service.Spec.ClusterIP == "None" {
+		clusterIP = fmt.Sprintf("%s-svc-%s", service.Name, service.Namespace)
+	}
 	return []types.DeviceOption{
-		w.Name(service.Spec.ClusterIP),
+		w.Name(clusterIP),
 		w.ResourceLabels(service.Labels),
 		w.DisplayName(w.getDesiredDisplayName(service)),
 		w.SystemCategories(category),
 		w.Auto("name", service.Name),
 		w.Auto("namespace", service.Namespace),
-		w.Auto("selflink", service.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), service.ObjectMeta)),
 		w.Auto("uid", string(service.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(service.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(service)),

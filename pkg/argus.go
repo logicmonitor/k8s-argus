@@ -3,7 +3,6 @@ package argus
 import (
 	"net/http"
 	"net/url"
-	"time"
 
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
@@ -52,6 +51,10 @@ func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
 	config.SetAccountDomain(&domain)
 	//config.UserAgent = constants.UserAgentBase + constants.Version
 	if argusConfig.ProxyURL == "" {
+		//return client.New(config), nil
+		if argusConfig.IgnoreSSL {
+			return newLMClientWithoutSSL(config)
+		}
 		return client.New(config), nil
 	}
 	return newLMClientWithProxy(config, argusConfig)
@@ -83,6 +86,22 @@ func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*c
 	return client, nil
 }
 
+func newLMClientWithoutSSL(config *client.Config) (*client.LMSdkGo, error) {
+
+	var opts = httptransport.TLSClientOptions{InsecureSkipVerify: true}
+	var httpClient, err = httptransport.TLSClient(opts)
+
+	if err != nil {
+		return nil, err
+	}
+	transport := httptransport.NewWithClient(config.TransportCfg.Host, config.TransportCfg.BasePath, config.TransportCfg.Schemes, httpClient)
+	authInfo := client.LMv1Auth(*config.AccessID, *config.AccessKey)
+	cli := new(client.LMSdkGo)
+	cli.Transport = transport
+	cli.LM = lm.New(transport, strfmt.Default, authInfo)
+	return cli, nil
+}
+
 func newK8sClient() (*kubernetes.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -110,7 +129,7 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		Base: base,
 	}
 
-	dcache := devicecache.NewDeviceCache(base, 5)
+	dcache := devicecache.NewDeviceCache(base, base.Config.GetCacheSyncInterval())
 	dcache.Run()
 
 	deviceManager := &device.Manager{
@@ -237,7 +256,9 @@ func NewArgus(base *types.Base) (*Argus, error) {
 
 	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"name": "init-sync"}))
 	initSyncer.InitSync(lctx, true)
-	initSyncer.RunPeriodicSync(10)
+
+	// periodically delete the non-exist resource devices through logicmonitor API based on specified time interval.
+	initSyncer.RunPeriodicSync(base.Config.GetPeriodicDeleteInterval())
 
 	if base.Config.EtcdDiscoveryToken != "" {
 		etcdController := etcd.Controller{
@@ -280,6 +301,7 @@ func NewBase(config *config.Config) (*types.Base, error) {
 
 // Watch watches the API for events.
 func (a *Argus) Watch() {
+	syncInterval := a.Base.Config.GetPeriodicSyncInterval()
 	log.Debugf("Starting watchers")
 	for _, w := range a.Watchers {
 		if !w.Enabled() {
@@ -290,7 +312,7 @@ func (a *Argus) Watch() {
 		_, controller := cache.NewInformer(
 			watchlist,
 			w.ObjType(),
-			time.Minute*10,
+			syncInterval,
 			cache.ResourceEventHandlerFuncs{
 				AddFunc:    w.AddFunc(),
 				DeleteFunc: w.DeleteFunc(),
@@ -300,18 +322,6 @@ func (a *Argus) Watch() {
 		log.Debugf("Starting watcher of %v", w.Resource())
 		stop := make(chan struct{})
 		go controller.Run(stop)
-		//		c := w.GetConfig()
-		//		if c == nil {
-		//			continue
-		//		}
-		//		wc := worker.NewWorker(c)
-		//		b, err := a.Facade.RegisterWorker(w.Resource(), wc)
-		//		if err != nil {
-		//			log.Errorf("Failed to register worker for resource for: %s", w.Resource())
-		//		}
-		//		if b {
-		//			wc.StartWorker()
-		//		}
 	}
 }
 

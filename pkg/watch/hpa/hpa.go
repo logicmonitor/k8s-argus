@@ -40,6 +40,11 @@ func (w *Watcher) Enabled() bool {
 	return permission.HasHorizontalPodAutoscalerPermissions()
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource
@@ -133,9 +138,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *autoscalingv1.Horizont
 
 func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler),
-		fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(horizontalPodAutoscaler),
+		fmtHorizontalPodAutoscalerDisplayName(horizontalPodAutoscaler, w.Config().ClusterName), horizontalPodAutoscaler.DeletionTimestamp, w.args(horizontalPodAutoscaler, constants.HorizontalPodAutoscalerDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move horizontalPodAutoscaler %q: %v", w.getDesiredDisplayName(horizontalPodAutoscaler), err)
 		return
 	}
@@ -144,13 +148,13 @@ func (w *Watcher) move(lctx *lmctx.LMContext, horizontalPodAutoscaler *autoscali
 
 func (w *Watcher) args(horizontalPodAutoscaler *autoscalingv1.HorizontalPodAutoscaler, category string) []types.DeviceOption {
 	return []types.DeviceOption{
-		w.Name(w.getDesiredDisplayName(horizontalPodAutoscaler)),
+		w.Name(util.GetNameWithResourceTypeAndNamespace(horizontalPodAutoscaler.Name, w.Resource(), horizontalPodAutoscaler.Namespace)),
 		w.ResourceLabels(horizontalPodAutoscaler.Labels),
 		w.DisplayName(w.getDesiredDisplayName(horizontalPodAutoscaler)),
 		w.SystemCategories(category),
 		w.Auto("name", horizontalPodAutoscaler.Name),
 		w.Auto("namespace", horizontalPodAutoscaler.Namespace),
-		w.Auto("selflink", horizontalPodAutoscaler.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), horizontalPodAutoscaler.ObjectMeta)),
 		w.Auto("uid", string(horizontalPodAutoscaler.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(horizontalPodAutoscaler.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, w.getDesiredDisplayName(horizontalPodAutoscaler)),

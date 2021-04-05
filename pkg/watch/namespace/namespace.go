@@ -35,6 +35,11 @@ func (w *Watcher) Enabled() bool {
 	return true
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // Resource is a function that implements the Watcher interface.
 func (w *Watcher) Resource() string {
 	return resource
@@ -67,11 +72,12 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 			}
 
 			opts := &devicegroup.Options{
-				AppliesTo:       appliesTo,
-				Client:          w.LMClient,
-				DisableAlerting: w.Config.DisableAlerting,
-				Name:            namespace.Name,
-				ParentID:        parentID,
+				AppliesTo:        appliesTo,
+				Client:           w.LMClient,
+				DisableAlerting:  w.Config.DisableAlerting,
+				Name:             namespace.Name,
+				ParentID:         parentID,
+				CustomProperties: devicegroup.NewPropertyBuilder(),
 			}
 
 			log.Debugf("%v", opts)
