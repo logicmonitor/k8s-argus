@@ -17,12 +17,12 @@ import (
 type DeviceCache struct {
 	store        map[string]interface{}
 	rwm          sync.RWMutex
-	resyncPeriod int
+	resyncPeriod time.Duration
 	base         *types.Base
 }
 
 // NewDeviceCache create new DeviceCache object
-func NewDeviceCache(b *types.Base, rp int) *DeviceCache {
+func NewDeviceCache(b *types.Base, rp time.Duration) *DeviceCache {
 	dc := &DeviceCache{
 		store:        make(map[string]interface{}),
 		base:         b,
@@ -35,7 +35,7 @@ func NewDeviceCache(b *types.Base, rp int) *DeviceCache {
 func (dc *DeviceCache) Run() {
 	go func(dcache *DeviceCache) {
 		for {
-			time.Sleep(time.Duration(dcache.resyncPeriod) * time.Minute)
+			time.Sleep(dcache.resyncPeriod)
 			log.Debugf("Device cache fetching devices")
 			devices := dcache.getAllDevices(dcache.base)
 			if devices == nil {

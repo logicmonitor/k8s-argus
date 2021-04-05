@@ -49,6 +49,11 @@ func (w *Watcher) Resource() string {
 	return resource
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return false
+}
+
 // ObjType is a function that implements the Watcher interface.
 func (w *Watcher) ObjType() runtime.Object {
 	return &v1.Node{}
@@ -169,9 +174,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Node) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, node *v1.Node) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
-		fmtNodeDisplayName(node, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(node, constants.NodeDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(node),
+		fmtNodeDisplayName(node, w.Config().ClusterName), node.DeletionTimestamp, w.args(node, constants.NodeDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move node %q: %v", w.getDesiredDisplayName(node), err)
 		return
 	}
@@ -185,7 +189,7 @@ func (w *Watcher) args(node *v1.Node, category string) []types.DeviceOption {
 		w.DisplayName(w.getDesiredDisplayName(node)),
 		w.SystemCategories(category),
 		w.Auto("name", node.Name),
-		w.Auto("selflink", node.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), node.ObjectMeta)),
 		w.Auto("uid", string(node.UID)),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(node.CreationTimestamp.Unix(), 10)),
 		w.Custom(constants.K8sResourceNamePropertyKey, node.Name),
@@ -237,6 +241,7 @@ func (w *Watcher) createRoleDeviceGroup(lctx *lmctx.LMContext, labels map[string
 		Client:                w.LMClient,
 		DeleteDevices:         w.Config().DeleteDevices,
 		AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().Exists(constants.LabelCustomPropertyPrefix + label).And().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(w.Config().ClusterName),
+		CustomProperties:      devicegroup.NewPropertyBuilder(),
 	}
 
 	log.Debugf("%v", opts)

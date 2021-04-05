@@ -88,6 +88,27 @@ func (b *Builder) Custom(name, value string) types.DeviceOption {
 	return setProperty(name, value)
 }
 
+// DeletedOn impletements types.DeviceBuilder
+func (b *Builder) DeletedOn(name string, value string) types.DeviceOption {
+	return func(device *models.Device) {
+		if device == nil {
+			return
+		}
+		if device.CustomProperties == nil {
+			device.CustomProperties = []*models.NameAndValue{}
+		}
+		for _, prop := range device.CustomProperties {
+			if *prop.Name == name {
+				return
+			}
+		}
+		device.CustomProperties = append(device.CustomProperties, &models.NameAndValue{
+			Name:  &name,
+			Value: &value,
+		})
+	}
+}
+
 func setProperty(name, value string) types.DeviceOption {
 	return func(device *models.Device) {
 		if device == nil {
