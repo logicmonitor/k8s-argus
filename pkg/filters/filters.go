@@ -8,7 +8,7 @@ import (
 	"github.com/Knetic/govaluate"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var (

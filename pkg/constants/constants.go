@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 var (
 	// Version is the Argus version and is set at build time.
 	Version string
@@ -15,6 +17,12 @@ const (
 	RootDeviceGroupID = 1
 	// CustomPropertiesFieldName is the field name for a device's custom properties.
 	CustomPropertiesFieldName = "customProperties"
+	// NameFieldName is the field name for a device's name.
+	NameFieldName = "name"
+	// DisplayNameFieldName is the field name for a device's display name.
+	DisplayNameFieldName = "displayName"
+	// MaxResourceLength is the max length of the resource name
+	MaxResourceLength = 244
 )
 
 const (
@@ -108,6 +116,12 @@ const (
 	K8sResourceNamePropertyKey = "auto.resourcename"
 	// K8sResourceCreatedOnPropertyKey is the key of the custom property used to record resource create timestamp
 	K8sResourceCreatedOnPropertyKey = "kubernetes.resourceCreatedOn"
+	// K8sResourceDeletedOnPropertyKey is the key of the custom property used to record resource deleted timestamp
+	K8sResourceDeletedOnPropertyKey = "kubernetes.resourceDeletedOn"
+	// K8sResourceDeleteAfterDurationPropertyKey is the key of the custom property used to delete resources from the portal after specified time
+	K8sResourceDeleteAfterDurationPropertyKey = "kubernetes.resourcedeleteafterduration"
+	// K8sResourceDeleteAfterDurationPropertyValue is the default value of the custom property used to delete resources from the portal after specified time
+	K8sResourceDeleteAfterDurationPropertyValue = "P1DT0H0M0S"
 	// K8sDeviceType is the type value of the k8s device
 	K8sDeviceType = 8
 	// K8sSystemCategoriesPropertyKey is the key of the unique custom property kubernetes system categories
@@ -148,6 +162,8 @@ const (
 )
 
 const (
+	// ArgusAppVersion is the key for Argus app version
+	ArgusAppVersion = "argus.app-version"
 	// HelmChart is the key for Argus & Collectoeset-controller label
 	HelmChart = "helm-chart"
 	// HelmRevision is the key for Argus & Collectoeset-controller label
@@ -171,4 +187,15 @@ const (
 const (
 	// IsPingDevice is the key used in watcher context to pass metadata
 	IsPingDevice = "ispingdevice"
+)
+
+const (
+	// DefaultPeriodicSyncInterval Default interval for Periodic Discovery.
+	DefaultPeriodicSyncInterval = time.Minute * 30
+
+	// DefaultPeriodicDeleteInterval Default interval for Periodic delete.
+	DefaultPeriodicDeleteInterval = time.Minute * 30
+
+	// DefaultCacheResyncInterval Default interval for cache resync.
+	DefaultCacheResyncInterval = time.Minute * 5
 )

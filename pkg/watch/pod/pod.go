@@ -43,6 +43,11 @@ func (w *Watcher) Resource() string {
 	return resource
 }
 
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
+	return true
+}
+
 // ObjType is a function that implements the Watcher interface.
 func (w *Watcher) ObjType() runtime.Object {
 	return &v1.Pod{}
@@ -168,9 +173,8 @@ func (w *Watcher) update(lctx *lmctx.LMContext, old, new *v1.Pod) {
 // nolint: dupl
 func (w *Watcher) move(lctx *lmctx.LMContext, pod *v1.Pod) {
 	log := lmlog.Logger(lctx)
-	if _, err := w.UpdateAndReplaceFieldByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(pod),
-		fmtPodDisplayName(pod, w.Config().ClusterName), constants.CustomPropertiesFieldName,
-		w.args(pod, constants.PodDeletedCategory)...); err != nil {
+	if _, err := w.MoveToDeletedGroup(lctx, w.Resource(), w.getDesiredDisplayName(pod),
+		fmtPodDisplayName(pod, w.Config().ClusterName), pod.DeletionTimestamp, w.args(pod, constants.PodDeletedCategory)...); err != nil {
 		log.Errorf("Failed to move pod %q: %v", w.getDesiredDisplayName(pod), err)
 		return
 	}
@@ -186,7 +190,7 @@ func (w *Watcher) args(pod *v1.Pod, category string) []types.DeviceOption {
 		w.Auto("name", pod.Name),
 		w.Auto("namespace", pod.Namespace),
 		w.Auto("nodename", pod.Spec.NodeName),
-		w.Auto("selflink", pod.SelfLink),
+		w.Auto("selflink", util.SelfLink(w.Namespaced(), w.APIVersion(), w.Resource(), pod.ObjectMeta)),
 		w.Auto("uid", string(pod.UID)),
 		w.System("ips", pod.Status.PodIP),
 		w.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(pod.CreationTimestamp.Unix(), 10)),
