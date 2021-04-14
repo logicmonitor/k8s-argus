@@ -18,7 +18,7 @@ install:
   - cd $GOPATH/src/github.com/autonomy/conform
   - cat /etc/apt/sources.list
   - ls -l /etc/apt/sources.list.d
-  - rm -rf /etc/apt/sources.list.d
+  - sudo rm -rf /etc/apt/sources.list.d
   - sudo apt-get -y remove docker docker-engine
   - sudo apt-get -y update
   - sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
