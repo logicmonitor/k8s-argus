@@ -10,7 +10,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var (
@@ -42,6 +42,7 @@ type VerbLimits struct {
 	DEP  int64 `yaml:"dep"`
 	SVC  int64 `yaml:"svc"`
 	NODE int64 `yaml:"node"`
+	HPA  int64 `yaml:"hpa"`
 }
 
 // Get returns values from verblimit for mentioned resource
@@ -55,6 +56,8 @@ func (vl *VerbLimits) Get(resource string) int64 {
 		return vl.SVC
 	case constants.Nodes:
 		return vl.NODE
+	case constants.HorizontalPodAutoScalers:
+		return vl.HPA
 	}
 	return -1
 }
@@ -70,6 +73,8 @@ func (vl *VerbLimits) Set(resource string, limit int64) {
 		vl.SVC = limit
 	case constants.Nodes:
 		vl.NODE = limit
+	case constants.HorizontalPodAutoScalers:
+		vl.HPA = limit
 	}
 }
 
@@ -79,6 +84,7 @@ type VerbPolicy struct {
 	DEP  int64 `yaml:"dep"`
 	SVC  int64 `yaml:"svc"`
 	NODE int64 `yaml:"node"`
+	HPA  int64 `yaml:"hpa"`
 }
 
 // Get return policy for mentioned resource
@@ -92,6 +98,8 @@ func (vl VerbPolicy) Get(resource string) int64 {
 		return vl.SVC
 	case constants.Nodes:
 		return vl.NODE
+	case constants.HorizontalPodAutoScalers:
+		return vl.HPA
 	}
 	return -1
 }
@@ -222,30 +230,35 @@ func (m *Manager) initNewCurrentLimit() *APIResource {
 			DEP:  0,
 			SVC:  0,
 			NODE: 0,
+			HPA:  0,
 		},
 		PUT: &VerbLimits{
 			POD:  0,
 			DEP:  0,
 			SVC:  0,
 			NODE: 0,
+			HPA:  0,
 		},
 		POST: &VerbLimits{
 			POD:  0,
 			DEP:  0,
 			SVC:  0,
 			NODE: 0,
+			HPA:  0,
 		},
 		PATCH: &VerbLimits{
 			POD:  0,
 			DEP:  0,
 			SVC:  0,
 			NODE: 0,
+			HPA:  0,
 		},
 		DELETE: &VerbLimits{
 			POD:  0,
 			DEP:  0,
 			SVC:  0,
 			NODE: 0,
+			HPA:  0,
 		},
 	}
 }
@@ -275,13 +288,15 @@ func (m *Manager) distributeWorkerLimits(request types.RateLimitUpdateRequest) {
 		}
 		switch typeOfS.Field(i).Name {
 		case "POD":
-			m.WorkerBroadcastChannels["pods"] <- rlch
+			m.WorkerBroadcastChannels[constants.Pods] <- rlch
 		case "DEP":
-			m.WorkerBroadcastChannels["deployments"] <- rlch
+			m.WorkerBroadcastChannels[constants.Deployments] <- rlch
 		case "SVC":
-			m.WorkerBroadcastChannels["services"] <- rlch
+			m.WorkerBroadcastChannels[constants.Services] <- rlch
 		case "NODE":
-			m.WorkerBroadcastChannels["nodes"] <- rlch
+			m.WorkerBroadcastChannels[constants.Nodes] <- rlch
+		case "HPA":
+			m.WorkerBroadcastChannels[constants.HorizontalPodAutoScalers] <- rlch
 		}
 	}
 }

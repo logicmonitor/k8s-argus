@@ -2,14 +2,19 @@ package device
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
+	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	//"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -66,105 +71,103 @@ func buildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, opti
 // checkAndUpdateExistingDevice tries to find and update the devices which needs to be changed
 func (m *Manager) checkAndUpdateExistingDevice(lctx *lmctx.LMContext, resource string, device *models.Device) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
-	displayNameWithClusterName := fmt.Sprintf("%s-%s", *device.DisplayName, m.Config().ClusterName)
-	existingDevices, err := m.FindByDisplayNames(lctx, resource, *device.DisplayName, displayNameWithClusterName)
+	currentCluster := m.Config().ClusterName
+	existingDevices, err := m.FindByDisplayNames(lctx, resource, *device.DisplayName, util.GetFullDisplayName(device, resource, currentCluster))
+
 	if err != nil {
 		return nil, err
 	}
 	if len(existingDevices) == 0 {
-		return nil, fmt.Errorf("cannot find devices with name: %s", *device.DisplayName)
+		return nil, fmt.Errorf("cannot find devices with names: %s , %s", *device.DisplayName, util.GetFullDisplayName(device, resource, currentCluster))
 	}
 	for _, existingDevice := range existingDevices {
-		clusterName := m.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey)
-		if clusterName == m.Config().ClusterName {
+		clusterName := util.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey)
+		if clusterName == currentCluster {
 			// the device which is not changed will be ignored
-			if *existingDevice.Name == *device.Name {
+			if util.GetDisplayNameWithNamespace(existingDevice, resource) == util.GetDisplayNameWithNamespace(device, resource) {
 				log.Infof("No changes to device (%s). Ignoring update", *device.DisplayName)
-				return device, nil
+				m.DC.Set(util.GetFullDisplayName(existingDevice, resource, currentCluster))
+				return nil, nil
 			}
-			// the clusterName is the same and hostName is not the same, need update
-			*device.DisplayName = *existingDevice.DisplayName
-			newDevice, err2 := m.updateAndReplace(lctx, resource, existingDevice.ID, device)
+
+			log.Infof("Updating and moving to conflicts group - existing device (%s)", *existingDevice.DisplayName)
+			err2 := m.moveDeviceToConflictGroup(lctx, existingDevice, resource)
 			if err2 != nil {
+				log.Errorf("%v", err2)
 				return nil, err2
 			}
-			log.Infof("Updating existing device (%s)", *newDevice.DisplayName)
-			return newDevice, nil
+
+			m.DC.Set(util.GetFullDisplayName(existingDevice, resource, currentCluster))
+			return existingDevice, nil
 		}
 	}
-	// duplicate device exists. update displayName and re-add
-	renamedDevice, err := m.renameAndAddDevice(lctx, resource, device)
-	if err != nil {
-		log.Errorf("rename device failed: %v", err)
-		return nil, fmt.Errorf("rename device failed")
-	}
-	return renamedDevice, nil
+	return device, nil
 }
 
 // renameAndAddDevice rename display name and then add the device
 func (m *Manager) renameAndAddDevice(lctx *lmctx.LMContext, resource string, device *models.Device) (*models.Device, error) {
-	log := lmlog.Logger(lctx)
-	resourceName := m.GetPropertyValue(device, constants.K8sResourceNamePropertyKey)
-	if resourceName == "" {
-		resourceName = *device.DisplayName
-	}
-	renameResourceName := fmt.Sprintf("%s-%s", resourceName, m.Config().ClusterName)
-	existingDevice, err := m.FindByDisplayName(lctx, resource, renameResourceName)
-	if err != nil {
-		log.Warnf("Get device(%s) failed, err: %v", resourceName, err)
-	}
-	if existingDevice != nil {
-		if m.Config().ClusterName == m.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey) {
-			device.DisplayName = existingDevice.DisplayName
-			return m.updateAndReplace(lctx, resource, existingDevice.ID, device)
-		}
-		return nil, fmt.Errorf("exist displayName: %s", renameResourceName)
-	}
-	log.Infof("Rename device: %s -> %s", *device.DisplayName, renameResourceName)
-	device.DisplayName = &renameResourceName
-	params := lm.NewAddDeviceParams()
-	addFromWizard := false
-	params.SetAddFromWizard(&addFromWizard)
-	params.SetBody(device)
-	cmd := &types.HTTPCommand{
-		Command: &types.Command{
-			ExecFun: m.AddDevice(params),
-			LMCtx:   lctx,
-		},
-		Method:   "POST",
-		Category: "device",
-		LMHCErrParse: &types.LMHCErrParse{
-			ParseErrResp: m.AddDeviceErrResp,
-		},
-	}
-	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
-	//restResponse, err := m.LMClient.LM.AddDevice(params)
+	restResponse, err := m.addDevice(lctx, resource, device)
+
 	if err != nil {
 		return nil, err
 	}
 	return restResponse.(*lm.AddDeviceOK).Payload, nil
 }
 
-// GetPropertyValue get device property value by property name
-func (m *Manager) GetPropertyValue(device *models.Device, propertyName string) string {
-	if device == nil {
-		return ""
-	}
-	if len(device.CustomProperties) > 0 {
-		for _, cp := range device.CustomProperties {
-			if *cp.Name == propertyName {
-				return *cp.Value
-			}
+// RenameAndUpdateDevice renames the device display as per desiredDisplayName and moves the conflicting devices to conflicts dynamic group.
+func (m *Manager) RenameAndUpdateDevice(lctx *lmctx.LMContext, resource string, device *models.Device, desiredDisplayName string) error {
+	log := lmlog.Logger(lctx)
+	collectorID := cscutils.GetCollectorID()
+	device.PreferredCollectorID = &collectorID
+
+	*device.DisplayName = desiredDisplayName
+	updatedDevice, err := m.updateAndReplace(lctx, resource, device.ID, device)
+
+	// remove conflict category from sys-category of device.
+	if util.IsConflictingDevice(updatedDevice, resource) {
+		currentCategories := getCurrentSystemCategoriesForDevice(updatedDevice)
+		updatedCategories := strings.ReplaceAll(currentCategories, util.GetConflictCategoryByResourceType(resource), "")
+		entityProperty := models.EntityProperty{Name: constants.K8sSystemCategoriesPropertyKey, Value: updatedCategories, Type: "system"}
+		err1 := m.updateDevicePropertyByName(lctx, updatedDevice.ID, &entityProperty, resource)
+		if err1 != nil {
+			log.Errorf("Failed to remove device %s from conflicts group. %v", *updatedDevice.DisplayName, err1)
+			return err1
 		}
 	}
-	if len(device.SystemProperties) > 0 {
-		for _, cp := range device.SystemProperties {
-			if *cp.Name == propertyName {
-				return *cp.Value
+
+	if err != nil {
+		deviceDefault, _ := err.(*lm.UpdateDeviceDefault)
+		// handle the device existing case
+		if deviceDefault != nil && deviceDefault.Code() == 409 {
+			log.Infof("Device with displayName %s already exists, rename and moving it to conflicts group.", *device.DisplayName)
+			options := []types.DeviceOption{
+				m.DisplayName(util.GetFullDisplayName(device, resource, m.Config().ClusterName)),
 			}
+			newDevice, err := m.UpdateAndReplace(lctx, resource, device, options...)
+			if err != nil {
+				log.Errorf("Failed to update the device %s : %v", *device.DisplayName, err)
+				return err
+			}
+			err2 := m.moveDeviceToConflictGroup(lctx, newDevice, resource)
+			if err2 != nil {
+				log.Errorf("Failed to move device %s to conflicts group: %v", *newDevice.DisplayName, err2)
+				return err2
+			}
+
+			m.DC.Set(util.GetFullDisplayName(newDevice, resource, m.Config().ClusterName))
+			return nil
 		}
+		log.Errorf("%v", err)
+		return err
 	}
-	return ""
+
+	m.DC.Set(util.GetFullDisplayName(updatedDevice, resource, m.Config().ClusterName))
+	return nil
+}
+
+// GetDesiredDisplayName returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
+func (m *Manager) GetDesiredDisplayName(name, namespace, resource string) string {
+	return util.GetDesiredDisplayNameByResourceAndConfig(name, namespace, m.Config().ClusterName, resource, m.Config().FullDisplayNameIncludeNamespace, m.Config().FullDisplayNameIncludeClusterName)
 }
 
 func (m *Manager) updateAndReplace(lctx *lmctx.LMContext, resource string, id int32, device *models.Device) (*models.Device, error) {
@@ -258,27 +261,123 @@ func (m *Manager) FindByDisplayNames(lctx *lmctx.LMContext, resource string, dis
 	return resp.Payload.Items, nil
 }
 
-// FindByDisplayNameAndClusterName implements types.DeviceManager.
-func (m *Manager) FindByDisplayNameAndClusterName(lctx *lmctx.LMContext, resource string, displayName string) (*models.Device, error) {
-	displayNameWithClusterName := fmt.Sprintf("%s-%s", displayName, m.Config().ClusterName)
-	devices, err := m.FindByDisplayNames(lctx, resource, displayName, displayNameWithClusterName)
-	if err != nil {
-		return nil, err
+// getEvaluationParamsForResource generates evaluation parameters based on labels and specified resource
+func getEvaluationParamsForResource(device *models.Device, labels map[string]string) (map[string]interface{}, error) {
+	evaluationParams := make(map[string]interface{})
+
+	for key, value := range labels {
+		key = filters.CheckAndReplaceInvalidChars(key)
+		value = filters.CheckAndReplaceInvalidChars(value)
+		evaluationParams[key] = value
 	}
-	for _, device := range devices {
-		if m.Config().ClusterName == m.GetPropertyValue(device, constants.K8sClusterNamePropertyKey) {
-			return device, nil
-		}
-	}
-	return nil, nil
+
+	evaluationParams["name"] = filters.CheckAndReplaceInvalidChars(*device.DisplayName)
+	return evaluationParams, nil
 }
 
 // Add implements types.DeviceManager.
-func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
-	log.Debugf("%#v", device)
 
+	if !m.checkPingDeviceAndSystemIPs(lctx, device) {
+		log.Warnf("Property '%s' is empty for device '%s', skipping", constants.K8sSystemIPsPropertyKey, *device.DisplayName)
+		return nil, nil
+	}
+
+	evaluationParams, err := getEvaluationParamsForResource(device, labels)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
+
+	if filters.Eval(resource, evaluationParams) {
+		log.Infof("Filtering out %s %s.", resource, *device.DisplayName)
+		// delete existing resource which is mentioned for filtering.
+		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName, util.GetFullDisplayName(device, resource, m.Config().ClusterName))
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	restResponse, err := m.addDevice(lctx, resource, device)
+	if err != nil {
+		deviceDefault, ok := err.(*lm.AddDeviceDefault)
+		if !ok {
+			return nil, err
+		}
+		// handle the device existing case
+		if deviceDefault != nil && deviceDefault.Code() == 409 {
+			newdevice, err := m.addConflictingDevice(lctx, device, resource, options...)
+			if err != nil {
+				return nil, err
+			}
+			return newdevice, nil
+		}
+		return nil, err
+	}
+	resp := restResponse.(*lm.AddDeviceOK)
+	m.DC.Set(util.GetFullDisplayName(resp.Payload, resource, m.Config().ClusterName))
+	log.Debugf("%#v", resp)
+	return resp.Payload, nil
+}
+
+func (m *Manager) addConflictingDevice(lctx *lmctx.LMContext, device *models.Device, resource string, options ...types.DeviceOption) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	log.Infof("Check and Update the existing device: %s", *device.DisplayName)
+	updatedevice, err := m.checkAndUpdateExistingDevice(lctx, resource, device)
+	if err != nil {
+		log.Errorf("failed to updated device: %v", err)
+		return nil, fmt.Errorf("failed to updated device")
+	}
+
+	if updatedevice == nil {
+		return device, nil
+	}
+
+	currentCluster := m.Config().ClusterName
+	log.Infof("Adding new device %s and moving to conflicts group.", *device.DisplayName)
+	options = append(options, m.Custom(constants.K8sSystemCategoriesPropertyKey, util.GetConflictCategoryByResourceType(resource)))
+	*device.DisplayName = util.GetFullDisplayName(device, resource, currentCluster)
+	newDevice := buildDevice(lctx, m.Config(), device, options...)
+	renamedDevice, err := m.renameAndAddDevice(lctx, resource, newDevice)
+
+	if err != nil {
+		log.Errorf("add new device failed: %v", err)
+		return nil, fmt.Errorf("add new device failed")
+	}
+
+	m.DC.Set(util.GetFullDisplayName(renamedDevice, resource, currentCluster))
+	return renamedDevice, nil
+}
+
+func (m *Manager) moveDeviceToConflictGroup(lctx *lmctx.LMContext, device *models.Device, resource string) error {
+	updatedCategories := fmt.Sprintf(getCurrentSystemCategoriesForDevice(device) + "," + util.GetConflictCategoryByResourceType(resource))
+	entityProperty := models.EntityProperty{Name: constants.K8sSystemCategoriesPropertyKey, Value: updatedCategories, Type: "system"}
+	err := m.updateDevicePropertyByName(lctx, device.ID, &entityProperty, resource)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getCurrentSystemCategoriesForDevice(device *models.Device) string {
+	return util.GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
+}
+
+// checkPingDeviceAndSystemIPs verifies that 'system.ips' property is present if device ping feature is enabled.
+// If hostNetwork is enabled then device hostname is set as resource name instead of IP Address.
+// In this case collector uses 'system.ips' to communicate with the resource.
+func (m *Manager) checkPingDeviceAndSystemIPs(lctx *lmctx.LMContext, device *models.Device) bool {
+	isPingDevice := lctx.Extract(constants.IsPingDevice)
+	if isPingDevice != nil && isPingDevice.(bool) && util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) == "" {
+		return false
+	}
+	return true
+}
+
+func (m *Manager) addDevice(lctx *lmctx.LMContext, resource string, device *models.Device) (interface{}, error) {
 	params := lm.NewAddDeviceParams()
 	addFromWizard := false
 	params.SetAddFromWizard(&addFromWizard)
@@ -295,28 +394,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, options ...types.D
 		},
 	}
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
-	if err != nil {
-		deviceDefault, ok := err.(*lm.AddDeviceDefault)
-		if !ok {
-			return nil, err
-		}
-		// handle the device existing case
-		if deviceDefault != nil && deviceDefault.Code() == 409 {
-			log.Infof("Check and Update the existing device: %s", *device.DisplayName)
-			newDevice, err2 := m.checkAndUpdateExistingDevice(lctx, resource, device)
-			if err2 != nil {
-				return nil, err2
-			}
-			m.DC.Set(*newDevice.DisplayName)
-			return newDevice, nil
-		}
-
-		return nil, err
-	}
-	resp := restResponse.(*lm.AddDeviceOK)
-	m.DC.Set(*resp.Payload.DisplayName)
-	log.Debugf("%#v", resp)
-	return resp.Payload, nil
+	return restResponse, err
 }
 
 // UpdateAndReplace implements types.DeviceManager.
@@ -329,51 +407,49 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource string, name string, filter types.UpdateFilter, options ...types.DeviceOption) (*models.Device, error) {
+func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource, name, fullName string, filter types.UpdateFilter, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
-	if !m.DC.Exists(name) {
-		log.Infof("Missing device %v; adding it now", name)
-		return m.Add(lctx, resource, options...)
+	if !m.DC.Exists(fullName) {
+		log.Infof("Missing device %v; (full name = %v) adding it now", name, fullName)
+		return m.Add(lctx, resource, labels, options...)
 	}
 	if filter != nil && !filter() {
 		log.Debugf("filtered device update %s", name)
 		return nil, nil
 	}
 
-	d, err := m.FindByDisplayNameAndClusterName(lctx, resource, name)
+	existingDevice, err := m.getExisitingDeviceByGivenProperties(lctx, name, fullName, resource)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if d == nil {
+	if existingDevice == nil {
 		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
 
-	options = append(options, m.DisplayName(*d.DisplayName))
+	options = append(options, m.DisplayName(*existingDevice.DisplayName))
+
 	// Update the device.
-	device, err := m.UpdateAndReplace(lctx, resource, d, options...)
+	device, err := m.UpdateAndReplace(lctx, resource, existingDevice, options...)
 	if err != nil {
 
 		return nil, err
 	}
-	m.DC.Set(*device.DisplayName)
+	m.DC.Set(util.GetFullDisplayName(device, resource, m.Config().ClusterName))
 	return device, nil
 }
 
-// TODO: this method needs to be removed in DEV-50496
-
 // UpdateAndReplaceField implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, d *models.Device, field string, options ...types.DeviceOption) (*models.Device, error) {
-	log := lmlog.Logger(lctx)
-	device := buildDevice(lctx, m.Config(), d, options...)
-	log.Debugf("%#v", device)
-
+func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, device *models.Device, fields string) (*models.Device, error) {
 	params := lm.NewPatchDeviceParams()
-	params.SetID(d.ID)
+	params.SetID(device.ID)
+	params.SetPatchFields(&fields)
 	params.SetBody(device)
 	opType := "replace"
 	params.SetOpType(&opType)
+
 	cmd := &types.HTTPCommand{
 		Command: &types.Command{
 			ExecFun: m.PatchDevice(params),
@@ -385,39 +461,97 @@ func (m *Manager) UpdateAndReplaceField(lctx *lmctx.LMContext, resource string, 
 			ParseErrResp: m.PatchDeviceErrResp,
 		},
 	}
+
 	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
-	//restResponse, err := m.LMClient.LM.PatchDevice(params)
 	if err != nil {
 		return nil, err
 	}
 	resp := restResponse.(*lm.PatchDeviceOK)
-	log.Debugf("%#v", resp)
-
 	return resp.Payload, nil
 }
 
-// TODO: this method needs to be removed in DEV-50496
-
-// UpdateAndReplaceFieldByDisplayName implements types.DeviceManager.
-func (m *Manager) UpdateAndReplaceFieldByDisplayName(lctx *lmctx.LMContext, resource string, name string, field string, options ...types.DeviceOption) (*models.Device, error) {
+// UpdateDevicePropertyByName updates the specified property value for a device.
+func (m *Manager) updateDevicePropertyByName(lctx *lmctx.LMContext, deviceID int32, entityProperty *models.EntityProperty, resource string) error {
 	log := lmlog.Logger(lctx)
-	d, err := m.FindByDisplayNameAndClusterName(lctx, resource, name)
+	params := lm.NewUpdateDevicePropertyByNameParams()
+	params.SetBody(entityProperty)
+	params.SetDeviceID(deviceID)
+	params.SetName(entityProperty.Name)
+	cmd := &types.HTTPCommand{
+		Command: &types.Command{
+			ExecFun: m.UpdateDevicePropertyByName(params),
+			LMCtx:   lctx,
+		},
+		Method:   "PUT",
+		Category: "device",
+		LMHCErrParse: &types.LMHCErrParse{
+			ParseErrResp: m.UpdateDevicePropertyErrResp,
+		},
+	}
+	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	//restResponse, err := client.LM.UpdateDevicePropertyByName(params)
+
+	if err != nil {
+		return fmt.Errorf("failed to update device property '%v'. Error: %v", entityProperty.Name, err)
+	}
+	resp := restResponse.(*lm.UpdateDevicePropertyByNameOK)
+	log.Debugf("update property response payload : %#v", resp.Payload)
+
+	return nil
+}
+
+// MoveToDeletedGroup implements types.DeviceManager.
+func (m *Manager) MoveToDeletedGroup(lctx *lmctx.LMContext, resource, name, fullName string, deletionTimestamp *v1.Time, options ...types.DeviceOption) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	existingDevice, err := m.getExisitingDeviceByGivenProperties(lctx, name, fullName, resource)
 	if err != nil {
 		return nil, err
 	}
-
-	if d == nil {
-		log.Infof("Could not find device %q", name)
+	if existingDevice == nil {
+		log.Warnf("Could not find device %q", name)
 		return nil, nil
 	}
-	options = append(options, m.DisplayName(*d.DisplayName))
-	// Update the device.
-	device, err := m.UpdateAndReplaceField(lctx, resource, d, field, options...)
+
+	device := m.buildDeviceBeforeDeletion(deletionTimestamp, existingDevice, options...)
+	fields := constants.CustomPropertiesFieldName + "," + constants.NameFieldName + "," + constants.DisplayNameFieldName
+
+	updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, device, fields)
 	if err != nil {
 		return nil, err
 	}
+	return updatedDevice, nil
+}
 
-	return device, nil
+func (m *Manager) buildDeviceBeforeDeletion(deletionTimestamp *v1.Time, existingDevice *models.Device, options ...types.DeviceOption) *models.Device {
+	// add resource deletion timestamp
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	if deletionTimestamp != nil {
+		timestamp = strconv.FormatInt(deletionTimestamp.Unix(), 10)
+	}
+	options = append(options, m.DeletedOn(constants.K8sResourceDeletedOnPropertyKey, timestamp))
+
+	// rename device to resolve conflicts for new devices
+	shortUUID := strconv.FormatUint(uint64(util.GetShortUUID()), 10)
+	deviceName := util.TrimName(*existingDevice.Name)
+	options = append(options, m.Name(deviceName+"-"+shortUUID))
+	deviceDisplayName := util.TrimName(util.GetPropertyValue(existingDevice, constants.K8sDeviceNamePropertyKey))
+	options = append(options, m.DisplayName(deviceDisplayName+"-"+shortUUID))
+
+	// build device with specific fields that needs to be updated
+	// ID & PreferredCollectorID are required, if not passed then considered as 0 & API throws an error
+	device := &models.Device{
+		ID:                   existingDevice.ID,
+		Name:                 existingDevice.Name,
+		DisplayName:          existingDevice.DisplayName,
+		CustomProperties:     existingDevice.CustomProperties,
+		PreferredCollectorID: existingDevice.PreferredCollectorID,
+	}
+
+	for _, option := range options {
+		option(device)
+	}
+
+	return device
 }
 
 // DeleteByID implements types.DeviceManager.
@@ -441,23 +575,50 @@ func (m *Manager) DeleteByID(lctx *lmctx.LMContext, resource string, id int32) e
 }
 
 // DeleteByDisplayName implements types.DeviceManager.
-func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource string, name string) error {
+func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource, name, fullName string) error {
 	log := lmlog.Logger(lctx)
-	d, err := m.FindByDisplayNameAndClusterName(lctx, resource, name)
+	existingDevice, err := m.getExisitingDeviceByGivenProperties(lctx, name, fullName, resource)
+
 	if err != nil {
 		return err
 	}
 
-	// TODO: Should this return an error?
-	if d == nil {
+	if existingDevice == nil {
 		log.Infof("Could not find device %q", name)
 		return nil
 	}
-	err2 := m.DeleteByID(lctx, resource, d.ID)
-	if err2 == nil {
-		m.DC.Unset(name)
+
+	err2 := m.DeleteByID(lctx, resource, existingDevice.ID)
+	if err2 != nil {
+		return err2
 	}
-	return err2
+	m.DC.Unset(name)
+	log.Infof("deleted device %q", name)
+
+	return nil
+}
+
+func (m *Manager) getExisitingDeviceByGivenProperties(lctx *lmctx.LMContext, name, fullName, resource string) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	existingDevices, err := m.FindByDisplayNames(lctx, resource, name, fullName)
+
+	if err != nil {
+		log.Errorf("Error finding devices with names: %s, %s - %v", name, fullName, err)
+		return nil, err
+	}
+
+	if len(existingDevices) == 0 {
+		log.Debugf("Could not find device %q", name)
+		return nil, nil
+	}
+
+	for _, existingDevice := range existingDevices {
+		clusterName := util.GetPropertyValue(existingDevice, constants.K8sClusterNamePropertyKey)
+		if util.GetFullDisplayName(existingDevice, resource, clusterName) == fullName {
+			return existingDevice, nil
+		}
+	}
+	return nil, nil
 }
 
 // Config implements types.DeviceManager.

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Argus</title>
@@ -6,21 +6,16 @@
     <description>Recent content on Argus</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 12 Aug 2017 16:20:39 -0700</lastBuildDate>
-    
-	<atom:link href="https://logicmonitor.github.io/k8s-argus/getting-started/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 12 Aug 2017 16:20:39 -0700</lastBuildDate><atom:link href="https://logicmonitor.github.io/k8s-argus/getting-started/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Getting Started</title>
       <link>https://logicmonitor.github.io/k8s-argus/getting-started/</link>
       <pubDate>Sat, 12 Aug 2017 16:20:39 -0700</pubDate>
       
       <guid>https://logicmonitor.github.io/k8s-argus/getting-started/</guid>
-      <description>The simplest way to get started with Argus is to install it using Helm. Prior to installation, you will need a cluster-admin serviceaccount for tiller:
-$ kubectl create serviceaccount tiller --namespace=&amp;quot;kube-system&amp;quot; $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller $ helm init --service-account=tiller  You&amp;rsquo;ll also need to add the LogicMonitor chart repository:
-$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Now you can install the LogicMonitor Collectorset controller:
-$ helm upgrade \ --install \ --debug \ --wait \ --set accessID=&amp;quot;$ACCESS_ID&amp;quot; \ --set accessKey=&amp;quot;$ACCESS_KEY&amp;quot; \ --set account=&amp;quot;$ACCOUNT&amp;quot; \ --set clusterName=&amp;quot;$CLUSTER_NAME&amp;quot; \ --set imageTag=&amp;quot;$IMAGE_TAG&amp;quot; \ collectorset-controller logicmonitor/collectorset-controller  See the configuration page for a complete list of values the Collectorset Controller helm chart supports, and their descriptions.</description>
+      <description>The simplest way to get started with Argus is to install it using Helm version 3.
+You&amp;rsquo;ll need to add the LogicMonitor chart repository:
+$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts  Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:</description>
     </item>
     
   </channel>

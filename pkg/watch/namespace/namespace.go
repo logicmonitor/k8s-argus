@@ -3,10 +3,14 @@ package namespace
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -28,6 +32,11 @@ func (w *Watcher) APIVersion() string {
 
 // Enabled is a function that check the resource can watch.
 func (w *Watcher) Enabled() bool {
+	return true
+}
+
+// Namespaced returns true if resource is namespaced
+func (w *Watcher) Namespaced() bool {
 	return true
 }
 
@@ -56,16 +65,19 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.PodCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			case constants.DeploymentDeviceGroupName:
 				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
+			case constants.HorizontalPodAutoscalerDeviceGroupName:
+				appliesTo = devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerCategory).And().Auto("namespace").Equals(namespace.Name).And().Auto("clustername").Equals(w.Config.ClusterName)
 			default:
 				continue
 			}
 
 			opts := &devicegroup.Options{
-				AppliesTo:       appliesTo,
-				Client:          w.LMClient,
-				DisableAlerting: w.Config.DisableAlerting,
-				Name:            namespace.Name,
-				ParentID:        parentID,
+				AppliesTo:        appliesTo,
+				Client:           w.LMClient,
+				DisableAlerting:  w.Config.DisableAlerting,
+				Name:             namespace.Name,
+				ParentID:         parentID,
+				CustomProperties: devicegroup.NewPropertyBuilder(),
 			}
 
 			log.Debugf("%v", opts)
@@ -120,4 +132,19 @@ func getReversedDeviceGroups(deviceGroups map[string]int32) map[int32]string {
 		reversedDeviceGroups[value] = key
 	}
 	return reversedDeviceGroups
+}
+
+// GetNamespaceList Fetches list of namespaces name
+func GetNamespaceList(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) []string {
+	log := lmlog.Logger(lctx)
+	namespaceList := []string{}
+	namespaces, err := kubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil || namespaces == nil {
+		log.Warnf("Failed to get namespaces from k8s. Error: %v", err)
+		return namespaceList
+	}
+	for i := range namespaces.Items {
+		namespaceList = append(namespaceList, namespaces.Items[i].GetName())
+	}
+	return namespaceList
 }

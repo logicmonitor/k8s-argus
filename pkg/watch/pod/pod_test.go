@@ -1,6 +1,7 @@
 package pod
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -73,6 +74,7 @@ func TestGetPodsMap(t *testing.T) {
 			}),
 			isHostNetwork:     true,
 			expectedPodName:   "node-app",
+			inputNamespace:    "default",
 			expectedPodsCount: 1,
 		},
 	}
@@ -80,7 +82,7 @@ func TestGetPodsMap(t *testing.T) {
 	assert := assert.New(t)
 	for _, testCase := range podTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			podsMap, err := GetPodsMap(testCase.clientSet, testCase.inputNamespace)
+			podsMap, err := GetPodsMap(testCase.clientSet, testCase.inputNamespace, "cluster1")
 
 			// check if err not nil
 			if err != nil {
@@ -92,8 +94,12 @@ func TestGetPodsMap(t *testing.T) {
 
 			// check if hostNetwork is enabled then pod name will be the IP/DNS name of the pod device
 			if testCase.isHostNetwork {
-				assert.Equal(testCase.expectedPodName, podsMap[testCase.expectedPodName], "TestCase: \"%s\" \nResult: Expected pod name \"%s\" but got \"%s\"", testCase.name, testCase.expectedPodName, podsMap[testCase.expectedPodName])
+				assert.Equal(testCase.expectedPodName, podsMap[getPodDisplayName(testCase.expectedPodName, testCase.inputNamespace)], "TestCase: \"%s\" \nResult: Expected pod name \"%s\" but got \"%s\"", testCase.name, testCase.expectedPodName, podsMap[testCase.expectedPodName])
 			}
 		})
 	}
+}
+
+func getPodDisplayName(name string, namespace string) string {
+	return fmt.Sprintf("%s-pod-%s-cluster1", name, namespace)
 }

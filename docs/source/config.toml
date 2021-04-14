@@ -7,6 +7,7 @@ canonifyurls = true
 # Enable Google Analytics by entering your tracking id
 googleAnalytics = ""
 publishDir = "../../docs"
+disableKinds = ["taxonomy", "term"]
 
 [params]
 	# General information
@@ -18,7 +19,7 @@ publishDir = "../../docs"
 	provider = "GitHub"
 	repo_url = "https://github.com/logicmonitor/k8s-argus"
 
-	version = "0.2.0-alpha.1"
+	version = "4.2.0"
 	logo = "/images/logo.png"
 	favicon = ""
 
@@ -39,12 +40,10 @@ publishDir = "../../docs"
     	text = "Brandon Grotesque"
     	code = "Roboto Mono"
 
-
 [social]
 	twitter = "LogicMonitor"
 	github  = "LogicMonitor"
 	email   = "argus@logicmonitor.com"
-
 
 [[menu.main]]
 	name   = "Argus"
@@ -61,14 +60,22 @@ publishDir = "../../docs"
 	url    = "docs/"
 	weight = 3
 
-[[menu.main]]
-	name   = "Roadmap"
-	url    = "roadmap/"
-	weight = 4
-
-
 [blackfriday]
 	smartypants	= true
 	fractions = true
 	smartDashes = true
 	plainIDAnchors = true
+
+[markup]
+  [markup.highlight]
+    anchorLineNos = false
+    codeFences = true
+    guessSyntax = false
+    hl_Lines = ""
+    lineAnchors = ""
+    lineNoStart = 1
+    lineNos = false
+    lineNumbersInTable = true
+    noClasses = false
+    style = "monokai"
+    tabWidth = 4
