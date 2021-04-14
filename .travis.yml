@@ -16,6 +16,7 @@ install:
   - rsync -az ${TRAVIS_BUILD_DIR}/ $GOPATH/src/github.com/autonomy/conform/
   - export TRAVIS_BUILD_DIR=$GOPATH/src/github.com/autonomy/conform
   - cd $GOPATH/src/github.com/autonomy/conform
+  - sudo rm -rf /etc/apt/sources.list.d
   - sudo apt-get -y remove docker docker-engine
   - sudo apt-get -y update
   - sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
@@ -23,6 +24,7 @@ install:
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
+  - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
 
 script:
   - make
