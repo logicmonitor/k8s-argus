@@ -27,7 +27,7 @@ install:
   - echo "$DOCKER_TOKEN" | docker login --username "$DOCKER_USERNAME" --password-stdin
 
 script:
-  - make
+  - make VERSION=latest
 
 after_success:
   - docker run --volume=$(pwd):/out --entrypoint=cp logicmonitor/argus:latest /coverage.txt /out
