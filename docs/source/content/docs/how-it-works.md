@@ -11,6 +11,8 @@ menu:
 
 # how-it-works
 
+1.0.0
+
 In this section we will dig into the lower level implementation of Argus to understand how it works, and provide those interested in contributing an introduction to the fundamentals of its design. An understanding of Go interfaces is recommended.
 
 ## Running Argus In-Cluster
