@@ -1,12 +1,13 @@
 ---
-title: "Getting Started"
-date: 2017-08-12T16:20:39-07:00
+title: Getting Started
+date: '2017-08-12T23:20:39.000Z'
 draft: false
 ---
 
-The simplest way to get started with Argus is to install it using [Helm]
-(https://github.com/kubernetes/helm). Prior to installation, you will need a
-cluster-admin serviceaccount for tiller:
+# index
+
+The simplest way to get started with Argus is to install it using \[Helm\] \([https://github.com/kubernetes/helm](https://github.com/kubernetes/helm)\). Prior to installation, you will need a cluster-admin serviceaccount for tiller:
+
 ```bash
 $ kubectl create serviceaccount tiller --namespace="kube-system"
 $ kubectl create clusterrolebinding tiller --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
@@ -37,10 +38,7 @@ $ helm upgrade \
   collectorset-controller logicmonitor/collectorset-controller
 ```
 
-See the [configuration page]
-(https://logicmonitor.github.io/k8s-argus/docs/configuration/) for a complete
-list of values the Collectorset Controller helm chart supports, and their
-descriptions.
+See the \[configuration page\] \([https://logicmonitor.github.io/k8s-argus/docs/configuration/](https://logicmonitor.github.io/k8s-argus/docs/configuration/)\) for a complete list of values the Collectorset Controller helm chart supports, and their descriptions.
 
 > Note: The Collectorset controller should be installed only once per cluster.
 
@@ -67,17 +65,16 @@ Next, install Argus:
     --set collector.proxyPass="$COLLECTOR_PROXY_PASS" \
     argus logicmonitor/argus
 ```
-See the [configuration page]
-(https://logicmonitor.github.io/k8s-argus/docs/configuration/) for a complete
-list of values the Argus helm chart supports, and their descriptions.
+
+See the \[configuration page\] \([https://logicmonitor.github.io/k8s-argus/docs/configuration/](https://logicmonitor.github.io/k8s-argus/docs/configuration/)\) for a complete list of values the Argus helm chart supports, and their descriptions.
 
 > Note: Argus should be installed only once per cluster.
 
-After installation is complete, you should make sure you have [DataSources]
-(https://logicmonitor.github.io/k8s-argus/docs/monitoring/) in your account
-that will start monitoring the resources in your cluster.
+After installation is complete, you should make sure you have \[DataSources\] \([https://logicmonitor.github.io/k8s-argus/docs/monitoring/](https://logicmonitor.github.io/k8s-argus/docs/monitoring/)\) in your account that will start monitoring the resources in your cluster.
 
-# Community
+## Community
 
-- To report bugs and/or submit feature requests, use [GitHub]
-(https://github.com/logicmonitor/k8s-argus/issues).
+* To report bugs and/or submit feature requests, use \[GitHub\]
+
+  \([https://github.com/logicmonitor/k8s-argus/issues](https://github.com/logicmonitor/k8s-argus/issues)\).
+
