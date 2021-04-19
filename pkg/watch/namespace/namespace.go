@@ -84,8 +84,9 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 
 			_, err := devicegroup.Create(opts)
 			if err != nil {
-				log.Errorf("Failed to add namespace to %q: %v", name, err)
-				return
+				log.Errorf("Failed to add %q namespace group under %q device group. Error: %v", namespace.Name, name, err)
+				// continue to add remaining groups
+				continue
 			}
 
 			log.Infof("Added namespace %q to %q", namespace.Name, name)
