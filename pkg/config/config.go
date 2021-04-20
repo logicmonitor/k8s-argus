@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"strconv"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -27,6 +28,7 @@ type Config struct {
 	ClusterGroupID                    int32                 `yaml:"cluster_group_id"`
 	ProxyURL                          string                `yaml:"proxy_url"`
 	IgnoreSSL                         bool                  `yaml:"ignore_ssl"`
+	OpenmetricsConfig                 OpenmetricsConfig     `yaml:"openmetrics"`
 }
 
 // Secrets represents the application's sensitive configuration file.
@@ -58,6 +60,11 @@ type Intervals struct {
 	PeriodicSyncMinInterval   time.Duration `yaml:"periodic_sync_min_interval"`
 	PeriodicDeleteMinInterval time.Duration `yaml:"periodic_delete_min_interval"`
 	CacheSyncMinInterval      time.Duration `yaml:"cache_sync_min_interval"`
+}
+
+// OpenmetricsConfig represents openmetrics configs
+type OpenmetricsConfig struct {
+	Port int64 `yaml:"port"`
 }
 
 // GetConfig returns the application configuration specified by the config file.
@@ -115,4 +122,18 @@ func validateAndGetIntervalValue(intervalName string, syncInterval, minInterval,
 	}
 
 	return syncInterval
+}
+
+// GetOpenmetricsPort gets openmetrics port
+func (config Config) GetOpenmetricsPort() string {
+	port := validateOpenmetricsConfig(config.OpenmetricsConfig)
+	return strconv.FormatInt(port, 10)
+}
+
+func validateOpenmetricsConfig(openmetricsConfig OpenmetricsConfig) int64 {
+	if openmetricsConfig.Port == 0 {
+		log.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting %s to its default : %v", "openmetrics.port", "2112")
+		openmetricsConfig.Port = 2112
+	}
+	return openmetricsConfig.Port
 }

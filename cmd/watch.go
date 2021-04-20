@@ -13,6 +13,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -70,6 +71,12 @@ var watchCmd = &cobra.Command{
 
 		// To update K8s & Helm properties in cluster device group periodically with the server
 		cronjob.UpdateTelemetryCron(base)
+
+		http.Handle("/metrics", promhttp.Handler())
+		go func() {
+			addr := ":" + conf.GetOpenmetricsPort()
+			log.Fatal(http.ListenAndServe(addr, nil))
+		}()
 
 		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)
