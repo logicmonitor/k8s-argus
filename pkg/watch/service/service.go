@@ -101,6 +101,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		service := obj.(*v1.Service)
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + service.Name}))
 		log := lmlog.Logger(lctx)
+		util.LogDeleteEventLatency(service.DeletionTimestamp, w.getDesiredDisplayName(service))
 		// Delete the service.
 		// nolint: dupl
 		if w.Config().DeleteDevices {
