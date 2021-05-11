@@ -113,7 +113,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log := lmlog.Logger(lctx)
 
 		log.Debugf("Handling delete node event: %s", w.getDesiredDisplayName(node))
-
+		util.LogDeleteEventLatency(node.DeletionTimestamp, w.getDesiredDisplayName(node))
 		// nolint: dupl
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(node),
@@ -149,7 +149,7 @@ func (w *Watcher) add(lctx *lmctx.LMContext, node *v1.Node) {
 
 func (w *Watcher) nodeUpdateFilter(old, new *v1.Node) types.UpdateFilter {
 	return func() bool {
-		return getInternalAddress(old.Status.Addresses) != getInternalAddress(new.Status.Addresses)
+		return getInternalAddress(old.Status.Addresses).Address != getInternalAddress(new.Status.Addresses).Address
 	}
 }
 

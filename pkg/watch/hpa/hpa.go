@@ -88,6 +88,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"device_id": resource + "-" + horizontalPodAutoscaler.Name}))
 		log := lmlog.Logger(lctx)
 		log.Debugf("Handling delete horizontalPodAutoscaler event: %s", horizontalPodAutoscaler.Name)
+		util.LogDeleteEventLatency(horizontalPodAutoscaler.DeletionTimestamp, w.getDesiredDisplayName(horizontalPodAutoscaler))
 
 		// Delete the horizontalPodAutoscaler.
 		if w.Config().DeleteDevices {
