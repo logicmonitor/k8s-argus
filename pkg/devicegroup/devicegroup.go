@@ -210,7 +210,7 @@ func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGr
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device group list when searching for %q: %v", name, err)
 	}
-
+  
 	var deviceGroup *models.DeviceGroup
 	if len(restResponse.Payload.Items) == 0 {
 		log.Errorf("Could not find device group %q with parentId %v", name, parentID)
