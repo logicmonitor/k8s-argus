@@ -114,6 +114,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		log := lmlog.Logger(lctx)
 
 		log.Debugf("Handling delete pod event: %s", w.getDesiredDisplayName(pod))
+		util.LogDeleteEventLatency(pod.DeletionTimestamp, w.getDesiredDisplayName(pod))
 
 		// Delete the pod.
 		// nolint: dupl

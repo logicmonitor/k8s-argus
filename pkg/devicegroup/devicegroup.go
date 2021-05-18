@@ -145,14 +145,12 @@ func (p *propertyBuilder) Build(existingProps []*models.NameAndValue) []*models.
 // Create creates a device group.
 func Create(opts *Options) (int32, error) {
 	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"res": "create-device-group", "device_group_name": opts.Name}))
-	log := lmlog.Logger(lctx)
 	clusterDeviceGroup, err := Find(opts.ParentID, opts.Name, opts.Client)
 	if err != nil {
 		return 0, err
 	}
 
 	if clusterDeviceGroup == nil {
-		log.Infof("Could not find device group %q", opts.Name)
 		cdg, err := create(opts.Name, opts.AppliesTo.String(), opts.DisableAlerting, opts.ParentID, opts.CustomProperties.Build(nil), opts.Client)
 		if err != nil {
 			return 0, err
@@ -206,23 +204,19 @@ func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGr
 	params := lm.NewGetDeviceGroupListParams()
 	fields := "name,id,parentId,subGroups,customProperties"
 	params.SetFields(&fields)
-	filter := fmt.Sprintf("name:\"%s\"", name)
+	filter := fmt.Sprintf("parentId:\"%v\",name:\"%s\"", parentID, name)
 	params.SetFilter(&filter)
 	restResponse, err := client.LM.GetDeviceGroupList(params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device group list when searching for %q: %v", name, err)
 	}
 
-	log.Debugf("Find devicegroup response: %#v", restResponse)
-
 	var deviceGroup *models.DeviceGroup
-	for _, d := range restResponse.Payload.Items {
-		if d.ParentID == parentID {
-			log.Infof("Found device group %q with id %d", name, d.ID)
-			deviceGroup = d
-			break
-		}
+	if len(restResponse.Payload.Items) == 0 {
+		log.Errorf("Could not find device group %q with parentId %v", name, parentID)
+		return deviceGroup, nil
 	}
+	deviceGroup = restResponse.Payload.Items[0]
 
 	return deviceGroup, nil
 }

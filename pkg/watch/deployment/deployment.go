@@ -86,6 +86,7 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": resource + "-" + deployment.Name}))
 		log := lmlog.Logger(lctx)
 		log.Debugf("Handling delete deployment event: %s", deployment.Name)
+		util.LogDeleteEventLatency(deployment.DeletionTimestamp, w.getDesiredDisplayName(deployment))
 		// Delete the deployment.
 		if w.Config().DeleteDevices {
 			if err := w.DeleteByDisplayName(lctx, w.Resource(), w.getDesiredDisplayName(deployment),
