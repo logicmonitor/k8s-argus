@@ -26,6 +26,13 @@ func (lmexec *LMExec) UpdateDevice(params *lm.UpdateDeviceParams) types.ExecRequ
 	}
 }
 
+// GetDeviceByID get device by id
+func (lmexec *LMExec) GetDeviceByID(params *lm.GetDeviceByIDParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.GetDeviceByID(params)
+	}
+}
+
 // GetDeviceList Add new device
 func (lmexec *LMExec) GetDeviceList(params *lm.GetDeviceListParams) types.ExecRequest {
 	return func() (interface{}, error) {
@@ -56,20 +63,25 @@ func (lmexec *LMExec) GetImmediateDeviceListByDeviceGroupID(params *lm.GetImmedi
 
 // AddDeviceErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) AddDeviceErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.AddDeviceDefault).Payload
+	return err.(*lm.AddDeviceDefault).Payload // nolint: errorlint
 }
 
 // UpdateDeviceErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) UpdateDeviceErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.UpdateDeviceDefault).Payload
+	return err.(*lm.UpdateDeviceDefault).Payload // nolint: errorlint
+}
+
+// GetDeviceByIDErrResp parse error object and returns models.ErrorResponse
+func (lmexec *LMExec) GetDeviceByIDErrResp(err error) *models.ErrorResponse {
+	return err.(*lm.GetDeviceByIDDefault).Payload // nolint: errorlint
 }
 
 // UpdateDevicePropertyErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) UpdateDevicePropertyErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.UpdateDevicePropertyByNameDefault).Payload
+	return err.(*lm.UpdateDevicePropertyByNameDefault).Payload // nolint: errorlint
 }
 
-//UpdateDevicePropertyByName updates specified device property.
+// UpdateDevicePropertyByName updates specified device property.
 func (lmexec *LMExec) UpdateDevicePropertyByName(params *lm.UpdateDevicePropertyByNameParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.UpdateDevicePropertyByName(params)
@@ -78,20 +90,20 @@ func (lmexec *LMExec) UpdateDevicePropertyByName(params *lm.UpdateDeviceProperty
 
 // GetDeviceListErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) GetDeviceListErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.GetDeviceListDefault).Payload
+	return err.(*lm.GetDeviceListDefault).Payload // nolint: errorlint
 }
 
 // PatchDeviceErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) PatchDeviceErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.PatchDeviceDefault).Payload
+	return err.(*lm.PatchDeviceDefault).Payload // nolint: errorlint
 }
 
 // DeleteDeviceByIDErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) DeleteDeviceByIDErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.DeleteDeviceByIDDefault).Payload
+	return err.(*lm.DeleteDeviceByIDDefault).Payload // nolint: errorlint
 }
 
 // GetImmediateDeviceListByDeviceGroupIDErrResp parse error object and returns models.ErrorResponse
 func (lmexec *LMExec) GetImmediateDeviceListByDeviceGroupIDErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.GetImmediateDeviceListByDeviceGroupIDDefault).Payload
+	return err.(*lm.GetImmediateDeviceListByDeviceGroupIDDefault).Payload // nolint: errorlint
 }

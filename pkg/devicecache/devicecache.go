@@ -6,45 +6,51 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-// DeviceCache to maintain a device cache to calcuate delta between device presence on server and on cluster
+// DeviceCache to maintain a device cache to calculate delta between device presence on server and on cluster
 type DeviceCache struct {
-	store        map[string]interface{}
-	rwm          sync.RWMutex
-	resyncPeriod time.Duration
-	base         *types.Base
+	store       map[string]interface{}
+	rwm         sync.RWMutex
+	rsyncPeriod time.Duration
+	base        *types.Base
 }
 
 // NewDeviceCache create new DeviceCache object
 func NewDeviceCache(b *types.Base, rp time.Duration) *DeviceCache {
 	dc := &DeviceCache{
-		store:        make(map[string]interface{}),
-		base:         b,
-		resyncPeriod: rp,
+		store:       make(map[string]interface{}),
+		base:        b,
+		rsyncPeriod: rp,
+		rwm:         sync.RWMutex{},
 	}
+
 	return dc
 }
 
-// Run start a goroutine to resync cache periodically with server
+// Run start a goroutine to rsync cache periodically with server
 func (dc *DeviceCache) Run() {
 	go func(dcache *DeviceCache) {
 		for {
-			time.Sleep(dcache.resyncPeriod)
-			log.Debugf("Device cache fetching devices")
+			start := time.Now()
+			logrus.Debugf("Device cache fetching devices")
 			devices := dcache.getAllDevices(dcache.base)
 			if devices == nil {
-				log.Errorf("Failed to fetch devices")
+				logrus.Errorf("Failed to fetch devices")
 			} else {
-				log.Debugf("Resync cache map")
-				dcache.resyncCache(devices)
-				log.Debugf("Resync cache done")
+				logrus.Debugf("Resync cache map")
+				dcache.rsyncCache(devices)
+				logrus.Debugf("Resync cache done")
 			}
+			end := time.Now()
+			logrus.Infof("Old Cache synced in %v", end.Sub(start).Milliseconds())
+			time.Sleep(dcache.rsyncPeriod)
 		}
 	}(dc)
 }
@@ -57,29 +63,32 @@ func (dc *DeviceCache) getAllDevices(b *types.Base) map[string]interface{} {
 
 	g, err := b.LMClient.LM.GetDeviceGroupByID(params)
 	if err != nil {
-		log.Errorf("Error while fetching cluster device group %v", err)
+		logrus.Errorf("Error while fetching cluster device group %v", err)
+
 		return nil
 	}
 
-	clusterGroupName := constants.ClusterDeviceGroupPrefix + b.Config.ClusterName
+	clusterGroupName := util.ClusterGroupName(b.Config.ClusterName)
 	clusterGroupID := int32(0)
 
 	for _, sg := range g.Payload.SubGroups {
 		if sg.Name == clusterGroupName {
 			clusterGroupID = sg.ID
+
 			break
 		}
 	}
 
 	if clusterGroupID == 0 {
-		log.Errorf("No Cluster group found")
+		logrus.Errorf("No Cluster group found")
+
 		return nil
 	}
 
 	grps := dc.getAllGroups(b, clusterGroupID)
 	grps = append(grps, clusterGroupID)
 
-	log.Debugf("all groups: %#v", grps)
+	logrus.Debugf("all groups: %#v", grps)
 	m := make(map[string]interface{})
 	for _, gid := range grps {
 		params := lm.NewGetImmediateDeviceListByDeviceGroupIDParams()
@@ -92,83 +101,93 @@ func (dc *DeviceCache) getAllDevices(b *types.Base) map[string]interface{} {
 			m[dc.getFullDisplayName(device)] = true
 		}
 	}
+
 	return m
 }
 
-func (dc *DeviceCache) getFullDisplayName(device *models.Device) string {
-	syscategory := util.GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
-	return util.GetFullDisplayName(device, getResourceTypeFromSystemCateogries(syscategory), dc.base.Config.ClusterName)
-}
-
-func getResourceTypeFromSystemCateogries(category string) string {
+func getResourceTypeFromSystemCateogries(category string) enums.ResourceType {
 	if strings.Contains(category, constants.PodCategory) {
-		return constants.Pods
+		return enums.Pods
 	}
 	if strings.Contains(category, constants.DeploymentCategory) {
-		return constants.Deployments
+		return enums.Deployments
 	}
 	if strings.Contains(category, constants.ServiceCategory) {
-		return constants.Services
+		return enums.Services
 	}
 	if strings.Contains(category, constants.NodeCategory) {
-		return constants.Nodes
+		return enums.Nodes
 	}
 	if strings.Contains(category, constants.HorizontalPodAutoscalerCategory) {
-		return constants.HorizontalPodAutoScalers
+		return enums.Hpas
 	}
-	return ""
+
+	return enums.Unknown
 }
 
-func (dc *DeviceCache) resyncCache(m map[string]interface{}) {
+func (dc *DeviceCache) getFullDisplayName(device *models.Device) string {
+	systemCategories := util.GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
+
+	return util.GetFullDisplayName(device, getResourceTypeFromSystemCateogries(systemCategories), dc.base.Config.ClusterName)
+}
+
+func (dc *DeviceCache) rsyncCache(m map[string]interface{}) {
 	dc.rwm.Lock()
 	defer dc.rwm.Unlock()
 	dc.store = m
 }
 
-func (dc *DeviceCache) getAllGroups(b *types.Base, grpid int32) []int32 {
+func (dc *DeviceCache) getAllGroups(b *types.Base, grpID int32) []int32 {
 	params := lm.NewGetDeviceGroupByIDParams()
-	params.SetID(grpid)
+	params.SetID(grpID)
 	g, err := b.LMClient.LM.GetDeviceGroupByID(params)
 	if err != nil {
-		log.Errorf("Failed to fetch group with id: %v", grpid)
+		logrus.Errorf("Failed to fetch group with id: %v", grpID)
+
 		return []int32{}
 	}
-	subGroups := []int32{}
+	var subGroups []int32
+
 	for _, sg := range g.Payload.SubGroups {
 		if sg.Name == "_deleted" {
 			continue
 		}
-		log.Debugf("Taking group: %v", sg.Name)
+		logrus.Debugf("Taking group: %v", sg.Name)
 		gps := dc.getAllGroups(b, sg.ID)
 		subGroups = append(subGroups, gps...)
 	}
-	subGroups = append(subGroups, grpid)
+
+	subGroups = append(subGroups, grpID)
+
 	return subGroups
 }
 
 // Set adds entry into cache map
 func (dc *DeviceCache) Set(name string) bool {
-	log.Debugf("Setting cache entry %s", name)
+	logrus.Debugf("Setting cache entry %s", name)
 	dc.rwm.Lock()
 	defer dc.rwm.Unlock()
 	dc.store[name] = true
+
 	return true
 }
 
 // Exists checks entry into cache map
 func (dc *DeviceCache) Exists(name string) bool {
-	log.Debugf("Checking cache entry %s", name)
+	logrus.Debugf("Checking cache entry %s", name)
 	dc.rwm.RLock()
 	defer dc.rwm.RUnlock()
 	_, ok := dc.store[name]
+
 	return ok
 }
 
 // Unset checks entry into cache map
 func (dc *DeviceCache) Unset(name string) bool {
-	log.Debugf("Deleting cache entry %s", name)
+	logrus.Debugf("Deleting cache entry %s", name)
 	dc.rwm.Lock()
 	defer dc.rwm.Unlock()
 	delete(dc.store, name)
+
 	return true
 }

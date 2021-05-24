@@ -20,8 +20,10 @@ func selfLink(namespaced bool, apiVersion string, kind string, namespace string,
 		if namespace == "" {
 			return ""
 		}
+
 		return fmt.Sprintf(selfLinkAPIPrefix+"/%s/namespaces/%s/%s/%s", apiVersion, namespace, kind, name)
 	}
+
 	return fmt.Sprintf(selfLinkAPIPrefix+"/%s/%s/%s", apiVersion, kind, name)
 }
 

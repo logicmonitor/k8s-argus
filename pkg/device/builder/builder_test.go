@@ -1,9 +1,10 @@
-package builder
+package builder_test
 
 import (
 	"testing"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -15,14 +16,15 @@ var (
 )
 
 func TestResourceLabels_NilDevice(t *testing.T) {
+	t.Parallel()
 	properties := map[string]string{
 		propName:  propValue1,
 		prop2Name: propValue2,
 	}
 
-	builder := Builder{}
+	b := builder.Builder{} // nolint: exhaustivestruct
 
-	resourceLabel := builder.ResourceLabels(properties)
+	resourceLabel := b.ResourceLabels(properties)
 	resourceLabel(nil)
 	if resourceLabel == nil {
 		t.Errorf("TestResourceLabels_NilDevice - invalid inputs")
@@ -30,6 +32,7 @@ func TestResourceLabels_NilDevice(t *testing.T) {
 }
 
 func TestResourceLabels_NilCustomProperties(t *testing.T) {
+	t.Parallel()
 	device := &models.Device{
 		CustomProperties: []*models.NameAndValue{},
 	}
@@ -39,9 +42,9 @@ func TestResourceLabels_NilCustomProperties(t *testing.T) {
 		prop2Name: propValue2,
 	}
 
-	builder := Builder{}
+	b := builder.Builder{} // nolint: exhaustivestruct
 
-	resourceLabel := builder.ResourceLabels(properties)
+	resourceLabel := b.ResourceLabels(properties)
 	resourceLabel(device)
 
 	kubernetesPropName := constants.LabelCustomPropertyPrefix + propName
@@ -53,10 +56,10 @@ func TestResourceLabels_NilCustomProperties(t *testing.T) {
 	if propValue2 != getDevicePropValueByName(device, kubernetesPropName2) {
 		t.Errorf("TestResourceLabels_NilCustomProperties - failed to set device property %s", kubernetesPropName2)
 	}
-
 }
 
 func TestResourceLabels_ExistingCustomProperties(t *testing.T) {
+	t.Parallel()
 	device := &models.Device{
 		CustomProperties: []*models.NameAndValue{
 			{
@@ -74,57 +77,14 @@ func TestResourceLabels_ExistingCustomProperties(t *testing.T) {
 		prop2Name: propValue2,
 	}
 
-	builder := Builder{}
-
-	resourceLabel := builder.ResourceLabels(properties)
+	b := builder.Builder{} // nolint: exhaustivestruct
+	resourceLabel := b.ResourceLabels(properties)
 	resourceLabel(device)
-
 	if propValue1 != getDevicePropValueByName(device, propName) {
 		t.Errorf("TestResourceLabels_ExistingCustomProperties - failed to set device property %s", propName)
 	}
-
 	if propValue2 != getDevicePropValueByName(device, prop2Name) {
 		t.Errorf("TestResourceLabels_ExistingCustomProperties- failed to set device property %s", prop2Name)
-	}
-
-}
-
-func TestBuilder_SetProperty(t *testing.T) {
-	device := &models.Device{
-		CustomProperties: []*models.NameAndValue{},
-	}
-
-	setProp := setProperty(propName, propValue1)
-	setProp(device)
-	if propValue1 != getDevicePropValueByName(device, propName) {
-		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", propName, propValue1)
-	}
-	setProp = setProperty(propName, propValue2)
-	setProp(device)
-	if propValue2 != getDevicePropValueByName(device, propName) {
-		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", propName, propValue2)
-	}
-
-	sysPropValue1 := "k1=v1,k2=v2"
-	sysPropValue2 := constants.PodCategory
-
-	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue1)
-	setProp(device)
-	if propValue2 != getDevicePropValueByName(device, propName) {
-		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", propName, propValue2)
-	}
-	if sysPropValue1 != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
-		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue1)
-	}
-	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
-	setProp(device)
-	if sysPropValue1+","+constants.PodCategory != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
-		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
-	}
-	setProp = setProperty(constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
-	setProp(device)
-	if sysPropValue1+","+constants.PodCategory != getDevicePropValueByName(device, constants.K8sSystemCategoriesPropertyKey) {
-		t.Errorf("TestBuilder_SetProperty - failed to set prop %s:%s to the device", constants.K8sSystemCategoriesPropertyKey, sysPropValue2)
 	}
 }
 
@@ -137,5 +97,6 @@ func getDevicePropValueByName(d *models.Device, name string) string {
 			return *prop.Value
 		}
 	}
+
 	return ""
 }

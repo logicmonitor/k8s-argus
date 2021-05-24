@@ -8,6 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/models"
@@ -15,6 +16,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
+
+const maxHistoryRecordsDefault = 10
 
 // UpdateTelemetryCron a cron job to update K8s & Helm properties in cluster device group
 func UpdateTelemetryCron(base *types.Base) {
@@ -25,7 +28,7 @@ func UpdateTelemetryCron(base *types.Base) {
 func updateTelemetry(lctx *lmctx.LMContext, base *types.Base) {
 	log := lmlog.Logger(lctx)
 	parentID := base.Config.ClusterGroupID
-	groupName := constants.ClusterDeviceGroupPrefix + base.Config.ClusterName
+	groupName := util.ClusterGroupName(base.Config.ClusterName)
 	deviceGroup, err := devicegroup.Find(parentID, groupName, base.LMClient)
 	if err != nil || deviceGroup == nil {
 		log.Errorf("Failed to fetch device group. Error: %v", err)
@@ -56,6 +59,7 @@ func getExistingDeviceGroupPropertiesMap(lctx *lmctx.LMContext, groupID int32, c
 	for _, property := range entityProperties {
 		entityPropertiesMap[property.Name] = property.Value
 	}
+
 	return entityPropertiesMap
 }
 
@@ -65,6 +69,7 @@ func getK8sAndHelmProperties(lctx *lmctx.LMContext, kubeClient kubernetes.Interf
 	customProperties[constants.ArgusAppVersion] = constants.Version
 	customProperties = getKubernetesVersion(lctx, customProperties, kubeClient)
 	customProperties = getHelmChartDetailsFromConfigMap(lctx, customProperties, kubeClient)
+
 	return customProperties
 }
 
@@ -74,10 +79,12 @@ func getKubernetesVersion(lctx *lmctx.LMContext, customProperties map[string]str
 	serverVersion, err := kubeClient.Discovery().ServerVersion()
 	if err != nil || serverVersion == nil {
 		log.Errorf("Failed to get Kubernetes version. Error: %v", err)
+
 		return customProperties
 	}
 	cpValue := serverVersion.String()
 	customProperties[constants.KubernetesVersionKey] = cpValue
+
 	return customProperties
 }
 
@@ -89,13 +96,14 @@ func getHelmChartDetailsFromConfigMap(lctx *lmctx.LMContext, customProperties ma
 	namespaceList := namespace.GetNamespaceList(lctx, kubeClient)
 
 	regex := constants.Chart + " in (" + constants.Argus + ", " + constants.CollectorsetController + ")"
-	opts := metav1.ListOptions{
+	opts := metav1.ListOptions{ // nolint: exhaustivestruct
 		LabelSelector: regex,
 	}
 	for i := range namespaceList {
 		configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceList[i]).List(opts)
 		if err != nil || configMapList == nil {
 			log.Errorf("Failed to get the configMap from k8s. Error: %v", err)
+
 			continue
 		}
 		for i := range configMapList.Items {
@@ -109,12 +117,13 @@ func getHelmChartDetailsFromConfigMap(lctx *lmctx.LMContext, customProperties ma
 			}
 		}
 	}
+
 	return customProperties
 }
 
 // update the property and if it does not exists then add it
 func updateProperty(lctx *lmctx.LMContext, key string, value string, groupID int32, client *client.LMSdkGo) {
-	entityProperty := models.EntityProperty{Name: key, Value: value, Type: constants.DeviceGroupCustomType}
+	entityProperty := models.EntityProperty{Name: key, Value: value, Type: constants.DeviceGroupCustomType} // nolint: exhaustivestruct
 	isUpdated := devicegroup.UpdateDeviceGroupPropertyByName(lctx, groupID, &entityProperty, client)
 	if !isUpdated {
 		devicegroup.AddDeviceGroupProperty(lctx, groupID, &entityProperty, client)
@@ -122,7 +131,7 @@ func updateProperty(lctx *lmctx.LMContext, key string, value string, groupID int
 }
 
 func getUpdatedHistoryValue(historyVal, newValue string) string {
-	values := []string{}
+	values := make([]string, 0)
 	if historyVal != "" {
 		values = strings.Split(historyVal, constants.PropertySeparator)
 	}
@@ -132,9 +141,10 @@ func getUpdatedHistoryValue(historyVal, newValue string) string {
 		values = append(values, newValue)
 		length = len(values) // calculate length again after adding record
 	}
-	// retain last 10 records
-	if length >= 10 {
-		values = values[length-10 : length]
+	// retain last maxHistoryRecordsDefault records
+	if length >= maxHistoryRecordsDefault {
+		values = values[length-maxHistoryRecordsDefault : length]
 	}
+
 	return strings.Join(values, constants.PropertySeparator)
 }

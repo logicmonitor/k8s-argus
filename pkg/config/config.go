@@ -1,14 +1,14 @@
 package config
 
 import (
-	"io/ioutil"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 // Config represents the application's configuration file.
@@ -20,7 +20,7 @@ type Config struct {
 	Address                           string                `yaml:"address"`
 	ClusterCategory                   string                `yaml:"cluster_category"`
 	ClusterName                       string                `yaml:"cluster_name"`
-	Debug                             bool                  `yaml:"debug"`
+	LogLevel                          logrus.Level          `yaml:"log_level"`
 	DeleteDevices                     bool                  `yaml:"delete_devices"`
 	DisableAlerting                   bool                  `yaml:"disable_alerting"`
 	FullDisplayNameIncludeNamespace   bool                  `yaml:"displayName_include_namespace"`
@@ -69,55 +69,68 @@ type OpenmetricsConfig struct {
 
 // GetConfig returns the application configuration specified by the config file.
 func GetConfig() (*Config, error) {
-	configBytes, err := ioutil.ReadFile(constants.ConfigPath)
+	configBytes, err := GetWatchConfig(constants.ConfigFileName)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &Config{}
-	err = yaml.Unmarshal(configBytes, c)
+	c := &Config{} // nolint: exhaustivestruct
+
+	err = yaml.Unmarshal([]byte(configBytes), c)
 	if err != nil {
 		return nil, err
 	}
 
-	err = envconfig.Process("argus", c)
+	err = envconfig.Process(constants.EnvVarArgusConfigPrefix, c)
 	if err != nil {
 		return nil, err
 	}
+
+	validateConfig(c)
 
 	return c, nil
+}
+
+func validateConfig(conf *Config) {
+	if conf.LogLevel == logrus.PanicLevel {
+		fmt.Print("Looks like either given log level is not parsed or set to panic, setting it to \"info\"") // nolint: forbidigo
+		conf.LogLevel = logrus.InfoLevel
+	}
 }
 
 // GetCacheSyncInterval gets cache resync interval
 func (config Config) GetCacheSyncInterval() time.Duration {
 	cacheInterval := validateAndGetIntervalValue("cache_sync_interval", config.Intervals.CacheSyncInterval, config.Intervals.CacheSyncMinInterval, constants.DefaultCacheResyncInterval)
-	log.Debugf("cache_sync_interval - %v ", cacheInterval)
+	logrus.Debugf("cache_sync_interval - %v ", cacheInterval)
+
 	return cacheInterval
 }
 
 // GetPeriodicSyncInterval gets periodic sync interval
 func (config Config) GetPeriodicSyncInterval() time.Duration {
 	periodicSyncInterval := validateAndGetIntervalValue("periodic_sync_interval", config.Intervals.PeriodicSyncInterval, config.Intervals.PeriodicSyncMinInterval, constants.DefaultPeriodicSyncInterval)
-	log.Debugf("periodic_sync_interval - %v ", periodicSyncInterval)
+	logrus.Debugf("periodic_sync_interval - %v ", periodicSyncInterval)
+
 	return periodicSyncInterval
 }
 
 // GetPeriodicDeleteInterval gets periodic delete interval
 func (config Config) GetPeriodicDeleteInterval() time.Duration {
 	periodicDeleteInterval := validateAndGetIntervalValue("periodic_delete_interval", config.Intervals.PeriodicDeleteInterval, config.Intervals.PeriodicDeleteMinInterval, constants.DefaultPeriodicDeleteInterval)
-	log.Debugf("periodic_delete_interval - %v ", periodicDeleteInterval)
+	logrus.Debugf("periodic_delete_interval - %v ", periodicDeleteInterval)
+
 	return periodicDeleteInterval
 }
 
 // ValidateAndGetIntervalValue parses given interval into duration format. Returns default value if any errors.
 func validateAndGetIntervalValue(intervalName string, syncInterval, minInterval, defaultValue time.Duration) time.Duration {
 	if syncInterval < minInterval {
-		log.Warnf("Please provide valid value for %s. Since invalid value is configured, forcefully setting it to default %v. ", intervalName, defaultValue)
+		logrus.Warnf("Please provide valid value for %s. Since invalid value is configured, forcefully setting it to default %v. ", intervalName, defaultValue)
 		syncInterval = defaultValue
 	}
 
 	if syncInterval == 0 || minInterval == 0 {
-		log.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting %s to its default : %v", intervalName, defaultValue)
+		logrus.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting %s to its default : %v", intervalName, defaultValue)
 		syncInterval = defaultValue
 	}
 
@@ -132,7 +145,7 @@ func (config Config) GetOpenmetricsPort() string {
 
 func validateOpenmetricsConfig(openmetricsConfig OpenmetricsConfig) int64 {
 	if openmetricsConfig.Port == 0 {
-		log.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting %s to its default : %v", "openmetrics.port", "2112")
+		logrus.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting %s to its default : %v", "openmetrics.port", "2112")
 		openmetricsConfig.Port = 2112
 	}
 	return openmetricsConfig.Port

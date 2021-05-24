@@ -4,12 +4,16 @@ import (
 	"fmt"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
+	cache2 "github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -44,50 +48,67 @@ type AppliesToBuilder interface {
 	String() string
 }
 
-type appliesToBuilder struct {
+// AppliesToBuilderImpl impl
+type AppliesToBuilderImpl struct {
 	value string
 }
 
 // NewAppliesToBuilder is the builder for appliesTo.
 func NewAppliesToBuilder() AppliesToBuilder {
-	return &appliesToBuilder{}
+	return &AppliesToBuilderImpl{value: ""} // nolint: exhaustivestruct
 }
 
-func (a *appliesToBuilder) And() AppliesToBuilder {
+// And and
+func (a *AppliesToBuilderImpl) And() AppliesToBuilder {
 	a.value += " && "
+
 	return a
 }
 
-func (a *appliesToBuilder) Or() AppliesToBuilder {
+// Or or
+func (a *AppliesToBuilderImpl) Or() AppliesToBuilder {
 	a.value += " || "
+
 	return a
 }
-func (a *appliesToBuilder) Equals(val string) AppliesToBuilder {
+
+// Equals equals
+func (a *AppliesToBuilderImpl) Equals(val string) AppliesToBuilder {
 	a.value += " == " + fmt.Sprintf(`"%s"`, val)
+
 	return a
 }
 
-func (a *appliesToBuilder) HasCategory(category string) AppliesToBuilder {
+// HasCategory has
+func (a *AppliesToBuilderImpl) HasCategory(category string) AppliesToBuilder {
 	a.value += hasCategoryOpen + fmt.Sprintf(`"%s"`, category) + closingBracket
+
 	return a
 }
 
-func (a *appliesToBuilder) Exists(property string) AppliesToBuilder {
+// Exists exists
+func (a *AppliesToBuilderImpl) Exists(property string) AppliesToBuilder {
 	a.value += existsOpen + fmt.Sprintf(`"%s"`, property) + closingBracket
+
 	return a
 }
 
-func (a *appliesToBuilder) Auto(property string) AppliesToBuilder {
+// Auto auto
+func (a *AppliesToBuilderImpl) Auto(property string) AppliesToBuilder {
 	a.value += "auto." + property
+
 	return a
 }
 
-func (a *appliesToBuilder) Custom(property string) AppliesToBuilder {
+// Custom custom
+func (a *AppliesToBuilderImpl) Custom(property string) AppliesToBuilder {
 	a.value += property
+
 	return a
 }
 
-func (a *appliesToBuilder) String() string {
+// String string
+func (a *AppliesToBuilderImpl) String() string {
 	return a.value
 }
 
@@ -104,7 +125,7 @@ type propertyBuilder struct {
 
 // NewPropertyBuilder is the builder for properties
 func NewPropertyBuilder() PropertyBuilder {
-	return &propertyBuilder{}
+	return &propertyBuilder{} // nolint: exhaustivestruct
 }
 
 func (p *propertyBuilder) Add(key string, value string, override bool) PropertyBuilder {
@@ -113,38 +134,48 @@ func (p *propertyBuilder) Add(key string, value string, override bool) PropertyB
 	m["value"] = value
 	m["override"] = override
 	p.properties = append(p.properties, m)
+
 	return p
 }
 
 func (p *propertyBuilder) AddProperties(properties []map[string]interface{}) PropertyBuilder {
 	p.properties = append(p.properties, properties...)
+
 	return p
 }
 
 func (p *propertyBuilder) Build(existingProps []*models.NameAndValue) []*models.NameAndValue {
-	props := []*models.NameAndValue{}
+	props := make([]*models.NameAndValue, 0)
 	exProps := make(map[string]string)
+
 	for _, elm := range existingProps {
 		exProps[*elm.Name] = *elm.Value
 	}
+
 	for _, prop := range p.properties {
-		key := prop["name"].(string)
-		value := prop["value"].(string)
+		key := prop["name"].(string)    // nolint: forcetypeassert
+		value := prop["value"].(string) // nolint: forcetypeassert
 		override := true
+
 		if v := prop["override"]; v != nil {
-			override = v.(bool)
+			overrideTmp, ok := v.(bool)
+			if ok {
+				override = overrideTmp
+			}
 		}
+
 		if val, ok := exProps[key]; !override && ok {
 			value = val
 		}
+
 		props = append(props, &models.NameAndValue{Name: &key, Value: &value})
 	}
+
 	return props
 }
 
 // Create creates a device group.
-func Create(opts *Options) (int32, error) {
-	lctx := lmlog.NewLMContextWith(log.WithFields(log.Fields{"res": "create-device-group", "device_group_name": opts.Name}))
+func Create(lctx *lmctx.LMContext, opts *Options, cache *devicecache.ResourceCache) (int32, error) {
 	clusterDeviceGroup, err := Find(opts.ParentID, opts.Name, opts.Client)
 	if err != nil {
 		return 0, err
@@ -172,13 +203,22 @@ func Create(opts *Options) (int32, error) {
 				return 0, err
 			}
 		}
-
 	}
 
 	err = createConflictDynamicGroup(opts, clusterDeviceGroup.ID)
 	if err != nil {
 		return 0, err
 	}
+
+	cache.Set(cache2.ResourceName{
+		Name:     *clusterDeviceGroup.Name,
+		Resource: enums.Namespaces,
+	}, cache2.ResourceMeta{ // nolint: exhaustivestruct
+		Container:   "Nodes",
+		LMID:        clusterDeviceGroup.ParentID,
+		DisplayName: *clusterDeviceGroup.Name,
+		Labels:      nil,
+	})
 
 	return clusterDeviceGroup.ID, nil
 }
@@ -196,6 +236,7 @@ func createConflictDynamicGroup(opts *Options, clusterGrpID int32) error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -208,12 +249,14 @@ func Find(parentID int32, name string, client *client.LMSdkGo) (*models.DeviceGr
 	params.SetFilter(&filter)
 	restResponse, err := client.LM.GetDeviceGroupList(params)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get device group list when searching for %q: %v", name, err)
+		return nil, fmt.Errorf("failed to get device group list when searching for %q: %w", name, err)
 	}
 
 	var deviceGroup *models.DeviceGroup
+
 	if len(restResponse.Payload.Items) == 0 {
-		log.Errorf("Could not find device group %q with parentId %v", name, parentID)
+		logrus.Errorf("Could not find device group %q with parentId %v", name, parentID)
+
 		return deviceGroup, nil
 	}
 	deviceGroup = restResponse.Payload.Items[0]
@@ -245,12 +288,13 @@ func FindDeviceGroupsByName(name string, client *client.LMSdkGo) ([]*models.Devi
 func Exists(parentID int32, name string, client *client.LMSdkGo) bool {
 	deviceGroup, err := Find(parentID, name, client)
 	if err != nil {
-		log.Warnf("Failed looking up device group for node role %q: %v", name, err)
+		logrus.Warnf("Failed looking up device group for node role %q: %v", name, err)
 	}
 
 	if deviceGroup != nil {
 		return true
 	}
+
 	return false
 }
 
@@ -262,17 +306,41 @@ func ExistsByID(groupID int32, client *client.LMSdkGo) bool {
 	params.SetFields(&fields)
 	restResponse, err := client.LM.GetDeviceGroupByID(params)
 	if err != nil {
-		log.Warnf("Failed to get device group (id=%v): %v", groupID, err)
+		logrus.Warnf("Failed to get device group (id=%v): %v", groupID, err)
+
 		return false
 	}
 
-	log.Debugf("Exists device group by id response:%#v", restResponse)
+	logrus.Debugf("Exists device group by id response:%#v", restResponse)
 
 	if restResponse.Payload != nil && restResponse.Payload.ID == groupID {
 		return true
 	}
 
 	return false
+}
+
+// GetByID returns true if we could get the group by id
+func GetByID(groupID int32, client *client.LMSdkGo) (*models.DeviceGroup, error) {
+	params := lm.NewGetDeviceGroupByIDParams()
+	params.SetID(groupID)
+	restResponse, err := client.LM.GetDeviceGroupByID(params)
+	if err != nil {
+		return nil, err
+	}
+
+	return restResponse.Payload, nil
+}
+
+func GetClusterGroupProperty(lctx *lmctx.LMContext, name string, client *client.LMSdkGo) string {
+	log := lmlog.Logger(lctx)
+	clusterGroupID := util.GetClusterGroupID(lctx, client)
+	log.Infof("Cluster group ID: %v", clusterGroupID)
+	deviceGroup, err := GetByID(clusterGroupID, client)
+	if err != nil {
+		log.Errorf("Failed to fetch cluster group: %s", err)
+	}
+	return GetPropertyValue(deviceGroup, name)
 }
 
 // DeleteSubGroup deletes a subgroup from a device group with the specified
@@ -289,6 +357,7 @@ func DeleteSubGroup(deviceGroup *models.DeviceGroup, name string, client *client
 		deleteHard := true
 		params.SetDeleteHard(&deleteHard)
 		_, err := client.LM.DeleteDeviceGroupByID(params)
+
 		return err
 	}
 
@@ -303,14 +372,15 @@ func DeleteGroup(deviceGroup *models.DeviceGroup, client *client.LMSdkGo) error 
 	params.SetDeleteChildren(&deleteChildren)
 	deleteHard := true
 	params.SetDeleteHard(&deleteHard)
-	log.Infof("Deleting deviceGroup:\"%s\" ID:\"%d\" ParentID:\"%d\"", *deviceGroup.Name, deviceGroup.ID, deviceGroup.ParentID)
+	logrus.Infof("Deleting deviceGroup:\"%s\" ID:\"%d\" ParentID:\"%d\"", *deviceGroup.Name, deviceGroup.ID, deviceGroup.ParentID)
 	_, err := client.LM.DeleteDeviceGroupByID(params)
+
 	return err
 }
 
 func create(name, appliesTo string, disableAlerting bool, parentID int32, customProperties []*models.NameAndValue, client *client.LMSdkGo) (*models.DeviceGroup, error) {
 	params := lm.NewAddDeviceGroupParams()
-	params.SetBody(&models.DeviceGroup{
+	params.SetBody(&models.DeviceGroup{ // nolint: exhaustivestruct
 		Name:             &name,
 		Description:      "A dynamic device group for Kubernetes.",
 		ParentID:         parentID,
@@ -321,11 +391,11 @@ func create(name, appliesTo string, disableAlerting bool, parentID int32, custom
 
 	restResponse, err := client.LM.AddDeviceGroup(params)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add device group %q: %v", name, err)
+		return nil, fmt.Errorf("failed to add device group %q: %w", name, err)
 	}
 
 	deviceGroup := restResponse.Payload
-	log.Infof("Created device group %q with id %d", name, deviceGroup.ID)
+	logrus.Infof("Created device group %q with id %d", name, deviceGroup.ID)
 
 	return deviceGroup, nil
 }
@@ -338,8 +408,10 @@ func GetDeviceGroupPropertyList(lctx *lmctx.LMContext, groupID int32, client *cl
 	restResponse, err := client.LM.GetDeviceGroupPropertyList(params)
 	if err != nil || restResponse == nil {
 		log.Errorf("Failed to fetch device group (id - '%v') property list. Error: %v", groupID, err)
+
 		return []*models.EntityProperty{}
 	}
+
 	return restResponse.Payload.Items
 }
 
@@ -353,9 +425,28 @@ func UpdateDeviceGroupPropertyByName(lctx *lmctx.LMContext, groupID int32, entit
 	restResponse, err := client.LM.UpdateDeviceGroupPropertyByName(params)
 	if err != nil || restResponse == nil {
 		log.Errorf("Failed to update device group property '%v'. Error: %v", entityProperty.Name, err)
+
 		return false
 	}
 	log.Debugf("Successfully updated device group property '%v'", entityProperty.Name)
+
+	return true
+}
+
+// DeleteDeviceGroupPropertyByName Updates device group property by name
+func DeleteDeviceGroupPropertyByName(lctx *lmctx.LMContext, groupID int32, entityProperty *models.EntityProperty, client *client.LMSdkGo) bool {
+	log := lmlog.Logger(lctx)
+	params := lm.NewDeleteDeviceGroupPropertyByNameParams()
+	params.SetGid(groupID)
+	params.SetName(entityProperty.Name)
+	restResponse, err := client.LM.DeleteDeviceGroupPropertyByName(params)
+	if err != nil || restResponse == nil {
+		log.Errorf("Failed to delete device group property '%v'. Error: %v", entityProperty.Name, err)
+
+		return false
+	}
+	log.Debugf("Successfully deleted device group property '%v'", entityProperty.Name)
+
 	return true
 }
 
@@ -368,9 +459,11 @@ func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty
 	restResponse, err := client.LM.AddDeviceGroupProperty(params)
 	if err != nil || restResponse == nil {
 		log.Errorf("Failed to add device group property '%v'. Error: %v", entityProperty.Name, err)
+
 		return false
 	}
 	log.Debugf("Successfully added device group property '%v'", entityProperty.Name)
+
 	return true
 }
 
@@ -383,7 +476,7 @@ func replaceCustomProperty(lctx *lmctx.LMContext, clusterDeviceGroup *models.Dev
 	}
 	for _, v := range customProperties {
 		value, exists := existingGroupProperties[*v.Name]
-		entityProperty := models.EntityProperty{Name: *v.Name, Value: *v.Value, Type: constants.DeviceGroupCustomType}
+		entityProperty := models.EntityProperty{Name: *v.Name, Value: *v.Value, Type: constants.DeviceGroupCustomType} // nolint: exhaustivestruct
 		if !exists {
 			// Add property if property does not exists
 			AddDeviceGroupProperty(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
@@ -392,4 +485,20 @@ func replaceCustomProperty(lctx *lmctx.LMContext, clusterDeviceGroup *models.Dev
 			UpdateDeviceGroupPropertyByName(lctx, clusterDeviceGroup.ID, &entityProperty, opts.Client)
 		}
 	}
+}
+
+// GetPropertyValue get device property value by property name
+func GetPropertyValue(deviceGroup *models.DeviceGroup, propertyName string) string {
+	if deviceGroup == nil {
+		return ""
+	}
+	if len(deviceGroup.CustomProperties) > 0 {
+		for _, cp := range deviceGroup.CustomProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
+			}
+		}
+	}
+
+	return ""
 }

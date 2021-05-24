@@ -1,0 +1,26 @@
+allowed:
+  domains:                                                      # List of allowed module domains
+    - golang.org
+    - k8s.io
+    - google.golang.org/grpc
+    - github.com/prometheus
+    - github.com/logicmonitor
+    - gopkg.in
+    - github.com/go-openapi
+    - github.com/google
+    - github.com/coreos/etcd
+    - github.com/golang
+
+  modules:
+    - github.com/sirupsen/logrus
+    - github.com/robfig/cron/v3
+    - github.com/Knetic/govaluate
+    - github.com/stretchr/testify
+    - github.com/kelseyhightower/envconfig
+    - github.com/spf13/cobra
+
+blocked:
+  modules:
+    - gopkg.in/yaml.v2:
+        recommendations:
+          - gopkg.in/yaml.v3

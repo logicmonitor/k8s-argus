@@ -1,24 +1,23 @@
 package sync
 
 import (
-	"strings"
-	"sync"
+	"net/http"
 	"time"
 
+	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
-	"github.com/logicmonitor/k8s-argus/pkg/permission"
+	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/hpa"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // InitSyncer implements the initial sync through logicmonitor API
@@ -26,14 +25,165 @@ type InitSyncer struct {
 	DeviceManager *device.Manager
 }
 
+// Sync sync
+func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
+	log := lmlog.Logger(lctx)
+	// Graceful conflicts resolution
+	resolveConflicts := false
+	clusterGroupID := util.GetClusterGroupID(lctx, i.DeviceManager.LMClient)
+
+	if devicegroup.GetClusterGroupProperty(lctx, constants.ResyncConflictingResourcesProp, i.DeviceManager.LMClient) == "true" {
+		resolveConflicts = true
+	}
+	log.Infof("resolveConflicts is: %v", resolveConflicts)
+	defer func() {
+		// Reset property so that this would happen gracefully
+		devicegroup.DeleteDeviceGroupPropertyByName(lctx, clusterGroupID, &models.EntityProperty{Name: constants.ResyncConflictingResourcesProp, Value: "true"}, i.DeviceManager.LMClient)
+	}()
+	allK8SResourcesStore := i.DeviceManager.GetAllK8SResources()
+	log.Tracef("Resources present on cluster: %v", allK8SResourcesStore)
+	resourcesToDelete := map[enums.ResourceType]bool{
+		enums.Pods:        true,
+		enums.Deployments: true,
+		enums.Services:    true,
+		enums.Nodes:       true,
+		enums.Hpas:        true,
+	}
+
+	list := i.DeviceManager.ResourceCache.List()
+	log.Tracef("Current cache: %v", list)
+	for _, entry := range list {
+		log.Tracef("Iterate resource cache entry : %v ", entry)
+		cacheResourceName := entry.K
+		cacheResourceMeta := entry.V
+
+		childLctx := lmlog.LMContextWithFields(lctx, logrus.Fields{
+			"name":  cacheResourceName.Resource.FQName(cacheResourceName.Name),
+			"type":  cacheResourceName.Resource.Singular(),
+			"ns":    cacheResourceMeta.Container,
+			"event": "sync",
+		})
+
+		if !resourcesToDelete[cacheResourceName.Resource] {
+			continue
+		}
+
+		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
+		if !ok {
+			i.deleteDevice(childLctx, log, cacheResourceName, cacheResourceMeta)
+		} else {
+			i.resolveConflicts(childLctx, resolveConflicts, cacheResourceMeta, clusterPresentMeta, cacheResourceName, log)
+		}
+	}
+
+	// Flush updated cache to configmaps
+	err3 := i.DeviceManager.ResourceCache.Save()
+	if err3 != nil {
+		log.Errorf("Failed to flush resource cache after resync: %s", err3)
+	}
+}
+
+// nolint: gocognit
+func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, resolveConflicts bool, cacheMeta cache.ResourceMeta, clusterResourceMeta cache.ResourceMeta, cacheResourceName cache.ResourceName, log *logrus.Entry) {
+	rt := cacheResourceName.Resource
+	if resolveConflicts && clusterResourceMeta.DisplayName != cacheMeta.DisplayName {
+		conf, err := config.GetConfig()
+		if err != nil {
+			log.Errorf("failed to get confing")
+			return
+		}
+		displayNameNew := util.GetDisplayNameNew(rt, &metav1.ObjectMeta{
+			Name:      cacheResourceName.Name,
+			Namespace: clusterResourceMeta.Container,
+		}, conf)
+		if cacheMeta.DisplayName != displayNameNew {
+			log.Infof("Updating resource by changing displayName to %s", displayNameNew)
+			resource, err := i.DeviceManager.FetchDevice(lctx, rt, cacheMeta.LMID)
+			if err != nil {
+				log.Errorf("failed to fetch resource to change displayname: %v", cacheMeta.LMID)
+				return
+			}
+			options := []types.DeviceOption{
+				i.DeviceManager.DisplayName(displayNameNew),
+				i.DeviceManager.SystemCategory(rt.GetConflictsCategory(), enums.Delete),
+			}
+			modifiedResourceValue := *resource
+			modifiedResource, err := util.BuildDevice(lctx, conf, &modifiedResourceValue, options...)
+			if err != nil {
+				log.Errorf("Failed to build modified resource")
+				return
+			}
+			_, err = i.DeviceManager.UpdateAndReplaceResource(lctx, rt, modifiedResource.ID, modifiedResource)
+			if err != nil {
+				i.handleConflictResource(lctx, err, log, cacheMeta, rt, conf, resource)
+				return
+			}
+			return
+		}
+		log.Infof("No change in settings to change displayName")
+	}
+}
+
+func (i *InitSyncer) handleConflictResource(lctx *lmctx.LMContext, err error, log *logrus.Entry, cacheMeta cache.ResourceMeta, rt enums.ResourceType, conf *config.Config, resource *models.Device) {
+	deviceDefault := err.(*lm.UpdateDeviceDefault) // nolint: errorlint
+	if deviceDefault != nil && deviceDefault.Code() == http.StatusConflict {
+		log.Warnf("Still resource conflicts, ignoring resolve conflict for resource")
+		if !cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
+			modifiedResource, err := util.BuildDevice(lctx, conf, resource, i.DeviceManager.SystemCategory(rt.GetConflictsCategory(), enums.Add))
+			if err != nil {
+				log.Errorf("Failed to modify resource to add conflicts category: %s", err)
+				return
+			}
+			_, err = i.DeviceManager.UpdateAndReplaceResource(lctx, rt, modifiedResource.ID, modifiedResource)
+			if err != nil {
+				log.Errorf("Failed to add conflicts category on resource: %s", err)
+			}
+		}
+		return
+	}
+	log.Errorf("Failed to modify resource name")
+}
+
+func (i *InitSyncer) deleteDevice(lctx *lmctx.LMContext, log *logrus.Entry, resourceName cache.ResourceName, resourceMeta cache.ResourceMeta) {
+	conf, err := config.GetConfig()
+	if err != nil {
+		log.Errorf("Failed to get config")
+		return
+	}
+	if conf.DeleteDevices {
+		log.Debugf("Deleting device: %s %v", resourceName.Name, resourceMeta)
+		err := i.DeviceManager.DeleteByID(lctx, resourceName.Resource, resourceMeta.LMID)
+		if err != nil {
+			sc := util.GetHTTPStatusCodeFromLMSDKError(err)
+			if sc == http.StatusNotFound {
+				log.Tracef("Device does not exist %s, %v", resourceName.Name, resourceMeta.LMID)
+				i.DeviceManager.ResourceCache.Unset(resourceName, resourceMeta.Container)
+			} else {
+				log.Errorf("Failed to delete dangling device %s with ID %v : %s", resourceName.Name, resourceMeta.LMID, err)
+			}
+		} else {
+			i.DeviceManager.ResourceCache.Unset(resourceName, resourceMeta.Container)
+			log.Tracef("Deleted dangling device %s with id: %v", resourceName.Name, resourceMeta.LMID)
+		}
+	} else {
+		log.Infof("Soft delete")
+		// TODO:: Mark device for deletion if not already
+	}
+}
+
 // InitSync implements the initial sync through logicmonitor API
-func (i *InitSyncer) InitSync(lctx *lmctx.LMContext, isRestart bool) {
+func (i *InitSyncer) InitSync(lctx *lmctx.LMContext) {
 	log := lmlog.Logger(lctx)
 	log.Infof("Start to sync the resource devices")
+	conf, err := config.GetConfig()
+	if err != nil {
+		log.Errorf("Failed to get config")
+		return
+	}
 	clusterName := i.DeviceManager.Base.Config.ClusterName
 	// get the cluster info
-	parentGroupID := i.DeviceManager.Config().ClusterGroupID
-	groupName := constants.ClusterDeviceGroupPrefix + clusterName
+	parentGroupID := conf.ClusterGroupID
+	groupName := util.ClusterGroupName(clusterName)
 	rest, err := devicegroup.Find(parentGroupID, groupName, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
 		log.Infof("Failed to get the cluster group: %v, parentID: %v", groupName, parentGroupID)
@@ -41,204 +191,8 @@ func (i *InitSyncer) InitSync(lctx *lmctx.LMContext, isRestart bool) {
 	if rest == nil {
 		return
 	}
-	// get the node, pod, service, deployment info
-	if rest.SubGroups != nil && len(rest.SubGroups) != 0 {
-		i.runSync(lctx, rest, isRestart)
-	}
+
 	log.Infof("Finished syncing the resource devices")
-}
-
-func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup, isRestart bool) {
-	log := lmlog.Logger(lctx)
-	wg := sync.WaitGroup{}
-	wg.Add(len(rest.SubGroups))
-	for _, subgroup := range rest.SubGroups {
-		switch subgroup.Name {
-		case constants.NodeDeviceGroupName:
-			go func() {
-				defer wg.Done()
-				lctxNodes := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-nodes"}))
-				i.initSyncNodes(lctxNodes, rest.ID, isRestart)
-				log.Infof("Finish syncing %v", constants.NodeDeviceGroupName)
-			}()
-		// nolint: dupl
-		case constants.PodDeviceGroupName:
-			go func() {
-				defer wg.Done()
-				lctxPods := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-pods"}))
-				i.initSyncNamespacedResource(lctxPods, constants.PodDeviceGroupName, rest.ID, isRestart)
-				log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
-			}()
-		case constants.ServiceDeviceGroupName:
-			go func() {
-				defer wg.Done()
-				lctxServices := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-services"}))
-				i.initSyncNamespacedResource(lctxServices, constants.ServiceDeviceGroupName, rest.ID, isRestart)
-				log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
-			}()
-		case constants.DeploymentDeviceGroupName:
-			go func() {
-				defer wg.Done()
-				lctxDeployments := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-deployments"}))
-				if !permission.HasDeploymentPermissions() {
-					log.Warnf("Resource deployments has no permissions, ignore sync")
-					return
-				}
-				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID, isRestart)
-				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
-			}()
-		case constants.HorizontalPodAutoscalerDeviceGroupName:
-			go func() {
-				defer wg.Done()
-				if !permission.HasHorizontalPodAutoscalerPermissions() {
-					log.Warnf("Resource HorizontalPodAutoscaler has no permissions, ignore sync")
-					return
-				}
-				i.initSyncHPA(rest.ID, isRestart)
-				log.Infof("Finish syncing %v", constants.HorizontalPodAutoscalerDeviceGroupName)
-			}()
-		default:
-			func() {
-				defer wg.Done()
-				log.Infof("Unsupported group to sync, ignore it: %v", subgroup.Name)
-			}()
-
-		}
-	}
-	log.Debugf("Waiting to complete sync")
-	// wait the init sync processes finishing
-	wg.Wait()
-	log.Debugf("Completed sync")
-}
-
-func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32, isRestart bool) {
-	log := lmlog.Logger(lctx)
-	rest, err := devicegroup.Find(parentGroupID, constants.NodeDeviceGroupName, i.DeviceManager.LMClient)
-	if err != nil || rest == nil {
-		log.Warnf("Failed to get the node group")
-		return
-	}
-	if rest.SubGroups == nil {
-		return
-	}
-
-	//get node info from k8s
-	nodesMap, err := node.GetNodesMap(i.DeviceManager.K8sClient, i.DeviceManager.Config().ClusterName)
-	if err != nil || nodesMap == nil {
-		log.Warnf("Failed to get the nodes from k8s, err: %v", err)
-		return
-	}
-
-	for _, subGroup := range rest.SubGroups {
-		// all the node device will be added to the group "ALL", so we only need to check it
-		if subGroup.Name != constants.AllNodeDeviceGroupName {
-			continue
-		}
-		i.syncDevices(lctx, constants.NodeDeviceGroupName, nodesMap, subGroup, isRestart)
-	}
-}
-
-func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceType string, parentGroupID int32, isRestart bool) {
-	log := lmlog.Logger(lctx)
-	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
-	if err != nil || rest == nil {
-		log.Warnf("Failed to get the %s group", deviceType)
-		return
-	}
-	if rest.SubGroups == nil {
-		return
-	}
-
-	// loop every namespace
-	for _, subGroup := range rest.SubGroups {
-		//get pod/service/deployment info from k8s
-		var deviceMap map[string]string
-		clusterName := i.DeviceManager.Config().ClusterName
-
-		if deviceType == constants.PodDeviceGroupName {
-			deviceMap, err = pod.GetPodsMap(i.DeviceManager.K8sClient, subGroup.Name, clusterName)
-		} else if deviceType == constants.ServiceDeviceGroupName {
-			deviceMap, err = service.GetServicesMap(lctx, i.DeviceManager.K8sClient, subGroup.Name, clusterName)
-		} else if deviceType == constants.DeploymentDeviceGroupName {
-			deviceMap, err = deployment.GetDeploymentsMap(lctx, i.DeviceManager.K8sClient, subGroup.Name, clusterName)
-		} else {
-			return
-		}
-		if err != nil || deviceMap == nil {
-			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)
-			continue
-		}
-
-		// get and check all the devices in the group
-		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart)
-	}
-}
-
-func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData, isRestart bool) {
-	log := lmlog.Logger(lctx)
-	if len(resourcesMap) == 0 {
-		log.Debugf("Ignoring sub group %v for synchronization", subGroup.FullPath)
-		return
-	}
-
-	devices, err := i.DeviceManager.GetListByGroupID(lctx, strings.ToLower(resourceType), subGroup.ID)
-	if err != nil {
-		log.Warnf("Failed to get the devices in the group: %v", subGroup.FullPath)
-		return
-	}
-	if len(devices) == 0 {
-		log.Warnf("There is no device in the group: %v", subGroup.FullPath)
-		return
-	}
-	for _, device := range devices {
-		// the "auto.clustername" property checking is used to prevent unexpected deletion of the normal non-k8s device
-		// which may be assigned to the cluster group
-		autoClusterName := util.GetPropertyValue(device, constants.K8sClusterNamePropertyKey)
-		if autoClusterName != i.DeviceManager.Config().ClusterName {
-			log.Infof("Ignore the device (%v) which does not have property %v:%v",
-				*device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
-			continue
-		}
-
-		// ignore the device if it is moved in _deleted group
-		if util.GetPropertyValue(device, constants.K8sResourceDeletedOnPropertyKey) != "" {
-			log.Debugf("Ignore the device (%v) for synchronization as it is moved in _deleted group", *device.DisplayName)
-			continue
-		}
-
-		// the displayName may be renamed, we should use the complete displayName for comparison.
-		fullDisplayName := util.GetFullDisplayName(device, resourceType, autoClusterName)
-		_, exist := resourcesMap[fullDisplayName]
-		if !exist {
-			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
-			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
-			if err != nil {
-				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
-			}
-			continue
-		}
-		// Rename devices as per config parameters only on Argus restart.
-		if isRestart {
-			i.renameDeviceToDesiredName(lctx, device, resourceType)
-		}
-	}
-}
-
-func (i *InitSyncer) renameDeviceToDesiredName(lctx *lmctx.LMContext, device *models.Device, resourceType string) {
-	log := lmlog.Logger(lctx)
-	// get name and namespace prop values from devices
-	autoName := util.GetPropertyValue(device, constants.K8sDeviceNamePropertyKey)
-	namespace := util.GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
-	desiredDisplayName := i.DeviceManager.GetDesiredDisplayName(autoName, namespace, resourceType)
-
-	if i.DeviceManager.Config().FullDisplayNameIncludeClusterName || *device.DisplayName != desiredDisplayName {
-		log.Infof("Renaming existing %v device: %v to new name %s", resourceType, *device.DisplayName, desiredDisplayName)
-		err := i.DeviceManager.RenameAndUpdateDevice(lctx, strings.ToLower(resourceType), device, desiredDisplayName)
-		if err != nil {
-			log.Errorf("Failed to rename the existing device %s", *device.DisplayName)
-			return
-		}
-	}
 }
 
 // RunPeriodicSync runs synchronization periodically.
@@ -247,38 +201,7 @@ func (i *InitSyncer) RunPeriodicSync(syncTime time.Duration) {
 	go func() {
 		for {
 			time.Sleep(syncTime)
-			i.InitSync(lctx, false)
+			i.Sync(lctx)
 		}
 	}()
-}
-
-func (i *InitSyncer) initSyncHPA(parentGroupID int32, isRestart bool) {
-
-	deviceType := "HorizontalPodAutoscalers"
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "init-sync-hpa"}))
-	log := lmlog.Logger(lctx)
-
-	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
-	if err != nil || rest == nil {
-		log.Warnf("Failed to get the %s group", deviceType)
-		return
-	}
-	if rest.SubGroups == nil {
-		return
-	}
-	// loop every namespace
-	for _, subGroup := range rest.SubGroups {
-		//get hpa info from k8s
-		var deviceMap map[string]string
-
-		deviceMap, err = hpa.GetHorizontalPodAutoscalersMap(lctx, i.DeviceManager.K8sClient, subGroup.Name, i.DeviceManager.Config().ClusterName)
-
-		if err != nil || deviceMap == nil {
-			log.Warnf("Failed to get the %s from k8s, namespace: %v, err: %v", deviceType, subGroup.Name, err)
-			continue
-		}
-
-		// get and check all the devices in the group
-		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart)
-	}
 }

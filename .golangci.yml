@@ -1,0 +1,107 @@
+# https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+run:
+  concurrency: 70
+  timeout: 10m
+  skip-dirs:
+    - "(^|/)mocks($|/)"
+  allow-parallel-runners: true
+  modules-download-mode: vendor
+linters:
+  enable:
+    - asciicheck
+    - bodyclose
+    - cyclop
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errcheck
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - forbidigo
+    - gci
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - gofumpt
+    - goheader
+    - goimports
+    - golint
+    - gomnd
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ifshort
+    - importas
+    - ineffassign
+    - makezero
+    - misspell
+    - nakedret
+    - nilerr
+    - noctx
+    - prealloc
+    - predeclared
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - testpackage
+    - thelper
+    - tparallel
+    - typecheck
+    - unconvert
+    - unused
+    - varcheck
+    - wastedassign
+  disable:
+    - wsl
+    - interfacer
+    - gochecknoglobals
+    - nolintlint
+    - goerr113
+    - lll
+    - exhaustivestruct
+    - nlreturn
+    - whitespace
+    - nestif
+    - scopelint
+    - godox
+    - godot
+    - unparam
+    - wrapcheck
+    - forcetypeassert
+    - paralleltest
+    - maligned
+    - funlen
+linters-settings:
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/coreos/bbolt
+  importas:
+    alias:
+      - pkg: k8s.io/apimachinery/pkg/apis/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: github.com/logicmonitor/k8s-argus/pkg/log
+        alias: lmlog
+      - pkg: github.com/logicmonitor/k8s-argus/pkg/rl
+        alias: rlm
+      - pkg: github.com/logicmonitor/k8s-argus/pkg/utilities
+        alias: util
+      - pkg: k8s.io/api/(\w+)/(v[\w\d]+)
+        alias: $1$2
+      - pkg: github.com/sirupsen/logrus
+        alias: logrus
+      - pkg: k8s.io/client-go/tools/cache
+        alias: toolscache
+      - pkg: github.com/logicmonitor/k8s-argus/pkg/rl
+        alias: ratelimiter

@@ -2,22 +2,26 @@ package tree
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
-	"github.com/logicmonitor/k8s-argus/pkg/permission"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 )
 
 // DeviceTree manages the device tree representation of a Kubernetes cluster in LogicMonitor.
 type DeviceTree struct {
 	*types.Base
+	ResourceCache *devicecache.ResourceCache
 }
 
 // nolint: dupl
 func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 	// The device group at index 0 will be the root device group for all subsequent device groups.
+
 	return []*devicegroup.Options{
 		{
-			Name:             constants.ClusterDeviceGroupPrefix + d.Config.ClusterName,
+			Name:             util.ClusterGroupName(d.Config.ClusterName),
 			ParentID:         d.Config.ClusterGroupID,
 			DisableAlerting:  d.Config.DisableAlerting,
 			AppliesTo:        devicegroup.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
@@ -104,25 +108,20 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 }
 
 // CreateDeviceTree creates the Device tree that will represent the cluster in LogicMonitor.
-func (d *DeviceTree) CreateDeviceTree() (map[string]int32, error) {
-
+func (d *DeviceTree) CreateDeviceTree(lctx *lmctx.LMContext) (map[string]int32, error) {
 	deviceGroups := make(map[string]int32)
 	for _, opts := range d.buildOptsSlice() {
 		switch opts.Name {
 		case constants.AllNodeDeviceGroupName:
 			// the all nodes group should be nested in 'Nodes'
 			opts.ParentID = deviceGroups[constants.NodeDeviceGroupName]
-		case constants.ClusterDeviceGroupPrefix + d.Config.ClusterName:
+		case util.ClusterGroupName(d.Config.ClusterName):
 			// don't do anything for the root cluster group
 		default:
-			if opts.Name == constants.DeploymentDeviceGroupName && !permission.HasDeploymentPermissions() {
-				// deployment has no permissions, don't create the group
-				continue
-			}
-			opts.ParentID = deviceGroups[constants.ClusterDeviceGroupPrefix+d.Config.ClusterName]
+			opts.ParentID = deviceGroups[util.ClusterGroupName(d.Config.ClusterName)]
 		}
 
-		id, err := devicegroup.Create(opts)
+		id, err := devicegroup.Create(lctx, opts, d.ResourceCache)
 		if err != nil {
 			return nil, err
 		}

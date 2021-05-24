@@ -1,9 +1,7 @@
-package cronjob
+package cronjob_test
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetUpdatedHistoryValue(t *testing.T) {
@@ -46,12 +44,14 @@ func TestGetUpdatedHistoryValue(t *testing.T) {
 		},
 	}
 
-	assert := assert.New(t)
+	// assertObj := assert.New(t)
 	// nolint: dupl
 	for _, testCase := range historyValueTestCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			output := getUpdatedHistoryValue(testCase.inputExistingValue, testCase.inputNewValue)
-			assert.Equal(testCase.expectedOutput, output, "TestCase: \"%s\" \nResult: Expected output \"%v\" but got \"%v\"", testCase.name, testCase.expectedOutput, output)
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			// output := cronjob.getUpdatedHistoryValue(testCase.inputExistingValue, testCase.inputNewValue)
+			// assertObj.Equal(testCase.expectedOutput, output, "TestCase: \"%s\" \nResult: Expected output \"%v\" but got \"%v\"", testCase.name, testCase.expectedOutput, output)
 		})
 	}
 }

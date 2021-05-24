@@ -1,8 +1,11 @@
 package permission
 
 import (
-	log "github.com/sirupsen/logrus"
-	v1 "k8s.io/api/core/v1"
+	"sync"
+
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -15,10 +18,13 @@ var (
 
 	deploymentPermissionFlag              *bool
 	horizontalPodAutoscalerPermissionFlag *bool
+	mu                                    sync.Mutex
 )
 
 // Init is a function than init the permission context
 func Init(k8sClient kubernetes.Interface) {
+	mu.Lock()
+	defer mu.Unlock()
 	client = k8sClient
 }
 
@@ -28,13 +34,16 @@ func HasDeploymentPermissions() bool {
 	if deploymentPermissionFlag != nil {
 		return *deploymentPermissionFlag
 	}
-	_, err := client.AppsV1().Deployments(v1.NamespaceAll).List(metav1.ListOptions{})
+	mu.Lock()
+	defer mu.Unlock()
+	_, err := client.AppsV1().Deployments(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		deploymentPermissionFlag = &disable
-		log.Errorf("Failed to list deployments: %+v", err)
+		logrus.Errorf("Failed to list deployments: %+v", err)
 	} else {
 		deploymentPermissionFlag = &enable
 	}
+
 	return *deploymentPermissionFlag
 }
 
@@ -44,12 +53,36 @@ func HasHorizontalPodAutoscalerPermissions() bool {
 	if horizontalPodAutoscalerPermissionFlag != nil {
 		return *horizontalPodAutoscalerPermissionFlag
 	}
-	_, err := client.AutoscalingV1().HorizontalPodAutoscalers(v1.NamespaceAll).List(metav1.ListOptions{})
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	_, err := client.AutoscalingV1().HorizontalPodAutoscalers(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		horizontalPodAutoscalerPermissionFlag = &disable
-		log.Errorf("Failed to list horizontalPodAutoscalers: %+v", err)
+
+		logrus.Errorf("Failed to list horizontalPodAutoscalers: %+v", err)
 	} else {
 		horizontalPodAutoscalerPermissionFlag = &enable
 	}
+
 	return *horizontalPodAutoscalerPermissionFlag
+}
+
+// HasPermissions has permission
+func HasPermissions(rt enums.ResourceType) bool {
+	switch rt {
+	case enums.Deployments:
+
+		return HasDeploymentPermissions()
+	case enums.Hpas:
+
+		return HasHorizontalPodAutoscalerPermissions()
+	case enums.ETCD, enums.Namespaces, enums.Nodes, enums.Pods, enums.Services, enums.Unknown:
+
+		return true
+	default:
+
+		return true
+	}
 }

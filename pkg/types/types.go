@@ -1,17 +1,24 @@
 package types
 
-//go:generate mockgen -destination=../mocks/mock_types.go -package=mocks github.com/logicmonitor/k8s-argus/pkg/types LMFacade,Watcher,DeviceManager,DeviceMapper,DeviceBuilder
+// go:generate mockgen -destination=../mocks/mock_types.go -package=mocks github.com/logicmonitor/k8s-argus/pkg/types LMFacade,Watcher,DeviceManager,DeviceMapper,DeviceBuilder
 
 import (
+	"fmt"
+	"sync"
+	"time"
+
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	toolscache "k8s.io/client-go/tools/cache"
 )
+
+const defaultWorkerRetryLimit = 2
 
 // Base is a struct for embedding
 type Base struct {
@@ -22,9 +29,26 @@ type Base struct {
 
 // WConfig worker configuration
 type WConfig struct {
-	ID             string
-	MethodChannels map[string]chan ICommand
-	RetryLimit     int
+	ID         enums.ResourceType
+	Channels   map[string]chan ICommand
+	RetryLimit int
+}
+
+// NewHTTPWConfig new
+func NewHTTPWConfig(rt enums.ResourceType) *WConfig {
+	ch := make(chan ICommand)
+
+	return &WConfig{
+		Channels: map[string]chan ICommand{
+			"GET":    ch,
+			"POST":   ch,
+			"DELETE": ch,
+			"PUT":    ch,
+			"PATCH":  ch,
+		},
+		RetryLimit: defaultWorkerRetryLimit,
+		ID:         rt,
+	}
 }
 
 // GetConfig returns reference to itself. impl here to avoid duplication everywhere
@@ -34,25 +58,49 @@ func (wc *WConfig) GetConfig() *WConfig {
 
 // GetChannel Get channel for mentioned command
 func (wc *WConfig) GetChannel(command ICommand) chan ICommand {
-	switch command := command.(type) {
-	case IHTTPCommand:
+	// Convert to switch case when adding new if conditions
+	if command, ok := command.(IHTTPCommand); ok {
 		m := command.(IHTTPCommand).GetMethod()
-		return wc.MethodChannels[m]
+
+		return wc.Channels[m]
 	}
+
 	return nil
 }
 
 // Watcher is the LogicMonitor Watcher interface.
 type Watcher interface {
-	APIVersion() string
-	Namespaced() bool
-	Enabled() bool
-	Resource() string
-	ObjType() runtime.Object
-	AddFunc() func(obj interface{})
-	DeleteFunc() func(obj interface{})
+	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, []DeviceOption)
+	DeleteFunc() func(interface{})
 	UpdateFunc() func(oldObj, newObj interface{})
 	GetConfig() *WConfig
+	ResourceType() enums.ResourceType
+}
+
+// ResourceWatcher is the LogicMonitor Watcher interface.
+type ResourceWatcher interface {
+	GetConfig() *WConfig
+	ResourceType() enums.ResourceType
+}
+
+// WatcherConfigurer is the LogicMonitor Watcher interface.
+type WatcherConfigurer interface {
+	AddFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, DeviceBuilder) ([]DeviceOption, error)
+	UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, DeviceBuilder) ([]DeviceOption, bool, error)
+	DeleteFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}) []DeviceOption
+}
+
+// ResourceCache cache
+type ResourceCache interface {
+	Run()
+	Set(cache.ResourceName, cache.ResourceMeta) bool
+	Exists(*lmctx.LMContext, cache.ResourceName, string) (cache.ResourceMeta, bool)
+	Get(lctx *lmctx.LMContext, name cache.ResourceName) ([]cache.ResourceMeta, bool)
+	Unset(cache.ResourceName, string) bool
+	Load() error
+	Save() error
+	List() []cache.IterItem
+	UnsetLMID(enums.ResourceType, int32) bool
 }
 
 // DeviceManager is an interface that describes how resources in Kubernetes
@@ -60,35 +108,30 @@ type Watcher interface {
 type DeviceManager interface {
 	DeviceMapper
 	DeviceBuilder
+	Actions
+	GetResourceCache() ResourceCache
+}
+
+// Actions actions
+type Actions interface {
+	// AddFunc wrapper
+	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
+	UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...DeviceOption)
+	DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
 }
 
 // DeviceMapper is the interface responsible for mapping a Kubernetes resource to
 // a LogicMonitor device.
 type DeviceMapper interface {
-	// Config returns the Argus config.
-	Config() *config.Config
-	// FindByDisplayName searches for a device by it's display name. It will return a device if and only if
-	// one device was found, and return nil otherwise.
-	FindByDisplayName(*lmctx.LMContext, string, string) (*models.Device, error)
-	// FindByDisplayNames searches for devices by the specified string by its display name. It will return the device list.
-	FindByDisplayNames(*lmctx.LMContext, string, ...string) ([]*models.Device, error)
+	// FindByDisplayName searches for a device by it's display name. It will
+	// returns a device if and only if
+	// one device was found, and
+	// returns nil otherwise.
+	FindByDisplayName(*lmctx.LMContext, enums.ResourceType, string) (*models.Device, error)
 	// Add adds a device to a LogicMonitor account.
-	Add(*lmctx.LMContext, string, map[string]string, ...DeviceOption) (*models.Device, error)
-	// UpdateAndReplace updates a device using the 'replace' OpType.
-	UpdateAndReplace(*lmctx.LMContext, string, *models.Device, ...DeviceOption) (*models.Device, error)
-	// UpdateAndReplaceByDisplayName updates a device using the 'replace' OpType if and onlt if it does not already exist.
-	UpdateAndReplaceByDisplayName(*lmctx.LMContext, string, string, string, UpdateFilter, map[string]string, ...DeviceOption) (*models.Device, error)
-	// UpdateAndReplaceField updates a device using the 'replace' OpType for a
-	// specific field of a device.
-	UpdateAndReplaceField(*lmctx.LMContext, string, *models.Device, string) (*models.Device, error)
-	// MoveToDeletedGroup moves a device to _deleted group and replace fields
-	MoveToDeletedGroup(*lmctx.LMContext, string, string, string, *v1.Time, ...DeviceOption) (*models.Device, error)
+	Add(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) (*models.Device, error)
 	// DeleteByID deletes a device by device ID.
-	DeleteByID(*lmctx.LMContext, string, int32) error
-	// DeleteByDisplayName deletes a device by device display name.
-	DeleteByDisplayName(*lmctx.LMContext, string, string, string) error
-	// GetDesiredDisplayName returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
-	GetDesiredDisplayName(string, string, string) string
+	DeleteByID(*lmctx.LMContext, enums.ResourceType, int32) error
 }
 
 // DeviceOption is the function definition for the functional options pattern.
@@ -102,24 +145,25 @@ type DeviceBuilder interface {
 	DisplayName(string) DeviceOption
 	// CollectorID sets the preferred collector ID for the device.
 	CollectorID(int32) DeviceOption
-	// SystemCategories sets the system.categories property on the device.
-	SystemCategories(string) DeviceOption
+	// SystemCategory sets the system.categories property on the device.
+	SystemCategory(string, enums.BuilderAction) DeviceOption
 	// ResourceLabels sets custom properties for the device
 	ResourceLabels(map[string]string) DeviceOption
 	// Auto adds an auto property to the device.
 	Auto(string, string) DeviceOption
 	// System adds a system property to the device.
 	System(string, string) DeviceOption
-	// System adds a custom property to the device.
+	// Custom adds a custom property to the device.
 	Custom(string, string) DeviceOption
 	// DeletedOn adds kubernetes.resourceDeletedOn property to the device.
-	DeletedOn(string, string) DeviceOption
+	DeletedOn(time.Time) DeviceOption
 }
 
-// UpdateFilter is a boolean function to run predicate and return boolean value
+// UpdateFilter is a boolean function to run predicate and
+// returns boolean value
 type UpdateFilter func() bool
 
-// ExecRequest funnction type to point to execute fubction
+// ExecRequest function type to point to execute function
 type ExecRequest func() (interface{}, error)
 
 // ParseErrResp function signature to parse error response
@@ -132,6 +176,10 @@ type LMExecutor interface {
 
 	UpdateDevice(*lm.UpdateDeviceParams) ExecRequest
 	UpdateDeviceErrResp(error) *models.ErrorResponse
+
+	GetDeviceByID(params *lm.GetDeviceByIDParams) ExecRequest
+	GetDeviceByIDErrResp(error) *models.ErrorResponse
+
 	UpdateDevicePropertyByName(*lm.UpdateDevicePropertyByNameParams) ExecRequest
 	UpdateDevicePropertyErrResp(error) *models.ErrorResponse
 
@@ -154,7 +202,7 @@ type WorkerResponse struct {
 	Error    error
 }
 
-//Worker worker interface to provide interface method
+// Worker worker interface to provide interface method
 type Worker interface {
 	Run()
 	GetConfig() *WConfig
@@ -193,7 +241,7 @@ func (c *Command) Execute() (interface{}, error) {
 	return c.ExecFun()
 }
 
-// LMContext return LMContext object from command
+// LMContext returns LMContext object from command
 func (c *Command) LMContext() *lmctx.LMContext {
 	return c.LMCtx
 }
@@ -232,6 +280,7 @@ type HTTPCommand struct {
 	*LMHCErrParse
 	Method   string
 	Category string
+	IsGlobal bool
 	// GetHeaderFun GetHeaders
 }
 
@@ -253,15 +302,18 @@ type LMHCErrParser interface {
 // LMFacade public interface others to interact with
 type LMFacade interface {
 	// Async
-	//Send(command ICommand)
-	// sync
-	SendReceive(*lmctx.LMContext, string, ICommand) (interface{}, error)
-	RegisterWorker(string, Worker) (bool, error)
+	// Send(command ICommand)
+
+	// SendReceive sync api call
+	SendReceive(*lmctx.LMContext, enums.ResourceType, ICommand) (interface{}, error)
+	// RegisterWorker registers worker to facade client to put command objects on channel
+	RegisterWorker(enums.ResourceType, Worker) (bool, error)
 }
 
 // RateLimitUpdateRequest struct to send new rate limits received from server to manager
 type RateLimitUpdateRequest struct {
-	Worker   string
+	IsGlobal bool
+	Worker   enums.ResourceType
 	Category string
 	Method   string
 	Limit    int64
@@ -284,4 +336,68 @@ type RateLimitManager interface {
 	GetRateLimitConfig(resource string) map[string]int
 	// RegisterWorkerNotifyChannel register channel to send updates to workers
 	RegisterWorkerNotifyChannel(resource string, ch chan WorkerRateLimitsUpdate) (bool, error)
+}
+
+// DeviceExists error when device is already present in LM
+type DeviceExists struct{}
+
+// Error implements error interface
+func (err DeviceExists) Error() string {
+	return "device already present, ignoring add event"
+}
+
+// GetCollectorIDError error when device is already present in LM
+type GetCollectorIDError struct {
+	Err error
+}
+
+// Error implements error interface
+func (err GetCollectorIDError) Error() string {
+	return fmt.Sprintf("could not get collector id: %s", err.Err)
+}
+
+// ControllerInitSyncStateHolder struct to hold state
+type ControllerInitSyncStateHolder struct {
+	Controller toolscache.Controller
+	hasSynced  bool
+	mu         sync.RWMutex
+}
+
+// NewControllerInitSyncStateHolder create
+func NewControllerInitSyncStateHolder(controller toolscache.Controller) ControllerInitSyncStateHolder {
+	return ControllerInitSyncStateHolder{
+		Controller: controller,
+		hasSynced:  false,
+		mu:         sync.RWMutex{},
+	}
+}
+
+// HasSynced retrieve current state
+func (stateHolder *ControllerInitSyncStateHolder) HasSynced() bool {
+	stateHolder.mu.RLock()
+	defer stateHolder.mu.RUnlock()
+
+	return stateHolder.hasSynced
+}
+
+func (stateHolder *ControllerInitSyncStateHolder) markSynced() {
+	stateHolder.mu.Lock()
+	defer stateHolder.mu.Unlock()
+	stateHolder.hasSynced = true
+}
+
+// Run starts watching on controller status and stops when it completes initial sync
+func (stateHolder *ControllerInitSyncStateHolder) Run() {
+	go func() {
+		for {
+			hs := stateHolder.Controller.HasSynced()
+			if hs {
+				stateHolder.markSynced()
+
+				break
+			}
+			// May go in back to back loop and stop Controller from running update so sleeping for a millis to give chance to other goroutines
+			time.Sleep(time.Millisecond)
+		}
+	}()
 }

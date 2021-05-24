@@ -1,189 +1,93 @@
 package ratelimiter
 
 import (
-	"io/ioutil"
-	"net/http"
-	"reflect"
 	"sync"
 	"time"
 
-	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 var (
-	rlm   = NewManager()
-	mutex sync.Mutex
+	ratelimiter = NewManager()
+	mutex       sync.Mutex
 )
 
-// package init block so that policies will be loaded on application start
-func init() {
-	rlm.SetPolicies(readConfig())
-	rlm.Run()
+const rateLimitIdleNotifierTime = 1 * time.Minute
+
+// Init package init block so that policies will be loaded on application start
+func Init() {
+	ratelimiter.SetPolicies(readConfig())
+	ratelimiter.Run()
 }
 
 // RegisterWorkerNotifyChannel registers worker to receive updates
-func RegisterWorkerNotifyChannel(resource string, ch chan types.WorkerRateLimitsUpdate) {
-	rlm.RegisterWorkerNotifyChannel(resource, ch)
+func RegisterWorkerNotifyChannel(resource enums.ResourceType, ch chan types.WorkerRateLimitsUpdate) {
+	ratelimiter.RegisterWorkerNotifyChannel(resource, ch)
 }
 
 // GetUpdateRequestChannel channel to send new limits to rate limit manager
 func GetUpdateRequestChannel() chan types.RateLimitUpdateRequest {
-	return rlm.UpReqChan
+	return ratelimiter.UpReqChan
 }
 
 // Package internal structures and methods
 
-// VerbLimits limits of http verb
-type VerbLimits struct {
-	POD  int64 `yaml:"pod"`
-	DEP  int64 `yaml:"dep"`
-	SVC  int64 `yaml:"svc"`
-	NODE int64 `yaml:"node"`
-	HPA  int64 `yaml:"hpa"`
-}
-
-// Get returns values from verblimit for mentioned resource
-func (vl *VerbLimits) Get(resource string) int64 {
-	switch resource {
-	case constants.Pods:
-		return vl.POD
-	case constants.Deployments:
-		return vl.DEP
-	case constants.Services:
-		return vl.SVC
-	case constants.Nodes:
-		return vl.NODE
-	case constants.HorizontalPodAutoScalers:
-		return vl.HPA
-	}
-	return -1
-}
-
-// Set sets value to mentioned resource with the new value
-func (vl *VerbLimits) Set(resource string, limit int64) {
-	switch resource {
-	case constants.Pods:
-		vl.POD = limit
-	case constants.Deployments:
-		vl.DEP = limit
-	case constants.Services:
-		vl.SVC = limit
-	case constants.Nodes:
-		vl.NODE = limit
-	case constants.HorizontalPodAutoScalers:
-		vl.HPA = limit
-	}
-}
-
-// VerbPolicy limits of http verb
-type VerbPolicy struct {
-	POD  int64 `yaml:"pod"`
-	DEP  int64 `yaml:"dep"`
-	SVC  int64 `yaml:"svc"`
-	NODE int64 `yaml:"node"`
-	HPA  int64 `yaml:"hpa"`
-}
-
-// Get return policy for mentioned resource
-func (vl VerbPolicy) Get(resource string) int64 {
-	switch resource {
-	case constants.Pods:
-		return vl.POD
-	case constants.Deployments:
-		return vl.DEP
-	case constants.Services:
-		return vl.SVC
-	case constants.Nodes:
-		return vl.NODE
-	case constants.HorizontalPodAutoScalers:
-		return vl.HPA
-	}
-	return -1
-}
-
-// APIResource resource category like device, devicegroup, etc.
-type APIResource struct {
-	GET    *VerbLimits `yaml:"get"`
-	POST   *VerbLimits `yaml:"post"`
-	PUT    *VerbLimits `yaml:"put"`
-	PATCH  *VerbLimits `yaml:"patch"`
-	DELETE *VerbLimits `yaml:"delete"`
-}
-
-// Get returns verblimits for mentioned http verb
-func (apires *APIResource) Get(method string) *VerbLimits {
-	switch method {
-	case http.MethodGet:
-		return apires.GET
-	case http.MethodPost:
-		return apires.POST
-	case http.MethodPut:
-		return apires.PUT
-	case http.MethodPatch:
-		return apires.PATCH
-	case http.MethodDelete:
-		return apires.DELETE
-	}
-	return nil
-}
-
-// APIPolicy resource category like device, devicegroup, etc.
-type APIPolicy struct {
-	GET    VerbPolicy `yaml:"get"`
-	POST   VerbPolicy `yaml:"post"`
-	PUT    VerbPolicy `yaml:"put"`
-	PATCH  VerbPolicy `yaml:"patch"`
-	DELETE VerbPolicy `yaml:"delete"`
-}
-
-// Get returns verbpolicy for mentioned http verb
-func (apires APIPolicy) Get(method string) VerbPolicy {
-	switch method {
-	case http.MethodGet:
-		return apires.GET
-	case http.MethodPost:
-		return apires.POST
-	case http.MethodPut:
-		return apires.PUT
-	case http.MethodPatch:
-		return apires.PATCH
-	case http.MethodDelete:
-		return apires.DELETE
-	}
-	return VerbPolicy{}
-}
-
-//Policies rate limit policies
+// Policies rate limit policies
 type Policies struct {
-	Device APIPolicy `yaml:"device"`
+	Resource map[string]map[string]map[enums.ResourceType]int64 `yaml:"resource"`
+	Global   map[string]map[string]int64                        `yaml:"global,omitempty"`
 }
 
-// Get rturns policy for mentioned api resource category
-func (p Policies) Get(resource string) APIPolicy {
-	switch resource {
-	case "device":
-		return p.Device
+// RateLimits struct
+type RateLimits struct {
+	limits map[string]map[string]int64
+	mu     sync.Mutex
+}
+
+// Store store
+func (l *RateLimits) Store(category string, method string, limit int64) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	m, ok := l.limits[category]
+	if !ok {
+		m = make(map[string]int64)
 	}
-	return APIPolicy{}
+	m[method] = limit
+	l.limits[category] = m
+}
+
+// Load load
+func (l *RateLimits) Load(category string, method string) (int64, bool) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if m, ok := l.limits[category]; ok {
+		if val, ok := m[method]; ok {
+			return val, true
+		}
+	}
+
+	return -1, false
 }
 
 // Manager struct to hold manager entities
 type Manager struct {
 	Policies                Policies
-	WorkerBroadcastChannels map[string]chan types.WorkerRateLimitsUpdate
-	CurrentLimits           map[string]*APIResource
+	CurrentLimits           *RateLimits
+	WorkerBroadcastChannels map[enums.ResourceType]chan types.WorkerRateLimitsUpdate
 	UpReqChan               chan types.RateLimitUpdateRequest
 }
 
 // NewManager creates a object
 func NewManager() *Manager {
 	return &Manager{
-		WorkerBroadcastChannels: make(map[string]chan types.WorkerRateLimitsUpdate),
-		CurrentLimits:           make(map[string]*APIResource),
+		WorkerBroadcastChannels: make(map[enums.ResourceType]chan types.WorkerRateLimitsUpdate),
+		CurrentLimits:           &RateLimits{limits: make(map[string]map[string]int64), mu: sync.Mutex{}},
 		UpReqChan:               make(chan types.RateLimitUpdateRequest),
+		Policies:                Policies{}, // nolint: exhaustivestruct
 	}
 }
 
@@ -193,7 +97,7 @@ func (m *Manager) GetUpdateRequestChannel() chan types.RateLimitUpdateRequest {
 }
 
 // RegisterWorkerNotifyChannel registers worker to receive updates
-func (m *Manager) RegisterWorkerNotifyChannel(resource string, ch chan types.WorkerRateLimitsUpdate) {
+func (m *Manager) RegisterWorkerNotifyChannel(resource enums.ResourceType, ch chan types.WorkerRateLimitsUpdate) {
 	m.WorkerBroadcastChannels[resource] = ch
 }
 
@@ -203,100 +107,32 @@ func (m *Manager) SetPolicies(policies *Policies) {
 }
 
 func (m *Manager) saveLimits(request types.RateLimitUpdateRequest) {
-	apires, ok := m.CurrentLimits[request.Category]
-	if !ok {
-		apires = m.initNewCurrentLimit()
-		m.CurrentLimits[request.Category] = apires
-	}
-	log.Infof("%v", apires)
-	httpVerbLimits := apires.Get(request.Method)
-	httpVerbLimits.Set(request.Worker, request.Limit)
+	m.CurrentLimits.Store(request.Category, request.Method, request.Limit)
 }
 
 func (m *Manager) hasDelta(request types.RateLimitUpdateRequest) bool {
-	apires, ok := m.CurrentLimits[request.Category]
-	if !ok {
-		return true
+	if oldVal, ok := m.CurrentLimits.Load(request.Category, request.Method); ok {
+		if oldVal == request.Limit {
+			return false
+		}
 	}
-	if apires.Get(request.Method).Get(request.Worker) != request.Limit {
-		return true
-	}
-	return false
-}
-func (m *Manager) initNewCurrentLimit() *APIResource {
-	return &APIResource{
-		GET: &VerbLimits{
-			POD:  0,
-			DEP:  0,
-			SVC:  0,
-			NODE: 0,
-			HPA:  0,
-		},
-		PUT: &VerbLimits{
-			POD:  0,
-			DEP:  0,
-			SVC:  0,
-			NODE: 0,
-			HPA:  0,
-		},
-		POST: &VerbLimits{
-			POD:  0,
-			DEP:  0,
-			SVC:  0,
-			NODE: 0,
-			HPA:  0,
-		},
-		PATCH: &VerbLimits{
-			POD:  0,
-			DEP:  0,
-			SVC:  0,
-			NODE: 0,
-			HPA:  0,
-		},
-		DELETE: &VerbLimits{
-			POD:  0,
-			DEP:  0,
-			SVC:  0,
-			NODE: 0,
-			HPA:  0,
-		},
-	}
+
+	return true
 }
 
 func (m *Manager) distributeWorkerLimits(request types.RateLimitUpdateRequest) {
-	vl := m.Policies.Get(request.Category).Get(request.Method)
-	log.Debugf("reform policies : %v", m.Policies)
-	log.Debugf("reform limits for : %v", vl)
-	v := reflect.ValueOf(vl)
-	typeOfS := v.Type()
-
-	/*
-		Distribute limits among workers according to configured percentage limits for those workers
-		for ex:
-		POD: 70%
-		NODES: 10%
-		Say, rate limit threshold values is 500, then 350 limit will be given to POD worker and 50 will be given to NODES.
-	*/
-	for i := 0; i < v.NumField(); i++ {
-		log.Infof("Field: %s\tValue: %v\n", typeOfS.Field(i).Name, v.Field(i).Interface())
-		rlch := types.WorkerRateLimitsUpdate{
-			Category: request.Category,
-			Method:   request.Method,
-			// divide by 100 since configured value is in percentage
-			Limit:  request.Limit * v.Field(i).Interface().(int64) / 100,
-			Window: request.Window,
-		}
-		switch typeOfS.Field(i).Name {
-		case "POD":
-			m.WorkerBroadcastChannels[constants.Pods] <- rlch
-		case "DEP":
-			m.WorkerBroadcastChannels[constants.Deployments] <- rlch
-		case "SVC":
-			m.WorkerBroadcastChannels[constants.Services] <- rlch
-		case "NODE":
-			m.WorkerBroadcastChannels[constants.Nodes] <- rlch
-		case "HPA":
-			m.WorkerBroadcastChannels[constants.HorizontalPodAutoScalers] <- rlch
+	if !request.IsGlobal {
+		policies := m.Policies.Resource[request.Category][request.Method]
+		for k, v := range policies {
+			logrus.Infof("K: %v V: %v", k, v)
+			workerRateLimitsUpdate := types.WorkerRateLimitsUpdate{
+				Category: request.Category,
+				Method:   request.Method,
+				// divide by 100 since configured value is in percentage
+				Limit:  request.Limit * v / 100, // nolint: gomnd
+				Window: request.Window,
+			}
+			m.WorkerBroadcastChannels[k] <- workerRateLimitsUpdate
 		}
 	}
 }
@@ -311,34 +147,38 @@ func (m *Manager) handleRequest(request types.RateLimitUpdateRequest) {
 	m.distributeWorkerLimits(request)
 }
 
-// Run starts ratelimit manager
+// Run starts RateLimitManager
 func (m *Manager) Run() {
-	log.Debugf("policies initialised: %v", m.Policies)
+	logrus.Debugf("policies initialised: %v", m.Policies)
+
 	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
+		ticker := time.NewTicker(rateLimitIdleNotifierTime)
+
 		for {
 			select {
 			case req := <-m.UpReqChan:
-				log.Infof("Update Limit Request received to ratelimiter %v", req)
+				logrus.Infof("Update Limit Request received to ratelimiter %v", req)
 				m.handleRequest(req)
 			case <-ticker.C:
-				log.Debugf("Rate limit manager is on standby mode %+v", m.CurrentLimits)
+				logrus.Debugf("Rate limit manager is on standby mode %+v", m.CurrentLimits)
 			}
 		}
 	}()
 }
 
 func readConfig() *Policies {
-	configBytes, err := ioutil.ReadFile("/etc/argus/rl-policy.yaml")
+	// configBytes, err := ioutil.ReadFile("/etc/argus/rl-policy.yaml")
+	configBytes, err := config.GetWatchConfig("rl-policy.yaml")
 	if err != nil {
-		log.Fatalf("Failed to read rl policy config file: /etc/argus/rl-policy.yaml")
+		logrus.Fatalf("Failed to read rl policy config file: /etc/argus/rl-policy.yaml: %s", err)
 	}
-	log.Debugf("rl policy raw: %s", configBytes)
+	logrus.Debugf("rl policy raw: %s", configBytes)
 	m := &Policies{}
-	err = yaml.Unmarshal(configBytes, m)
+	err = yaml.Unmarshal([]byte(configBytes), m)
 	if err != nil {
-		log.Fatalf("Couldn't parse rl-policy.yaml file")
+		logrus.Fatalf("Couldn't parse rl-policy.yaml file, %s", err)
 	}
-	log.Infof("Policies read: %v", m)
+	logrus.Infof("Policies read: %v", m)
+
 	return m
 }

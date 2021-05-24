@@ -1,27 +1,27 @@
-package device
+package device_test
 
 import (
 	"testing"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/device"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 )
 
-var (
-	deviceName = "test-device"
-)
+var deviceName = "test-device"
 
 func TestBuildeviceWithExistingDeviceInput(t *testing.T) {
-	manager := Manager{}
-	config := &config.Config{
+	t.Parallel()
+	manager := device.Manager{} // nolint: exhaustivestruct
+	conf := &config.Config{     // nolint: exhaustivestruct
 		Address:         "address",
 		ClusterCategory: "category",
 		ClusterName:     "clusterName",
-		Debug:           false,
 		DeleteDevices:   false,
 		DisableAlerting: true,
 		ClusterGroupID:  123,
@@ -31,31 +31,24 @@ func TestBuildeviceWithExistingDeviceInput(t *testing.T) {
 	options := []types.DeviceOption{
 		manager.Name("Name"),
 		manager.DisplayName("DisplayName"),
-		manager.SystemCategories("catgory"),
+		manager.SystemCategory("category", enums.Add),
 	}
 
 	inputdevice := getSampleDevice()
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": "build_device_test"}))
-	device := buildDevice(lctx, config, inputdevice, options...)
+	deviceObj, err := util.BuildDevice(lctx, conf, inputdevice, options...)
+	if err != nil {
+		t.Fail()
+		return
+	}
 
-	if inputdevice.Name != device.Name {
-		t.Errorf("TestBuildeviceWithExistingDeviceInput - Error building device %v", device.Name)
+	if inputdevice.Name != deviceObj.Name {
+		t.Errorf("TestBuildeviceWithExistingDeviceInput - Error building device %v", deviceObj.Name)
 	}
 }
 
-func TestFindByDisplayNamesWithEmptyDisplayNames(t *testing.T) {
-	displayNames := []string{}
-	manager := Manager{}
-
-	expectedDevice := []*models.Device{}
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"device_id": "build_device_test"}))
-	actualDevice, err := manager.FindByDisplayNames(lctx, "pods", displayNames...)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedDevice, actualDevice)
-}
-
 func getSampleDevice() *models.Device {
-	return &models.Device{
+	return &models.Device{ // nolint: exhaustivestruct
 		Name:        &deviceName,
 		DisplayName: &deviceName,
 	}

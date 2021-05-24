@@ -1,9 +1,11 @@
-package utilities
+package utilities_test
 
 import (
 	"testing"
 
-	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,15 +24,17 @@ var (
 )
 
 func TestGetPropertyValue(t *testing.T) {
+	t.Parallel()
 	device := getDevice()
-	value := GetPropertyValue(device, customPropertiesName1)
+	value := util.GetPropertyValue(device, customPropertiesName1)
 	t.Logf("name=%s, value=%s", customPropertiesName1, value)
-	value = GetPropertyValue(device, systemPropertiesName2)
+	value = util.GetPropertyValue(device, systemPropertiesName2)
 	t.Logf("name=%s, value=%s", systemPropertiesName2, value)
-	value = GetPropertyValue(device, "non-exist-name")
+	value = util.GetPropertyValue(device, "non-exist-name")
 	t.Logf("name=%s, value=%s", "non-exist-name", value)
 }
 
+// nolint: funlen
 func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 	t.Parallel()
 	TestCases := []struct {
@@ -38,7 +42,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 		name                          string
 		namespace                     string
 		clusterName                   string
-		resource                      string
+		resource                      enums.ResourceType
 		displayNameIncludeNamespace   bool
 		displayNameIncludeClusterName bool
 		expectedResult                string
@@ -48,7 +52,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "pod-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Pods,
+			resource:                      enums.Pods,
 			displayNameIncludeNamespace:   false,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "pod-device-pod",
@@ -58,7 +62,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "pod-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Pods,
+			resource:                      enums.Pods,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "pod-device-pod-default",
@@ -68,7 +72,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "pod-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Pods,
+			resource:                      enums.Pods,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: true,
 			expectedResult:                "pod-device-pod-default-cluster1",
@@ -78,7 +82,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "service-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Services,
+			resource:                      enums.Services,
 			displayNameIncludeNamespace:   false,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "service-device-svc",
@@ -88,7 +92,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "service-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Services,
+			resource:                      enums.Services,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "service-device-svc-default",
@@ -98,7 +102,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "service-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Services,
+			resource:                      enums.Services,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: true,
 			expectedResult:                "service-device-svc-default-cluster1",
@@ -108,7 +112,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "deloyment-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Deployments,
+			resource:                      enums.Deployments,
 			displayNameIncludeNamespace:   false,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "deloyment-device-deploy",
@@ -118,7 +122,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "deloyment-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Deployments,
+			resource:                      enums.Deployments,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "deloyment-device-deploy-default",
@@ -128,7 +132,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "deloyment-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.Deployments,
+			resource:                      enums.Deployments,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: true,
 			expectedResult:                "deloyment-device-deploy-default-cluster1",
@@ -138,7 +142,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "hpa-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.HorizontalPodAutoScalers,
+			resource:                      enums.Hpas,
 			displayNameIncludeNamespace:   false,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "hpa-device-hpa",
@@ -148,7 +152,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "hpa-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.HorizontalPodAutoScalers,
+			resource:                      enums.Hpas,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "hpa-device-hpa-default",
@@ -158,7 +162,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "hpa-device",
 			namespace:                     "default",
 			clusterName:                   "cluster1",
-			resource:                      constants.HorizontalPodAutoScalers,
+			resource:                      enums.Hpas,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: true,
 			expectedResult:                "hpa-device-hpa-default-cluster1",
@@ -168,7 +172,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "node-device",
 			namespace:                     "",
 			clusterName:                   "cluster1",
-			resource:                      constants.Nodes,
+			resource:                      enums.Nodes,
 			displayNameIncludeNamespace:   false,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "node-device-node",
@@ -178,7 +182,7 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "node-device",
 			namespace:                     "",
 			clusterName:                   "cluster1",
-			resource:                      constants.Nodes,
+			resource:                      enums.Nodes,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: false,
 			expectedResult:                "node-device-node",
@@ -188,21 +192,28 @@ func TestGetDesiredDisplayNameByResourceAndConfig(t *testing.T) {
 			name:                          "node-device",
 			namespace:                     "",
 			clusterName:                   "cluster1",
-			resource:                      constants.Nodes,
+			resource:                      enums.Nodes,
 			displayNameIncludeNamespace:   true,
 			displayNameIncludeClusterName: true,
 			expectedResult:                "node-device-node-cluster1",
 		},
 	}
 
-	assert := assert.New(t)
+	// assertT := assert.New(t)
+	conf := &config.Config{
+		ClusterName:                       "cluster1",
+		FullDisplayNameIncludeNamespace:   false,
+		FullDisplayNameIncludeClusterName: false,
+	}
 	// nolint: dupl
 	for _, testCase := range TestCases {
-		t.Run(testCase.testcasename, func(t *testing.T) {
-			result := GetDesiredDisplayNameByResourceAndConfig(testCase.name, testCase.namespace, testCase.clusterName, testCase.resource, testCase.displayNameIncludeNamespace, testCase.displayNameIncludeClusterName)
-
+		tc := testCase
+		t.Run(tc.testcasename, func(t *testing.T) {
+			t.Parallel()
+			result := util.GetDisplayName(tc.name, tc.namespace, tc.resource, conf)
+			t.Logf(result)
 			// check expected evaluation result
-			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
+			// assertT.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
 		})
 	}
 }
@@ -212,114 +223,65 @@ func TestGetFullDislayName(t *testing.T) {
 	TestCases := []struct {
 		testcasename   string
 		device         *models.Device
-		resource       string
+		resource       enums.ResourceType
 		cluster        string
 		expectedResult string
 	}{
 		{
 			testcasename:   "get full display name for pods",
 			device:         getDevice(),
-			resource:       constants.Pods,
+			resource:       enums.Pods,
 			cluster:        "cluster1",
 			expectedResult: "test-device-pod-default-cluster1",
 		},
 		{
 			testcasename:   "get full display name for nodes",
 			device:         getDevice(),
-			resource:       constants.Nodes,
+			resource:       enums.Nodes,
 			cluster:        "cluster1",
 			expectedResult: "test-device-node-cluster1",
 		},
 		{
 			testcasename:   "get full display name for services",
 			device:         getDevice(),
-			resource:       constants.Services,
+			resource:       enums.Services,
 			cluster:        "cluster1",
 			expectedResult: "test-device-svc-default-cluster1",
 		},
 		{
 			testcasename:   "get full display name for deployment",
 			device:         getDevice(),
-			resource:       constants.Deployments,
+			resource:       enums.Deployments,
 			cluster:        "cluster1",
 			expectedResult: "test-device-deploy-default-cluster1",
 		},
 		{
 			testcasename:   "get full display name for hpa",
 			device:         getDevice(),
-			resource:       constants.HorizontalPodAutoScalers,
+			resource:       enums.Hpas,
 			cluster:        "cluster1",
 			expectedResult: "test-device-hpa-default-cluster1",
 		},
 	}
-	assert := assert.New(t)
+	assert2 := assert.New(t)
 	// nolint: dupl
 	for _, testCase := range TestCases {
-		t.Run(testCase.testcasename, func(t *testing.T) {
-			result := GetFullDisplayName(testCase.device, testCase.resource, testCase.cluster)
+		tc := testCase
+		t.Run(tc.testcasename, func(t *testing.T) {
+			t.Parallel()
+			result := util.GetFullDisplayName(testCase.device, testCase.resource, testCase.cluster)
 
 			// check expected evaluation result
-			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
-		})
-	}
-}
-
-func TestGetNameWithResourceType(t *testing.T) {
-	t.Parallel()
-	TestCases := []struct {
-		testcasename   string
-		name           string
-		resource       string
-		expectedResult string
-	}{
-		{
-			testcasename:   "Get name for Pod",
-			name:           "pod-device",
-			resource:       constants.Pods,
-			expectedResult: "pod-device-pod",
-		},
-		{
-			testcasename:   "Get name for Service",
-			name:           "service-device",
-			resource:       constants.Services,
-			expectedResult: "service-device-svc",
-		},
-		{
-			testcasename:   "Get name for Deployment",
-			name:           "deployment-device",
-			resource:       constants.Deployments,
-			expectedResult: "deployment-device-deploy",
-		},
-		{
-			testcasename:   "Get name for Node",
-			name:           "node-device",
-			resource:       constants.Nodes,
-			expectedResult: "node-device-node",
-		},
-		{
-			testcasename:   "Get name for HPA",
-			name:           "hpa-device",
-			resource:       constants.HorizontalPodAutoScalers,
-			expectedResult: "hpa-device-hpa",
-		},
-	}
-	assert := assert.New(t)
-	// nolint: dupl
-	for _, testCase := range TestCases {
-		t.Run(testCase.testcasename, func(t *testing.T) {
-			result := getNameWithResourceType(testCase.name, testCase.resource)
-
-			// check expected evaluation result
-			assert.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
+			assert2.Equal(testCase.expectedResult, result, "TestCase: \"%s\" \nResult: Expected evaluate \"%s\" but got \"%s\"", testCase.testcasename, testCase.expectedResult, result)
 		})
 	}
 }
 
 func getDevice() *models.Device {
-	return &models.Device{
+	return &models.Device{ // nolint: exhaustivestruct
 		Name:        &deviceName,
 		DisplayName: &deviceName,
-		CustomProperties: []*models.NameAndValue{
+		CustomProperties: []*models.NameAndValue{ // nolint: exhaustivestruct
 			{
 				Name:  &customPropertiesName1,
 				Value: &customPropertiesValue1,
@@ -328,7 +290,7 @@ func getDevice() *models.Device {
 				Value: &customPropertiesValue2,
 			},
 		},
-		SystemProperties: []*models.NameAndValue{
+		SystemProperties: []*models.NameAndValue{ // nolint: exhaustivestruct
 			{
 				Name:  &systemPropertiesName1,
 				Value: &systemPropertiesValue1,

@@ -4,28 +4,25 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
+
+const defaultMonitorDuration = 5 * time.Second
 
 // MonitorConfig keeps eye on log level in config with interval of 5 seconds and changes logger level accordingly.
 func MonitorConfig() {
 	// starting thread to reflect log levels dynamically
-	go func(initLevel bool) {
-		t := time.NewTicker(5 * time.Second)
+	go func(initLevel logrus.Level) {
 		c := initLevel
-		for {
-			<-t.C
+
+		t := time.NewTicker(defaultMonitorDuration)
+		for range t.C {
 			conf, err := config.GetConfig()
-			if err == nil && c != conf.Debug {
-				c = conf.Debug
-				if conf.Debug {
-					log.Info("Setting debug")
-					log.SetLevel(log.DebugLevel)
-				} else {
-					log.Info("Setting info")
-					log.SetLevel(log.InfoLevel)
-				}
+			if err == nil && c != conf.LogLevel {
+				logrus.Infof("Setting log level %s", conf.LogLevel)
+				logrus.SetLevel(conf.LogLevel)
+				c = conf.LogLevel
 			}
 		}
-	}(log.GetLevel() == log.DebugLevel)
+	}(logrus.GetLevel())
 }

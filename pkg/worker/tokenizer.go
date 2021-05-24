@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const millisecondsOfMinute = 60000
+
 // RLTokenizer tokenizer which contains regulated token generation
 type RLTokenizer struct {
 	ch     <-chan interface{}
@@ -17,8 +19,9 @@ type RLTokenizer struct {
 func NewRLTokenizer(limit int) *RLTokenizer {
 	ctx, cancel := context.WithCancel(context.Background())
 	ch := make(chan interface{}, limit)
+
 	go func(wch chan<- interface{}) {
-		ticker := time.NewTicker(time.Duration(60000/limit) * time.Millisecond)
+		ticker := time.NewTicker(time.Duration(millisecondsOfMinute/limit) * time.Millisecond)
 		for {
 			select {
 			case <-ctx.Done():
@@ -29,6 +32,7 @@ func NewRLTokenizer(limit int) *RLTokenizer {
 			}
 		}
 	}(ch)
+
 	return &RLTokenizer{
 		ch:     ch,
 		ctx:    ctx,
@@ -42,8 +46,10 @@ func (rlt *RLTokenizer) popToken() error {
 	}
 	select {
 	case <-rlt.ch:
+
 		return nil
 	case <-time.After(1 * time.Minute):
+
 		return errors.New("new token did not received in 1 minute, reconfigure tokenizer")
 	}
 }

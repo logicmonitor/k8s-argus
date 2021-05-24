@@ -1,10 +1,17 @@
 package constants
 
-import "time"
+import (
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 var (
 	// Version is the Argus version and is set at build time.
 	Version string
+
+	// DefaultListOptions default list all
+	DefaultListOptions = metav1.ListOptions{} // nolint: exhaustivestruct
 )
 
 const (
@@ -43,6 +50,8 @@ const (
 	EtcdDeviceGroupName = "Etcd"
 	// NodeDeviceGroupName is the top-level device group name in the cluster device group.
 	NodeDeviceGroupName = "Nodes"
+	// NamespacesGroupName is the namespaces device group name in the cluster device group.
+	NamespacesGroupName = "Namespaces"
 	// PodDeviceGroupName is the pod device group name in the cluster device group.
 	PodDeviceGroupName = "Pods"
 	// ServiceDeviceGroupName is the service device group name in the cluster device group.
@@ -56,6 +65,8 @@ const (
 const (
 	// ClusterCategory is the system.category used to identity the Kubernetes cluster in LogicMonitor.
 	ClusterCategory = "KubernetesCluster"
+	// NamespaceCategory is the system.category used to identity the Kubernetes Namespace resource type in LogicMonitor.
+	NamespaceCategory = "KubernetesNamespace"
 	// EtcdCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
 	EtcdCategory = "KubernetesEtcd"
 	// EtcdDeletedCategory is the system.category used to identity a deleted Kubernetes Etcd node in LogicMonitor.
@@ -94,19 +105,13 @@ const (
 	DeletedDeviceGroup = "_deleted"
 	// ClusterDeviceGroupPrefix is the prefix for the top level cluster device group
 	ClusterDeviceGroupPrefix = "Kubernetes Cluster: "
-	//ConflictDeviceGroup is the name of the device group where conflicting devices are optionally moved to.
+	// ConflictDeviceGroup is the name of the device group where conflicting devices are optionally moved to.
 	ConflictDeviceGroup = "_conflict"
 )
 
 const (
 	// ConfigPath is the path used to read the config.yaml file from.
 	ConfigPath = "/etc/argus/config.yaml"
-	// AccessID is the environment variable name to lookup for the LogicMonitor access ID.
-	AccessID = "ARGUS_ACCESS_ID"
-	// AccessKey is the environment variable name to lookup for the LogicMonitor access key.
-	AccessKey = "ARGUS_ACCESS_KEY"
-	// Account is the environment variable name to lookup for the LogicMonitor account.
-	Account = "ARGUS_ACCOUNT"
 )
 
 const (
@@ -138,27 +143,12 @@ const (
 const (
 	// K8sAPIVersionV1 is the version 'v1' of k8s api
 	K8sAPIVersionV1 = "v1"
-	// K8sAPIVersionAppsV1beta1 is the version 'apps/v1beta1' of k8s api
-	K8sAPIVersionAppsV1beta1 = "apps/v1beta1"
 	// K8sAPIVersionAppsV1beta2 is the version 'apps/v1beta2' of k8s api
 	K8sAPIVersionAppsV1beta2 = "apps/v1beta2"
 	// K8sAPIVersionAppsV1 is the version 'apps/v1' of k8s api
 	K8sAPIVersionAppsV1 = "apps/v1"
 	// K8sAutoscalingV1 is the version 'autoscaling/v1' of k8s api
 	K8sAutoscalingV1 = "autoscaling/v1"
-)
-
-const (
-	// Deployments deployments generic
-	Deployments = "deployments"
-	// Pods pods generic
-	Pods = "pods"
-	// Services Services generic
-	Services = "services"
-	// Nodes Nodes generic
-	Nodes = "nodes"
-	// HorizontalPodAutoScalers hpa generic
-	HorizontalPodAutoScalers = "horizontalpodautoscalers"
 )
 
 const (
@@ -185,17 +175,40 @@ const (
 )
 
 const (
-	// IsPingDevice is the key used in watcher context to pass metadata
-	IsPingDevice = "ispingdevice"
-)
-
-const (
 	// DefaultPeriodicSyncInterval Default interval for Periodic Discovery.
-	DefaultPeriodicSyncInterval = time.Minute * 30
+	DefaultPeriodicSyncInterval = time.Minute * 1
 
 	// DefaultPeriodicDeleteInterval Default interval for Periodic delete.
 	DefaultPeriodicDeleteInterval = time.Minute * 30
 
 	// DefaultCacheResyncInterval Default interval for cache resync.
 	DefaultCacheResyncInterval = time.Minute * 5
+)
+
+const (
+	// IsLocal flag used to set when application is loaded using external kubeconfig file to indicate it is running outside cluster
+	IsLocal = "IS_LOCAL"
+)
+
+const (
+	// ConfigInitK8sClientExitCode exit 1
+	ConfigInitK8sClientExitCode = 1
+	// ConfigInitExitCode exit 2
+	ConfigInitExitCode = 2
+	// GetConfigExitCode exit 3
+	GetConfigExitCode = 3
+)
+
+const (
+	// ResyncConflictingResourcesProp graceful resync flag on cluster group
+	ResyncConflictingResourcesProp = "resync.conflicting_resources"
+	// ResyncCacheProp graceful resync flag on cluster group
+	ResyncCacheProp = "resync.cache"
+)
+
+const (
+	// ConfigFileName config file name to read from configmap
+	ConfigFileName = "config.yaml"
+	// EnvVarArgusConfigPrefix prefix to parse environment variables into config struct
+	EnvVarArgusConfigPrefix = "argus"
 )
