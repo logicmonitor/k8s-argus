@@ -71,8 +71,8 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
 		if !ok {
 			i.deleteDevice(childLctx, log, cacheResourceName, cacheResourceMeta)
-		} else {
-			i.resolveConflicts(childLctx, resolveConflicts, cacheResourceMeta, clusterPresentMeta, cacheResourceName, log)
+		} else if resolveConflicts {
+			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName, log)
 		}
 	}
 
@@ -84,9 +84,9 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 }
 
 // nolint: gocognit
-func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, resolveConflicts bool, cacheMeta cache.ResourceMeta, clusterResourceMeta cache.ResourceMeta, cacheResourceName cache.ResourceName, log *logrus.Entry) {
+func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta cache.ResourceMeta, clusterResourceMeta cache.ResourceMeta, cacheResourceName cache.ResourceName, log *logrus.Entry) {
 	rt := cacheResourceName.Resource
-	if resolveConflicts && (clusterResourceMeta.DisplayName != cacheMeta.DisplayName || clusterResourceMeta.HasSysCategory(rt.GetConflictsCategory())) {
+	if clusterResourceMeta.DisplayName != cacheMeta.DisplayName || cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
 		conf, err := config.GetConfig()
 		if err != nil {
 			log.Errorf("failed to get confing")
@@ -96,7 +96,7 @@ func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, resolveConflicts bo
 			Name:      cacheResourceName.Name,
 			Namespace: clusterResourceMeta.Container,
 		}, conf)
-		if cacheMeta.DisplayName != displayNameNew {
+		if cacheMeta.DisplayName != displayNameNew || cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
 			log.Infof("Updating resource by changing displayName to %s", displayNameNew)
 			resource, err := i.DeviceManager.FetchDevice(lctx, rt, cacheMeta.LMID)
 			if err != nil {
