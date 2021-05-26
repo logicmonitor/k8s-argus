@@ -86,7 +86,7 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 // nolint: gocognit
 func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, resolveConflicts bool, cacheMeta cache.ResourceMeta, clusterResourceMeta cache.ResourceMeta, cacheResourceName cache.ResourceName, log *logrus.Entry) {
 	rt := cacheResourceName.Resource
-	if resolveConflicts && clusterResourceMeta.DisplayName != cacheMeta.DisplayName {
+	if resolveConflicts && (clusterResourceMeta.DisplayName != cacheMeta.DisplayName || clusterResourceMeta.HasSysCategory(rt.GetConflictsCategory())) {
 		conf, err := config.GetConfig()
 		if err != nil {
 			log.Errorf("failed to get confing")
@@ -169,30 +169,6 @@ func (i *InitSyncer) deleteDevice(lctx *lmctx.LMContext, log *logrus.Entry, reso
 		log.Infof("Soft delete")
 		// TODO:: Mark device for deletion if not already
 	}
-}
-
-// InitSync implements the initial sync through logicmonitor API
-func (i *InitSyncer) InitSync(lctx *lmctx.LMContext) {
-	log := lmlog.Logger(lctx)
-	log.Infof("Start to sync the resource devices")
-	conf, err := config.GetConfig()
-	if err != nil {
-		log.Errorf("Failed to get config")
-		return
-	}
-	clusterName := i.DeviceManager.Base.Config.ClusterName
-	// get the cluster info
-	parentGroupID := conf.ClusterGroupID
-	groupName := util.ClusterGroupName(clusterName)
-	rest, err := devicegroup.Find(parentGroupID, groupName, i.DeviceManager.LMClient)
-	if err != nil || rest == nil {
-		log.Infof("Failed to get the cluster group: %v, parentID: %v", groupName, parentGroupID)
-	}
-	if rest == nil {
-		return
-	}
-
-	log.Infof("Finished syncing the resource devices")
 }
 
 // RunPeriodicSync runs synchronization periodically.

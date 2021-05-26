@@ -21,13 +21,7 @@ const (
 
 const (
 	// RootDeviceGroupID is the root ID in the device tree.
-	RootDeviceGroupID = 1
-	// CustomPropertiesFieldName is the field name for a device's custom properties.
-	CustomPropertiesFieldName = "customProperties"
-	// NameFieldName is the field name for a device's name.
-	NameFieldName = "name"
-	// DisplayNameFieldName is the field name for a device's display name.
-	DisplayNameFieldName = "displayName"
+	RootDeviceGroupID = int32(1)
 	// MaxResourceLength is the max length of the resource name
 	MaxResourceLength = 244
 )
@@ -79,28 +73,12 @@ const (
 	NodeConflictCategory = "KubernetesNodeConflict"
 	// ServiceCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
 	ServiceCategory = "KubernetesService"
-	// ServiceDeletedCategory is the system.category used to identity a deleted Kubernetes Service resource type in LogicMonitor.
-	ServiceDeletedCategory = "KubernetesServiceDeleted"
-	// ServiceConflictCategory is the system.category used to identity a conflicting Kubernetes Service resource type in LogicMonitor.
-	ServiceConflictCategory = "KubernetesServiceConflict"
 	// DeploymentCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
 	DeploymentCategory = "KubernetesDeployment"
-	// DeploymentDeletedCategory is the system.category used to identity a deleted Kubernetes Service resource type in LogicMonitor.
-	DeploymentDeletedCategory = "KubernetesDeploymentDeleted"
-	// DeploymentConflictCategory is the system.category used to identity a conflicting Kubernetes Deployment resource type in LogicMonitor.
-	DeploymentConflictCategory = "KubernetesDeploymentConflict"
 	// PodCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
 	PodCategory = "KubernetesPod"
-	// PodDeletedCategory is the system.category used to identity a deleted Kubernetes Pod resource type in LogicMonitor.
-	PodDeletedCategory = "KubernetesPodDeleted"
-	// PodConflictCategory is the system.category used to identity a conflicting Kubernetes Pod resource type in LogicMonitor.
-	PodConflictCategory = "KubernetesPodConflict"
 	// HorizontalPodAutoscalerCategory is the system.category used to identity the Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
 	HorizontalPodAutoscalerCategory = "KubernetesHorizontalPodAutoscaler"
-	// HorizontalPodAutoscalerDeletedCategory is the system.category used to identity a deleted Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
-	HorizontalPodAutoscalerDeletedCategory = "KubernetesHorizontalPodAutoscalerDeleted"
-	// HorizontalPodAutoscalerConflictCategory is the system.category used to identity a conflicting Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
-	HorizontalPodAutoscalerConflictCategory = "KubernetesHorizontalPodAutoscalerConflict"
 	// DeletedDeviceGroup is the name of the device group where deleted devices are optionally moved to.
 	DeletedDeviceGroup = "_deleted"
 	// ClusterDeviceGroupPrefix is the prefix for the top level cluster device group
@@ -110,23 +88,12 @@ const (
 )
 
 const (
-	// ConfigPath is the path used to read the config.yaml file from.
-	ConfigPath = "/etc/argus/config.yaml"
-)
-
-const (
 	// K8sClusterNamePropertyKey is the key of the unique auto property kubernetes cluster name
 	K8sClusterNamePropertyKey = "auto.clustername"
-	// K8sResourceNamePropertyKey is the key of the custom property used to record resource name
-	K8sResourceNamePropertyKey = "auto.resourcename"
 	// K8sResourceCreatedOnPropertyKey is the key of the custom property used to record resource create timestamp
 	K8sResourceCreatedOnPropertyKey = "kubernetes.resourceCreatedOn"
 	// K8sResourceDeletedOnPropertyKey is the key of the custom property used to record resource deleted timestamp
 	K8sResourceDeletedOnPropertyKey = "kubernetes.resourceDeletedOn"
-	// K8sResourceDeleteAfterDurationPropertyKey is the key of the custom property used to delete resources from the portal after specified time
-	K8sResourceDeleteAfterDurationPropertyKey = "kubernetes.resourcedeleteafterduration"
-	// K8sResourceDeleteAfterDurationPropertyValue is the default value of the custom property used to delete resources from the portal after specified time
-	K8sResourceDeleteAfterDurationPropertyValue = "P1DT0H0M0S"
 	// K8sDeviceType is the type value of the k8s device
 	K8sDeviceType = 8
 	// K8sSystemCategoriesPropertyKey is the key of the unique custom property kubernetes system categories

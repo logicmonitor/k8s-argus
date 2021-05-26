@@ -3,15 +3,19 @@ package device
 import (
 	"net/http"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-func (m *Manager) addDevice(lctx *lmctx.LMContext, resource enums.ResourceType, device *models.Device) (*models.Device, error) {
+func (m *Manager) addDevice(lctx *lmctx.LMContext, rt enums.ResourceType, device *models.Device) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	log.Tracef("Adding device: %s", spew.Sdump(device))
 	params := lm.NewAddDeviceParams()
 	addFromWizard := false
 	params.SetAddFromWizard(&addFromWizard)
@@ -28,9 +32,9 @@ func (m *Manager) addDevice(lctx *lmctx.LMContext, resource enums.ResourceType, 
 			ParseErrResp: m.AddDeviceErrResp,
 		},
 	}
-	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, rt, cmd)
 	if err == nil {
-		m.SetDeviceInCache(lctx, resource, restResponse.(*lm.AddDeviceOK).Payload)
+		m.SetDeviceInCache(lctx, rt, restResponse.(*lm.AddDeviceOK).Payload)
 
 		return restResponse.(*lm.AddDeviceOK).Payload, nil
 	}
@@ -38,7 +42,9 @@ func (m *Manager) addDevice(lctx *lmctx.LMContext, resource enums.ResourceType, 
 	return nil, err
 }
 
-func (m *Manager) UpdateAndReplaceResource(lctx *lmctx.LMContext, resource enums.ResourceType, id int32, device *models.Device) (*models.Device, error) {
+func (m *Manager) UpdateAndReplaceResource(lctx *lmctx.LMContext, rt enums.ResourceType, id int32, device *models.Device) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	log.Tracef("Updating device: %s", spew.Sdump(device))
 	opType := "replace"
 	// opType := "refresh"
 	params := lm.NewUpdateDeviceParams()
@@ -57,10 +63,10 @@ func (m *Manager) UpdateAndReplaceResource(lctx *lmctx.LMContext, resource enums
 			ParseErrResp: m.UpdateDeviceErrResp,
 		},
 	}
-	restResponse, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	restResponse, err := m.LMFacade.SendReceive(lctx, rt, cmd)
 
 	if err == nil {
-		m.SetDeviceInCache(lctx, resource, restResponse.(*lm.UpdateDeviceOK).Payload)
+		m.SetDeviceInCache(lctx, rt, restResponse.(*lm.UpdateDeviceOK).Payload)
 
 		return restResponse.(*lm.UpdateDeviceOK).Payload, nil
 	}
@@ -69,7 +75,9 @@ func (m *Manager) UpdateAndReplaceResource(lctx *lmctx.LMContext, resource enums
 }
 
 // deleteDevice implements types.DeviceManager.
-func (m *Manager) deleteDevice(lctx *lmctx.LMContext, resource enums.ResourceType, device *models.Device) error {
+func (m *Manager) deleteDevice(lctx *lmctx.LMContext, rt enums.ResourceType, device *models.Device) error {
+	log := lmlog.Logger(lctx)
+	log.Tracef("Deleting device: %s", spew.Sdump(device))
 	params := lm.NewDeleteDeviceByIDParams()
 	params.SetID(device.ID)
 	cmd := &types.HTTPCommand{
@@ -84,12 +92,12 @@ func (m *Manager) deleteDevice(lctx *lmctx.LMContext, resource enums.ResourceTyp
 			ParseErrResp: m.DeleteDeviceByIDErrResp,
 		},
 	}
-	_, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	_, err := m.LMFacade.SendReceive(lctx, rt, cmd)
 	if err == nil {
-		m.UnsetDeviceInCache(lctx, resource, device)
+		m.UnsetDeviceInCache(lctx, rt, device)
 	}
 	if util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
-		m.UnsetDeviceInCache(lctx, resource, device)
+		m.UnsetDeviceInCache(lctx, rt, device)
 	}
 
 	return err
@@ -123,7 +131,7 @@ func (m *Manager) FetchDevice(lctx *lmctx.LMContext, rt enums.ResourceType, lmid
 }
 
 // DeleteByID implements types.DeviceManager.
-func (m *Manager) DeleteByID(lctx *lmctx.LMContext, resource enums.ResourceType, id int32) error {
+func (m *Manager) DeleteByID(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) error {
 	params := lm.NewDeleteDeviceByIDParams()
 	params.SetID(id)
 	cmd := &types.HTTPCommand{
@@ -138,7 +146,7 @@ func (m *Manager) DeleteByID(lctx *lmctx.LMContext, resource enums.ResourceType,
 			ParseErrResp: m.DeleteDeviceByIDErrResp,
 		},
 	}
-	_, err := m.LMFacade.SendReceive(lctx, resource, cmd)
+	_, err := m.LMFacade.SendReceive(lctx, rt, cmd)
 
 	return err
 }

@@ -26,6 +26,7 @@ type Config struct {
 	FullDisplayNameIncludeNamespace   bool                  `yaml:"displayName_include_namespace"`
 	FullDisplayNameIncludeClusterName bool                  `yaml:"displayName_include_clustername"`
 	ClusterGroupID                    int32                 `yaml:"cluster_group_id"`
+	ResourceContainerGroupID          *int32                `yaml:"resource_group_id,omitempty"`
 	ProxyURL                          string                `yaml:"proxy_url"`
 	IgnoreSSL                         bool                  `yaml:"ignore_ssl"`
 	OpenmetricsConfig                 OpenmetricsConfig     `yaml:"openmetrics"`
@@ -41,15 +42,22 @@ type Secrets struct {
 	ProxyPass          string `envconfig:"PROXY_PASS"`
 }
 
+// PropOpts made public coz. yaml unmarshaler need it public
+type PropOpts struct {
+	Name     string `yaml:"name"`
+	Value    string `yaml:"value"`
+	Override *bool  `yaml:"override,omitempty"`
+}
+
 // DeviceGroupProperties represents the properties applied on device groups
 type DeviceGroupProperties struct {
-	Cluster     []map[string]interface{} `yaml:"cluster"`
-	Pods        []map[string]interface{} `yaml:"pods"`
-	Services    []map[string]interface{} `yaml:"services"`
-	Deployments []map[string]interface{} `yaml:"deployments"`
-	Nodes       []map[string]interface{} `yaml:"nodes"`
-	ETCD        []map[string]interface{} `yaml:"etcd"`
-	HPA         []map[string]interface{} `yaml:"hpas"`
+	Cluster     []PropOpts `yaml:"cluster"`
+	Pods        []PropOpts `yaml:"pods"`
+	Services    []PropOpts `yaml:"services"`
+	Deployments []PropOpts `yaml:"deployments"`
+	Nodes       []PropOpts `yaml:"nodes"`
+	ETCD        []PropOpts `yaml:"etcd"`
+	HPA         []PropOpts `yaml:"hpas"`
 }
 
 // Intervals represents default and min values for periodic sync, periodic delete and device cache sycn intervals
@@ -95,6 +103,10 @@ func validateConfig(conf *Config) {
 	if conf.LogLevel == logrus.PanicLevel {
 		fmt.Print("Looks like either given log level is not parsed or set to panic, setting it to \"info\"") // nolint: forbidigo
 		conf.LogLevel = logrus.InfoLevel
+	}
+	if conf.ResourceContainerGroupID == nil {
+		rootGroup := constants.RootDeviceGroupID
+		conf.ResourceContainerGroupID = &rootGroup
 	}
 }
 

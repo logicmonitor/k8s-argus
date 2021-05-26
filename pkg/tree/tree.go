@@ -4,6 +4,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -19,6 +20,12 @@ type DeviceTree struct {
 func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 	// The device group at index 0 will be the root device group for all subsequent device groups.
 
+	nodes := enums.Nodes
+	pods := enums.Pods
+	etcd := enums.ETCD
+	deployments := enums.Deployments
+	services := enums.Services
+	hpas := enums.Hpas
 	return []*devicegroup.Options{
 		{
 			Name:             util.ClusterGroupName(d.Config.ClusterName),
@@ -32,10 +39,10 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 		{
 			Name:                  constants.EtcdDeviceGroupName,
 			DisableAlerting:       d.Config.DisableAlerting,
-			AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesTo:             devicegroup.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:                d.LMClient,
 			DeleteDevices:         d.Config.DeleteDevices,
-			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(constants.EtcdDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToDeletedGroup: devicegroup.NewAppliesToBuilder().HasCategory(etcd.GetDeletedCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			CustomProperties:      devicegroup.NewPropertyBuilder().AddProperties(d.Config.DeviceGroupProperties.ETCD),
 		},
 
@@ -45,17 +52,16 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:                         devicegroup.NewAppliesToBuilder(),
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 			CustomProperties:                  devicegroup.NewPropertyBuilder().AddProperties(d.Config.DeviceGroupProperties.Nodes),
 		},
 		{
 			Name:                              constants.AllNodeDeviceGroupName,
 			DisableAlerting:                   d.Config.DisableAlerting,
-			AppliesTo:                         devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesTo:                         devicegroup.NewAppliesToBuilder().HasCategory(nodes.GetCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
-			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.NodeDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(nodes.GetDeletedCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 			CustomProperties:                  devicegroup.NewPropertyBuilder(),
 		},
@@ -66,8 +72,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:                         devicegroup.NewAppliesToBuilder(),
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
-			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.ServiceConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(services.GetDeletedCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 			CustomProperties:                  devicegroup.NewPropertyBuilder().AddProperties(d.Config.DeviceGroupProperties.Services),
 		},
@@ -77,8 +82,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:                         devicegroup.NewAppliesToBuilder(),
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
-			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.PodDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.PodConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(pods.GetDeletedCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 			CustomProperties:                  devicegroup.NewPropertyBuilder().AddProperties(d.Config.DeviceGroupProperties.Pods),
 		},
@@ -88,8 +92,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:                         devicegroup.NewAppliesToBuilder(),
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
-			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.DeploymentConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(deployments.GetDeletedCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 			CustomProperties:                  devicegroup.NewPropertyBuilder().AddProperties(d.Config.DeviceGroupProperties.Deployments),
 		},
@@ -99,8 +102,7 @@ func (d *DeviceTree) buildOptsSlice() []*devicegroup.Options {
 			AppliesTo:                         devicegroup.NewAppliesToBuilder(),
 			Client:                            d.LMClient,
 			DeleteDevices:                     d.Config.DeleteDevices,
-			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerDeletedCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
-			AppliesToConflict:                 devicegroup.NewAppliesToBuilder().HasCategory(constants.HorizontalPodAutoscalerConflictCategory).And().Auto("clustername").Equals(d.Config.ClusterName),
+			AppliesToDeletedGroup:             devicegroup.NewAppliesToBuilder().HasCategory(hpas.GetDeletedCategory()).And().Auto("clustername").Equals(d.Config.ClusterName),
 			FullDisplayNameIncludeClusterName: d.Config.FullDisplayNameIncludeClusterName,
 			CustomProperties:                  devicegroup.NewPropertyBuilder().AddProperties(d.Config.DeviceGroupProperties.HPA),
 		},

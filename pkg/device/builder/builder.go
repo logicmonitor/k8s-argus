@@ -246,9 +246,9 @@ func (b *Builder) UpdateFuncWithDefaults(
 		oldObjectMeta := rt.ObjectMeta(oldObj)
 
 		options := b.getDefaultsDeviceOptions(rt, objectMeta, conf)
-		OldObjOptions := b.getDefaultsDeviceOptions(rt, oldObjectMeta, conf)
+		oldObjOptions := b.getDefaultsDeviceOptions(rt, oldObjectMeta, conf)
 
-		target(lctx, rt, oldObj, newObj, OldObjOptions, options)
+		target(lctx, rt, oldObj, newObj, oldObjOptions, options)
 	}
 }
 

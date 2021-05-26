@@ -238,7 +238,7 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *client.LMSdkGo) int32 {
 // BuildDevice build
 func BuildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, options ...types.DeviceOption) (*models.Device, error) {
 	if d == nil {
-		hostGroupIds := "1"
+		hostGroupIds := fmt.Sprintf("%d", *c.ResourceContainerGroupID)
 		propertyName := constants.K8sClusterNamePropertyKey
 		// use the copy value
 		clusterName := c.ClusterName

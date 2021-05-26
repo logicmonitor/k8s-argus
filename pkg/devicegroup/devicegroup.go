@@ -3,6 +3,7 @@ package devicegroup
 import (
 	"fmt"
 
+	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
 	cache2 "github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
@@ -115,12 +116,12 @@ func (a *AppliesToBuilderImpl) String() string {
 // PropertyBuilder is an interface for building properties
 type PropertyBuilder interface {
 	Add(string, string, bool) PropertyBuilder
-	AddProperties([]map[string]interface{}) PropertyBuilder
+	AddProperties([]config.PropOpts) PropertyBuilder
 	Build([]*models.NameAndValue) []*models.NameAndValue
 }
 
 type propertyBuilder struct {
-	properties []map[string]interface{}
+	properties []config.PropOpts
 }
 
 // NewPropertyBuilder is the builder for properties
@@ -129,16 +130,17 @@ func NewPropertyBuilder() PropertyBuilder {
 }
 
 func (p *propertyBuilder) Add(key string, value string, override bool) PropertyBuilder {
-	m := make(map[string]interface{})
-	m["name"] = key
-	m["value"] = value
-	m["override"] = override
-	p.properties = append(p.properties, m)
+	opts := config.PropOpts{
+		Name:     key,
+		Value:    value,
+		Override: &override,
+	}
+	p.properties = append(p.properties, opts)
 
 	return p
 }
 
-func (p *propertyBuilder) AddProperties(properties []map[string]interface{}) PropertyBuilder {
+func (p *propertyBuilder) AddProperties(properties []config.PropOpts) PropertyBuilder {
 	p.properties = append(p.properties, properties...)
 
 	return p
@@ -153,15 +155,11 @@ func (p *propertyBuilder) Build(existingProps []*models.NameAndValue) []*models.
 	}
 
 	for _, prop := range p.properties {
-		key := prop["name"].(string)    // nolint: forcetypeassert
-		value := prop["value"].(string) // nolint: forcetypeassert
+		key := prop.Name
+		value := prop.Value
 		override := true
-
-		if v := prop["override"]; v != nil {
-			overrideTmp, ok := v.(bool)
-			if ok {
-				override = overrideTmp
-			}
+		if prop.Override != nil {
+			override = *prop.Override
 		}
 
 		if val, ok := exProps[key]; !override && ok {
@@ -189,7 +187,7 @@ func Create(lctx *lmctx.LMContext, opts *Options, cache *devicecache.ResourceCac
 
 		clusterDeviceGroup = cdg
 	} else {
-		replaceCustomProperty(lctx, clusterDeviceGroup, opts)
+		updateCustomProperties(lctx, clusterDeviceGroup, opts)
 	}
 
 	if !opts.DeleteDevices && opts.AppliesToDeletedGroup != nil {
@@ -467,8 +465,8 @@ func AddDeviceGroupProperty(lctx *lmctx.LMContext, groupID int32, entityProperty
 	return true
 }
 
-// replaceCustomProperty adds/replaces the custom properties for device group
-func replaceCustomProperty(lctx *lmctx.LMContext, clusterDeviceGroup *models.DeviceGroup, opts *Options) {
+// updateCustomProperties adds/replaces the custom properties for device group
+func updateCustomProperties(lctx *lmctx.LMContext, clusterDeviceGroup *models.DeviceGroup, opts *Options) {
 	existingGroupProperties := make(map[string]string)
 	customProperties := opts.CustomProperties.Build(clusterDeviceGroup.CustomProperties)
 	for _, v := range clusterDeviceGroup.CustomProperties {

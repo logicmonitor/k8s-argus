@@ -18,7 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// WatcherConfigurer returns category name for conflicts group
+// WatcherConfigurer to provide custom options provider to put extra props on resource
 func WatcherConfigurer(resourceType enums.ResourceType) types.WatcherConfigurer {
 	switch resourceType {
 	case enums.Pods:
