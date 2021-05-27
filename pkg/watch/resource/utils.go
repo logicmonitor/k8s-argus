@@ -69,8 +69,7 @@ func getRootContext(rt enums.ResourceType, newObj interface{}, event string) *lm
 // RecordDeleteEventLatency logs latency of receiving delete event to argus.
 func RecordDeleteEventLatency(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 	log := lmlog.Logger(lctx)
-	meta := rt.ObjectMeta(obj)
-	if meta.DeletionTimestamp != nil {
+	if meta := rt.ObjectMeta(obj); meta.DeletionTimestamp != nil {
 		// TODO: PROM_METRIC stats: stats of delete event according to object type, time (max, min, average)
 		log.Infof("delete event latency %v", time.Since(meta.DeletionTimestamp.Time))
 	} else {

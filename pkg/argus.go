@@ -119,8 +119,6 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		Base: base,
 	}
 
-	deviceCache := devicecache.NewDeviceCache(base, base.Config.GetCacheSyncInterval())
-	// deviceCache.Run()
 	resourceCache := devicecache.NewResourceCache(base, base.Config.GetCacheSyncInterval())
 	resourceCache.Run()
 
@@ -128,7 +126,6 @@ func NewArgus(base *types.Base) (*Argus, error) {
 		Base:          base,
 		LMExecutor:    lmExecObj,
 		LMFacade:      facadeObj,
-		DC:            deviceCache,
 		ResourceCache: resourceCache,
 	}
 	argus.DeviceManager = deviceManager

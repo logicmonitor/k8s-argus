@@ -105,3 +105,5 @@ linters-settings:
         alias: toolscache
       - pkg: github.com/logicmonitor/k8s-argus/pkg/rl
         alias: ratelimiter
+      - pkg: k8s.io/apimachinery/pkg/types
+        alias: k8stypes

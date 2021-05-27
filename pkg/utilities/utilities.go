@@ -186,6 +186,7 @@ func GetDisplayNameNew(rt enums.ResourceType, meta *metav1.ObjectMeta, conf *con
 	// return getDisplayNameAsPerSettings(rt, meta, conf)
 }
 
+// nolint: unused,deadcode
 // getDisplayNameAsPerSettings just kept for backup
 func getDisplayNameAsPerSettings(rt enums.ResourceType, meta *metav1.ObjectMeta, conf *config.Config) string {
 	if conf.FullDisplayNameIncludeClusterName {

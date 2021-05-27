@@ -54,7 +54,7 @@ type ResourceCache struct {
 
 // NewResourceCache create new ResourceCache object
 func NewResourceCache(b *types.Base, rp time.Duration) *ResourceCache {
-	dc := &ResourceCache{
+	resourceCache := &ResourceCache{
 		store:         NewStore(),
 		rwm:           sync.RWMutex{},
 		resyncPeriod:  rp,
@@ -66,29 +66,29 @@ func NewResourceCache(b *types.Base, rp time.Duration) *ResourceCache {
 		rebuildMutex:  sync.Mutex{},
 	}
 
-	if err := dc.Load(); err != nil {
+	if err := resourceCache.Load(); err != nil {
 		logrus.Warnf("ResourceCache is not loaded from its last state stored in configmaps, it may take more time to rebuild cache on first run. Error by Load: %s", err)
 	} else {
-		dc.stateLoaded = true
+		resourceCache.stateLoaded = true
 		logrus.Info("ResourceCache loaded from configmaps")
 	}
 
-	return dc
+	return resourceCache
 }
 
 // Run start a goroutine to resync cache periodically with server
-func (dc *ResourceCache) Run() {
+func (resourceCache *ResourceCache) Run() {
 	initialised := make(chan bool)
-	go dc.AutoCacheBuilder(initialised)
+	go resourceCache.AutoCacheBuilder(initialised)
 
 	// Periodically flush cache to configmap for recovery after application restart or pod restart
-	go dc.CacheToConfigMapDumper()
+	go resourceCache.CacheToConfigMapDumper()
 
 	// Wait for first initialization
 	<-initialised
 }
 
-func (dc *ResourceCache) AutoCacheBuilder(initialised chan<- bool) {
+func (resourceCache *ResourceCache) AutoCacheBuilder(initialised chan<- bool) {
 	gauge := promauto.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace:   "resource",
@@ -97,10 +97,10 @@ func (dc *ResourceCache) AutoCacheBuilder(initialised chan<- bool) {
 			Help:        "Time taken to rebuild cache",
 			ConstLabels: prometheus.Labels{"run": "auto"},
 		})
-	t := time.NewTicker(dc.resyncPeriod)
+	t := time.NewTicker(resourceCache.resyncPeriod)
 
-	if !dc.stateLoaded {
-		dc.rebuildCache(gauge)
+	if !resourceCache.stateLoaded {
+		resourceCache.rebuildCache(gauge)
 		initialised <- true
 	} else {
 		initialised <- true
@@ -109,29 +109,29 @@ func (dc *ResourceCache) AutoCacheBuilder(initialised chan<- bool) {
 
 	for {
 		<-t.C
-		dc.rebuildCache(gauge)
+		resourceCache.rebuildCache(gauge)
 	}
 }
 
-func (dc *ResourceCache) CacheToConfigMapDumper() {
+func (resourceCache *ResourceCache) CacheToConfigMapDumper() {
 	func(resourceCache *ResourceCache) {
 		for range time.Tick(resourceCache.flushTimeToCM) {
 			debugID := util.GetShortUUID()
 			lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"debug_id": debugID}))
 			log := lmlog.Logger(lctx)
 			start := time.Now()
-			err := dc.Save()
+			err := resourceCache.Save()
 			if err != nil {
 				log.Errorf("Flush cache to cm failed: %s", err)
 			} else {
 				log.Infof("Cache flushed to configmaps in time %v", time.Since(start))
 			}
 		}
-	}(dc)
+	}(resourceCache)
 }
 
 // Rebuild graceful rebuild cache
-func (dc *ResourceCache) Rebuild(lctx *lmctx.LMContext) {
+func (resourceCache *ResourceCache) Rebuild(lctx *lmctx.LMContext) {
 	gauge := promauto.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace:   "cache",
@@ -140,30 +140,30 @@ func (dc *ResourceCache) Rebuild(lctx *lmctx.LMContext) {
 			Help:        "Time taken to rebuild cache",
 			ConstLabels: prometheus.Labels{"run": "graceful"},
 		})
-	dc.rebuildCache(gauge)
+	resourceCache.rebuildCache(gauge)
 }
 
-func (dc *ResourceCache) rebuildCache(gauge prometheus.Gauge) {
-	dc.rebuildMutex.Lock()
-	defer dc.rebuildMutex.Unlock()
+func (resourceCache *ResourceCache) rebuildCache(gauge prometheus.Gauge) {
+	resourceCache.rebuildMutex.Lock()
+	defer resourceCache.rebuildMutex.Unlock()
 	defer promperf.Duration(promperf.Track(gauge))
 	debugID := util.GetShortUUID()
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"debug_id": debugID}))
 	log := lmlog.Logger(lctx)
 	log.Infof("Device cache fetching devices")
-	devices := dc.getAllDevices(lctx, dc.base)
+	devices := resourceCache.getAllDevices(lctx, resourceCache.base)
 	if devices == nil {
 		log.Errorf("Failed to fetch devices")
 	} else {
 		log.Debugf("Resync cache map")
-		dc.resetCacheStore(devices)
+		resourceCache.resetCacheStore(devices)
 		log.Debugf("Resync cache done")
 	}
 
-	if err := dc.Save(); err != nil {
+	if err := resourceCache.Save(); err != nil {
 		log.Errorf("cache to cm failed: %s", err)
 	} else {
-		log.Infof("Cache size: %v", dc.store.Size())
+		log.Infof("Cache size: %v", resourceCache.store.Size())
 	}
 }
 
@@ -174,7 +174,7 @@ type DeviceGroupData struct {
 	LMID          int32
 }
 
-func (dc *ResourceCache) getAllDevices(lctx *lmctx.LMContext, b *types.Base) *Store {
+func (resourceCache *ResourceCache) getAllDevices(lctx *lmctx.LMContext, b *types.Base) *Store {
 	log := lmlog.Logger(lctx)
 	clusterGroupID := util.GetClusterGroupID(lctx, b.LMClient)
 
@@ -189,16 +189,16 @@ func (dc *ResourceCache) getAllDevices(lctx *lmctx.LMContext, b *types.Base) *St
 	deviceFinished := make(chan bool)
 	deviceGroupFinished := make(chan bool)
 
-	go dc.accumulateDeviceCache(lctx, deviceChan, m, deviceFinished)
-	go dc.accumulateDeviceGroupCache(lctx, deviceGroupChan, m, deviceGroupFinished)
+	go resourceCache.accumulateDeviceCache(lctx, deviceChan, m, deviceFinished)
+	go resourceCache.accumulateDeviceGroupCache(lctx, deviceGroupChan, m, deviceGroupFinished)
 
 	grpIDChan := make(chan int32)
 
-	go dc.fetchGroupDevices(lctx, b, grpIDChan, deviceChan)
+	go resourceCache.fetchGroupDevices(lctx, b, grpIDChan, deviceChan)
 
 	grpIDChan <- clusterGroupID
 	start := time.Now()
-	dc.getAllGroups(lctx, b, clusterGroupID, grpIDChan, deviceGroupChan, 2)
+	resourceCache.getAllGroups(lctx, b, clusterGroupID, grpIDChan, deviceGroupChan, 2)
 	log.Infof("Device group fetched in %v seconds", time.Since(start).Seconds())
 	close(grpIDChan)
 	close(deviceGroupChan)
@@ -219,7 +219,7 @@ func getDevices(b *types.Base, grpID int32) (*lm.GetImmediateDeviceListByDeviceG
 	return resp, nil
 }
 
-func (dc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, b *types.Base, inChan <-chan int32, outChan chan<- *models.Device) {
+func (resourceCache *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, b *types.Base, inChan <-chan int32, outChan chan<- *models.Device) {
 	log := lmlog.Logger(lctx)
 	start := time.Now()
 	defer func() {
@@ -231,12 +231,12 @@ func (dc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, b *types.Base,
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 
-		go dc.ResourceGroupProcessor(inChan, log, b, outChan, &wg)
+		go resourceCache.ResourceGroupProcessor(inChan, log, b, outChan, &wg)
 	}
 	wg.Wait()
 }
 
-func (dc *ResourceCache) ResourceGroupProcessor(inChan <-chan int32, log *logrus.Entry, b *types.Base, outChan chan<- *models.Device, wg *sync.WaitGroup) {
+func (resourceCache *ResourceCache) ResourceGroupProcessor(inChan <-chan int32, log *logrus.Entry, b *types.Base, outChan chan<- *models.Device, wg *sync.WaitGroup) {
 	defer func() {
 		wg.Done()
 	}()
@@ -265,7 +265,7 @@ func (dc *ResourceCache) ResourceGroupProcessor(inChan <-chan int32, log *logrus
 	}
 }
 
-func (dc *ResourceCache) accumulateDeviceCache(lctx *lmctx.LMContext, inChan <-chan *models.Device, store *Store, finished chan<- bool) {
+func (resourceCache *ResourceCache) accumulateDeviceCache(lctx *lmctx.LMContext, inChan <-chan *models.Device, store *Store, finished chan<- bool) {
 	log := lmlog.Logger(lctx)
 	start := time.Now()
 	defer func() {
@@ -304,7 +304,7 @@ func (dc *ResourceCache) accumulateDeviceCache(lctx *lmctx.LMContext, inChan <-c
 	log.Infof("New cache map : %v", store)
 }
 
-func (dc *ResourceCache) accumulateDeviceGroupCache(lctx *lmctx.LMContext, inChan <-chan DeviceGroupData, store *Store, finished chan<- bool) {
+func (resourceCache *ResourceCache) accumulateDeviceGroupCache(lctx *lmctx.LMContext, inChan <-chan DeviceGroupData, store *Store, finished chan<- bool) {
 	log := lmlog.Logger(lctx)
 	start := time.Now()
 	defer func() {
@@ -331,13 +331,13 @@ func (dc *ResourceCache) accumulateDeviceGroupCache(lctx *lmctx.LMContext, inCha
 	log.Debugf("New cache map ResourceGroup: %v", store)
 }
 
-func (dc *ResourceCache) resetCacheStore(m *Store) {
-	dc.rwm.Lock()
-	defer dc.rwm.Unlock()
-	dc.store = m
+func (resourceCache *ResourceCache) resetCacheStore(m *Store) {
+	resourceCache.rwm.Lock()
+	defer resourceCache.rwm.Unlock()
+	resourceCache.store = m
 }
 
-func (dc *ResourceCache) getAllGroups(lctx *lmctx.LMContext, b *types.Base, grpid int32, outChan chan<- int32, groupChan chan<- DeviceGroupData, depth int) {
+func (resourceCache *ResourceCache) getAllGroups(lctx *lmctx.LMContext, b *types.Base, grpid int32, outChan chan<- int32, groupChan chan<- DeviceGroupData, depth int) {
 	log := lmlog.Logger(lctx)
 
 	if depth < 1 {
@@ -375,73 +375,73 @@ func (dc *ResourceCache) getAllGroups(lctx *lmctx.LMContext, b *types.Base, grpi
 			NamespaceName: *g.Payload.Name,
 			LMID:          sg.ID,
 		}
-		dc.getAllGroups(lctx, b, sg.ID, outChan, groupChan, depth-1)
+		resourceCache.getAllGroups(lctx, b, sg.ID, outChan, groupChan, depth-1)
 	}
 }
 
 // Set adds entry into cache map
-func (dc *ResourceCache) Set(name cache.ResourceName, meta cache.ResourceMeta) bool {
-	dc.rwm.RLock()
-	defer dc.rwm.RUnlock()
+func (resourceCache *ResourceCache) Set(name cache.ResourceName, meta cache.ResourceMeta) bool {
+	resourceCache.rwm.RLock()
+	defer resourceCache.rwm.RUnlock()
 	logrus.Tracef("Setting cache entry %v", name)
-	dc.store.Set(name, meta)
+	resourceCache.store.Set(name, meta)
 
 	return true
 }
 
 // Exists checks entry into cache map
-func (dc *ResourceCache) Exists(lctx *lmctx.LMContext, name cache.ResourceName, namespace string) (cache.ResourceMeta, bool) {
-	dc.rwm.RLock()
-	defer dc.rwm.RUnlock()
+func (resourceCache *ResourceCache) Exists(lctx *lmctx.LMContext, name cache.ResourceName, namespace string) (cache.ResourceMeta, bool) {
+	resourceCache.rwm.RLock()
+	defer resourceCache.rwm.RUnlock()
 	log := lmlog.Logger(lctx)
 	log.Tracef("Checking cache entry %v", name)
 
-	return dc.store.Exists(lctx, name, namespace)
+	return resourceCache.store.Exists(lctx, name, namespace)
 }
 
 // Get checks entry into cache map
-func (dc *ResourceCache) Get(lctx *lmctx.LMContext, name cache.ResourceName) ([]cache.ResourceMeta, bool) {
-	dc.rwm.RLock()
-	defer dc.rwm.RUnlock()
+func (resourceCache *ResourceCache) Get(lctx *lmctx.LMContext, name cache.ResourceName) ([]cache.ResourceMeta, bool) {
+	resourceCache.rwm.RLock()
+	defer resourceCache.rwm.RUnlock()
 	log := lmlog.Logger(lctx)
 	log.Tracef("Get cache entry list %v", name)
 
-	return dc.store.Get(lctx, name)
+	return resourceCache.store.Get(lctx, name)
 }
 
 // Unset checks entry into cache map
-func (dc *ResourceCache) Unset(name cache.ResourceName, namespace string) bool {
-	dc.rwm.RLock()
-	defer dc.rwm.RUnlock()
+func (resourceCache *ResourceCache) Unset(name cache.ResourceName, namespace string) bool {
+	resourceCache.rwm.RLock()
+	defer resourceCache.rwm.RUnlock()
 	logrus.Tracef("Deleting cache entry %v", name)
 
-	return dc.store.Unset(name, namespace)
+	return resourceCache.store.Unset(name, namespace)
 }
 
 // Load loads cache from configmaps
-func (dc *ResourceCache) Load() error {
-	cmList, err := dc.listAllCacheConfigMaps()
+func (resourceCache *ResourceCache) Load() error {
+	cmList, err := resourceCache.listAllCacheConfigMaps()
 	if err != nil {
 		return err
 	}
 	if cmList.Size() == 0 {
 		return fmt.Errorf("no config maps found")
 	}
-	selectedDumpID := dc.selectDumpID(cmList)
+	selectedDumpID := resourceCache.selectDumpID(cmList)
 	tmpCache := NewStore()
-	err2 := dc.populateCacheStore(cmList, selectedDumpID, tmpCache)
+	err2 := resourceCache.populateCacheStore(cmList, selectedDumpID, tmpCache)
 	if err2 != nil {
 		return err2
 	}
 	if tmpCache.Size() == 0 {
 		return fmt.Errorf("no cache data found in present configmaps")
 	}
-	dc.resetCacheStore(tmpCache)
+	resourceCache.resetCacheStore(tmpCache)
 
 	return nil
 }
 
-func (dc *ResourceCache) populateCacheStore(cmList *corev1.ConfigMapList, selectedDumpID int64, tmpCache *Store) error {
+func (resourceCache *ResourceCache) populateCacheStore(cmList *corev1.ConfigMapList, selectedDumpID int64, tmpCache *Store) error {
 	for _, cm := range cmList.Items {
 		dumpID, err2 := strconv.ParseInt(cm.Labels["dumpID"], 10, 64)
 		if err2 != nil || (selectedDumpID != -1 && dumpID != selectedDumpID) {
@@ -460,7 +460,7 @@ func (dc *ResourceCache) populateCacheStore(cmList *corev1.ConfigMapList, select
 	return nil
 }
 
-func (dc *ResourceCache) selectDumpID(cmList *corev1.ConfigMapList) int64 {
+func (resourceCache *ResourceCache) selectDumpID(cmList *corev1.ConfigMapList) int64 {
 	// Select latest dump if multiple dump exists
 	selectedDumpID := int64(-1)
 	for _, cm := range cmList.Items {
@@ -476,12 +476,12 @@ func (dc *ResourceCache) selectDumpID(cmList *corev1.ConfigMapList) int64 {
 	return selectedDumpID
 }
 
-func (dc *ResourceCache) listAllCacheConfigMaps() (*corev1.ConfigMapList, error) {
+func (resourceCache *ResourceCache) listAllCacheConfigMaps() (*corev1.ConfigMapList, error) {
 	ns, err := config.GetWatchConfig("namespace")
 	if err != nil {
 		ns = "argus"
 	}
-	cmList, err := dc.base.K8sClient.CoreV1().ConfigMaps(ns).List(metav1.ListOptions{
+	cmList, err := resourceCache.base.K8sClient.CoreV1().ConfigMaps(ns).List(metav1.ListOptions{
 		LabelSelector: labels.Set{"argus": "cache"}.String(),
 	})
 	if err != nil {
@@ -491,15 +491,15 @@ func (dc *ResourceCache) listAllCacheConfigMaps() (*corev1.ConfigMapList, error)
 }
 
 // Save saves cache to configmaps
-func (dc *ResourceCache) Save() error {
-	dc.flushMU.Lock()
-	defer dc.flushMU.Unlock()
-	if dc.store.Size() == 0 {
+func (resourceCache *ResourceCache) Save() error {
+	resourceCache.flushMU.Lock()
+	defer resourceCache.flushMU.Unlock()
+	if resourceCache.store.Size() == 0 {
 		logrus.Tracef("store is empty so not storing it")
 
 		return fmt.Errorf("store is empty hence not storing to cm")
 	}
-	chunks, err := getChunks(dc.store.InternalMap)
+	chunks, err := getChunks(resourceCache.store.InternalMap)
 	if err != nil {
 		logrus.Errorf("Failed to marshal cache map to json string or failed to split into chunks %v", err)
 
@@ -525,15 +525,15 @@ func (dc *ResourceCache) Save() error {
 					"version":     Version,
 				},
 				Annotations: map[string]string{
-					"content_size": fmt.Sprintf("%v", dc.store.Size()),
+					"content_size": fmt.Sprintf("%v", resourceCache.store.Size()),
 				},
 			},
 			Data:       m,
 			BinaryData: nil,
 		}
-		_, err1 := dc.base.K8sClient.CoreV1().ConfigMaps(ns).Create(cm)
+		_, err1 := resourceCache.base.K8sClient.CoreV1().ConfigMaps(ns).Create(cm)
 		if err1 != nil {
-			_, err2 := dc.base.K8sClient.CoreV1().ConfigMaps(ns).Update(cm)
+			_, err2 := resourceCache.base.K8sClient.CoreV1().ConfigMaps(ns).Update(cm)
 			if err2 != nil {
 				err3 := fmt.Errorf("failed to store cache chunk %v to cm: %w %v", idx, err1, err2)
 				logrus.Errorf("%s", err3)
@@ -543,7 +543,7 @@ func (dc *ResourceCache) Save() error {
 		}
 	}
 	// Delete previous cache configmaps
-	err2 := dc.base.K8sClient.CoreV1().ConfigMaps(ns).DeleteCollection(
+	err2 := resourceCache.base.K8sClient.CoreV1().ConfigMaps(ns).DeleteCollection(
 		&metav1.DeleteOptions{}, // nolint: exhaustivestruct
 		metav1.ListOptions{ // nolint: exhaustivestruct
 			LabelSelector: fmt.Sprintf("argus==cache,dumpID!=%s", dumpIDStr),
@@ -594,12 +594,12 @@ func getChunks(m map[cache.ResourceName][]cache.ResourceMeta) ([][]byte, error) 
 }
 
 // List returns slices of all data present in cache - For ex: cache for periodic dangling device etc uses this
-func (dc *ResourceCache) List() []cache.IterItem {
-	return dc.store.List()
+func (resourceCache *ResourceCache) List() []cache.IterItem {
+	return resourceCache.store.List()
 }
 
 // UnsetLMID unsets value using id only
 // WARN: This is not an o(1) map operation hence do not use until necessary, this is heavy operation to find cache entry with id
-func (dc *ResourceCache) UnsetLMID(rt enums.ResourceType, id int32) bool {
-	return dc.store.UnsetLMID(rt, id)
+func (resourceCache *ResourceCache) UnsetLMID(rt enums.ResourceType, id int32) bool {
+	return resourceCache.store.UnsetLMID(rt, id)
 }

@@ -25,7 +25,6 @@ type Manager struct {
 	*builder.Builder
 	types.LMExecutor
 	types.LMFacade
-	DC            *devicecache.DeviceCache
 	ResourceCache *devicecache.ResourceCache
 }
 

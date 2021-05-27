@@ -4,7 +4,7 @@ VERSION       ?= $(shell git describe --tags --always --dirty)
 
 default: build
 
-lint:
+gofmt:
 ifeq ($(shell uname -s), Darwin)
 	find pkg/ -type f | grep go | egrep -v "mocks|gomock" | xargs gofmt -l -d -s -w; sync
 	find pkg/ -type f | grep go | egrep -v "mocks|gomock" | xargs gofumpt -l -d -s -w; sync
@@ -20,12 +20,14 @@ ifeq ($(shell uname -s), Darwin)
 	goimports -l -d -w main.go; sync
 endif
 
-build: lint
-
+build: gofmt
 	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) .
 
-dev: lint
+dev: gofmt
 	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.dev .
+
+lint: gofmt
+	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.lint .
 
 mockgen:
 	go generate ./...
