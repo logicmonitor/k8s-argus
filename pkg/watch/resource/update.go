@@ -6,6 +6,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -18,8 +19,8 @@ import (
 
 // UpdateFuncWithExclude update
 func UpdateFuncWithExclude(
-	updateFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}),
-	deleteFunc func(*lmctx.LMContext, enums.ResourceType, interface{}),
+	updateFunc types.UpdatePreprocessFunc,
+	deleteFunc types.DeletePreprocessFunc,
 ) func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}) {
 		log := lmlog.Logger(lctx)
@@ -43,7 +44,9 @@ func UpdateFuncWithExclude(
 }
 
 // UpdateFuncDispatcher update
-func UpdateFuncDispatcher(updateFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{})) func(interface{}, interface{}) {
+func UpdateFuncDispatcher(
+	updateFunc types.UpdatePreprocessFunc,
+) types.WatcherUpdateFunc {
 	return func(oldObj, newObj interface{}) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -70,13 +73,48 @@ func UpdateFuncDispatcher(updateFunc func(*lmctx.LMContext, enums.ResourceType, 
 	}
 }
 
+// PreprocessUpdateEventForOldUID deletes previous resource by correlating UID before calling next update function.
+func PreprocessUpdateEventForOldUID(
+	resourceCache types.ResourceCache,
+	deleteFun types.ExecDeleteFunc,
+	b *builder.Builder,
+	update types.UpdatePreprocessFunc,
+) func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj interface{}, newObj interface{}) {
+		log := lmlog.Logger(lctx)
+		meta := rt.ObjectMeta(newObj)
+		if cacheMeta, ok := resourceCache.Exists(lctx, cache.ResourceName{
+			Name:     meta.Name,
+			Resource: rt,
+		}, meta.Namespace); ok && cacheMeta.UID != meta.UID {
+			conf, err := config.GetConfig()
+			if err == nil {
+				log.Infof("Deleting previous resource (%d) with old UID (%s)", cacheMeta.LMID, cacheMeta.UID)
+				options := b.GetDefaultsDeviceOptions(rt, meta, conf)
+				options = append(options, b.Auto("uid", string(cacheMeta.UID)))
+				err = deleteFun(lctx, rt, newObj, options...)
+				if err != nil {
+					log.Errorf("Failed to delete previous resource: %s", err)
+
+					return
+				}
+			} else {
+				log.Errorf("Cannot delete previous resource: %s", err)
+
+				return
+			}
+		}
+		update(lctx, rt, oldObj, newObj)
+	}
+}
+
 // UpsertBasedOnCache upsert
 func UpsertBasedOnCache(
 	resourceCache types.ResourceCache,
 	configurer types.WatcherConfigurer,
-	deviceManager types.Actions,
+	actions types.Actions,
 	b types.DeviceBuilder,
-) func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, []types.DeviceOption, []types.DeviceOption) {
+) types.UpdateProcessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj interface{}, newObj interface{}, oldOptions []types.DeviceOption, options []types.DeviceOption) {
 		log := lmlog.Logger(lctx)
 		conf, err := config.GetConfig()
@@ -98,7 +136,7 @@ func UpsertBasedOnCache(
 			}
 
 			options := append(options, deviceOptions...)
-			deviceManager.AddFunc()(lctx, rt, newObj, options...)
+			actions.AddFunc()(lctx, rt, newObj, options...) // nolint: errcheck
 
 			return
 		}
@@ -108,7 +146,7 @@ func UpsertBasedOnCache(
 			log.Infof("Deleting device, if any")
 			deleteOptions := configurer.DeleteFuncOptions()(lctx, rt, newObj)
 			options = append(options, deleteOptions...)
-			deviceManager.DeleteFunc()(lctx, rt, newObj, options...)
+			actions.DeleteFunc()(lctx, rt, newObj, options...) // nolint: errcheck
 
 			return
 		}
@@ -122,7 +160,7 @@ func UpsertBasedOnCache(
 		delta := hasDelta(lctx, rt, ce, newObj)
 		if delta || len(updateOptions) > 0 {
 			log.Infof("Updating device")
-			deviceManager.UpdateFunc()(lctx, rt, oldObj, newObj, options...)
+			actions.UpdateFunc()(lctx, rt, oldObj, newObj, options...) // nolint: errcheck
 
 			return
 		}

@@ -177,6 +177,7 @@ func (m *Manager) GetAllK8SResources() *devicecache.Store {
 				Container:   meta.Namespace,
 				Labels:      meta.Labels,
 				DisplayName: displayName,
+				UID:         meta.UID,
 			})
 		}
 	}

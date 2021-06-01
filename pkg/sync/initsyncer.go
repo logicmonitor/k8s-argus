@@ -69,7 +69,8 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		}
 
 		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
-		if !ok {
+		// Delete resource if no more exists or delete if UID does not match.
+		if !ok || clusterPresentMeta.UID != cacheResourceMeta.UID {
 			i.deleteDevice(childLctx, log, cacheResourceName, cacheResourceMeta)
 		} else if resolveConflicts {
 			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName, log)
@@ -167,7 +168,30 @@ func (i *InitSyncer) deleteDevice(lctx *lmctx.LMContext, log *logrus.Entry, reso
 		}
 	} else {
 		log.Infof("Soft delete")
-		// TODO:: Mark device for deletion if not already
+		deleteOptions := i.DeviceManager.GetMarkDeleteOptions(lctx, resourceName.Resource, &metav1.ObjectMeta{})
+		id, err := util.GetCollectorID()
+		if err != nil {
+			log.Errorf("Failed to get collector id")
+
+			return
+		}
+		resource := &models.Device{
+			ID:                   resourceMeta.LMID,
+			Name:                 &resourceMeta.Name,
+			DisplayName:          &resourceMeta.DisplayName,
+			PreferredCollectorID: &id,
+		}
+		resource, err = util.BuildDevice(lctx, conf, resource, deleteOptions...)
+		if err != nil {
+			log.Errorf("Unable to build resource to mark it as delete")
+		} else {
+			_, err = i.DeviceManager.UpdateAndReplaceResource(lctx, resourceName.Resource, resource.ID, resource)
+			if err != nil {
+				log.Errorf("failed to mark resource as deleted")
+			} else {
+				log.Infof("Marked resource as deleted")
+			}
+		}
 	}
 }
 

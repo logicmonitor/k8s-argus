@@ -4,16 +4,17 @@ import (
 	"runtime/debug"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/logicmonitor/k8s-argus/pkg/enums"
-	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // DeleteFuncDispatcher delete
-func DeleteFuncDispatcher(deleteFunc func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{})) func(obj interface{}) {
+func DeleteFuncDispatcher(
+	deleteFunc types.DeletePreprocessFunc,
+) types.WatcherDeleteFunc {
 	return func(obj interface{}) {
 		defer func() {
 			if r := recover(); r != nil {

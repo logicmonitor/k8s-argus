@@ -207,7 +207,10 @@ func getUpdatedSystemCategories(oldValue, newValue string, action enums.BuilderA
 }
 
 // AddFuncWithDefaults add
-func (b *Builder) AddFuncWithDefaults(cache types.ResourceCache, configurer types.WatcherConfigurer, actions types.Actions) func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
+func (b *Builder) AddFuncWithDefaults(
+	configurer types.WatcherConfigurer,
+	actions types.Actions,
+) types.AddPreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
 		conf, err := config.GetConfig()
@@ -217,7 +220,7 @@ func (b *Builder) AddFuncWithDefaults(cache types.ResourceCache, configurer type
 			return
 		}
 		objectMeta := rt.ObjectMeta(obj)
-		options := b.getDefaultsDeviceOptions(rt, objectMeta, conf)
+		options := b.GetDefaultsDeviceOptions(rt, objectMeta, conf)
 		additionalOptions, err := configurer.AddFuncOptions()(lctx, rt, obj, b)
 		if err != nil {
 			log.Errorf("failed to get device additional options: %s", err)
@@ -226,14 +229,14 @@ func (b *Builder) AddFuncWithDefaults(cache types.ResourceCache, configurer type
 		}
 
 		options = append(options, additionalOptions...)
-		actions.AddFunc()(lctx, rt, obj, options...)
+		actions.AddFunc()(lctx, rt, obj, options...) // nolint: errcheck
 	}
 }
 
 // UpdateFuncWithDefaults update
 func (b *Builder) UpdateFuncWithDefaults(
-	target func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, []types.DeviceOption, []types.DeviceOption),
-) func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}) {
+	target types.UpdateProcessFunc,
+) types.UpdatePreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}) {
 		log := lmlog.Logger(lctx)
 		conf, err := config.GetConfig()
@@ -245,8 +248,8 @@ func (b *Builder) UpdateFuncWithDefaults(
 		objectMeta := rt.ObjectMeta(newObj)
 		oldObjectMeta := rt.ObjectMeta(oldObj)
 
-		options := b.getDefaultsDeviceOptions(rt, objectMeta, conf)
-		oldObjOptions := b.getDefaultsDeviceOptions(rt, oldObjectMeta, conf)
+		options := b.GetDefaultsDeviceOptions(rt, objectMeta, conf)
+		oldObjOptions := b.GetDefaultsDeviceOptions(rt, oldObjectMeta, conf)
 
 		target(lctx, rt, oldObj, newObj, oldObjOptions, options)
 	}
@@ -255,8 +258,8 @@ func (b *Builder) UpdateFuncWithDefaults(
 // DeleteFuncWithDefaults delete
 func (b *Builder) DeleteFuncWithDefaults(
 	configurer types.WatcherConfigurer,
-	deleteFun func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.DeviceOption),
-) func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
+	deleteFun types.ExecDeleteFunc,
+) types.DeletePreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
 		conf, err := config.GetConfig()
@@ -266,10 +269,10 @@ func (b *Builder) DeleteFuncWithDefaults(
 			return
 		}
 		objectMeta := rt.ObjectMeta(obj)
-		options := b.getDefaultsDeviceOptions(rt, objectMeta, conf)
+		options := b.GetDefaultsDeviceOptions(rt, objectMeta, conf)
 		additionalOptions := configurer.DeleteFuncOptions()(lctx, rt, obj)
 		options = append(options, additionalOptions...)
-		deleteFun(lctx, rt, obj, options...)
+		deleteFun(lctx, rt, obj, options...) // nolint: errcheck
 	}
 }
 
@@ -287,7 +290,7 @@ func (b *Builder) MarkDeleteFunc(
 			return
 		}
 		objectMeta := rt.ObjectMeta(obj)
-		options := b.getDefaultsDeviceOptions(rt, objectMeta, conf)
+		options := b.GetDefaultsDeviceOptions(rt, objectMeta, conf)
 		additionalOptions := configurer.DeleteFuncOptions()(lctx, rt, obj)
 		options = append(options, additionalOptions...)
 		options = append(options, b.GetMarkDeleteOptions(lctx, rt, objectMeta)...)
@@ -295,7 +298,8 @@ func (b *Builder) MarkDeleteFunc(
 	}
 }
 
-func (b *Builder) getDefaultsDeviceOptions(rt enums.ResourceType, objectMeta *metav1.ObjectMeta, conf *config.Config) []types.DeviceOption {
+// GetDefaultsDeviceOptions returns default options for resource
+func (b *Builder) GetDefaultsDeviceOptions(rt enums.ResourceType, objectMeta *metav1.ObjectMeta, conf *config.Config) []types.DeviceOption {
 	options := []types.DeviceOption{
 		b.Name(rt.LMName(objectMeta)),
 		b.ResourceLabels(objectMeta.Labels),

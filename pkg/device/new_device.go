@@ -6,6 +6,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
@@ -133,7 +134,7 @@ func (m *Manager) Update(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj in
 	// Partial patch API is not allowed - Either it will replace all set of customProperties or nothing
 	// Similarly, system.categories is comma separated string, so to add or modify, we need to fetch current string from LM resource
 
-	device, err = m.FetchDevice(lctx, rt, ce.LMID)
+	fetchedDevice, err := m.FetchDevice(lctx, rt, ce.LMID)
 	if err != nil {
 		// This indicates that the lm resource id present in cache is wrong, consider as cache miss
 		// nolint: godox
@@ -143,23 +144,28 @@ func (m *Manager) Update(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj in
 		return nil, err
 	}
 
-	_, conflicts := m.DoesDeviceConflictInCluster(lctx, rt, device)
+	// If UID mismatch then fail with error, auto prop is not going to change, and even if it updates then metrics of prev and new get mixed up
+	if util.GetPropertyValue(fetchedDevice, constants.K8sDeviceUIDPropertyKey) != util.GetPropertyValue(device, constants.K8sDeviceUIDPropertyKey) {
+		return nil, fmt.Errorf("mismatch in UID: previous (%s), new (%s)", util.GetPropertyValue(fetchedDevice, constants.K8sDeviceUIDPropertyKey), util.GetPropertyValue(device, constants.K8sDeviceUIDPropertyKey))
+	}
+
+	_, conflicts := m.DoesDeviceConflictInCluster(lctx, rt, fetchedDevice)
 	if conflicts {
 		log.Info("Conflicts with in-cluster resource")
-		options = append(options, m.ModifyToUnique(lctx, rt, device, newObj)...)
+		options = append(options, m.ModifyToUnique(lctx, rt, fetchedDevice, newObj)...)
 	}
 	// Put ID for update request
-	device.ID = ce.LMID
+	fetchedDevice.ID = ce.LMID
 	// retain displayName
-	options = append(options, m.DisplayName(*device.DisplayName))
-	device, err = util.BuildDevice(lctx, conf, device, options...)
+	options = append(options, m.DisplayName(*fetchedDevice.DisplayName))
+	fetchedDevice, err = util.BuildDevice(lctx, conf, fetchedDevice, options...)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Tracef("Updating resource with: %s", spew.Sdump(device))
+	log.Tracef("Updating resource with: %s", spew.Sdump(fetchedDevice))
 	// Update the device
-	return m.UpdateAndReplaceResource(lctx, rt, device.ID, device)
+	return m.UpdateAndReplaceResource(lctx, rt, fetchedDevice.ID, fetchedDevice)
 }
 
 // Delete delete

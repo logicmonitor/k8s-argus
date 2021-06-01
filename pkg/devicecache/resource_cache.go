@@ -299,6 +299,11 @@ func (resourceCache *ResourceCache) accumulateDeviceCache(lctx *lmctx.LMContext,
 			continue
 		}
 
+		// ignore deleted category resources
+		if meta.HasSysCategory(rt.GetDeletedCategory()) {
+			continue
+		}
+
 		store.Set(key, meta)
 	}
 	log.Infof("New cache map : %v", store)

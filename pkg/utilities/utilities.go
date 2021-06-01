@@ -20,6 +20,7 @@ import (
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -163,8 +164,10 @@ func GetResourceMetaFromDevice(device *models.Device) (cache.ResourceMeta, error
 		Container:     GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey),
 		LMID:          device.ID,
 		DisplayName:   *device.DisplayName,
+		Name:          *device.Name,
 		Labels:        labels,
 		SysCategories: categories,
+		UID:           k8stypes.UID(GetPropertyValue(device, constants.K8sDeviceUIDPropertyKey)),
 	}, nil
 }
 

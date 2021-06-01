@@ -14,19 +14,20 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // AddFunc returns func
-func (m *Manager) AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.DeviceOption) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.DeviceOption) {
+func (m *Manager) AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.DeviceOption) (*models.Device, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.DeviceOption) (*models.Device, error) {
 		log := lmlog.Logger(lctx)
-		_, err := m.Add(lctx, rt, obj, options...)
+		d, err := m.Add(lctx, rt, obj, options...)
 		if err != nil {
 			var _t0 *types.DeviceExists
 			if ok := errors.Is(err, _t0); !ok {
 				log.Errorf("Failed to add resource: %s", err)
 
-				return
+				return nil, err
 			}
 		}
 
@@ -35,17 +36,18 @@ func (m *Manager) AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface
 		if rt == enums.Nodes {
 			m.createNodeRoleGroups(lctx, rt, obj)
 		}
+		return d, err
 	}
 }
 
 // UpdateFunc returns func
-func (m *Manager) UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...types.DeviceOption) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, options ...types.DeviceOption) {
+func (m *Manager) UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...types.DeviceOption) (*models.Device, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, options ...types.DeviceOption) (*models.Device, error) {
 		log := lmlog.Logger(lctx)
-		_, err := m.Update(lctx, rt, oldObj, newObj, options...)
+		d, err := m.Update(lctx, rt, oldObj, newObj, options...)
 		if err != nil {
 			log.Errorf("Failed to update resource: %s", err)
-			return
+			return nil, err
 		}
 
 		log.Infof("Updated resource")
@@ -53,17 +55,18 @@ func (m *Manager) UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 		if rt == enums.Nodes {
 			m.createNodeRoleGroups(lctx, rt, newObj)
 		}
+		return d, err
 	}
 }
 
 // DeleteFunc returns function
-func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.DeviceOption) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.DeviceOption) {
+func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.DeviceOption) error {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.DeviceOption) error {
 		log := lmlog.Logger(lctx)
 		conf, err := config.GetConfig()
 		if err != nil {
 			log.Errorf("Failed to get config")
-			return
+			return err
 		}
 		if conf.DeleteDevices {
 			err := m.Delete(lctx, rt, obj, options...)
@@ -71,11 +74,11 @@ func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 				if util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
 					log.Infof("Device already does not exist: %s", err)
 
-					return
+					return nil
 				}
 				log.Errorf("Failed to delete resource: %s", err)
 
-				return
+				return err
 			}
 			log.Infof("Deleted device")
 		} else {
@@ -83,10 +86,11 @@ func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 			if err != nil {
 				log.Errorf("Failed to move resource: %s", err)
 
-				return
+				return err
 			}
 			log.Infof("Moved device")
 		}
+		return nil
 	}
 }
 

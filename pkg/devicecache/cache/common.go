@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 )
 
 var separator = "##"
@@ -39,8 +40,10 @@ type ResourceMeta struct {
 	Container     string            `json:"container"`
 	LMID          int32             `json:"lmid"`
 	DisplayName   string            `json:"display_name"`
+	Name          string            `json:"name"`
 	Labels        map[string]string `json:"labels"`
 	SysCategories []string          `json:"sys_categories"`
+	UID           k8stypes.UID      `json:"uid"`
 }
 
 func (resourceMeta ResourceMeta) HasSysCategory(category string) bool {

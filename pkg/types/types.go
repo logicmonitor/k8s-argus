@@ -115,9 +115,9 @@ type DeviceManager interface {
 // Actions actions
 type Actions interface {
 	// AddFunc wrapper
-	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
-	UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...DeviceOption)
-	DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
+	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) (*models.Device, error)
+	UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...DeviceOption) (*models.Device, error)
+	DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) error
 }
 
 // DeviceMapper is the interface responsible for mapping a Kubernetes resource to
@@ -401,3 +401,30 @@ func (stateHolder *ControllerInitSyncStateHolder) Run() {
 		}
 	}()
 }
+
+type (
+	AddPreprocessFunc func(*lmctx.LMContext, enums.ResourceType, interface{})
+	AddProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
+)
+
+type (
+	UpdatePreprocessFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{})
+	UpdateProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, []DeviceOption, []DeviceOption)
+)
+
+type (
+	DeletePreprocessFunc func(*lmctx.LMContext, enums.ResourceType, interface{})
+	DeleteProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
+)
+
+type (
+	WatcherAddFunc    func(interface{})
+	WatcherUpdateFunc func(interface{}, interface{})
+	WatcherDeleteFunc func(interface{})
+)
+
+type (
+	ExecAddFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) (*models.Device, error)
+	ExecUpdateFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...DeviceOption) (*models.Device, error)
+	ExecDeleteFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) error
+)

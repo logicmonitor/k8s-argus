@@ -4,6 +4,9 @@ import (
 	"runtime/debug"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
+	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
@@ -15,8 +18,9 @@ import (
 
 // AddFuncWithExclude add with exclude
 func AddFuncWithExclude(
-	addFunc func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}),
-	deleteFunc func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{})) func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
+	addFunc types.AddPreprocessFunc,
+	deleteFunc types.DeletePreprocessFunc,
+) types.AddPreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
 		objectMeta := *rt.ObjectMeta(obj)
@@ -38,9 +42,11 @@ func AddFuncWithExclude(
 }
 
 // AddOrUpdateFunc add or update func only when resources are bulk discovered at the time of application restart
-func AddOrUpdateFunc(holders map[enums.ResourceType]*types.ControllerInitSyncStateHolder,
-	addFunc func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}),
-	updateFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{})) func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
+func AddOrUpdateFunc(
+	holders map[enums.ResourceType]*types.ControllerInitSyncStateHolder,
+	addFunc types.AddPreprocessFunc,
+	updateFunc types.UpdatePreprocessFunc,
+) types.AddPreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
 		if holders[rt] != nil && !holders[rt].HasSynced() {
@@ -53,11 +59,9 @@ func AddOrUpdateFunc(holders map[enums.ResourceType]*types.ControllerInitSyncSta
 }
 
 // AddFuncDispatcher add dispatcher
-func AddFuncDispatcher(addFunc func(
-	lctx *lmctx.LMContext,
-	rt enums.ResourceType,
-	obj interface{},
-)) func(obj interface{}) {
+func AddFuncDispatcher(
+	addFunc types.AddPreprocessFunc,
+) types.WatcherAddFunc {
 	return func(obj interface{}) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -80,5 +84,40 @@ func AddFuncDispatcher(addFunc func(
 		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
 		log.Tracef("Add event context: %s", spew.Sdump(obj))
 		addFunc(lctx, rt, obj)
+	}
+}
+
+// PreprocessAddEventForOldUID deletes previous resource by correlating UID before calling next add function.
+func PreprocessAddEventForOldUID(
+	resourceCache types.ResourceCache,
+	deleteFun types.ExecDeleteFunc,
+	b *builder.Builder,
+	add types.AddPreprocessFunc,
+) types.AddPreprocessFunc {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
+		log := lmlog.Logger(lctx)
+		meta := rt.ObjectMeta(obj)
+		if cacheMeta, ok := resourceCache.Exists(lctx, cache.ResourceName{
+			Name:     meta.Name,
+			Resource: rt,
+		}, meta.Namespace); ok && cacheMeta.UID != meta.UID {
+			conf, err := config.GetConfig()
+			if err == nil {
+				log.Infof("Deleting previous resource (%d) with obj UID (%s)", cacheMeta.LMID, cacheMeta.UID)
+				options := b.GetDefaultsDeviceOptions(rt, meta, conf)
+				options = append(options, b.Auto("uid", string(cacheMeta.UID)))
+				err = deleteFun(lctx, rt, obj, options...)
+				if err != nil {
+					log.Errorf("Failed to delete previous resource: %s", err)
+
+					return
+				}
+			} else {
+				log.Errorf("Cannot delete previous resource: %s", err)
+
+				return
+			}
+		}
+		add(lctx, rt, obj)
 	}
 }

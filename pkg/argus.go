@@ -319,19 +319,23 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: resource.AddFuncDispatcher(
 				resource.AddFuncWithExclude(
-					resource.AddOrUpdateFunc(
-						a.controllerStateHolders,
-						b.AddFuncWithDefaults(
-							a.DeviceManager.GetResourceCache(),
-							resource.WatcherConfigurer(rt),
-							a.DeviceManager,
-						),
-						b.UpdateFuncWithDefaults(
-							resource.UpsertBasedOnCache(
-								a.DeviceManager.GetResourceCache(),
+					resource.PreprocessAddEventForOldUID(
+						a.DeviceManager.GetResourceCache(),
+						a.DeviceManager.DeleteFunc(),
+						b,
+						resource.AddOrUpdateFunc(
+							a.controllerStateHolders,
+							b.AddFuncWithDefaults(
 								resource.WatcherConfigurer(rt),
 								a.DeviceManager,
-								b,
+							),
+							b.UpdateFuncWithDefaults(
+								resource.UpsertBasedOnCache(
+									a.DeviceManager.GetResourceCache(),
+									resource.WatcherConfigurer(rt),
+									a.DeviceManager,
+									b,
+								),
 							),
 						),
 					),
@@ -340,12 +344,17 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 			),
 			UpdateFunc: resource.UpdateFuncDispatcher(
 				resource.UpdateFuncWithExclude(
-					b.UpdateFuncWithDefaults(
-						resource.UpsertBasedOnCache(
-							a.DeviceManager.GetResourceCache(),
-							resource.WatcherConfigurer(rt),
-							a.DeviceManager,
-							b,
+					resource.PreprocessUpdateEventForOldUID(
+						a.DeviceManager.GetResourceCache(),
+						a.DeviceManager.DeleteFunc(),
+						b,
+						b.UpdateFuncWithDefaults(
+							resource.UpsertBasedOnCache(
+								a.DeviceManager.GetResourceCache(),
+								resource.WatcherConfigurer(rt),
+								a.DeviceManager,
+								b,
+							),
 						),
 					),
 					b.DeleteFuncWithDefaults(resource.WatcherConfigurer(rt), a.DeviceManager.DeleteFunc()),
