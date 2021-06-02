@@ -107,3 +107,34 @@ linters-settings:
         alias: ratelimiter
       - pkg: k8s.io/apimachinery/pkg/types
         alias: k8stypes
+  gomodguard:
+    allowed:
+      domains:
+        - golang.org
+        - k8s.io
+        - google.golang.org/grpc
+        - github.com/prometheus
+        - github.com/go-openapi
+        - github.com/google
+        - github.com/coreos/etcd
+        - github.com/golang
+    
+      modules:
+        - github.com/sirupsen/logrus
+        - github.com/robfig/cron/v3
+        - github.com/Knetic/govaluate
+        - github.com/stretchr/testify
+        - github.com/kelseyhightower/envconfig
+        - github.com/spf13/cobra
+        - gopkg.in/yaml.v3
+        - github.com/logicmonitor/lm-sdk-go
+        - github.com/logicmonitor/k8s-collectorset-controller
+    
+    blocked:
+      modules:
+        - gopkg.in/yaml.v2:
+            recommendations:
+              - gopkg.in/yaml.v3
+            reason: "v3 is recommended to use, not v2"
+        - github.com/davecgh/go-spew:
+            reason: considered to be log flooder; not supposed to use as it dumps whole object using reflection

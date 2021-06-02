@@ -3,10 +3,8 @@ package device
 import (
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
-	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
@@ -14,8 +12,6 @@ import (
 )
 
 func (m *Manager) addDevice(lctx *lmctx.LMContext, rt enums.ResourceType, device *models.Device) (*models.Device, error) {
-	log := lmlog.Logger(lctx)
-	log.Tracef("Adding device: %s", spew.Sdump(device))
 	params := lm.NewAddDeviceParams()
 	addFromWizard := false
 	params.SetAddFromWizard(&addFromWizard)
@@ -43,8 +39,6 @@ func (m *Manager) addDevice(lctx *lmctx.LMContext, rt enums.ResourceType, device
 }
 
 func (m *Manager) UpdateAndReplaceResource(lctx *lmctx.LMContext, rt enums.ResourceType, id int32, device *models.Device) (*models.Device, error) {
-	log := lmlog.Logger(lctx)
-	log.Tracef("Updating device: %s", spew.Sdump(device))
 	opType := "replace"
 	// opType := "refresh"
 	params := lm.NewUpdateDeviceParams()
@@ -76,8 +70,6 @@ func (m *Manager) UpdateAndReplaceResource(lctx *lmctx.LMContext, rt enums.Resou
 
 // deleteDevice implements types.DeviceManager.
 func (m *Manager) deleteDevice(lctx *lmctx.LMContext, rt enums.ResourceType, device *models.Device) error {
-	log := lmlog.Logger(lctx)
-	log.Tracef("Deleting device: %s", spew.Sdump(device))
 	params := lm.NewDeleteDeviceByIDParams()
 	params.SetID(device.ID)
 	cmd := &types.HTTPCommand{

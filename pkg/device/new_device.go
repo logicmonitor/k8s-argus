@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -120,8 +119,6 @@ func (m *Manager) Update(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj in
 	if err != nil {
 		return nil, err
 	}
-	log.Tracef("resource built from options: %s", spew.Sdump(device))
-
 	ce, ok := m.DoesDeviceExistInCache(lctx, rt, device)
 	if !ok {
 		log.Debugf("Device does not exist in cache")
@@ -162,8 +159,6 @@ func (m *Manager) Update(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj in
 	if err != nil {
 		return nil, err
 	}
-
-	log.Tracef("Updating resource with: %s", spew.Sdump(fetchedDevice))
 	// Update the device
 	return m.UpdateAndReplaceResource(lctx, rt, fetchedDevice.ID, fetchedDevice)
 }

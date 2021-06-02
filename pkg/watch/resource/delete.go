@@ -3,7 +3,6 @@ package resource
 import (
 	"runtime/debug"
 
-	"github.com/davecgh/go-spew/spew"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -35,7 +34,6 @@ func DeleteFuncDispatcher(
 		log := lmlog.Logger(lctx)
 		log.Debugf("Received delete event")
 		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		log.Tracef("Delete event context: %s", spew.Sdump(obj))
 		RecordDeleteEventLatency(lctx, rt, obj)
 		deleteFunc(lctx, rt, obj)
 	}

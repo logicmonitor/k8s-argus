@@ -3,7 +3,6 @@ package resource
 import (
 	"runtime/debug"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
@@ -82,7 +81,6 @@ func AddFuncDispatcher(
 		log := lmlog.Logger(lctx)
 		log.Debugf("Received add event")
 		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		log.Tracef("Add event context: %s", spew.Sdump(obj))
 		addFunc(lctx, rt, obj)
 	}
 }

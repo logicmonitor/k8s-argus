@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
@@ -36,8 +35,6 @@ func NewFacade() *Facade {
 
 // SendReceive sync command handler
 func (f *Facade) SendReceive(lctx *lmctx.LMContext, resource enums.ResourceType, command types.ICommand) (interface{}, error) {
-	log := lmlog.Logger(lctx)
-	log.Tracef("Sending command to worker: %s", spew.Sdump(command))
 	var res interface{}
 	var err error
 	res, err = f.sendRecv(lctx, resource, command)

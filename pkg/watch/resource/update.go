@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"runtime/debug"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
 	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
@@ -68,7 +67,6 @@ func UpdateFuncDispatcher(
 
 		log.Debugf("Received update event")
 		rt.ObjectMeta(newObj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		log.Tracef("Update event context: %s", spew.Sdump(newObj))
 		updateFunc(lctx, rt, oldObj, newObj)
 	}
 }
