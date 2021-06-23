@@ -262,7 +262,7 @@ func (m *Manager) FindByDisplayNames(lctx *lmctx.LMContext, resource string, dis
 }
 
 // getEvaluationParamsForResource generates evaluation parameters based on labels and specified resource
-func getEvaluationParamsForResource(device *models.Device, labels map[string]string) (map[string]interface{}, error) {
+func getEvaluationParamsForResource(device *models.Device, labels map[string]string) map[string]interface{} {
 	evaluationParams := make(map[string]interface{})
 
 	for key, value := range labels {
@@ -272,7 +272,14 @@ func getEvaluationParamsForResource(device *models.Device, labels map[string]str
 	}
 
 	evaluationParams["name"] = filters.CheckAndReplaceInvalidChars(*device.DisplayName)
-	return evaluationParams, nil
+	return evaluationParams
+}
+
+func (m *Manager) evalExclusion(lctx *lmctx.LMContext, device *models.Device, resource string, labels map[string]string) bool {
+	log := lmlog.Logger(lctx)
+	evaluationParams := getEvaluationParamsForResource(device, labels)
+	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
+	return filters.Eval(resource, evaluationParams)
 }
 
 // Add implements types.DeviceManager.
@@ -285,15 +292,11 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 		return nil, nil
 	}
 
-	evaluationParams, err := getEvaluationParamsForResource(device, labels)
-	if err != nil {
-		return nil, err
-	}
-	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
+	isExclude := m.evalExclusion(lctx, device, resource, labels)
 
-	if filters.Eval(resource, evaluationParams) {
-		log.Infof("Filtering out %s %s.", resource, *device.DisplayName)
+	if isExclude {
 		// delete existing resource which is mentioned for filtering.
+		log.Infof("Device %s is being excluded, sending delete if device present", *device.DisplayName)
 		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName, util.GetFullDisplayName(device, resource, m.Config().ClusterName))
 		if err != nil {
 			return nil, err
@@ -408,6 +411,7 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
+// nolint
 func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource, name, fullName string, filter types.UpdateFilter, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
@@ -418,10 +422,24 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 		return nil, err
 	}
 
+	isExclude := m.evalExclusion(lctx, device, resource, labels)
+	if isExclude {
+		// delete existing resource which is mentioned for discovery filtering.
+		log.Infof("Device %s is excluded, sending delete if device present", *device.DisplayName)
+		if m.DC.Exists(fullName) {
+			err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName, util.GetFullDisplayName(device, resource, m.Config().ClusterName))
+			if err != nil {
+				return nil, err
+			}
+		}
+		return nil, nil
+	}
+
 	if !m.DC.Exists(fullName) {
 		log.Infof("Missing device %v; (full name = %v) adding it now", name, fullName)
 		return m.Add(lctx, resource, labels, options...)
 	}
+
 	if filter != nil && !filter() {
 		log.Debugf("Ignoring updates for device %s, %s", name, resource)
 		return nil, nil
@@ -594,6 +612,7 @@ func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource, name, ful
 
 	if existingDevice == nil {
 		log.Infof("Could not find device %q", name)
+		m.DC.Unset(fullName)
 		return nil
 	}
 
@@ -601,7 +620,7 @@ func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource, name, ful
 	if err2 != nil {
 		return err2
 	}
-	m.DC.Unset(name)
+	m.DC.Unset(fullName)
 	log.Infof("Deleted device %q", name)
 
 	return nil
