@@ -343,6 +343,39 @@ func GetDeviceGroupPropertyList(lctx *lmctx.LMContext, groupID int32, client *cl
 	return restResponse.Payload.Items
 }
 
+// GetClusterGroupProperty read clusterGroup property
+func GetClusterGroupProperty(deviceGroup *models.DeviceGroup, propertyName string) string {
+	if deviceGroup == nil {
+		return ""
+	}
+	if len(deviceGroup.CustomProperties) > 0 {
+		for _, cp := range deviceGroup.CustomProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
+			}
+		}
+	}
+
+	return ""
+}
+
+// DeleteDeviceGroupPropertyByName delete the clusterGroup property
+func DeleteDeviceGroupPropertyByName(lctx *lmctx.LMContext, groupID int32, entityProperty *models.EntityProperty, client *client.LMSdkGo) bool {
+	log := lmlog.Logger(lctx)
+	params := lm.NewDeleteDeviceGroupPropertyByNameParams()
+	params.SetGid(groupID)
+	params.SetName(entityProperty.Name)
+	restResponse, err := client.LM.DeleteDeviceGroupPropertyByName(params)
+	if err != nil || restResponse == nil {
+		log.Errorf("Failed to delete device group property '%v'. Error: %v", entityProperty.Name, err)
+
+		return false
+	}
+	log.Debugf("Successfully deleted device group property '%v'", entityProperty.Name)
+
+	return true
+}
+
 // UpdateDeviceGroupPropertyByName Updates device group property by name
 func UpdateDeviceGroupPropertyByName(lctx *lmctx.LMContext, groupID int32, entityProperty *models.EntityProperty, client *client.LMSdkGo) bool {
 	log := lmlog.Logger(lctx)

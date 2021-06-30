@@ -1,7 +1,9 @@
 package device
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -112,6 +114,21 @@ func (m *Manager) renameAndAddDevice(lctx *lmctx.LMContext, resource string, dev
 		return nil, err
 	}
 	return restResponse.(*lm.AddDeviceOK).Payload, nil
+}
+
+// UpdateDeviceName updates the device hostname
+func (m *Manager) UpdateDeviceName(lctx *lmctx.LMContext, resource string, device *models.Device, options ...types.DeviceOption) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	newDevice := buildDevice(lctx, m.Config(), device, options...)
+
+	fields := constants.NameFieldName
+	updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, newDevice, fields)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	m.DC.Set(util.GetFullDisplayName(updatedDevice, resource, m.Config().ClusterName))
+	return updatedDevice, nil
 }
 
 // RenameAndUpdateDevice renames the device display as per desiredDisplayName and moves the conflicting devices to conflicts dynamic group.
@@ -456,6 +473,17 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 		return nil, nil
 	}
 
+	if resource == constants.Pods && filter != nil && filter() {
+		log.Warnf("IP address mismatch for device %s", *device.DisplayName)
+		existingDevice, err = m.UpdateDeviceName(lctx, resource, existingDevice, append(options, m.Name(util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey)))...)
+		if util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) != *device.Name {
+			err := m.WaitToUpdateSysIps(lctx, existingDevice, resource, util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey), 1*time.Minute)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	options = append(options, m.DisplayName(*existingDevice.DisplayName))
 
 	// Update the device.
@@ -466,6 +494,44 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 	}
 	m.DC.Set(util.GetFullDisplayName(updatedDevice, resource, m.Config().ClusterName))
 	return device, nil
+}
+
+// WaitToUpdateSysIps waits until system.ips property is updated.
+func (m *Manager) WaitToUpdateSysIps(lctx *lmctx.LMContext, device *models.Device, resourceType string, address string, timeout time.Duration) error {
+	backOff := 5 * time.Second
+	c, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	for {
+		select {
+		case <-c.Done():
+			return fmt.Errorf("timed out (5 minutes) waiting to change system.ips property on device: %s", *device.DisplayName)
+
+		default:
+			isIPUpdated, err := m.VerifyIfPodIPUpdated(lctx, device, resourceType, address)
+			if err != nil && util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
+				return fmt.Errorf("failed to update IP address for %s from k8s, err: %w", *device.DisplayName, err)
+			}
+			if isIPUpdated {
+				return nil
+			}
+			time.Sleep(backOff)
+			backOff *= 2
+		}
+	}
+}
+
+// VerifyIfPodIPUpdated checks if system.ips property is updated
+func (m *Manager) VerifyIfPodIPUpdated(lctx *lmctx.LMContext, device *models.Device, resourceType, expectedPodIP string) (bool, error) {
+	log := lmlog.Logger(lctx)
+	existingDevice, err := m.FindByDisplayName(lctx, strings.ToLower(resourceType), *device.DisplayName)
+
+	if err != nil {
+		return false, err
+	}
+
+	podIP := util.GetPropertyValue(existingDevice, constants.K8sSystemIPsPropertyKey)
+	log.Debugf("current ip = %s and expected IP = %s", podIP, expectedPodIP)
+	return podIP == expectedPodIP, err
 }
 
 // UpdateAndReplaceField implements types.DeviceManager.
@@ -659,7 +725,7 @@ func (m *Manager) GetListByGroupID(lctx *lmctx.LMContext, resource string, group
 	log := lmlog.Logger(lctx)
 	params := lm.NewGetImmediateDeviceListByDeviceGroupIDParams()
 	params.SetID(groupID)
-	fields := "id,name,displayName,customProperties"
+	fields := "id,name,displayName,customProperties,systemProperties,inheritedProperties,preferredCollectorId"
 	params.SetFields(&fields)
 	size := int32(-1)
 	params.SetSize(&size)

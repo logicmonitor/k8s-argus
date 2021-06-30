@@ -187,6 +187,9 @@ const (
 const (
 	// IsPingDevice is the key used in watcher context to pass metadata
 	IsPingDevice = "ispingdevice"
+
+	// ResyncPodsClusterProperty is a cluster property for graceful pod updates
+	ResyncPodsClusterProperty = "resync.pods"
 )
 
 const (
