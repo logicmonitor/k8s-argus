@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"net/http"
-	"regexp"
 	"strconv"
 	"sync"
 	"time"
@@ -12,6 +11,7 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	rlm "github.com/logicmonitor/k8s-argus/pkg/rl"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/sirupsen/logrus"
 )
 
@@ -173,19 +173,7 @@ func (w *Worker) handleCommand(lctx *lmctx.LMContext, command types.ICommand) {
 		}
 	}
 }
-func getHTTPStatusCode(err error) int {
-	errRegex := regexp.MustCompile(`(?P<api>\[.*\])\[(?P<code>\d+)\].*`)
-	matches := errRegex.FindStringSubmatch(err.Error())
-	if len(matches) < 3 {
-		return -1
-	}
 
-	code, err := strconv.Atoi(matches[2])
-	if err != nil {
-		return -1
-	}
-	return code
-}
 func (w *Worker) executeWithRetry(lctx *lmctx.LMContext, retry int, command types.ICommand) (interface{}, error) {
 	log := lmlog.Logger(lctx)
 	var resp interface{}
@@ -196,7 +184,7 @@ func (w *Worker) executeWithRetry(lctx *lmctx.LMContext, retry int, command type
 		if err == nil {
 			break
 		}
-		code := getHTTPStatusCode(err)
+		code := util.GetHTTPStatusCodeFromLMSDKError(err)
 		log.Debugf("Status code: %v", code)
 
 		// retry only if request failed because of server error
@@ -229,7 +217,7 @@ func (w *Worker) getRLLimit(lctx *lmctx.LMContext, command types.ICommand, err e
 	case types.LMHCErrParser:
 		hc := command.(types.IHTTPCommand)
 		errResp := cmdRef.ParseErrResponse(err)
-		code := getHTTPStatusCode(err)
+		code := util.GetHTTPStatusCodeFromLMSDKError(err)
 		if code == http.StatusTooManyRequests {
 			headers := errResp.ErrorDetail.(map[string]interface{})
 			limit, lerr := strconv.Atoi(headers["x-rate-limit-limit"].(string))

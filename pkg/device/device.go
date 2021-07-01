@@ -1,7 +1,9 @@
 package device
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -112,6 +114,21 @@ func (m *Manager) renameAndAddDevice(lctx *lmctx.LMContext, resource string, dev
 		return nil, err
 	}
 	return restResponse.(*lm.AddDeviceOK).Payload, nil
+}
+
+// UpdateDeviceName updates the device hostname
+func (m *Manager) UpdateDeviceName(lctx *lmctx.LMContext, resource string, device *models.Device, options ...types.DeviceOption) (*models.Device, error) {
+	log := lmlog.Logger(lctx)
+	newDevice := buildDevice(lctx, m.Config(), device, options...)
+
+	fields := constants.NameFieldName
+	updatedDevice, err := m.UpdateAndReplaceField(lctx, resource, newDevice, fields)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	m.DC.Set(util.GetFullDisplayName(updatedDevice, resource, m.Config().ClusterName))
+	return updatedDevice, nil
 }
 
 // RenameAndUpdateDevice renames the device display as per desiredDisplayName and moves the conflicting devices to conflicts dynamic group.
@@ -262,7 +279,7 @@ func (m *Manager) FindByDisplayNames(lctx *lmctx.LMContext, resource string, dis
 }
 
 // getEvaluationParamsForResource generates evaluation parameters based on labels and specified resource
-func getEvaluationParamsForResource(device *models.Device, labels map[string]string) (map[string]interface{}, error) {
+func getEvaluationParamsForResource(device *models.Device, labels map[string]string) map[string]interface{} {
 	evaluationParams := make(map[string]interface{})
 
 	for key, value := range labels {
@@ -272,7 +289,14 @@ func getEvaluationParamsForResource(device *models.Device, labels map[string]str
 	}
 
 	evaluationParams["name"] = filters.CheckAndReplaceInvalidChars(*device.DisplayName)
-	return evaluationParams, nil
+	return evaluationParams
+}
+
+func (m *Manager) evalExclusion(lctx *lmctx.LMContext, device *models.Device, resource string, labels map[string]string) bool {
+	log := lmlog.Logger(lctx)
+	evaluationParams := getEvaluationParamsForResource(device, labels)
+	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
+	return filters.Eval(resource, evaluationParams)
 }
 
 // Add implements types.DeviceManager.
@@ -285,15 +309,11 @@ func (m *Manager) Add(lctx *lmctx.LMContext, resource string, labels map[string]
 		return nil, nil
 	}
 
-	evaluationParams, err := getEvaluationParamsForResource(device, labels)
-	if err != nil {
-		return nil, err
-	}
-	log.Debugf("Evaluation params for resource %s %+v:", resource, evaluationParams)
+	isExclude := m.evalExclusion(lctx, device, resource, labels)
 
-	if filters.Eval(resource, evaluationParams) {
-		log.Infof("Filtering out %s %s.", resource, *device.DisplayName)
+	if isExclude {
 		// delete existing resource which is mentioned for filtering.
+		log.Infof("Device %s is being excluded, sending delete if device present", *device.DisplayName)
 		err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName, util.GetFullDisplayName(device, resource, m.Config().ClusterName))
 		if err != nil {
 			return nil, err
@@ -408,6 +428,7 @@ func (m *Manager) UpdateAndReplace(lctx *lmctx.LMContext, resource string, d *mo
 }
 
 // UpdateAndReplaceByDisplayName implements types.DeviceManager.
+// nolint
 func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource, name, fullName string, filter types.UpdateFilter, labels map[string]string, options ...types.DeviceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
 	device := buildDevice(lctx, m.Config(), nil, options...)
@@ -418,10 +439,25 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 		return nil, err
 	}
 
+
+	isExclude := m.evalExclusion(lctx, device, resource, labels)
+	if isExclude {
+		// delete existing resource which is mentioned for discovery filtering.
+		log.Infof("Device %s is excluded, sending delete if device present", *device.DisplayName)
+		if m.DC.Exists(fullName) {
+			err := m.DeleteByDisplayName(lctx, resource, *device.DisplayName, util.GetFullDisplayName(device, resource, m.Config().ClusterName))
+			if err != nil {
+				return nil, err
+			}
+		}
+		return nil, nil
+	}
+
 	if !m.DC.Exists(fullName) {
 		log.Infof("Missing device %v; (full name = %v) adding it now", name, fullName)
 		return m.Add(lctx, resource, labels, options...)
 	}
+
 	if filter != nil && !filter() {
 		log.Debugf("Ignoring updates for device %s, %s", name, resource)
 		return nil, nil
@@ -438,6 +474,17 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 		return nil, nil
 	}
 
+	if resource == constants.Pods && filter != nil && filter() {
+		log.Warnf("IP address mismatch for device %s", *device.DisplayName)
+		existingDevice, err = m.UpdateDeviceName(lctx, resource, existingDevice, append(options, m.Name(util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey)))...)
+		if util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey) != *device.Name {
+			err := m.WaitToUpdateSysIps(lctx, existingDevice, resource, util.GetPropertyValue(device, constants.K8sSystemIPsPropertyKey), 1*time.Minute)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	options = append(options, m.DisplayName(*existingDevice.DisplayName))
 
 	// Update the device.
@@ -448,6 +495,44 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 	}
 	m.DC.Set(util.GetFullDisplayName(updatedDevice, resource, m.Config().ClusterName))
 	return device, nil
+}
+
+// WaitToUpdateSysIps waits until system.ips property is updated.
+func (m *Manager) WaitToUpdateSysIps(lctx *lmctx.LMContext, device *models.Device, resourceType string, address string, timeout time.Duration) error {
+	backOff := 5 * time.Second
+	c, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	for {
+		select {
+		case <-c.Done():
+			return fmt.Errorf("timed out (5 minutes) waiting to change system.ips property on device: %s", *device.DisplayName)
+
+		default:
+			isIPUpdated, err := m.VerifyIfPodIPUpdated(lctx, device, resourceType, address)
+			if err != nil && util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
+				return fmt.Errorf("failed to update IP address for %s from k8s, err: %w", *device.DisplayName, err)
+			}
+			if isIPUpdated {
+				return nil
+			}
+			time.Sleep(backOff)
+			backOff *= 2
+		}
+	}
+}
+
+// VerifyIfPodIPUpdated checks if system.ips property is updated
+func (m *Manager) VerifyIfPodIPUpdated(lctx *lmctx.LMContext, device *models.Device, resourceType, expectedPodIP string) (bool, error) {
+	log := lmlog.Logger(lctx)
+	existingDevice, err := m.FindByDisplayName(lctx, strings.ToLower(resourceType), *device.DisplayName)
+
+	if err != nil {
+		return false, err
+	}
+
+	podIP := util.GetPropertyValue(existingDevice, constants.K8sSystemIPsPropertyKey)
+	log.Debugf("current ip = %s and expected IP = %s", podIP, expectedPodIP)
+	return podIP == expectedPodIP, err
 }
 
 // UpdateAndReplaceField implements types.DeviceManager.
@@ -594,6 +679,7 @@ func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource, name, ful
 
 	if existingDevice == nil {
 		log.Infof("Could not find device %q", name)
+		m.DC.Unset(fullName)
 		return nil
 	}
 
@@ -601,7 +687,10 @@ func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource, name, ful
 	if err2 != nil {
 		return err2
 	}
-	m.DC.Unset(name)
+
+	m.DC.Unset(fullName)
+
+
 	log.Infof("Deleted device %q", name)
 
 	return nil
@@ -640,7 +729,7 @@ func (m *Manager) GetListByGroupID(lctx *lmctx.LMContext, resource string, group
 	log := lmlog.Logger(lctx)
 	params := lm.NewGetImmediateDeviceListByDeviceGroupIDParams()
 	params.SetID(groupID)
-	fields := "id,name,displayName,customProperties"
+	fields := "id,name,displayName,customProperties,systemProperties,inheritedProperties,preferredCollectorId"
 	params.SetFields(&fields)
 	size := int32(-1)
 	params.SetSize(&size)

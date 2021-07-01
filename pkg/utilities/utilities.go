@@ -2,6 +2,8 @@ package utilities
 
 import (
 	"regexp"
+
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,3 +38,20 @@ func LogDeleteEventLatency(deletionTimestamp *v1.Time, name string) {
 		logrus.Warnf("resource delete time was not present in event context for %s", name)
 	}
 }
+
+
+// GetHTTPStatusCodeFromLMSDKError retrieve status code from error.
+func GetHTTPStatusCodeFromLMSDKError(err error) int {
+	errRegex := regexp.MustCompile(`(?P<api>\[.*\])\[(?P<code>\d+)\].*`)
+	matches := errRegex.FindStringSubmatch(err.Error())
+	if len(matches) < 3 {
+		return -1
+	}
+
+	code, err := strconv.Atoi(matches[2])
+	if err != nil {
+		return -1
+	}
+	return code
+}
+
