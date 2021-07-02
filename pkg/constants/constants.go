@@ -20,8 +20,8 @@ const (
 )
 
 const (
-	// RootDeviceGroupID is the root ID in the device tree.
-	RootDeviceGroupID = int32(1)
+	// RootResourceGroupID is the root ID in the resource tree.
+	RootResourceGroupID = int32(1)
 	// MaxResourceLength is the max length of the resource name
 	MaxResourceLength = 244
 )
@@ -38,53 +38,23 @@ const (
 )
 
 const (
-	// AllNodeDeviceGroupName is the service device group name in the cluster device group.
-	AllNodeDeviceGroupName = "All"
-	// EtcdDeviceGroupName is the etcd device group name in the cluster device group.
-	EtcdDeviceGroupName = "Etcd"
-	// NodeDeviceGroupName is the top-level device group name in the cluster device group.
-	NodeDeviceGroupName = "Nodes"
-	// NamespacesGroupName is the namespaces device group name in the cluster device group.
+	// AllNodeResourceGroupName is the service resource group name in the cluster resource group.
+	AllNodeResourceGroupName = "All"
+	// EtcdResourceGroupName is the etcd resource group name in the cluster resource group.
+	EtcdResourceGroupName = "Etcd"
+	// NodeResourceGroupName is the top-level resource group name in the cluster resource group.
+	NodeResourceGroupName = "Nodes"
+	// NamespacesGroupName is the namespaces resource group name in the cluster resource group.
 	NamespacesGroupName = "Namespaces"
-	// PodDeviceGroupName is the pod device group name in the cluster device group.
-	PodDeviceGroupName = "Pods"
-	// ServiceDeviceGroupName is the service device group name in the cluster device group.
-	ServiceDeviceGroupName = "Services"
-	// DeploymentDeviceGroupName is the deployment device group name in the cluster device group.
-	DeploymentDeviceGroupName = "Deployments"
-	// HorizontalPodAutoscalerDeviceGroupName is the deployment device group name in the cluster device group.
-	HorizontalPodAutoscalerDeviceGroupName = "HorizontalPodAutoscalers"
 )
 
 const (
 	// ClusterCategory is the system.category used to identity the Kubernetes cluster in LogicMonitor.
 	ClusterCategory = "KubernetesCluster"
-	// NamespaceCategory is the system.category used to identity the Kubernetes Namespace resource type in LogicMonitor.
-	NamespaceCategory = "KubernetesNamespace"
-	// EtcdCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
-	EtcdCategory = "KubernetesEtcd"
-	// EtcdDeletedCategory is the system.category used to identity a deleted Kubernetes Etcd node in LogicMonitor.
-	EtcdDeletedCategory = "KubernetesEtcdDeleted"
-	// NodeCategory is the system.category used to identity the Kubernetes Node resource type in LogicMonitor.
-	NodeCategory = "KubernetesNode"
-	// NodeDeletedCategory is the system.category used to identity a deleted Kubernetes Node resource type in LogicMonitor.
-	NodeDeletedCategory = "KubernetesNodeDeleted"
-	// NodeConflictCategory is the system.category used to identity a conflicting Kubernetes Node resource type in LogicMonitor.
-	NodeConflictCategory = "KubernetesNodeConflict"
-	// ServiceCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
-	ServiceCategory = "KubernetesService"
-	// DeploymentCategory is the system.category used to identity a Kubernetes Service resource type in LogicMonitor.
-	DeploymentCategory = "KubernetesDeployment"
-	// PodCategory is the system.category used to identity the Kubernetes Pod resource type in LogicMonitor.
-	PodCategory = "KubernetesPod"
-	// HorizontalPodAutoscalerCategory is the system.category used to identity the Kubernetes HorizontalPodAutoscaler resource type in LogicMonitor.
-	HorizontalPodAutoscalerCategory = "KubernetesHorizontalPodAutoscaler"
-	// DeletedDeviceGroup is the name of the device group where deleted devices are optionally moved to.
-	DeletedDeviceGroup = "_deleted"
-	// ClusterDeviceGroupPrefix is the prefix for the top level cluster device group
-	ClusterDeviceGroupPrefix = "Kubernetes Cluster: "
-	// ConflictDeviceGroup is the name of the device group where conflicting devices are optionally moved to.
-	ConflictDeviceGroup = "_conflict"
+	// DeletedResourceGroup is the name of the resource group where deleted resources are optionally moved to.
+	DeletedResourceGroup = "_deleted"
+	// ClusterResourceGroupPrefix is the prefix for the top level cluster resource group
+	ClusterResourceGroupPrefix = "Kubernetes Cluster: "
 )
 
 const (
@@ -94,19 +64,19 @@ const (
 	K8sResourceCreatedOnPropertyKey = "kubernetes.resourceCreatedOn"
 	// K8sResourceDeletedOnPropertyKey is the key of the custom property used to record resource deleted timestamp
 	K8sResourceDeletedOnPropertyKey = "kubernetes.resourceDeletedOn"
-	// K8sDeviceType is the type value of the k8s device
-	K8sDeviceType = 8
+	// K8sResourceType is the type value of the k8s resource
+	K8sResourceType = 8
 	// K8sSystemCategoriesPropertyKey is the key of the unique custom property kubernetes system categories
 	K8sSystemCategoriesPropertyKey = "system.categories"
 	// K8sSystemIPsPropertyKey is the key of the system ips property
 	K8sSystemIPsPropertyKey = "system.ips"
 
-	// K8sDeviceNamePropertyKey is the key of the unique auto property kubernetes device name.
-	K8sDeviceNamePropertyKey = "auto.name"
-	// K8sDeviceNamespacePropertyKey is the key of the unique auto property kubernetes device namespace.
-	K8sDeviceNamespacePropertyKey = "auto.namespace"
-	// K8sDeviceUIDPropertyKey is the key of the unique auto property kubernetes device uid.
-	K8sDeviceUIDPropertyKey = "auto.uid"
+	// K8sResourceNamePropertyKey is the key of the unique auto property kubernetes resource name.
+	K8sResourceNamePropertyKey = "auto.name"
+	// K8sResourceNamespacePropertyKey is the key of the unique auto property kubernetes resource namespace.
+	K8sResourceNamespacePropertyKey = "auto.namespace"
+	// K8sResourceUIDPropertyKey is the key of the unique auto property kubernetes resource uid.
+	K8sResourceUIDPropertyKey = "auto.uid"
 )
 
 const (
@@ -135,23 +105,31 @@ const (
 	CollectorsetController = "collectorset-controller"
 	// KubernetesVersionKey is the key for customProperties
 	KubernetesVersionKey = "kubernetes.version"
-	// DeviceGroupCustomType is the device group of custom type
-	DeviceGroupCustomType = "custom"
+	// ResourceGroupCustomType is the resource group of custom type
+	ResourceGroupCustomType = "custom"
 	// HistorySuffix is the key suffix used for maintaining history
 	HistorySuffix = ".history"
 	// PropertySeparator is the property separator
 	PropertySeparator = ", "
+	// ArgusHelmChartAuditKey audit entry key
+	ArgusHelmChartAuditKey = Argus + "." + HelmChart
+	// CSCHelmChartAuditKey audit entry key
+	CSCHelmChartAuditKey = CollectorsetController + "." + HelmChart
+	// ArgusHelmRevisionAuditKey audit entry key
+	ArgusHelmRevisionAuditKey = Argus + "." + HelmRevision
+	// CSCHelmRevisionAuditKey audit entry key
+	CSCHelmRevisionAuditKey = CollectorsetController + "." + HelmRevision
 )
 
 const (
 	// DefaultPeriodicSyncInterval Default interval for Periodic Discovery.
-	DefaultPeriodicSyncInterval = time.Minute * 1
+	DefaultPeriodicSyncInterval = time.Minute * 30
 
 	// DefaultPeriodicDeleteInterval Default interval for Periodic delete.
-	DefaultPeriodicDeleteInterval = time.Minute * 30
+	DefaultPeriodicDeleteInterval = time.Minute * 5
 
 	// DefaultCacheResyncInterval Default interval for cache resync.
-	DefaultCacheResyncInterval = time.Minute * 5
+	DefaultCacheResyncInterval = time.Minute * 10
 )
 
 const (
@@ -180,4 +158,20 @@ const (
 	ConfigFileName = "config.yaml"
 	// EnvVarArgusConfigPrefix prefix to parse environment variables into config struct
 	EnvVarArgusConfigPrefix = "argus"
+)
+
+const (
+	// PartitionKey partition key used to send lm requests to a single worker all the time.
+	PartitionKey = "partition_key"
+)
+
+const (
+	// AutoPropCreatedBy auto property to identify who created property
+	AutoPropCreatedBy = "auto.createdBy"
+
+	// DGCustomPropCreatedBy resource group does not have auto prop, so adding it as custom prop
+	DGCustomPropCreatedBy = "createdBy"
+
+	// CreatedByPrefix created by prefix
+	CreatedByPrefix = "LogicMonitor/Argus: "
 )

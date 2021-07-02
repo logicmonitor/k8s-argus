@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -43,7 +42,6 @@ func (m *BigNumberWidgetData) Type() string {
 
 // SetType sets the type of this subtype
 func (m *BigNumberWidgetData) SetType(val string) {
-
 }
 
 // Data gets the data of this subtype
@@ -145,7 +143,6 @@ func (m *BigNumberWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberWidgetData) validateData(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Data) { // not required
 		return nil
 	}

@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -76,7 +75,6 @@ func (m *BigNumberDataPoint) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberDataPoint) validateDeviceDisplayName(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceDisplayName", "body", m.DeviceDisplayName); err != nil {
 		return err
 	}
@@ -85,7 +83,6 @@ func (m *BigNumberDataPoint) validateDeviceDisplayName(formats strfmt.Registry) 
 }
 
 func (m *BigNumberDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceGroupFullPath", "body", m.DeviceGroupFullPath); err != nil {
 		return err
 	}
@@ -94,7 +91,6 @@ func (m *BigNumberDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry
 }
 
 func (m *BigNumberDataPoint) validateInstanceName(formats strfmt.Registry) error {
-
 	if err := validate.Required("instanceName", "body", m.InstanceName); err != nil {
 		return err
 	}
@@ -103,7 +99,6 @@ func (m *BigNumberDataPoint) validateInstanceName(formats strfmt.Registry) error
 }
 
 func (m *BigNumberDataPoint) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}

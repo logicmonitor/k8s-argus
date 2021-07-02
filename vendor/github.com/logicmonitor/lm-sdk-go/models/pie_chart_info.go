@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -75,7 +74,6 @@ func (m *PieChartInfo) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PieChartInfo) validateCounters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Counters) { // not required
 		return nil
 	}
@@ -100,7 +98,6 @@ func (m *PieChartInfo) validateCounters(formats strfmt.Registry) error {
 }
 
 func (m *PieChartInfo) validateDataPoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.DataPoints) { // not required
 		return nil
 	}
@@ -125,7 +122,6 @@ func (m *PieChartInfo) validateDataPoints(formats strfmt.Registry) error {
 }
 
 func (m *PieChartInfo) validatePieChartItems(formats strfmt.Registry) error {
-
 	if err := validate.Required("pieChartItems", "body", m.PieChartItems); err != nil {
 		return err
 	}
@@ -150,7 +146,6 @@ func (m *PieChartInfo) validatePieChartItems(formats strfmt.Registry) error {
 }
 
 func (m *PieChartInfo) validateVirtualDataPoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.VirtualDataPoints) { // not required
 		return nil
 	}

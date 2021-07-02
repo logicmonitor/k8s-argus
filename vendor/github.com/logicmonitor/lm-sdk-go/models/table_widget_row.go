@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -61,7 +60,6 @@ func (m *TableWidgetRow) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetRow) validateDeviceID(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceId", "body", m.DeviceID); err != nil {
 		return err
 	}
@@ -70,7 +68,6 @@ func (m *TableWidgetRow) validateDeviceID(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetRow) validateInstances(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Instances) { // not required
 		return nil
 	}

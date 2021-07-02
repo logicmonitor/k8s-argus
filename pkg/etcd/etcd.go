@@ -10,7 +10,6 @@ import (
 
 	"github.com/coreos/etcd/client"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
-	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
@@ -21,7 +20,7 @@ import (
 
 // Controller is the etcd controller for discovering etcd nodes.
 type Controller struct {
-	types.DeviceManager
+	types.ResourceManager
 }
 
 // Member is a discovered etcd member.
@@ -72,14 +71,14 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 				URL:  u,
 			}
 			members = append(members, m)
-			c.addDevice(lctx, m)
+			c.addResource(lctx, m)
 		}
 	}
 
 	return members, nil
 }
 
-func (c *Controller) addDevice(lctx *lmctx.LMContext, member *Member) {
+func (c *Controller) addResource(lctx *lmctx.LMContext, member *Member) {
 	log := lmlog.Logger(lctx)
 	// Check if the etcd member has already been added.
 	d, err := c.FindByDisplayName(lctx, enums.ETCD, fmtMemberDisplayName(member))
@@ -93,10 +92,11 @@ func (c *Controller) addDevice(lctx *lmctx.LMContext, member *Member) {
 		return
 	}
 
+	rt := enums.ETCD
 	// Add the etcd member.
 	// nolint: exhaustivestruct
-	if _, err := c.Add(lctx, enums.ETCD, metav1.ObjectMeta{},
-		c.args(member, constants.EtcdCategory)...,
+	if _, err := c.AddFunc()(lctx, enums.ETCD, metav1.ObjectMeta{},
+		c.args(member, rt.GetCategory())...,
 	); err != nil {
 		log.Errorf("Failed to add etcd member %q: %v", member.URL.Hostname(), err)
 
@@ -107,8 +107,8 @@ func (c *Controller) addDevice(lctx *lmctx.LMContext, member *Member) {
 }
 
 // nolint: unparam
-func (c *Controller) args(member *Member, category string) []types.DeviceOption {
-	return []types.DeviceOption{
+func (c *Controller) args(member *Member, category string) []types.ResourceOption {
+	return []types.ResourceOption{
 		c.Name(member.URL.Hostname()),
 		c.DisplayName(fmtMemberDisplayName(member)),
 		c.SystemCategory(category, enums.Add),

@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *PatchDeviceGroupByIDOK) Error() string {
 }
 
 func (o *PatchDeviceGroupByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.DeviceGroup)
 
 	// response payload
@@ -100,7 +97,6 @@ func (o *PatchDeviceGroupByIDDefault) Error() string {
 }
 
 func (o *PatchDeviceGroupByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

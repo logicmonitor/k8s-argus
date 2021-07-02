@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -40,7 +39,6 @@ func (m *opsNoteScope) Type() string {
 
 // SetType sets the type of this polymorphic type
 func (m *opsNoteScope) SetType(val string) {
-
 }
 
 // UnmarshalOpsNoteScopeSlice unmarshals polymorphic slices of OpsNoteScope
@@ -133,7 +131,6 @@ func unmarshalOpsNoteScope(data []byte, consumer runtime.Consumer) (OpsNoteScope
 
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
-
 }
 
 // Validate validates this ops note scope

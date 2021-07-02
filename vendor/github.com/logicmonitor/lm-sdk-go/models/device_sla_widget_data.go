@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -43,7 +42,6 @@ func (m *DeviceSLAWidgetData) Type() string {
 
 // SetType sets the type of this subtype
 func (m *DeviceSLAWidgetData) SetType(val string) {
-
 }
 
 // ResultList gets the result list of this subtype
@@ -145,7 +143,6 @@ func (m *DeviceSLAWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceSLAWidgetData) validateResultList(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ResultList) { // not required
 		return nil
 	}

@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -70,7 +69,6 @@ func (m *NetAppCollectorAttribute) Name() string {
 
 // SetName sets the name of this subtype
 func (m *NetAppCollectorAttribute) SetName(val string) {
-
 }
 
 // IP gets the ip of this subtype

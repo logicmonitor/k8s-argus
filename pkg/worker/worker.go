@@ -1,19 +1,19 @@
 package worker
 
 import (
-	"context"
-	"errors"
 	"net/http"
-	"regexp"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
-	ratelimiter "github.com/logicmonitor/k8s-argus/pkg/rl"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	m "github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 )
 
 const (
@@ -23,8 +23,6 @@ const (
 	maxRateLimitRetry = 2
 	// retryBackoffTimeDurationDefault default
 	retryBackoffTimeDurationDefault = 5 * time.Second
-	// sendResponseTimeout send response on channel timeout
-	sendResponseTimeout = 2 * time.Millisecond
 	// workerIdleNotifyTimeout worker idle timeout
 	workerIdleNotifyTimeout = 10 * time.Second
 )
@@ -54,147 +52,72 @@ func NewWorker(c *types.WConfig) *Worker {
 	}
 }
 
-// NewHTTPWorker creates new httpworker with single input channel
-func NewHTTPWorker(c *types.WConfig) *Worker {
-	w := &Worker{
-		config:         c,
-		initialized:    false,
-		running:        false,
-		tokenizers:     &sync.Map{},
-		cancelContexts: make(map[<-chan interface{}]func()),
-	}
-
-	return w
-}
-
 // Run creates go routine to handle requests
 func (w *Worker) Run() {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"worker": w.config.ID}))
 	log := lmlog.Logger(lctx)
-	log.Infof("Starting worker for %v", w.config.ID)
-	channelMap := make(map[chan types.ICommand]bool)
-	for _, ch := range w.config.Channels {
-		channelMap[ch] = true
-	}
-	for ch := range channelMap {
-		go func(inch chan types.ICommand) {
-			defer func() {
-				w.running = false
-			}()
-			for {
-				timeout := time.NewTicker(workerIdleNotifyTimeout)
-				select {
-				case command := <-inch:
-					lctx2 := command.LMContext()
-					commandCtx := lmlog.LMContextWithFields(lctx2, logrus.Fields{"worker": w.config.ID})
-					log2 := lmlog.Logger(commandCtx)
-					log2.Debugf("Received command")
-					w.handleCommand(commandCtx, command)
-				case <-timeout.C:
-					log.Tracef("%v worker is idle", w.config.ID)
-				}
+	log.Debugf("Starting worker")
+	go func(inch chan *types.WorkerCommand) {
+		defer func() {
+			w.running = false
+		}()
+		for {
+			timeout := time.NewTicker(workerIdleNotifyTimeout)
+			select {
+			case command := <-inch:
+				lctx2 := command.Lctx
+				commandCtx := lmlog.LMContextWithFields(lctx2, logrus.Fields{"worker": w.config.ID})
+				log2 := lmlog.Logger(commandCtx)
+				log2.Debugf("Received command")
+				w.handleCommand(commandCtx, command)
+			case <-timeout.C:
+				// log.Tracef("%v worker is idle", w.config.ID)
 			}
-		}(ch)
-	}
-	uch := make(chan types.WorkerRateLimitsUpdate)
-	w.watchForLimitChanges(lctx, uch)
-	ratelimiter.RegisterWorkerNotifyChannel(w.config.ID, uch)
+		}
+	}(w.config.GetChannel())
+
 	w.initialized = true
 	w.running = true
 }
 
-func (w *Worker) createTokenizer(key string, limit int) *RLTokenizer {
-	oldChan, ok := w.tokenizers.Load(key)
-	if ok {
-		oldChan.(*RLTokenizer).stop()
-	}
-	newTokenizer := NewRLTokenizer(limit)
-	w.tokenizers.Store(key, newTokenizer)
-
-	return newTokenizer
-}
-
-func (w *Worker) updateTokenizer(up types.WorkerRateLimitsUpdate) {
-	w.createTokenizer(up.Category+up.Method, int(up.Limit))
-}
-
-func (w *Worker) watchForLimitChanges(lctx *lmctx.LMContext, ch <-chan types.WorkerRateLimitsUpdate) {
-	log := lmlog.Logger(lctx)
-	go func(uchan <-chan types.WorkerRateLimitsUpdate) {
-		for {
-			update := <-uchan
-			log.Debugf("Updated received to worker %s: %v", w.config.ID, update)
-			w.updateTokenizer(update)
-		}
-	}(ch)
-}
-
-func (w *Worker) getTokenizer(category string, method string) *RLTokenizer {
-	ch, ok := w.tokenizers.Load(category + method)
-	if !ok {
-		return w.createTokenizer(category+method, 1000)
-	}
-
-	return ch.(*RLTokenizer)
-}
-
-func (w *Worker) popRLToken(command types.ICommand) {
-	var tmpCommand interface{} = command
-	// Convert to switch case when adding new if conditions
-	if cmdRef, ok := tmpCommand.(types.IHTTPCommand); ok {
-		tch := w.getTokenizer(cmdRef.GetCategory(), cmdRef.GetMethod())
-		err := tch.popToken()
-		if err != nil && errors.Is(err, context.Canceled) {
-			tch = w.getTokenizer(cmdRef.GetCategory(), cmdRef.GetMethod())
-			tch.popToken() // nolint: errcheck, gosec
-		}
+func (w *Worker) popRLToken(command *types.WorkerCommand) {
+	_, err := Allow(command.APIInfo.GetPatternKey(), true)
+	if err != nil {
+		return
 	}
 }
 
-func (w *Worker) handleCommand(lctx *lmctx.LMContext, command types.ICommand) {
+func (w *Worker) handleCommand(lctx *lmctx.LMContext, command *types.WorkerCommand) {
 	log := lmlog.Logger(lctx)
 	log.Tracef("Poping token")
 	w.popRLToken(command)
 	log.Tracef("Token popped")
-	retryMax := w.config.RetryLimit
+	retryMax := w.config.MaxRetry
 	if retryMax < 1 {
 		retryMax = retryLimit
 	}
+	log.Tracef("Executing command")
 	resp, err := w.executeWithRetry(lctx, retryMax, command)
+	log.Tracef("Command response: %s ; %s", resp, err)
 	wresp := &types.WorkerResponse{
 		Response: resp,
 		Error:    err,
 	}
-	if n, ok := command.(types.Responder); ok {
-		log.Tracef("Sync command")
-		if rch := n.GetResponseChannel(); rch != nil {
-			log.Tracef("Response channel defined %v", wresp)
-			select {
-			case rch <- wresp:
-			// to make non blocking, golang unbuffered channels are blocking if there is no goroutine listening on channel. if facade timed out and returned then this would become blocking
-			case <-time.After(sendResponseTimeout):
-				log.Warnf("Response cannot sent")
-			}
+	if command.IsSync() {
+		rch := command.GetResponseChannel()
+		log.Tracef("Sending response")
+		select {
+		case rch <- wresp:
+		// to make non blocking, golang unbuffered channels are blocking if there is no goroutine listening on channel. if facade timed out and returned then this would become blocking
+		case <-command.GetContext().Done():
+			log.Warnf("Response cannot sent. ApiInfo: %v", command.APIInfo)
 		}
+	} else {
+		log.Infof("Async command response: %v", wresp)
 	}
 }
 
-func getHTTPStatusCode(err error) int {
-	errRegex := regexp.MustCompile(`(?P<api>\[.*\])\[(?P<code>\d+)\].*`)
-	matches := errRegex.FindStringSubmatch(err.Error())
-	if len(matches) < 3 { // nolint: gomnd
-		return -1
-	}
-
-	code, err := strconv.Atoi(matches[2])
-	if err != nil {
-		return -1
-	}
-
-	return code
-}
-
-func (w *Worker) executeWithRetry(lctx *lmctx.LMContext, retry int, command types.ICommand) (interface{}, error) {
+func (w *Worker) executeWithRetry(lctx *lmctx.LMContext, retry int, command *types.WorkerCommand) (interface{}, error) {
 	log := lmlog.Logger(lctx)
 	var resp interface{}
 	var err error
@@ -206,7 +129,7 @@ outer:
 		if err == nil {
 			break
 		}
-		code := getHTTPStatusCode(err)
+		code := util.GetHTTPStatusCodeFromLMSDKError(err)
 		log.Debugf("Status code: %v", code)
 
 		// retry only if request failed because of server error
@@ -216,10 +139,17 @@ outer:
 			log.Warningf("Request failed with error %v, retrying for %v time...", err, i)
 			time.Sleep(retryBackoffTimeDurationDefault)
 		case code == http.StatusTooManyRequests:
-			req := w.getRLLimit(lctx, command, err)
-			w.sendRLLimitUpdate(lctx, req)
-			log.Infof("Waiting for rate limit window %v", req.Window)
-			time.Sleep(time.Duration(req.Window) * time.Second)
+			log.Infof("Rate limits reached")
+			req := w.getRLLimit(lctx, err)
+			if req != nil {
+				w.setNewLimit(lctx, req, command)
+				log.Infof("Waiting for rate limit window %v", req.Window)
+				time.Sleep(time.Duration(req.Window) * time.Second)
+			} else {
+				log.Warnf("Rate limit could not parse from error")
+				log.Infof("Waiting for rate limit window")
+				time.Sleep(time.Minute)
+			}
 			rateLimitRetry++
 			i = 1
 		default:
@@ -230,47 +160,72 @@ outer:
 	return resp, err
 }
 
-func (w *Worker) getRLLimit(lctx *lmctx.LMContext, command types.ICommand, err error) *types.RateLimitUpdateRequest {
-	if err == nil {
-		return nil
-	}
-	log := lmlog.Logger(lctx)
-	var tmpCommand interface{} = command
-	// Convert to switch case while adding new if conditions
-	if cmdRef, ok := tmpCommand.(types.LMHCErrParser); ok {
-		hc := command.(types.IHTTPCommand)
-		errResp := cmdRef.ParseErrResponse(err)
-		code := getHTTPStatusCode(err)
-		if code == http.StatusTooManyRequests {
-			headers := errResp.ErrorDetail.(map[string]interface{}) // nolint: forcetypeassert
-			limit, lerr := strconv.Atoi(headers["x-rate-limit-limit"].(string))
-			if lerr != nil {
-				return nil
-			}
-			window, werr := strconv.Atoi(headers["x-rate-limit-window"].(string))
-			if werr != nil {
-				return nil
-			}
-			req := &types.RateLimitUpdateRequest{
-				Worker:   w.config.ID,
-				Category: hc.GetCategory(),
-				Method:   hc.GetMethod(),
-				Limit:    int64(limit),
-				Window:   window,
-			}
+/* error Object structure expected here is as follows:
+&struct{
+	Payload: &models.ErrorResponse{}
+}
+here struct is api specific class like AddDeviceDefault, UpdateDeviceDefault.
 
-			return req
+If struct child variable hierarchy changes, then code needs modification.
+*/
+func parseAndGetErrorResponseObject(err error) *m.ErrorResponse {
+	var e *m.ErrorResponse
+
+	t := reflect.ValueOf(err).Elem()
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).Type() == reflect.TypeOf(e) { // if t.Field(i).Type().String() == "*models.ErrorResponse" {
+			mv := t.Field(i)
+			v := reflect.New(mv.Elem().Type())
+			v.Elem().Set(mv.Elem())
+			e = v.Interface().(*m.ErrorResponse)
+
+			return e
 		}
-		log.Debugf("Rate limit not reached")
 	}
 
 	return nil
 }
 
-func (w *Worker) sendRLLimitUpdate(lctx *lmctx.LMContext, req *types.RateLimitUpdateRequest) {
+func (w *Worker) getRLLimit(lctx *lmctx.LMContext, err error) *types.RateLimits {
+	if err == nil {
+		return nil
+	}
 	log := lmlog.Logger(lctx)
-	if req != nil {
-		log.Debugf("Sending update to ratelimiter %v", req)
-		ratelimiter.GetUpdateRequestChannel() <- *req
+	errResp := parseAndGetErrorResponseObject(err)
+	if errResp == nil {
+		log.Warnf("ErrorResponse not found in error")
+		return nil
+	}
+	code := util.GetHTTPStatusCodeFromLMSDKError(err)
+	if code == http.StatusTooManyRequests {
+		headers := errResp.ErrorDetail.(map[string]interface{}) // nolint: forcetypeassert
+		limit, lerr := strconv.Atoi(headers["x-rate-limit-limit"].(string))
+		if lerr != nil {
+			return nil
+		}
+		window, werr := strconv.Atoi(headers["x-rate-limit-window"].(string))
+		if werr != nil {
+			return nil
+		}
+		req := &types.RateLimits{
+			Limit:  int64(limit),
+			Window: window,
+		}
+
+		return req
+	}
+	log.Debugf("Rate limit not reached")
+
+	return nil
+}
+
+func (w *Worker) setNewLimit(lctx *lmctx.LMContext, req *types.RateLimits, command *types.WorkerCommand) {
+	log := lmlog.Logger(lctx)
+	// 0.01 is salt to get correct math evaluation
+	newLimit := rate.Limit(float64(req.Limit)/float64(req.Window) - 0.01) // nolint: gomnd
+	currentLimit, _ := GetCurrentLimit(command.APIInfo.GetPatternKey())
+	if newLimit != 0 && currentLimit != newLimit {
+		log.Infof("Setting new rate limits for \"%s\": %v", command.APIInfo.GetPatternKey(), newLimit)
+		AddLimiter(command.APIInfo.GetPatternKey(), newLimit)
 	}
 }

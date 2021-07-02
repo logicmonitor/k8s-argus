@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *GetDatasourceByIDOK) Error() string {
 }
 
 func (o *GetDatasourceByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.DataSource)
 
 	// response payload
@@ -100,7 +97,6 @@ func (o *GetDatasourceByIDDefault) Error() string {
 }
 
 func (o *GetDatasourceByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

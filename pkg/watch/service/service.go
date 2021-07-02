@@ -15,17 +15,17 @@ import (
 type Watcher struct{}
 
 // AddFuncOptions addfunc options
-func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, error) {
+func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
 		if rt != enums.Services {
-			return []types.DeviceOption{}, fmt.Errorf("resourceType is not of type services")
+			return []types.ResourceOption{}, fmt.Errorf("resourceType is not of type services")
 		}
 		service := obj.(*corev1.Service) // nolint: forcetypeassert
 		if service.Spec.ClusterIP == "" {
-			return []types.DeviceOption{}, fmt.Errorf("empty Spec.ClusterIP")
+			return []types.ResourceOption{}, fmt.Errorf("empty Spec.ClusterIP")
 		}
 
-		var options []types.DeviceOption
+		var options []types.ResourceOption
 
 		// headless services set clusterip to None: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
 		// do not replace Name property, keep it as default name-svc-namespace
@@ -38,15 +38,15 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 }
 
 // UpdateFuncOptions update options
-func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.DeviceBuilder) ([]types.DeviceOption, bool, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, bool, error) {
-		return []types.DeviceOption{}, false, nil
+func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+		return []types.ResourceOption{}, false, nil
 	}
 }
 
 // DeleteFuncOptions delete options
-func (w *Watcher) DeleteFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.DeviceOption {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.DeviceOption {
-		return []types.DeviceOption{}
+func (w *Watcher) DeleteFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
+		return []types.ResourceOption{}
 	}
 }

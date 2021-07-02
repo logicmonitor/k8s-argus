@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewGetAlertRuleByIDParams creates a new GetAlertRuleByIDParams object
@@ -130,7 +128,6 @@ func (o *GetAlertRuleByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetAlertRuleByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

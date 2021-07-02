@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -65,7 +64,6 @@ func (m *CollectorGroup) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CollectorGroup) validateCustomProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.CustomProperties) { // not required
 		return nil
 	}
@@ -90,7 +88,6 @@ func (m *CollectorGroup) validateCustomProperties(formats strfmt.Registry) error
 }
 
 func (m *CollectorGroup) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}

@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -75,7 +74,6 @@ func (m *NetflowApplication) DataType() string {
 
 // SetDataType sets the data type of this subtype
 func (m *NetflowApplication) SetDataType(val string) {
-
 }
 
 // IP gets the IP of this subtype

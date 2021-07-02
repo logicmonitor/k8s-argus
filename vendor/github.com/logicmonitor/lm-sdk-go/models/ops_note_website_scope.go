@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -39,7 +38,6 @@ func (m *OpsNoteWebsiteScope) Type() string {
 
 // SetType sets the type of this subtype
 func (m *OpsNoteWebsiteScope) SetType(val string) {
-
 }
 
 // FullPath gets the full path of this subtype

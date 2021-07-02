@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -164,7 +163,6 @@ func (m *Ec2Netscan) Method() string {
 
 // SetMethod sets the method of this subtype
 func (m *Ec2Netscan) SetMethod(val string) {
-
 }
 
 // Name gets the name of this subtype
@@ -516,7 +514,6 @@ func (m *Ec2Netscan) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validateCollector(formats strfmt.Registry) error {
-
 	if err := validate.Required("collector", "body", m.Collector()); err != nil {
 		return err
 	}
@@ -525,7 +522,6 @@ func (m *Ec2Netscan) validateCollector(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validateDuplicate(formats strfmt.Registry) error {
-
 	if err := validate.Required("duplicate", "body", m.Duplicate()); err != nil {
 		return err
 	}
@@ -543,7 +539,6 @@ func (m *Ec2Netscan) validateDuplicate(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -552,7 +547,6 @@ func (m *Ec2Netscan) validateName(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validateSchedule(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Schedule()) { // not required
 		return nil
 	}
@@ -570,7 +564,6 @@ func (m *Ec2Netscan) validateSchedule(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validateAccessibility(formats strfmt.Registry) error {
-
 	if err := validate.Required("accessibility", "body", m.Accessibility); err != nil {
 		return err
 	}
@@ -579,7 +572,6 @@ func (m *Ec2Netscan) validateAccessibility(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validateCredentials(formats strfmt.Registry) error {
-
 	if err := validate.Required("credentials", "body", m.Credentials); err != nil {
 		return err
 	}
@@ -597,7 +589,6 @@ func (m *Ec2Netscan) validateCredentials(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validateDdr(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Ddr) { // not required
 		return nil
 	}
@@ -615,7 +606,6 @@ func (m *Ec2Netscan) validateDdr(formats strfmt.Registry) error {
 }
 
 func (m *Ec2Netscan) validatePorts(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Ports) { // not required
 		return nil
 	}

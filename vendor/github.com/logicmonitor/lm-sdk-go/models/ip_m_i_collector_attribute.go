@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -30,7 +29,6 @@ func (m *IPMICollectorAttribute) Name() string {
 
 // SetName sets the name of this subtype
 func (m *IPMICollectorAttribute) SetName(val string) {
-
 }
 
 // IPMISensor gets the ipmi sensor of this subtype

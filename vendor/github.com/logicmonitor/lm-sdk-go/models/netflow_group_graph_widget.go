@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -144,7 +143,6 @@ func (m *NetflowGroupGraphWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *NetflowGroupGraphWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -344,7 +342,6 @@ func (m *NetflowGroupGraphWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NetflowGroupGraphWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -353,7 +350,6 @@ func (m *NetflowGroupGraphWidget) validateDashboardID(formats strfmt.Registry) e
 }
 
 func (m *NetflowGroupGraphWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}

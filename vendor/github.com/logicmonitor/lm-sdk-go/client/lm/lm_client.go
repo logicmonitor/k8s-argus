@@ -9,7 +9,6 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
 )
 
@@ -57,7 +56,6 @@ func (a *Client) AckAlertByID(params *AckAlertByIDParams) (*AckAlertByIDOK, erro
 		return nil, err
 	}
 	return result.(*AckAlertByIDOK), nil
-
 }
 
 /*
@@ -86,7 +84,6 @@ func (a *Client) AckCollectorDownAlertByID(params *AckCollectorDownAlertByIDPara
 		return nil, err
 	}
 	return result.(*AckCollectorDownAlertByIDOK), nil
-
 }
 
 /*
@@ -115,7 +112,6 @@ func (a *Client) AddAdmin(params *AddAdminParams) (*AddAdminOK, error) {
 		return nil, err
 	}
 	return result.(*AddAdminOK), nil
-
 }
 
 /*
@@ -144,7 +140,6 @@ func (a *Client) AddAlertNoteByID(params *AddAlertNoteByIDParams) (*AddAlertNote
 		return nil, err
 	}
 	return result.(*AddAlertNoteByIDOK), nil
-
 }
 
 /*
@@ -173,7 +168,6 @@ func (a *Client) AddAlertRule(params *AddAlertRuleParams) (*AddAlertRuleOK, erro
 		return nil, err
 	}
 	return result.(*AddAlertRuleOK), nil
-
 }
 
 /*
@@ -202,7 +196,6 @@ func (a *Client) AddAPITokenByAdminID(params *AddAPITokenByAdminIDParams) (*AddA
 		return nil, err
 	}
 	return result.(*AddAPITokenByAdminIDOK), nil
-
 }
 
 /*
@@ -231,7 +224,6 @@ func (a *Client) AddCollector(params *AddCollectorParams) (*AddCollectorOK, erro
 		return nil, err
 	}
 	return result.(*AddCollectorOK), nil
-
 }
 
 /*
@@ -260,7 +252,6 @@ func (a *Client) AddCollectorGroup(params *AddCollectorGroupParams) (*AddCollect
 		return nil, err
 	}
 	return result.(*AddCollectorGroupOK), nil
-
 }
 
 /*
@@ -289,7 +280,6 @@ func (a *Client) AddDashboard(params *AddDashboardParams) (*AddDashboardOK, erro
 		return nil, err
 	}
 	return result.(*AddDashboardOK), nil
-
 }
 
 /*
@@ -318,7 +308,6 @@ func (a *Client) AddDashboardGroup(params *AddDashboardGroupParams) (*AddDashboa
 		return nil, err
 	}
 	return result.(*AddDashboardGroupOK), nil
-
 }
 
 /*
@@ -347,7 +336,6 @@ func (a *Client) AddDevice(params *AddDeviceParams) (*AddDeviceOK, error) {
 		return nil, err
 	}
 	return result.(*AddDeviceOK), nil
-
 }
 
 /*
@@ -376,7 +364,6 @@ func (a *Client) AddDeviceDatasourceInstance(params *AddDeviceDatasourceInstance
 		return nil, err
 	}
 	return result.(*AddDeviceDatasourceInstanceOK), nil
-
 }
 
 /*
@@ -405,7 +392,6 @@ func (a *Client) AddDeviceDatasourceInstanceGroup(params *AddDeviceDatasourceIns
 		return nil, err
 	}
 	return result.(*AddDeviceDatasourceInstanceGroupOK), nil
-
 }
 
 /*
@@ -434,7 +420,6 @@ func (a *Client) AddDeviceGroup(params *AddDeviceGroupParams) (*AddDeviceGroupOK
 		return nil, err
 	}
 	return result.(*AddDeviceGroupOK), nil
-
 }
 
 /*
@@ -463,7 +448,6 @@ func (a *Client) AddDeviceGroupClusterAlertConf(params *AddDeviceGroupClusterAle
 		return nil, err
 	}
 	return result.(*AddDeviceGroupClusterAlertConfOK), nil
-
 }
 
 /*
@@ -492,7 +476,6 @@ func (a *Client) AddDeviceGroupProperty(params *AddDeviceGroupPropertyParams) (*
 		return nil, err
 	}
 	return result.(*AddDeviceGroupPropertyOK), nil
-
 }
 
 /*
@@ -521,7 +504,6 @@ func (a *Client) AddDeviceProperty(params *AddDevicePropertyParams) (*AddDeviceP
 		return nil, err
 	}
 	return result.(*AddDevicePropertyOK), nil
-
 }
 
 /*
@@ -550,7 +532,6 @@ func (a *Client) AddEscalationChain(params *AddEscalationChainParams) (*AddEscal
 		return nil, err
 	}
 	return result.(*AddEscalationChainOK), nil
-
 }
 
 /*
@@ -579,7 +560,6 @@ func (a *Client) AddNetscan(params *AddNetscanParams) (*AddNetscanOK, error) {
 		return nil, err
 	}
 	return result.(*AddNetscanOK), nil
-
 }
 
 /*
@@ -608,7 +588,6 @@ func (a *Client) AddOpsNote(params *AddOpsNoteParams) (*AddOpsNoteOK, error) {
 		return nil, err
 	}
 	return result.(*AddOpsNoteOK), nil
-
 }
 
 /*
@@ -637,7 +616,6 @@ func (a *Client) AddRecipientGroup(params *AddRecipientGroupParams) (*AddRecipie
 		return nil, err
 	}
 	return result.(*AddRecipientGroupOK), nil
-
 }
 
 /*
@@ -666,7 +644,6 @@ func (a *Client) AddReport(params *AddReportParams) (*AddReportOK, error) {
 		return nil, err
 	}
 	return result.(*AddReportOK), nil
-
 }
 
 /*
@@ -695,7 +672,6 @@ func (a *Client) AddReportGroup(params *AddReportGroupParams) (*AddReportGroupOK
 		return nil, err
 	}
 	return result.(*AddReportGroupOK), nil
-
 }
 
 /*
@@ -724,7 +700,6 @@ func (a *Client) AddRole(params *AddRoleParams) (*AddRoleOK, error) {
 		return nil, err
 	}
 	return result.(*AddRoleOK), nil
-
 }
 
 /*
@@ -753,7 +728,6 @@ func (a *Client) AddSDT(params *AddSDTParams) (*AddSDTOK, error) {
 		return nil, err
 	}
 	return result.(*AddSDTOK), nil
-
 }
 
 /*
@@ -782,7 +756,6 @@ func (a *Client) AddWebsite(params *AddWebsiteParams) (*AddWebsiteOK, error) {
 		return nil, err
 	}
 	return result.(*AddWebsiteOK), nil
-
 }
 
 /*
@@ -811,7 +784,6 @@ func (a *Client) AddWebsiteGroup(params *AddWebsiteGroupParams) (*AddWebsiteGrou
 		return nil, err
 	}
 	return result.(*AddWebsiteGroupOK), nil
-
 }
 
 /*
@@ -840,7 +812,6 @@ func (a *Client) AddWidget(params *AddWidgetParams) (*AddWidgetOK, error) {
 		return nil, err
 	}
 	return result.(*AddWidgetOK), nil
-
 }
 
 /*
@@ -869,7 +840,6 @@ func (a *Client) CollectDeviceConfigSourceConfig(params *CollectDeviceConfigSour
 		return nil, err
 	}
 	return result.(*CollectDeviceConfigSourceConfigOK), nil
-
 }
 
 /*
@@ -898,7 +868,6 @@ func (a *Client) DeleteAdminByID(params *DeleteAdminByIDParams) (*DeleteAdminByI
 		return nil, err
 	}
 	return result.(*DeleteAdminByIDOK), nil
-
 }
 
 /*
@@ -927,7 +896,6 @@ func (a *Client) DeleteAlertRuleByID(params *DeleteAlertRuleByIDParams) (*Delete
 		return nil, err
 	}
 	return result.(*DeleteAlertRuleByIDOK), nil
-
 }
 
 /*
@@ -956,7 +924,6 @@ func (a *Client) DeleteAPITokenByID(params *DeleteAPITokenByIDParams) (*DeleteAP
 		return nil, err
 	}
 	return result.(*DeleteAPITokenByIDOK), nil
-
 }
 
 /*
@@ -985,7 +952,6 @@ func (a *Client) DeleteCollectorByID(params *DeleteCollectorByIDParams) (*Delete
 		return nil, err
 	}
 	return result.(*DeleteCollectorByIDOK), nil
-
 }
 
 /*
@@ -1014,7 +980,6 @@ func (a *Client) DeleteCollectorGroupByID(params *DeleteCollectorGroupByIDParams
 		return nil, err
 	}
 	return result.(*DeleteCollectorGroupByIDOK), nil
-
 }
 
 /*
@@ -1043,7 +1008,6 @@ func (a *Client) DeleteDashboardByID(params *DeleteDashboardByIDParams) (*Delete
 		return nil, err
 	}
 	return result.(*DeleteDashboardByIDOK), nil
-
 }
 
 /*
@@ -1072,7 +1036,6 @@ func (a *Client) DeleteDashboardGroupByID(params *DeleteDashboardGroupByIDParams
 		return nil, err
 	}
 	return result.(*DeleteDashboardGroupByIDOK), nil
-
 }
 
 /*
@@ -1101,7 +1064,6 @@ func (a *Client) DeleteDatasourceByID(params *DeleteDatasourceByIDParams) (*Dele
 		return nil, err
 	}
 	return result.(*DeleteDatasourceByIDOK), nil
-
 }
 
 /*
@@ -1130,7 +1092,6 @@ func (a *Client) DeleteDeviceByID(params *DeleteDeviceByIDParams) (*DeleteDevice
 		return nil, err
 	}
 	return result.(*DeleteDeviceByIDOK), nil
-
 }
 
 /*
@@ -1159,7 +1120,6 @@ func (a *Client) DeleteDeviceDatasourceInstanceByID(params *DeleteDeviceDatasour
 		return nil, err
 	}
 	return result.(*DeleteDeviceDatasourceInstanceByIDOK), nil
-
 }
 
 /*
@@ -1188,7 +1148,6 @@ func (a *Client) DeleteDeviceGroupByID(params *DeleteDeviceGroupByIDParams) (*De
 		return nil, err
 	}
 	return result.(*DeleteDeviceGroupByIDOK), nil
-
 }
 
 /*
@@ -1217,7 +1176,6 @@ func (a *Client) DeleteDeviceGroupClusterAlertConfByID(params *DeleteDeviceGroup
 		return nil, err
 	}
 	return result.(*DeleteDeviceGroupClusterAlertConfByIDOK), nil
-
 }
 
 /*
@@ -1246,7 +1204,6 @@ func (a *Client) DeleteDeviceGroupPropertyByName(params *DeleteDeviceGroupProper
 		return nil, err
 	}
 	return result.(*DeleteDeviceGroupPropertyByNameOK), nil
-
 }
 
 /*
@@ -1275,7 +1232,6 @@ func (a *Client) DeleteDevicePropertyByName(params *DeleteDevicePropertyByNamePa
 		return nil, err
 	}
 	return result.(*DeleteDevicePropertyByNameOK), nil
-
 }
 
 /*
@@ -1304,7 +1260,6 @@ func (a *Client) DeleteEscalationChainByID(params *DeleteEscalationChainByIDPara
 		return nil, err
 	}
 	return result.(*DeleteEscalationChainByIDOK), nil
-
 }
 
 /*
@@ -1333,7 +1288,6 @@ func (a *Client) DeleteNetscanByID(params *DeleteNetscanByIDParams) (*DeleteNets
 		return nil, err
 	}
 	return result.(*DeleteNetscanByIDOK), nil
-
 }
 
 /*
@@ -1362,7 +1316,6 @@ func (a *Client) DeleteOpsNoteByID(params *DeleteOpsNoteByIDParams) (*DeleteOpsN
 		return nil, err
 	}
 	return result.(*DeleteOpsNoteByIDOK), nil
-
 }
 
 /*
@@ -1391,7 +1344,6 @@ func (a *Client) DeleteRecipientGroupByID(params *DeleteRecipientGroupByIDParams
 		return nil, err
 	}
 	return result.(*DeleteRecipientGroupByIDOK), nil
-
 }
 
 /*
@@ -1420,7 +1372,6 @@ func (a *Client) DeleteReportByID(params *DeleteReportByIDParams) (*DeleteReport
 		return nil, err
 	}
 	return result.(*DeleteReportByIDOK), nil
-
 }
 
 /*
@@ -1449,7 +1400,6 @@ func (a *Client) DeleteReportGroupByID(params *DeleteReportGroupByIDParams) (*De
 		return nil, err
 	}
 	return result.(*DeleteReportGroupByIDOK), nil
-
 }
 
 /*
@@ -1478,7 +1428,6 @@ func (a *Client) DeleteRoleByID(params *DeleteRoleByIDParams) (*DeleteRoleByIDOK
 		return nil, err
 	}
 	return result.(*DeleteRoleByIDOK), nil
-
 }
 
 /*
@@ -1507,7 +1456,6 @@ func (a *Client) DeleteSDTByID(params *DeleteSDTByIDParams) (*DeleteSDTByIDOK, e
 		return nil, err
 	}
 	return result.(*DeleteSDTByIDOK), nil
-
 }
 
 /*
@@ -1536,7 +1484,6 @@ func (a *Client) DeleteWebsiteByID(params *DeleteWebsiteByIDParams) (*DeleteWebs
 		return nil, err
 	}
 	return result.(*DeleteWebsiteByIDOK), nil
-
 }
 
 /*
@@ -1565,7 +1512,6 @@ func (a *Client) DeleteWebsiteGroupByID(params *DeleteWebsiteGroupByIDParams) (*
 		return nil, err
 	}
 	return result.(*DeleteWebsiteGroupByIDOK), nil
-
 }
 
 /*
@@ -1594,7 +1540,6 @@ func (a *Client) DeleteWidgetByID(params *DeleteWidgetByIDParams) (*DeleteWidget
 		return nil, err
 	}
 	return result.(*DeleteWidgetByIDOK), nil
-
 }
 
 /*
@@ -1623,7 +1568,6 @@ func (a *Client) ExecuteDebugCommand(params *ExecuteDebugCommandParams) (*Execut
 		return nil, err
 	}
 	return result.(*ExecuteDebugCommandOK), nil
-
 }
 
 /*
@@ -1652,7 +1596,6 @@ func (a *Client) GenerateReportByID(params *GenerateReportByIDParams) (*Generate
 		return nil, err
 	}
 	return result.(*GenerateReportByIDOK), nil
-
 }
 
 /*
@@ -1681,7 +1624,6 @@ func (a *Client) GetAdminByID(params *GetAdminByIDParams) (*GetAdminByIDOK, erro
 		return nil, err
 	}
 	return result.(*GetAdminByIDOK), nil
-
 }
 
 /*
@@ -1710,7 +1652,6 @@ func (a *Client) GetAdminList(params *GetAdminListParams) (*GetAdminListOK, erro
 		return nil, err
 	}
 	return result.(*GetAdminListOK), nil
-
 }
 
 /*
@@ -1739,7 +1680,6 @@ func (a *Client) GetAlertByID(params *GetAlertByIDParams) (*GetAlertByIDOK, erro
 		return nil, err
 	}
 	return result.(*GetAlertByIDOK), nil
-
 }
 
 /*
@@ -1768,7 +1708,6 @@ func (a *Client) GetAlertList(params *GetAlertListParams) (*GetAlertListOK, erro
 		return nil, err
 	}
 	return result.(*GetAlertListOK), nil
-
 }
 
 /*
@@ -1797,7 +1736,6 @@ func (a *Client) GetAlertListByDeviceGroupID(params *GetAlertListByDeviceGroupID
 		return nil, err
 	}
 	return result.(*GetAlertListByDeviceGroupIDOK), nil
-
 }
 
 /*
@@ -1826,7 +1764,6 @@ func (a *Client) GetAlertListByDeviceID(params *GetAlertListByDeviceIDParams) (*
 		return nil, err
 	}
 	return result.(*GetAlertListByDeviceIDOK), nil
-
 }
 
 /*
@@ -1855,7 +1792,6 @@ func (a *Client) GetAlertRuleByID(params *GetAlertRuleByIDParams) (*GetAlertRule
 		return nil, err
 	}
 	return result.(*GetAlertRuleByIDOK), nil
-
 }
 
 /*
@@ -1884,7 +1820,6 @@ func (a *Client) GetAlertRuleList(params *GetAlertRuleListParams) (*GetAlertRule
 		return nil, err
 	}
 	return result.(*GetAlertRuleListOK), nil
-
 }
 
 /*
@@ -1913,7 +1848,6 @@ func (a *Client) GetAllSDTListByDeviceID(params *GetAllSDTListByDeviceIDParams) 
 		return nil, err
 	}
 	return result.(*GetAllSDTListByDeviceIDOK), nil
-
 }
 
 /*
@@ -1942,7 +1876,6 @@ func (a *Client) GetAllSDTListByWebsiteGroupID(params *GetAllSDTListByWebsiteGro
 		return nil, err
 	}
 	return result.(*GetAllSDTListByWebsiteGroupIDOK), nil
-
 }
 
 /*
@@ -1971,7 +1904,6 @@ func (a *Client) GetAPITokenList(params *GetAPITokenListParams) (*GetAPITokenLis
 		return nil, err
 	}
 	return result.(*GetAPITokenListOK), nil
-
 }
 
 /*
@@ -2000,7 +1932,6 @@ func (a *Client) GetAPITokenListByAdminID(params *GetAPITokenListByAdminIDParams
 		return nil, err
 	}
 	return result.(*GetAPITokenListByAdminIDOK), nil
-
 }
 
 /*
@@ -2029,7 +1960,6 @@ func (a *Client) GetAssociatedDeviceListByDataSourceID(params *GetAssociatedDevi
 		return nil, err
 	}
 	return result.(*GetAssociatedDeviceListByDataSourceIDOK), nil
-
 }
 
 /*
@@ -2058,7 +1988,6 @@ func (a *Client) GetAuditLogByID(params *GetAuditLogByIDParams) (*GetAuditLogByI
 		return nil, err
 	}
 	return result.(*GetAuditLogByIDOK), nil
-
 }
 
 /*
@@ -2087,7 +2016,6 @@ func (a *Client) GetAuditLogList(params *GetAuditLogListParams) (*GetAuditLogLis
 		return nil, err
 	}
 	return result.(*GetAuditLogListOK), nil
-
 }
 
 /*
@@ -2116,7 +2044,6 @@ func (a *Client) GetAwsExternalID(params *GetAwsExternalIDParams) (*GetAwsExtern
 		return nil, err
 	}
 	return result.(*GetAwsExternalIDOK), nil
-
 }
 
 /*
@@ -2145,7 +2072,6 @@ func (a *Client) GetCollectorByID(params *GetCollectorByIDParams) (*GetCollector
 		return nil, err
 	}
 	return result.(*GetCollectorByIDOK), nil
-
 }
 
 /*
@@ -2174,7 +2100,6 @@ func (a *Client) GetCollectorGroupByID(params *GetCollectorGroupByIDParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetCollectorGroupByIDOK), nil
-
 }
 
 /*
@@ -2203,7 +2128,6 @@ func (a *Client) GetCollectorGroupList(params *GetCollectorGroupListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetCollectorGroupListOK), nil
-
 }
 
 /*
@@ -2232,7 +2156,6 @@ func (a *Client) GetCollectorInstaller(params *GetCollectorInstallerParams, writ
 		return nil, err
 	}
 	return result.(*GetCollectorInstallerOK), nil
-
 }
 
 /*
@@ -2261,7 +2184,6 @@ func (a *Client) GetCollectorList(params *GetCollectorListParams) (*GetCollector
 		return nil, err
 	}
 	return result.(*GetCollectorListOK), nil
-
 }
 
 /*
@@ -2290,7 +2212,6 @@ func (a *Client) GetDashboardByID(params *GetDashboardByIDParams) (*GetDashboard
 		return nil, err
 	}
 	return result.(*GetDashboardByIDOK), nil
-
 }
 
 /*
@@ -2319,7 +2240,6 @@ func (a *Client) GetDashboardGroupByID(params *GetDashboardGroupByIDParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDashboardGroupByIDOK), nil
-
 }
 
 /*
@@ -2348,7 +2268,6 @@ func (a *Client) GetDashboardGroupList(params *GetDashboardGroupListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDashboardGroupListOK), nil
-
 }
 
 /*
@@ -2377,7 +2296,6 @@ func (a *Client) GetDashboardList(params *GetDashboardListParams) (*GetDashboard
 		return nil, err
 	}
 	return result.(*GetDashboardListOK), nil
-
 }
 
 /*
@@ -2406,7 +2324,6 @@ func (a *Client) GetDataSourceOverviewGraphByID(params *GetDataSourceOverviewGra
 		return nil, err
 	}
 	return result.(*GetDataSourceOverviewGraphByIDOK), nil
-
 }
 
 /*
@@ -2435,7 +2352,6 @@ func (a *Client) GetDataSourceOverviewGraphList(params *GetDataSourceOverviewGra
 		return nil, err
 	}
 	return result.(*GetDataSourceOverviewGraphListOK), nil
-
 }
 
 /*
@@ -2464,7 +2380,6 @@ func (a *Client) GetDatasourceByID(params *GetDatasourceByIDParams) (*GetDatasou
 		return nil, err
 	}
 	return result.(*GetDatasourceByIDOK), nil
-
 }
 
 /*
@@ -2493,7 +2408,6 @@ func (a *Client) GetDatasourceList(params *GetDatasourceListParams) (*GetDatasou
 		return nil, err
 	}
 	return result.(*GetDatasourceListOK), nil
-
 }
 
 /*
@@ -2522,7 +2436,6 @@ func (a *Client) GetDebugCommandResult(params *GetDebugCommandResultParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDebugCommandResultOK), nil
-
 }
 
 /*
@@ -2551,7 +2464,6 @@ func (a *Client) GetDeviceByID(params *GetDeviceByIDParams) (*GetDeviceByIDOK, e
 		return nil, err
 	}
 	return result.(*GetDeviceByIDOK), nil
-
 }
 
 /*
@@ -2580,7 +2492,6 @@ func (a *Client) GetDeviceConfigSourceConfigByID(params *GetDeviceConfigSourceCo
 		return nil, err
 	}
 	return result.(*GetDeviceConfigSourceConfigByIDOK), nil
-
 }
 
 /*
@@ -2609,7 +2520,6 @@ func (a *Client) GetDeviceConfigSourceConfigList(params *GetDeviceConfigSourceCo
 		return nil, err
 	}
 	return result.(*GetDeviceConfigSourceConfigListOK), nil
-
 }
 
 /*
@@ -2638,7 +2548,6 @@ func (a *Client) GetDeviceDatasourceByID(params *GetDeviceDatasourceByIDParams) 
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceByIDOK), nil
-
 }
 
 /*
@@ -2667,7 +2576,6 @@ func (a *Client) GetDeviceDatasourceDataByID(params *GetDeviceDatasourceDataByID
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceDataByIDOK), nil
-
 }
 
 /*
@@ -2696,7 +2604,6 @@ func (a *Client) GetDeviceDatasourceInstanceAlertSettingByID(params *GetDeviceDa
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceAlertSettingByIDOK), nil
-
 }
 
 /*
@@ -2725,7 +2632,6 @@ func (a *Client) GetDeviceDatasourceInstanceAlertSettingList(params *GetDeviceDa
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceAlertSettingListOK), nil
-
 }
 
 /*
@@ -2754,7 +2660,6 @@ func (a *Client) GetDeviceDatasourceInstanceByID(params *GetDeviceDatasourceInst
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceByIDOK), nil
-
 }
 
 /*
@@ -2783,7 +2688,6 @@ func (a *Client) GetDeviceDatasourceInstanceData(params *GetDeviceDatasourceInst
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceDataOK), nil
-
 }
 
 /*
@@ -2812,7 +2716,6 @@ func (a *Client) GetDeviceDatasourceInstanceGraphData(params *GetDeviceDatasourc
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGraphDataOK), nil
-
 }
 
 /*
@@ -2841,7 +2744,6 @@ func (a *Client) GetDeviceDatasourceInstanceGroupByID(params *GetDeviceDatasourc
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGroupByIDOK), nil
-
 }
 
 /*
@@ -2870,7 +2772,6 @@ func (a *Client) GetDeviceDatasourceInstanceGroupList(params *GetDeviceDatasourc
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGroupListOK), nil
-
 }
 
 /*
@@ -2899,7 +2800,6 @@ func (a *Client) GetDeviceDatasourceInstanceGroupOverviewGraphData(params *GetDe
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGroupOverviewGraphDataOK), nil
-
 }
 
 /*
@@ -2928,7 +2828,6 @@ func (a *Client) GetDeviceDatasourceInstanceList(params *GetDeviceDatasourceInst
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceListOK), nil
-
 }
 
 /*
@@ -2957,7 +2856,6 @@ func (a *Client) GetDeviceDatasourceInstanceSDTHistory(params *GetDeviceDatasour
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceSDTHistoryOK), nil
-
 }
 
 /*
@@ -2986,7 +2884,6 @@ func (a *Client) GetDeviceDatasourceList(params *GetDeviceDatasourceListParams) 
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceListOK), nil
-
 }
 
 /*
@@ -3015,7 +2912,6 @@ func (a *Client) GetDeviceGroupByID(params *GetDeviceGroupByIDParams) (*GetDevic
 		return nil, err
 	}
 	return result.(*GetDeviceGroupByIDOK), nil
-
 }
 
 /*
@@ -3044,7 +2940,6 @@ func (a *Client) GetDeviceGroupClusterAlertConfByID(params *GetDeviceGroupCluste
 		return nil, err
 	}
 	return result.(*GetDeviceGroupClusterAlertConfByIDOK), nil
-
 }
 
 /*
@@ -3073,7 +2968,6 @@ func (a *Client) GetDeviceGroupClusterAlertConfList(params *GetDeviceGroupCluste
 		return nil, err
 	}
 	return result.(*GetDeviceGroupClusterAlertConfListOK), nil
-
 }
 
 /*
@@ -3102,7 +2996,6 @@ func (a *Client) GetDeviceGroupDatasourceAlertSetting(params *GetDeviceGroupData
 		return nil, err
 	}
 	return result.(*GetDeviceGroupDatasourceAlertSettingOK), nil
-
 }
 
 /*
@@ -3131,7 +3024,6 @@ func (a *Client) GetDeviceGroupDatasourceByID(params *GetDeviceGroupDatasourceBy
 		return nil, err
 	}
 	return result.(*GetDeviceGroupDatasourceByIDOK), nil
-
 }
 
 /*
@@ -3160,7 +3052,6 @@ func (a *Client) GetDeviceGroupDatasourceList(params *GetDeviceGroupDatasourceLi
 		return nil, err
 	}
 	return result.(*GetDeviceGroupDatasourceListOK), nil
-
 }
 
 /*
@@ -3189,7 +3080,6 @@ func (a *Client) GetDeviceGroupList(params *GetDeviceGroupListParams) (*GetDevic
 		return nil, err
 	}
 	return result.(*GetDeviceGroupListOK), nil
-
 }
 
 /*
@@ -3218,7 +3108,6 @@ func (a *Client) GetDeviceGroupPropertyByName(params *GetDeviceGroupPropertyByNa
 		return nil, err
 	}
 	return result.(*GetDeviceGroupPropertyByNameOK), nil
-
 }
 
 /*
@@ -3247,7 +3136,6 @@ func (a *Client) GetDeviceGroupPropertyList(params *GetDeviceGroupPropertyListPa
 		return nil, err
 	}
 	return result.(*GetDeviceGroupPropertyListOK), nil
-
 }
 
 /*
@@ -3276,7 +3164,6 @@ func (a *Client) GetDeviceGroupSDTList(params *GetDeviceGroupSDTListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDeviceGroupSDTListOK), nil
-
 }
 
 /*
@@ -3305,7 +3192,6 @@ func (a *Client) GetDeviceInstanceGraphDataOnlyByInstanceID(params *GetDeviceIns
 		return nil, err
 	}
 	return result.(*GetDeviceInstanceGraphDataOnlyByInstanceIDOK), nil
-
 }
 
 /*
@@ -3334,7 +3220,6 @@ func (a *Client) GetDeviceList(params *GetDeviceListParams) (*GetDeviceListOK, e
 		return nil, err
 	}
 	return result.(*GetDeviceListOK), nil
-
 }
 
 /*
@@ -3363,7 +3248,6 @@ func (a *Client) GetDevicePropertyByName(params *GetDevicePropertyByNameParams) 
 		return nil, err
 	}
 	return result.(*GetDevicePropertyByNameOK), nil
-
 }
 
 /*
@@ -3392,7 +3276,6 @@ func (a *Client) GetDevicePropertyList(params *GetDevicePropertyListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDevicePropertyListOK), nil
-
 }
 
 /*
@@ -3421,7 +3304,6 @@ func (a *Client) GetEscalationChainByID(params *GetEscalationChainByIDParams) (*
 		return nil, err
 	}
 	return result.(*GetEscalationChainByIDOK), nil
-
 }
 
 /*
@@ -3450,7 +3332,6 @@ func (a *Client) GetEscalationChainList(params *GetEscalationChainListParams) (*
 		return nil, err
 	}
 	return result.(*GetEscalationChainListOK), nil
-
 }
 
 /*
@@ -3479,7 +3360,6 @@ func (a *Client) GetImmediateDeviceListByDeviceGroupID(params *GetImmediateDevic
 		return nil, err
 	}
 	return result.(*GetImmediateDeviceListByDeviceGroupIDOK), nil
-
 }
 
 /*
@@ -3508,7 +3388,6 @@ func (a *Client) GetImmediateWebsiteListByWebsiteGroupID(params *GetImmediateWeb
 		return nil, err
 	}
 	return result.(*GetImmediateWebsiteListByWebsiteGroupIDOK), nil
-
 }
 
 /*
@@ -3537,7 +3416,6 @@ func (a *Client) GetNetflowEndpointList(params *GetNetflowEndpointListParams) (*
 		return nil, err
 	}
 	return result.(*GetNetflowEndpointListOK), nil
-
 }
 
 /*
@@ -3566,7 +3444,6 @@ func (a *Client) GetNetflowFlowList(params *GetNetflowFlowListParams) (*GetNetfl
 		return nil, err
 	}
 	return result.(*GetNetflowFlowListOK), nil
-
 }
 
 /*
@@ -3595,7 +3472,6 @@ func (a *Client) GetNetflowPortList(params *GetNetflowPortListParams) (*GetNetfl
 		return nil, err
 	}
 	return result.(*GetNetflowPortListOK), nil
-
 }
 
 /*
@@ -3624,7 +3500,6 @@ func (a *Client) GetNetscanByID(params *GetNetscanByIDParams) (*GetNetscanByIDOK
 		return nil, err
 	}
 	return result.(*GetNetscanByIDOK), nil
-
 }
 
 /*
@@ -3653,7 +3528,6 @@ func (a *Client) GetNetscanList(params *GetNetscanListParams) (*GetNetscanListOK
 		return nil, err
 	}
 	return result.(*GetNetscanListOK), nil
-
 }
 
 /*
@@ -3682,7 +3556,6 @@ func (a *Client) GetOpsNoteByID(params *GetOpsNoteByIDParams) (*GetOpsNoteByIDOK
 		return nil, err
 	}
 	return result.(*GetOpsNoteByIDOK), nil
-
 }
 
 /*
@@ -3711,7 +3584,6 @@ func (a *Client) GetOpsNoteList(params *GetOpsNoteListParams) (*GetOpsNoteListOK
 		return nil, err
 	}
 	return result.(*GetOpsNoteListOK), nil
-
 }
 
 /*
@@ -3740,7 +3612,6 @@ func (a *Client) GetRecipientGroupByID(params *GetRecipientGroupByIDParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetRecipientGroupByIDOK), nil
-
 }
 
 /*
@@ -3769,7 +3640,6 @@ func (a *Client) GetRecipientGroupList(params *GetRecipientGroupListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetRecipientGroupListOK), nil
-
 }
 
 /*
@@ -3798,7 +3668,6 @@ func (a *Client) GetReportByID(params *GetReportByIDParams) (*GetReportByIDOK, e
 		return nil, err
 	}
 	return result.(*GetReportByIDOK), nil
-
 }
 
 /*
@@ -3827,7 +3696,6 @@ func (a *Client) GetReportGroupByID(params *GetReportGroupByIDParams) (*GetRepor
 		return nil, err
 	}
 	return result.(*GetReportGroupByIDOK), nil
-
 }
 
 /*
@@ -3856,7 +3724,6 @@ func (a *Client) GetReportGroupList(params *GetReportGroupListParams) (*GetRepor
 		return nil, err
 	}
 	return result.(*GetReportGroupListOK), nil
-
 }
 
 /*
@@ -3885,7 +3752,6 @@ func (a *Client) GetReportList(params *GetReportListParams) (*GetReportListOK, e
 		return nil, err
 	}
 	return result.(*GetReportListOK), nil
-
 }
 
 /*
@@ -3914,7 +3780,6 @@ func (a *Client) GetRoleByID(params *GetRoleByIDParams) (*GetRoleByIDOK, error) 
 		return nil, err
 	}
 	return result.(*GetRoleByIDOK), nil
-
 }
 
 /*
@@ -3943,7 +3808,6 @@ func (a *Client) GetRoleList(params *GetRoleListParams) (*GetRoleListOK, error) 
 		return nil, err
 	}
 	return result.(*GetRoleListOK), nil
-
 }
 
 /*
@@ -3972,7 +3836,6 @@ func (a *Client) GetSDTByID(params *GetSDTByIDParams) (*GetSDTByIDOK, error) {
 		return nil, err
 	}
 	return result.(*GetSDTByIDOK), nil
-
 }
 
 /*
@@ -4001,7 +3864,6 @@ func (a *Client) GetSDTHistoryByDeviceDataSourceID(params *GetSDTHistoryByDevice
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByDeviceDataSourceIDOK), nil
-
 }
 
 /*
@@ -4030,7 +3892,6 @@ func (a *Client) GetSDTHistoryByDeviceGroupID(params *GetSDTHistoryByDeviceGroup
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByDeviceGroupIDOK), nil
-
 }
 
 /*
@@ -4059,7 +3920,6 @@ func (a *Client) GetSDTHistoryByDeviceID(params *GetSDTHistoryByDeviceIDParams) 
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByDeviceIDOK), nil
-
 }
 
 /*
@@ -4088,7 +3948,6 @@ func (a *Client) GetSDTHistoryByWebsiteGroupID(params *GetSDTHistoryByWebsiteGro
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByWebsiteGroupIDOK), nil
-
 }
 
 /*
@@ -4117,7 +3976,6 @@ func (a *Client) GetSDTHistoryByWebsiteID(params *GetSDTHistoryByWebsiteIDParams
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByWebsiteIDOK), nil
-
 }
 
 /*
@@ -4146,7 +4004,6 @@ func (a *Client) GetSDTList(params *GetSDTListParams) (*GetSDTListOK, error) {
 		return nil, err
 	}
 	return result.(*GetSDTListOK), nil
-
 }
 
 /*
@@ -4175,7 +4032,6 @@ func (a *Client) GetSiteMonitorCheckPointList(params *GetSiteMonitorCheckPointLi
 		return nil, err
 	}
 	return result.(*GetSiteMonitorCheckPointListOK), nil
-
 }
 
 /*
@@ -4204,7 +4060,6 @@ func (a *Client) GetTopTalkersGraph(params *GetTopTalkersGraphParams) (*GetTopTa
 		return nil, err
 	}
 	return result.(*GetTopTalkersGraphOK), nil
-
 }
 
 /*
@@ -4233,7 +4088,6 @@ func (a *Client) GetUnmonitoredDeviceList(params *GetUnmonitoredDeviceListParams
 		return nil, err
 	}
 	return result.(*GetUnmonitoredDeviceListOK), nil
-
 }
 
 /*
@@ -4262,7 +4116,6 @@ func (a *Client) GetUpdateReasonListByDataSourceID(params *GetUpdateReasonListBy
 		return nil, err
 	}
 	return result.(*GetUpdateReasonListByDataSourceIDOK), nil
-
 }
 
 /*
@@ -4291,7 +4144,6 @@ func (a *Client) GetWebsiteAlertListByWebsiteID(params *GetWebsiteAlertListByWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteAlertListByWebsiteIDOK), nil
-
 }
 
 /*
@@ -4320,7 +4172,6 @@ func (a *Client) GetWebsiteByID(params *GetWebsiteByIDParams) (*GetWebsiteByIDOK
 		return nil, err
 	}
 	return result.(*GetWebsiteByIDOK), nil
-
 }
 
 /*
@@ -4349,7 +4200,6 @@ func (a *Client) GetWebsiteCheckpointDataByID(params *GetWebsiteCheckpointDataBy
 		return nil, err
 	}
 	return result.(*GetWebsiteCheckpointDataByIDOK), nil
-
 }
 
 /*
@@ -4378,7 +4228,6 @@ func (a *Client) GetWebsiteDataByGraphName(params *GetWebsiteDataByGraphNamePara
 		return nil, err
 	}
 	return result.(*GetWebsiteDataByGraphNameOK), nil
-
 }
 
 /*
@@ -4407,7 +4256,6 @@ func (a *Client) GetWebsiteGraphData(params *GetWebsiteGraphDataParams) (*GetWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteGraphDataOK), nil
-
 }
 
 /*
@@ -4436,7 +4284,6 @@ func (a *Client) GetWebsiteGroupByID(params *GetWebsiteGroupByIDParams) (*GetWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteGroupByIDOK), nil
-
 }
 
 /*
@@ -4465,7 +4312,6 @@ func (a *Client) GetWebsiteGroupList(params *GetWebsiteGroupListParams) (*GetWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteGroupListOK), nil
-
 }
 
 /*
@@ -4494,7 +4340,6 @@ func (a *Client) GetWebsiteList(params *GetWebsiteListParams) (*GetWebsiteListOK
 		return nil, err
 	}
 	return result.(*GetWebsiteListOK), nil
-
 }
 
 /*
@@ -4523,7 +4368,6 @@ func (a *Client) GetWebsitePropertyListByWebsiteID(params *GetWebsitePropertyLis
 		return nil, err
 	}
 	return result.(*GetWebsitePropertyListByWebsiteIDOK), nil
-
 }
 
 /*
@@ -4552,7 +4396,6 @@ func (a *Client) GetWebsiteSDTListByWebsiteID(params *GetWebsiteSDTListByWebsite
 		return nil, err
 	}
 	return result.(*GetWebsiteSDTListByWebsiteIDOK), nil
-
 }
 
 /*
@@ -4581,7 +4424,6 @@ func (a *Client) GetWidgetByID(params *GetWidgetByIDParams) (*GetWidgetByIDOK, e
 		return nil, err
 	}
 	return result.(*GetWidgetByIDOK), nil
-
 }
 
 /*
@@ -4610,7 +4452,6 @@ func (a *Client) GetWidgetDataByID(params *GetWidgetDataByIDParams) (*GetWidgetD
 		return nil, err
 	}
 	return result.(*GetWidgetDataByIDOK), nil
-
 }
 
 /*
@@ -4639,7 +4480,6 @@ func (a *Client) GetWidgetList(params *GetWidgetListParams) (*GetWidgetListOK, e
 		return nil, err
 	}
 	return result.(*GetWidgetListOK), nil
-
 }
 
 /*
@@ -4668,7 +4508,6 @@ func (a *Client) GetWidgetListByDashboardID(params *GetWidgetListByDashboardIDPa
 		return nil, err
 	}
 	return result.(*GetWidgetListByDashboardIDOK), nil
-
 }
 
 /*
@@ -4697,7 +4536,6 @@ func (a *Client) ImportBatchJob(params *ImportBatchJobParams) (*ImportBatchJobOK
 		return nil, err
 	}
 	return result.(*ImportBatchJobOK), nil
-
 }
 
 /*
@@ -4726,7 +4564,6 @@ func (a *Client) ImportConfigSource(params *ImportConfigSourceParams) (*ImportCo
 		return nil, err
 	}
 	return result.(*ImportConfigSourceOK), nil
-
 }
 
 /*
@@ -4755,7 +4592,6 @@ func (a *Client) ImportDataSource(params *ImportDataSourceParams) (*ImportDataSo
 		return nil, err
 	}
 	return result.(*ImportDataSourceOK), nil
-
 }
 
 /*
@@ -4784,7 +4620,6 @@ func (a *Client) ImportEventSource(params *ImportEventSourceParams) (*ImportEven
 		return nil, err
 	}
 	return result.(*ImportEventSourceOK), nil
-
 }
 
 /*
@@ -4813,7 +4648,6 @@ func (a *Client) PatchAdminByID(params *PatchAdminByIDParams) (*PatchAdminByIDOK
 		return nil, err
 	}
 	return result.(*PatchAdminByIDOK), nil
-
 }
 
 /*
@@ -4842,7 +4676,6 @@ func (a *Client) PatchAlertRuleByID(params *PatchAlertRuleByIDParams) (*PatchAle
 		return nil, err
 	}
 	return result.(*PatchAlertRuleByIDOK), nil
-
 }
 
 /*
@@ -4871,7 +4704,6 @@ func (a *Client) PatchAPITokenByAdminID(params *PatchAPITokenByAdminIDParams) (*
 		return nil, err
 	}
 	return result.(*PatchAPITokenByAdminIDOK), nil
-
 }
 
 /*
@@ -4900,7 +4732,6 @@ func (a *Client) PatchCollectorByID(params *PatchCollectorByIDParams) (*PatchCol
 		return nil, err
 	}
 	return result.(*PatchCollectorByIDOK), nil
-
 }
 
 /*
@@ -4929,7 +4760,6 @@ func (a *Client) PatchCollectorGroupByID(params *PatchCollectorGroupByIDParams) 
 		return nil, err
 	}
 	return result.(*PatchCollectorGroupByIDOK), nil
-
 }
 
 /*
@@ -4958,7 +4788,6 @@ func (a *Client) PatchDashboardByID(params *PatchDashboardByIDParams) (*PatchDas
 		return nil, err
 	}
 	return result.(*PatchDashboardByIDOK), nil
-
 }
 
 /*
@@ -4987,7 +4816,6 @@ func (a *Client) PatchDashboardGroupByID(params *PatchDashboardGroupByIDParams) 
 		return nil, err
 	}
 	return result.(*PatchDashboardGroupByIDOK), nil
-
 }
 
 /*
@@ -5016,7 +4844,6 @@ func (a *Client) PatchDevice(params *PatchDeviceParams) (*PatchDeviceOK, error) 
 		return nil, err
 	}
 	return result.(*PatchDeviceOK), nil
-
 }
 
 /*
@@ -5045,7 +4872,6 @@ func (a *Client) PatchDeviceDatasourceInstanceAlertSettingByID(params *PatchDevi
 		return nil, err
 	}
 	return result.(*PatchDeviceDatasourceInstanceAlertSettingByIDOK), nil
-
 }
 
 /*
@@ -5074,7 +4900,6 @@ func (a *Client) PatchDeviceDatasourceInstanceByID(params *PatchDeviceDatasource
 		return nil, err
 	}
 	return result.(*PatchDeviceDatasourceInstanceByIDOK), nil
-
 }
 
 /*
@@ -5103,7 +4928,6 @@ func (a *Client) PatchDeviceDatasourceInstanceGroupByID(params *PatchDeviceDatas
 		return nil, err
 	}
 	return result.(*PatchDeviceDatasourceInstanceGroupByIDOK), nil
-
 }
 
 /*
@@ -5132,7 +4956,6 @@ func (a *Client) PatchDeviceGroupByID(params *PatchDeviceGroupByIDParams) (*Patc
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupByIDOK), nil
-
 }
 
 /*
@@ -5161,7 +4984,6 @@ func (a *Client) PatchDeviceGroupClusterAlertConfByID(params *PatchDeviceGroupCl
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupClusterAlertConfByIDOK), nil
-
 }
 
 /*
@@ -5190,7 +5012,6 @@ func (a *Client) PatchDeviceGroupDatasourceAlertSetting(params *PatchDeviceGroup
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupDatasourceAlertSettingOK), nil
-
 }
 
 /*
@@ -5219,7 +5040,6 @@ func (a *Client) PatchDeviceGroupPropertyByName(params *PatchDeviceGroupProperty
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupPropertyByNameOK), nil
-
 }
 
 /*
@@ -5248,7 +5068,6 @@ func (a *Client) PatchDevicePropertyByName(params *PatchDevicePropertyByNamePara
 		return nil, err
 	}
 	return result.(*PatchDevicePropertyByNameOK), nil
-
 }
 
 /*
@@ -5277,7 +5096,6 @@ func (a *Client) PatchEscalationChainByID(params *PatchEscalationChainByIDParams
 		return nil, err
 	}
 	return result.(*PatchEscalationChainByIDOK), nil
-
 }
 
 /*
@@ -5306,7 +5124,6 @@ func (a *Client) PatchNetscan(params *PatchNetscanParams) (*PatchNetscanOK, erro
 		return nil, err
 	}
 	return result.(*PatchNetscanOK), nil
-
 }
 
 /*
@@ -5335,7 +5152,6 @@ func (a *Client) PatchOpsNoteByID(params *PatchOpsNoteByIDParams) (*PatchOpsNote
 		return nil, err
 	}
 	return result.(*PatchOpsNoteByIDOK), nil
-
 }
 
 /*
@@ -5364,7 +5180,6 @@ func (a *Client) PatchRecipientGroupByID(params *PatchRecipientGroupByIDParams) 
 		return nil, err
 	}
 	return result.(*PatchRecipientGroupByIDOK), nil
-
 }
 
 /*
@@ -5393,7 +5208,6 @@ func (a *Client) PatchReportByID(params *PatchReportByIDParams) (*PatchReportByI
 		return nil, err
 	}
 	return result.(*PatchReportByIDOK), nil
-
 }
 
 /*
@@ -5422,7 +5236,6 @@ func (a *Client) PatchReportGroupByID(params *PatchReportGroupByIDParams) (*Patc
 		return nil, err
 	}
 	return result.(*PatchReportGroupByIDOK), nil
-
 }
 
 /*
@@ -5451,7 +5264,6 @@ func (a *Client) PatchRoleByID(params *PatchRoleByIDParams) (*PatchRoleByIDOK, e
 		return nil, err
 	}
 	return result.(*PatchRoleByIDOK), nil
-
 }
 
 /*
@@ -5480,7 +5292,6 @@ func (a *Client) PatchSDTByID(params *PatchSDTByIDParams) (*PatchSDTByIDOK, erro
 		return nil, err
 	}
 	return result.(*PatchSDTByIDOK), nil
-
 }
 
 /*
@@ -5509,7 +5320,6 @@ func (a *Client) PatchWebsiteByID(params *PatchWebsiteByIDParams) (*PatchWebsite
 		return nil, err
 	}
 	return result.(*PatchWebsiteByIDOK), nil
-
 }
 
 /*
@@ -5538,7 +5348,6 @@ func (a *Client) PatchWebsiteGroupByID(params *PatchWebsiteGroupByIDParams) (*Pa
 		return nil, err
 	}
 	return result.(*PatchWebsiteGroupByIDOK), nil
-
 }
 
 /*
@@ -5567,7 +5376,6 @@ func (a *Client) PatchWidgetByID(params *PatchWidgetByIDParams) (*PatchWidgetByI
 		return nil, err
 	}
 	return result.(*PatchWidgetByIDOK), nil
-
 }
 
 /*
@@ -5596,7 +5404,6 @@ func (a *Client) ScheduleAutoDiscoveryByDeviceID(params *ScheduleAutoDiscoveryBy
 		return nil, err
 	}
 	return result.(*ScheduleAutoDiscoveryByDeviceIDOK), nil
-
 }
 
 /*
@@ -5625,7 +5432,6 @@ func (a *Client) UpdateAdminByID(params *UpdateAdminByIDParams) (*UpdateAdminByI
 		return nil, err
 	}
 	return result.(*UpdateAdminByIDOK), nil
-
 }
 
 /*
@@ -5654,7 +5460,6 @@ func (a *Client) UpdateAlertRuleByID(params *UpdateAlertRuleByIDParams) (*Update
 		return nil, err
 	}
 	return result.(*UpdateAlertRuleByIDOK), nil
-
 }
 
 /*
@@ -5683,7 +5488,6 @@ func (a *Client) UpdateAPITokenByAdminID(params *UpdateAPITokenByAdminIDParams) 
 		return nil, err
 	}
 	return result.(*UpdateAPITokenByAdminIDOK), nil
-
 }
 
 /*
@@ -5712,7 +5516,6 @@ func (a *Client) UpdateCollectorByID(params *UpdateCollectorByIDParams) (*Update
 		return nil, err
 	}
 	return result.(*UpdateCollectorByIDOK), nil
-
 }
 
 /*
@@ -5741,7 +5544,6 @@ func (a *Client) UpdateCollectorGroupByID(params *UpdateCollectorGroupByIDParams
 		return nil, err
 	}
 	return result.(*UpdateCollectorGroupByIDOK), nil
-
 }
 
 /*
@@ -5770,7 +5572,6 @@ func (a *Client) UpdateDashboardByID(params *UpdateDashboardByIDParams) (*Update
 		return nil, err
 	}
 	return result.(*UpdateDashboardByIDOK), nil
-
 }
 
 /*
@@ -5799,7 +5600,6 @@ func (a *Client) UpdateDashboardGroupByID(params *UpdateDashboardGroupByIDParams
 		return nil, err
 	}
 	return result.(*UpdateDashboardGroupByIDOK), nil
-
 }
 
 /*
@@ -5828,7 +5628,6 @@ func (a *Client) UpdateDevice(params *UpdateDeviceParams) (*UpdateDeviceOK, erro
 		return nil, err
 	}
 	return result.(*UpdateDeviceOK), nil
-
 }
 
 /*
@@ -5857,7 +5656,6 @@ func (a *Client) UpdateDeviceDatasourceInstanceAlertSettingByID(params *UpdateDe
 		return nil, err
 	}
 	return result.(*UpdateDeviceDatasourceInstanceAlertSettingByIDOK), nil
-
 }
 
 /*
@@ -5886,7 +5684,6 @@ func (a *Client) UpdateDeviceDatasourceInstanceByID(params *UpdateDeviceDatasour
 		return nil, err
 	}
 	return result.(*UpdateDeviceDatasourceInstanceByIDOK), nil
-
 }
 
 /*
@@ -5915,7 +5712,6 @@ func (a *Client) UpdateDeviceDatasourceInstanceGroupByID(params *UpdateDeviceDat
 		return nil, err
 	}
 	return result.(*UpdateDeviceDatasourceInstanceGroupByIDOK), nil
-
 }
 
 /*
@@ -5944,7 +5740,6 @@ func (a *Client) UpdateDeviceGroupByID(params *UpdateDeviceGroupByIDParams) (*Up
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupByIDOK), nil
-
 }
 
 /*
@@ -5973,7 +5768,6 @@ func (a *Client) UpdateDeviceGroupClusterAlertConfByID(params *UpdateDeviceGroup
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupClusterAlertConfByIDOK), nil
-
 }
 
 /*
@@ -6002,7 +5796,6 @@ func (a *Client) UpdateDeviceGroupDatasourceAlertSetting(params *UpdateDeviceGro
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupDatasourceAlertSettingOK), nil
-
 }
 
 /*
@@ -6031,7 +5824,6 @@ func (a *Client) UpdateDeviceGroupPropertyByName(params *UpdateDeviceGroupProper
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupPropertyByNameOK), nil
-
 }
 
 /*
@@ -6060,7 +5852,6 @@ func (a *Client) UpdateDevicePropertyByName(params *UpdateDevicePropertyByNamePa
 		return nil, err
 	}
 	return result.(*UpdateDevicePropertyByNameOK), nil
-
 }
 
 /*
@@ -6089,7 +5880,6 @@ func (a *Client) UpdateEscalationChainByID(params *UpdateEscalationChainByIDPara
 		return nil, err
 	}
 	return result.(*UpdateEscalationChainByIDOK), nil
-
 }
 
 /*
@@ -6118,7 +5908,6 @@ func (a *Client) UpdateNetscan(params *UpdateNetscanParams) (*UpdateNetscanOK, e
 		return nil, err
 	}
 	return result.(*UpdateNetscanOK), nil
-
 }
 
 /*
@@ -6147,7 +5936,6 @@ func (a *Client) UpdateOpsNoteByID(params *UpdateOpsNoteByIDParams) (*UpdateOpsN
 		return nil, err
 	}
 	return result.(*UpdateOpsNoteByIDOK), nil
-
 }
 
 /*
@@ -6176,7 +5964,6 @@ func (a *Client) UpdateRecipientGroupByID(params *UpdateRecipientGroupByIDParams
 		return nil, err
 	}
 	return result.(*UpdateRecipientGroupByIDOK), nil
-
 }
 
 /*
@@ -6205,7 +5992,6 @@ func (a *Client) UpdateReportByID(params *UpdateReportByIDParams) (*UpdateReport
 		return nil, err
 	}
 	return result.(*UpdateReportByIDOK), nil
-
 }
 
 /*
@@ -6234,7 +6020,6 @@ func (a *Client) UpdateReportGroupByID(params *UpdateReportGroupByIDParams) (*Up
 		return nil, err
 	}
 	return result.(*UpdateReportGroupByIDOK), nil
-
 }
 
 /*
@@ -6263,7 +6048,6 @@ func (a *Client) UpdateRoleByID(params *UpdateRoleByIDParams) (*UpdateRoleByIDOK
 		return nil, err
 	}
 	return result.(*UpdateRoleByIDOK), nil
-
 }
 
 /*
@@ -6292,7 +6076,6 @@ func (a *Client) UpdateSDTByID(params *UpdateSDTByIDParams) (*UpdateSDTByIDOK, e
 		return nil, err
 	}
 	return result.(*UpdateSDTByIDOK), nil
-
 }
 
 /*
@@ -6321,7 +6104,6 @@ func (a *Client) UpdateWebsiteByID(params *UpdateWebsiteByIDParams) (*UpdateWebs
 		return nil, err
 	}
 	return result.(*UpdateWebsiteByIDOK), nil
-
 }
 
 /*
@@ -6350,7 +6132,6 @@ func (a *Client) UpdateWebsiteGroupByID(params *UpdateWebsiteGroupByIDParams) (*
 		return nil, err
 	}
 	return result.(*UpdateWebsiteGroupByIDOK), nil
-
 }
 
 /*
@@ -6379,7 +6160,6 @@ func (a *Client) UpdateWidgetByID(params *UpdateWidgetByIDParams) (*UpdateWidget
 		return nil, err
 	}
 	return result.(*UpdateWidgetByIDOK), nil
-
 }
 
 // SetTransport changes the transport on the client

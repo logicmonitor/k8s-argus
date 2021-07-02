@@ -32,6 +32,8 @@ type watcher struct {
 	labelSelector labels.Set
 	configData    map[string]string
 	mu            *sync.Mutex
+	hooks         []Hook
+	hookrwm       sync.RWMutex
 }
 
 // Init initialises k8sClient and creates watcher object
@@ -58,6 +60,35 @@ func (cw *watcher) Set(key string, value string) {
 	cw.mu.Lock()
 	defer cw.mu.Unlock()
 	cw.configData[key] = value
+	go func() {
+		cw.hookrwm.RLock()
+		defer cw.hookrwm.RUnlock()
+		for _, hook := range cw.hooks {
+			if hook.Predicate(Set, key, value) {
+				hook.Hook(key, value)
+			}
+		}
+	}()
+}
+
+func (cw *watcher) GetAll() map[string]string {
+	m := make(map[string]string, len(cw.configData))
+	for k, v := range cw.configData {
+		m[k] = v
+	}
+	return m
+}
+
+func (cw *watcher) AddConfigMapHook(hook Hook) {
+	cw.hookrwm.Lock()
+	defer cw.hookrwm.Unlock()
+	cw.hooks = append(cw.hooks, hook)
+	// run hook on existing items
+	for k, v := range cw.GetAll() {
+		if hook.Predicate(Set, k, v) {
+			hook.Hook(k, v)
+		}
+	}
 }
 
 // NewConfigWatcher creates new config watcher
@@ -183,4 +214,42 @@ func newK8sClient(filePath string) (*kubernetes.Clientset, error) {
 // GetWatchConfig returns config value if present else error
 func GetWatchConfig(name string) (string, error) {
 	return w.Get(name)
+}
+
+type cmHook func(key string, value string)
+
+type cmHookPredicate func(action Action, key string, value string) bool
+
+type Hook struct {
+	Hook      cmHook
+	Predicate cmHookPredicate
+}
+
+type Action uint
+
+const (
+	// Set new item
+	Set = iota
+
+	// Unset delete item
+	Unset
+)
+
+func (action Action) String() string {
+	switch action {
+	case Set:
+		return "Set"
+	case Unset:
+		return "Unset"
+	}
+	return "Unknown"
+}
+
+type configHook func(*Config, *Config)
+
+type configHookPredicate func(*Config, *Config) bool
+
+type ConfHook struct {
+	Hook      configHook
+	Predicate configHookPredicate
 }

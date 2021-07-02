@@ -9,22 +9,18 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewDeleteWebsiteGroupByIDParams creates a new DeleteWebsiteGroupByIDParams object
 // with the default values initialized.
 func NewDeleteWebsiteGroupByIDParams() *DeleteWebsiteGroupByIDParams {
-	var (
-		deleteChildrenDefault = int32(0)
-	)
+	deleteChildrenDefault := int32(0)
 	return &DeleteWebsiteGroupByIDParams{
 		DeleteChildren: &deleteChildrenDefault,
 
@@ -35,9 +31,7 @@ func NewDeleteWebsiteGroupByIDParams() *DeleteWebsiteGroupByIDParams {
 // NewDeleteWebsiteGroupByIDParamsWithTimeout creates a new DeleteWebsiteGroupByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewDeleteWebsiteGroupByIDParamsWithTimeout(timeout time.Duration) *DeleteWebsiteGroupByIDParams {
-	var (
-		deleteChildrenDefault = int32(0)
-	)
+	deleteChildrenDefault := int32(0)
 	return &DeleteWebsiteGroupByIDParams{
 		DeleteChildren: &deleteChildrenDefault,
 
@@ -48,9 +42,7 @@ func NewDeleteWebsiteGroupByIDParamsWithTimeout(timeout time.Duration) *DeleteWe
 // NewDeleteWebsiteGroupByIDParamsWithContext creates a new DeleteWebsiteGroupByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewDeleteWebsiteGroupByIDParamsWithContext(ctx context.Context) *DeleteWebsiteGroupByIDParams {
-	var (
-		deleteChildrenDefault = int32(0)
-	)
+	deleteChildrenDefault := int32(0)
 	return &DeleteWebsiteGroupByIDParams{
 		DeleteChildren: &deleteChildrenDefault,
 
@@ -61,9 +53,7 @@ func NewDeleteWebsiteGroupByIDParamsWithContext(ctx context.Context) *DeleteWebs
 // NewDeleteWebsiteGroupByIDParamsWithHTTPClient creates a new DeleteWebsiteGroupByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewDeleteWebsiteGroupByIDParamsWithHTTPClient(client *http.Client) *DeleteWebsiteGroupByIDParams {
-	var (
-		deleteChildrenDefault = int32(0)
-	)
+	deleteChildrenDefault := int32(0)
 	return &DeleteWebsiteGroupByIDParams{
 		DeleteChildren: &deleteChildrenDefault,
 		HTTPClient:     client,
@@ -142,7 +132,6 @@ func (o *DeleteWebsiteGroupByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteWebsiteGroupByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -34,7 +33,6 @@ func (m *ESXCollectorAttribute) Name() string {
 
 // SetName sets the name of this subtype
 func (m *ESXCollectorAttribute) SetName(val string) {
-
 }
 
 // Counters gets the counters of this subtype
@@ -138,7 +136,6 @@ func (m *ESXCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ESXCollectorAttribute) validateCounters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Counters) { // not required
 		return nil
 	}

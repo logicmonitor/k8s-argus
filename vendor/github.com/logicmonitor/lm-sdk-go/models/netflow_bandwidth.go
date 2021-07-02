@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -39,7 +38,6 @@ func (m *NetflowBandwidth) DataType() string {
 
 // SetDataType sets the data type of this subtype
 func (m *NetflowBandwidth) SetDataType(val string) {
-
 }
 
 // DeviceDisplayName gets the device display name of this subtype

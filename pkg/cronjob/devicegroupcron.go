@@ -1,133 +1,239 @@
 package cronjob
 
 import (
+	"fmt"
+	"net/http"
 	"strings"
 
+	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
+	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/resourcegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
-	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 const maxHistoryRecordsDefault = 10
 
-// UpdateTelemetryCron a cron job to update K8s & Helm properties in cluster device group
-func UpdateTelemetryCron(base *types.Base) {
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"res": "update-telemetry"}))
-	RegisterFunc(lctx, "@midnight", func() { updateTelemetry(lctx, base) })
-}
-
-func updateTelemetry(lctx *lmctx.LMContext, base *types.Base) {
-	log := lmlog.Logger(lctx)
-	parentID := base.Config.ClusterGroupID
-	groupName := util.ClusterGroupName(base.Config.ClusterName)
-	deviceGroup, err := devicegroup.Find(parentID, groupName, base.LMClient)
-	if err != nil || deviceGroup == nil {
-		log.Errorf("Failed to fetch device group. Error: %v", err)
-		return
+// StartTelemetryCron a cron job to update K8s & Helm properties in cluster resource group
+func StartTelemetryCron(resourceCache types.ResourceCache, requester *types.LMRequester) error {
+	tu := telemetryUpdater{
+		ResourceCache: resourceCache,
+		LMRequester:   requester,
+		seq:           0,
 	}
-	updateDeviceGroupK8sAndHelmProperties(lctx, deviceGroup.ID, base.LMClient, base.K8sClient)
-}
-
-// updateDeviceGroupK8sAndHelmProperties will fetch existing properties and compare with actual values then update in cluster device group
-func updateDeviceGroupK8sAndHelmProperties(lctx *lmctx.LMContext, groupID int32, client *client.LMSdkGo, kubeClient kubernetes.Interface) {
-	existingPropertiesMap := getExistingDeviceGroupPropertiesMap(lctx, groupID, client)
-	customPropertiesMap := getK8sAndHelmProperties(lctx, kubeClient)
-
-	for k, v := range customPropertiesMap {
-		// update history property
-		historyKey := k + constants.HistorySuffix
-		updatedHistoryVal := getUpdatedHistoryValue(existingPropertiesMap[historyKey], v)
-		updateProperty(lctx, historyKey, updatedHistoryVal, groupID, client)
-
-		// update latest property
-		updateProperty(lctx, k, v, groupID, client)
+	conf, err := config.GetConfig()
+	if err != nil {
+		return err
 	}
+	_, err = RegisterFunc(*conf.TelemetryCronString, func() {
+		tu.seq++
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"res": "update-telemetry", "seq": tu.seq}))
+		log := lmlog.Logger(lctx)
+		log.Infof("Starting telemetry runner execution")
+		err := tu.Run(lctx)
+		if err != nil {
+			log.Errorf("Telemetry update runner failed with error: %s", err)
+			return
+		}
+		log.Infof("Telemetry runner execution completed")
+	})
+	return err
 }
 
-func getExistingDeviceGroupPropertiesMap(lctx *lmctx.LMContext, groupID int32, client *client.LMSdkGo) map[string]string {
-	entityProperties := devicegroup.GetDeviceGroupPropertyList(lctx, groupID, client)
-	entityPropertiesMap := make(map[string]string)
-	for _, property := range entityProperties {
-		entityPropertiesMap[property.Name] = property.Value
+type telemetryUpdater struct {
+	types.ResourceCache
+	*types.LMRequester
+	seq int64
+}
+
+func (tu *telemetryUpdater) Run(lctx *lmctx.LMContext) error {
+	return tu.run(lctx)
+}
+
+// nolint: cyclop
+func (tu *telemetryUpdater) run(lctx *lmctx.LMContext) error {
+	conf, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
+	cacheKey := types.ResourceName{
+		Name:     util.ClusterGroupName(conf.ClusterName),
+		Resource: enums.Namespaces,
+	}
+	cacheContainer := fmt.Sprintf("%d", conf.ClusterGroupID)
+	meta, ok := tu.ResourceCache.Exists(lctx, cacheKey, cacheContainer, false)
+	if !ok {
+		err := fmt.Errorf("cluster's root resource group not found")
+		return err
 	}
 
-	return entityPropertiesMap
+	clctx := lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: conf.ClusterName})
+
+	errSlice := make([]error, 0)
+	err = tu.audit(clctx, constants.ArgusAppVersion, &meta, func() (string, error) {
+		return constants.Version, nil
+	})
+	if err != nil {
+		errSlice = append(errSlice, err)
+	}
+
+	err = tu.audit(clctx, constants.KubernetesVersionKey, &meta, getKubernetesVersion)
+	if err != nil {
+		errSlice = append(errSlice, err)
+	}
+
+	m, err := getHelmChartDetailsFromConfigMap()
+	if err != nil {
+		errSlice = append(errSlice, err)
+	} else {
+		err = tu.audit(clctx, constants.ArgusHelmChartAuditKey, &meta, func() (string, error) {
+			v, ok := m[constants.ArgusHelmChartAuditKey]
+			if !ok {
+				return "", fmt.Errorf("%s not found", constants.ArgusHelmChartAuditKey)
+			}
+			return v, nil
+		})
+		if err != nil {
+			errSlice = append(errSlice, err)
+		}
+
+		err = tu.audit(clctx, constants.CSCHelmChartAuditKey, &meta, func() (string, error) {
+			v, ok := m[constants.CSCHelmChartAuditKey]
+			if !ok {
+				return "", fmt.Errorf("%s not found", constants.CSCHelmChartAuditKey)
+			}
+			return v, nil
+		})
+		if err != nil {
+			errSlice = append(errSlice, err)
+		}
+
+		err = tu.audit(clctx, constants.ArgusHelmRevisionAuditKey, &meta, func() (string, error) {
+			v, ok := m[constants.ArgusHelmRevisionAuditKey]
+			if !ok {
+				return "", fmt.Errorf("%s not found", constants.ArgusHelmRevisionAuditKey)
+			}
+			return v, nil
+		})
+		if err != nil {
+			errSlice = append(errSlice, err)
+		}
+
+		err = tu.audit(clctx, constants.CSCHelmRevisionAuditKey, &meta, func() (string, error) {
+			v, ok := m[constants.CSCHelmRevisionAuditKey]
+			if !ok {
+				return "", fmt.Errorf("%s not found", constants.CSCHelmRevisionAuditKey)
+			}
+			return v, nil
+		})
+		if err != nil {
+			errSlice = append(errSlice, err)
+		}
+	}
+
+	if len(errSlice) > 0 {
+		return aerrors.GetMultiError("Failed telemetry update", errSlice...)
+	}
+
+	tu.ResourceCache.Set(lctx, cacheKey, meta)
+	return nil
 }
 
-func getK8sAndHelmProperties(lctx *lmctx.LMContext, kubeClient kubernetes.Interface) map[string]string {
-	customProperties := make(map[string]string)
-	// add Argus app version
-	customProperties[constants.ArgusAppVersion] = constants.Version
-	customProperties = getKubernetesVersion(lctx, customProperties, kubeClient)
-	customProperties = getHelmChartDetailsFromConfigMap(lctx, customProperties, kubeClient)
+func (tu *telemetryUpdater) audit(lctx *lmctx.LMContext, auditKey string, meta *types.ResourceMeta, getter func() (string, error)) error {
+	historyKey := auditKey + constants.HistorySuffix
+	latestVal, err := getter()
+	if err != nil {
+		return fmt.Errorf("failed to get %s value: %w", auditKey, err)
+	}
+	if latestVal == "" {
+		return fmt.Errorf("value retrieved for %s is empty [%s]", auditKey, latestVal)
+	}
 
-	return customProperties
+	// First update history
+	prevVal, ok := meta.Labels[historyKey]
+	updatedVal := getUpdatedHistoryValue(prevVal, latestVal)
+	errSlice := make([]error, 0)
+	if prevVal != updatedVal {
+		err := tu.createOrUpdateProperty(lctx, historyKey, updatedVal, meta.LMID, ok)
+		if err != nil {
+			errSlice = append(errSlice, err)
+		} else {
+			meta.Labels[historyKey] = updatedVal
+		}
+	}
+
+	// Update audit prop
+	prevVal, ok = meta.Labels[auditKey]
+	if prevVal != latestVal {
+		err := tu.createOrUpdateProperty(lctx, auditKey, latestVal, meta.LMID, ok)
+		if err != nil {
+			errSlice = append(errSlice, err)
+		} else {
+			meta.Labels[auditKey] = latestVal
+		}
+	}
+	if len(errSlice) > 0 {
+		return aerrors.GetMultiError(fmt.Sprintf("Failed audit update for %s", auditKey), errSlice...)
+	}
+
+	return nil
 }
 
 // getKubernetesVersion Fetches Kubernetes version
-func getKubernetesVersion(lctx *lmctx.LMContext, customProperties map[string]string, kubeClient kubernetes.Interface) map[string]string {
-	log := lmlog.Logger(lctx)
-	serverVersion, err := kubeClient.Discovery().ServerVersion()
-	if err != nil || serverVersion == nil {
-		log.Errorf("Failed to get Kubernetes version. Error: %v", err)
-
-		return customProperties
+func getKubernetesVersion() (string, error) {
+	serverVersion, err := config.GetClientSet().Discovery().ServerVersion()
+	if err != nil {
+		return "", err
 	}
-	cpValue := serverVersion.String()
-	customProperties[constants.KubernetesVersionKey] = cpValue
-
-	return customProperties
+	return serverVersion.String(), nil
 }
 
 // getHelmChartDetailsFromConfigMap fetches configmap from kubernetes cluster and read annotations
-func getHelmChartDetailsFromConfigMap(lctx *lmctx.LMContext, customProperties map[string]string, kubeClient kubernetes.Interface) map[string]string {
-	log := lmlog.Logger(lctx)
-
-	// get list of namespace for fetching deployments
-	namespaceList := namespace.GetNamespaceList(lctx, kubeClient)
-
+func getHelmChartDetailsFromConfigMap() (map[string]string, error) {
 	regex := constants.Chart + " in (" + constants.Argus + ", " + constants.CollectorsetController + ")"
 	opts := metav1.ListOptions{ // nolint: exhaustivestruct
 		LabelSelector: regex,
 	}
-	for i := range namespaceList {
-		configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceList[i]).List(opts)
-		if err != nil || configMapList == nil {
-			log.Errorf("Failed to get the configMap from k8s. Error: %v", err)
-
-			continue
-		}
-		for i := range configMapList.Items {
-			annotations := configMapList.Items[i].GetAnnotations()
-			labelVal := configMapList.Items[i].GetLabels()[constants.Chart]
-			for key, value := range annotations {
-				if key == constants.HelmChart || key == constants.HelmRevision {
-					name := labelVal + "." + key
-					customProperties[name] = value
-				}
+	configMapList, err := config.GetClientSet().CoreV1().ConfigMaps(metav1.NamespaceAll).List(opts)
+	if err != nil || configMapList == nil {
+		return nil, fmt.Errorf("failed to get the configMap from k8s. Error: %w", err)
+	}
+	customProperties := map[string]string{}
+	for i := range configMapList.Items {
+		annotations := configMapList.Items[i].GetAnnotations()
+		labelVal := configMapList.Items[i].GetLabels()[constants.Chart]
+		for key, value := range annotations {
+			if key == constants.HelmChart || key == constants.HelmRevision {
+				name := labelVal + "." + key
+				customProperties[name] = value
 			}
 		}
 	}
 
-	return customProperties
+	return customProperties, nil
 }
 
 // update the property and if it does not exists then add it
-func updateProperty(lctx *lmctx.LMContext, key string, value string, groupID int32, client *client.LMSdkGo) {
-	entityProperty := models.EntityProperty{Name: key, Value: value, Type: constants.DeviceGroupCustomType} // nolint: exhaustivestruct
-	isUpdated := devicegroup.UpdateDeviceGroupPropertyByName(lctx, groupID, &entityProperty, client)
-	if !isUpdated {
-		devicegroup.AddDeviceGroupProperty(lctx, groupID, &entityProperty, client)
+func (tu *telemetryUpdater) createOrUpdateProperty(lctx *lmctx.LMContext, key string, value string, groupID int32, exists bool) error {
+	entityProperty := models.EntityProperty{Name: key, Value: value, Type: constants.ResourceGroupCustomType} // nolint: exhaustivestruct
+	if exists {
+		_, err := resourcegroup.UpdateResourceGroupPropertyByName(lctx, groupID, &entityProperty, tu.LMRequester)
+		if err != nil && util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
+			_, err := resourcegroup.AddResourceGroupProperty(lctx, groupID, &entityProperty, tu.LMRequester)
+			return err
+		}
+		return err
 	}
+	_, err := resourcegroup.AddResourceGroupProperty(lctx, groupID, &entityProperty, tu.LMRequester)
+	// do not update property here on conflict, if call is for add then it might delete old history.
+	return err
 }
 
 func getUpdatedHistoryValue(historyVal, newValue string) string {

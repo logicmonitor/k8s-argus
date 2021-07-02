@@ -23,7 +23,7 @@ require (
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/logicmonitor/k8s-collectorset-controller v2.0.0+incompatible
-	github.com/logicmonitor/lm-sdk-go v2.0.0-argus3+incompatible
+	github.com/logicmonitor/lm-sdk-go v2.0.0-argus5+incompatible
 	github.com/prometheus/client_golang v0.9.3
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.4.2
@@ -34,6 +34,7 @@ require (
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.uber.org/zap v1.17.0 // indirect
+	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	google.golang.org/grpc v1.29.1
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b

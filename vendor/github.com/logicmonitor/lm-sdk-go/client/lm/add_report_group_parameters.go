@@ -9,15 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewAddReportGroupParams creates a new AddReportGroupParams object
@@ -118,7 +115,6 @@ func (o *AddReportGroupParams) SetBody(body *models.ReportGroup) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *AddReportGroupParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

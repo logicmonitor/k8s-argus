@@ -4,26 +4,27 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GetPropertyValue get device property value by property name
-func GetPropertyValue(device *models.Device, propertyName string) string {
-	if device == nil {
+// GetResourcePropertyValue get resource property value by property name
+func GetResourcePropertyValue(resource *models.Device, propertyName string) string {
+	if resource == nil {
 		return ""
 	}
-	if len(device.CustomProperties) > 0 {
-		for _, cp := range device.CustomProperties {
+	if len(resource.CustomProperties) > 0 {
+		for _, cp := range resource.CustomProperties {
 			if *cp.Name == propertyName {
 				return *cp.Value
 			}
 		}
 	}
-	if len(device.SystemProperties) > 0 {
-		for _, cp := range device.SystemProperties {
+	if len(resource.SystemProperties) > 0 {
+		for _, cp := range resource.SystemProperties {
 			if *cp.Name == propertyName {
 				return *cp.Value
 			}
@@ -33,64 +34,20 @@ func GetPropertyValue(device *models.Device, propertyName string) string {
 	return ""
 }
 
-// IsConflictingDevice checks wheather there is conflicts in device names.
-func IsConflictingDevice(device *models.Device, resourceType enums.ResourceType) bool {
-	sysCategory := GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
-
-	return strings.Contains(sysCategory, GetConflictCategoryByResourceType(resourceType))
-}
-
-// GetDisplayName returns desired display name based on FullDisplayNameIncludeClusterName and FullDisplayNameIncludeNamespace properties.
-func GetDisplayName(name, namespace string, resource enums.ResourceType, config *config.Config) string {
-	clusterName := config.ClusterName
-	includeNamespace := config.FullDisplayNameIncludeNamespace
-	includeClusterName := config.FullDisplayNameIncludeClusterName
-
-	desiredName := getNameWithResourceType(name, resource)
-
-	if includeClusterName {
-		if resource.IsNamespaceScopedResource() {
-			return fmt.Sprintf("%s-%s-%s", desiredName, namespace, clusterName)
+// GetResourceGroupPropertyValue get resource property value by property name
+func GetResourceGroupPropertyValue(resource *models.DeviceGroup, propertyName string) string {
+	if resource == nil {
+		return ""
+	}
+	if len(resource.CustomProperties) > 0 {
+		for _, cp := range resource.CustomProperties {
+			if *cp.Name == propertyName {
+				return *cp.Value
+			}
 		}
-
-		return fmt.Sprintf("%s-%s", desiredName, clusterName)
-	}
-	if includeNamespace && resource.IsNamespaceScopedResource() {
-		return fmt.Sprintf("%s-%s", desiredName, namespace)
 	}
 
-	return desiredName
-}
-
-// GetFullDisplayName returns complete display name for a device.
-func GetFullDisplayName(device *models.Device, resource enums.ResourceType, clusterName string) string {
-	displayNameWithNamespace := GetDisplayNameWithNamespace(device, resource)
-
-	return fmt.Sprintf("%s-%s", displayNameWithNamespace, clusterName)
-}
-
-// GetDisplayNameWithNamespace returns displayName in the format - name-type-namespace
-func GetDisplayNameWithNamespace(device *models.Device, resource enums.ResourceType) string {
-	nameWithResourceType := getNameWithResourceType(GetPropertyValue(device, constants.K8sDeviceNamePropertyKey), resource)
-	namespace := GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey)
-	if !resource.IsNamespaceScopedResource() {
-		return nameWithResourceType
-	}
-	displayName := fmt.Sprintf("%s-%s", nameWithResourceType, namespace)
-
-	return displayName
-}
-
-// GetNameWithResourceType returns resourcename with its respetive type.
-func getNameWithResourceType(name string, resource enums.ResourceType) string {
-	resourceType := enums.ShortResourceType(resource)
-
-	return fmt.Sprintf("%s-%s", name, resourceType.String())
-}
-
-// GetConflictCategoryByResourceType returns conflict system category by its respetive type.
-func GetConflictCategoryByResourceType(resource enums.ResourceType) string {
-	return resource.GetConflictsCategory()
+	return ""
 }
 
 // TrimName it will trim the name to 244 char if greater than 244
@@ -102,38 +59,29 @@ func TrimName(name string) string {
 	return name
 }
 
-// GetNameWithResourceTypeAndNamespace returns name with resource_type and namespace
-func GetNameWithResourceTypeAndNamespace(name string, resource enums.ResourceType, namespace string) string {
-	resourceType := enums.ShortResourceType(resource)
-	if resource.IsNamespaceScopedResource() {
-		return fmt.Sprintf("%s-%s-%s", name, resourceType.String(), namespace)
+// GetResourceType get rt
+func GetResourceType(resource *models.Device) (enums.ResourceType, error) {
+	categories := GetResourcePropertyValue(resource, constants.K8sSystemCategoriesPropertyKey)
+	list := strings.Split(categories, ",")
+	for _, category := range list {
+		if strings.HasPrefix(category, "Kubernetes") {
+			category = strings.TrimPrefix(category, "Kubernetes")
+			category = strings.TrimSuffix(category, "Conflict")
+			category = strings.TrimSuffix(category, "Deleted")
+			return enums.ParseResourceType(category)
+		}
 	}
 
-	return fmt.Sprintf("%s-%s", name, resourceType.String())
+	return enums.Unknown, fmt.Errorf("no valid category found in system.categories")
 }
 
-// GetResourceType get rt
-func GetResourceType(device *models.Device) (enums.ResourceType, error) {
-	categories := GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
-	var l enums.ResourceType
-	if strings.Contains(categories, constants.PodCategory) {
-		l = enums.Pods
+func IsArgusPodObject(lctx *lmctx.LMContext, rt enums.ResourceType, meta *metav1.ObjectMeta) bool {
+	if rt == enums.Pods {
+		for k, v := range meta.Labels {
+			if k == "app" && (v == constants.Argus || v == constants.CollectorsetController) {
+				return true
+			}
+		}
 	}
-	if strings.Contains(categories, constants.DeploymentCategory) {
-		l = enums.Deployments
-	}
-	if strings.Contains(categories, constants.ServiceCategory) {
-		l = enums.Services
-	}
-	if strings.Contains(categories, constants.NodeCategory) {
-		l = enums.Nodes
-	}
-	if strings.Contains(categories, constants.HorizontalPodAutoscalerCategory) {
-		l = enums.Hpas
-	}
-	if l != enums.Unknown {
-		return l, nil
-	}
-
-	return l, fmt.Errorf("no valid category found in system.categories")
+	return false
 }

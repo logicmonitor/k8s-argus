@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -87,7 +86,6 @@ func (m *DashboardGroup) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DashboardGroup) validateDashboards(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Dashboards) { // not required
 		return nil
 	}
@@ -112,7 +110,6 @@ func (m *DashboardGroup) validateDashboards(formats strfmt.Registry) error {
 }
 
 func (m *DashboardGroup) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -121,7 +118,6 @@ func (m *DashboardGroup) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DashboardGroup) validateWidgetTokens(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.WidgetTokens) { // not required
 		return nil
 	}

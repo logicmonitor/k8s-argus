@@ -8,14 +8,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
@@ -149,25 +148,43 @@ func getFrame(skipFrames int) runtime.Frame {
 	return frame
 }
 
-// GetResourceMetaFromDevice get meta
-func GetResourceMetaFromDevice(device *models.Device) (cache.ResourceMeta, error) {
+// GetResourceMetaFromResource get meta
+func GetResourceMetaFromResource(resource *models.Device) (types.ResourceMeta, error) {
 	labels := make(map[string]string)
-	for _, prop := range device.CustomProperties {
+	for _, prop := range resource.CustomProperties {
 		if strings.HasPrefix(*prop.Name, constants.LabelCustomPropertyPrefix) {
 			labels[strings.TrimPrefix(*prop.Name, constants.LabelCustomPropertyPrefix)] = *prop.Value
 		}
 	}
-	categoriesStr := GetPropertyValue(device, constants.K8sSystemCategoriesPropertyKey)
+	categoriesStr := GetResourcePropertyValue(resource, constants.K8sSystemCategoriesPropertyKey)
 	categories := strings.Split(categoriesStr, ",")
 
-	return cache.ResourceMeta{
-		Container:     GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey),
-		LMID:          device.ID,
-		DisplayName:   *device.DisplayName,
-		Name:          *device.Name,
+	return types.ResourceMeta{
+		Container:     GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey),
+		LMID:          resource.ID,
+		DisplayName:   *resource.DisplayName,
+		Name:          *resource.Name,
 		Labels:        labels,
 		SysCategories: categories,
-		UID:           k8stypes.UID(GetPropertyValue(device, constants.K8sDeviceUIDPropertyKey)),
+		UID:           k8stypes.UID(GetResourcePropertyValue(resource, constants.K8sResourceUIDPropertyKey)),
+	}, nil
+}
+
+// GetResourceMetaFromDeviceGroup get meta
+func GetResourceMetaFromDeviceGroup(resourceGroup *models.DeviceGroup) (types.ResourceMeta, error) {
+	labels := make(map[string]string)
+	for _, prop := range resourceGroup.CustomProperties {
+		labels[*prop.Name] = *prop.Value
+	}
+	categoriesStr := GetResourceGroupPropertyValue(resourceGroup, constants.K8sSystemCategoriesPropertyKey)
+	categories := strings.Split(categoriesStr, ",")
+
+	return types.ResourceMeta{
+		Container:     fmt.Sprintf("%d", resourceGroup.ParentID),
+		LMID:          resourceGroup.ID,
+		Name:          *resourceGroup.Name,
+		Labels:        labels,
+		SysCategories: categories,
 	}, nil
 }
 
@@ -178,7 +195,7 @@ func IsLocal() bool {
 
 // ClusterGroupName cluster group name
 func ClusterGroupName(clusterName string) string {
-	return constants.ClusterDeviceGroupPrefix + clusterName
+	return constants.ClusterResourceGroupPrefix + clusterName
 }
 
 // GetDisplayNameNew returns desired name
@@ -189,45 +206,34 @@ func GetDisplayNameNew(rt enums.ResourceType, meta *metav1.ObjectMeta, conf *con
 	// return getDisplayNameAsPerSettings(rt, meta, conf)
 }
 
-// nolint: unused,deadcode
-// getDisplayNameAsPerSettings just kept for backup
-func getDisplayNameAsPerSettings(rt enums.ResourceType, meta *metav1.ObjectMeta, conf *config.Config) string {
-	if conf.FullDisplayNameIncludeClusterName {
-		return fmt.Sprintf("%s-%s", rt.LMName(meta), conf.ClusterName)
-	}
-	if conf.FullDisplayNameIncludeNamespace {
-		return rt.LMName(meta)
-	}
-	s := enums.ShortResourceType(rt)
-
-	return fmt.Sprintf("%s-%s", meta.Name, s.String())
-}
-
 // GetClusterGroupID avoid call to Santaba and
 // returns from cache, cluster root grp is stagnant once created
-func GetClusterGroupID(lctx *lmctx.LMContext, client *client.LMSdkGo) int32 {
+func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) int32 {
 	if clusterGroupID != -1 {
 		return clusterGroupID
 	}
 	conf, err := config.GetConfig()
 	if err != nil {
 		logrus.Errorf("Failed to get config")
-		return -1
+		return -2
 	}
+	clusterGroupName := ClusterGroupName(conf.ClusterName)
+	clctx := lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: clusterGroupName})
 	params := lm.NewGetDeviceGroupByIDParams()
 	params.SetID(conf.ClusterGroupID)
 
-	g, err := client.LM.GetDeviceGroupByID(params)
+	command := client.GetResourceGroupByIDCommand(clctx, params)
+	g, err := client.SendReceive(clctx, command)
 	if err != nil {
-		logrus.Errorf("Error while fetching cluster device group %v", err)
+		logrus.Errorf("Error while fetching cluster resource group %v", err)
 
-		return -1
+		return -3
 	}
 
-	clusterGroupName := ClusterGroupName(conf.ClusterName)
-	clusterGrpID := int32(-1)
+	clusterGrpID := int32(-4)
 
-	for _, sg := range g.Payload.SubGroups {
+	logrus.Tracef("Cluster Parent resourceGroup: %v", spew.Sdump(g.(*lm.GetDeviceGroupByIDOK).Payload))
+	for _, sg := range g.(*lm.GetDeviceGroupByIDOK).Payload.SubGroups {
 		if sg.Name == clusterGroupName {
 			clusterGrpID = sg.ID
 
@@ -239,8 +245,8 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *client.LMSdkGo) int32 {
 	return clusterGrpID
 }
 
-// BuildDevice build
-func BuildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, options ...types.DeviceOption) (*models.Device, error) {
+// BuildResource build
+func BuildResource(lctx *lmctx.LMContext, c *config.Config, d *models.Device, options ...types.ResourceOption) (*models.Device, error) {
 	if d == nil {
 		hostGroupIds := fmt.Sprintf("%d", *c.ResourceContainerGroupID)
 		propertyName := constants.K8sClusterNamePropertyKey
@@ -255,7 +261,7 @@ func BuildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, opti
 			},
 			DisableAlerting: c.DisableAlerting,
 			HostGroupIds:    &hostGroupIds,
-			DeviceType:      constants.K8sDeviceType,
+			DeviceType:      constants.K8sResourceType,
 		}
 
 		for _, option := range options {
@@ -276,20 +282,54 @@ func BuildDevice(lctx *lmctx.LMContext, c *config.Config, d *models.Device, opti
 	return d, nil
 }
 
-// DoesDeviceExistInCacheUtil exists
-func DoesDeviceExistInCacheUtil(lctx *lmctx.LMContext, resource enums.ResourceType, resourceCache types.ResourceCache, device *models.Device) (cache.ResourceMeta, bool) {
-	resourceName, err := GetResourceNameFromDevice(resource, device)
+// DoesResourceExistInCacheUtil exists
+func DoesResourceExistInCacheUtil(lctx *lmctx.LMContext, rt enums.ResourceType, resourceCache types.ResourceCache, resource *models.Device, softRefresh bool) (types.ResourceMeta, bool) {
+	resourceName, err := GetResourceNameFromResource(rt, resource)
 	if err != nil {
-		return cache.ResourceMeta{}, false // nolint: exhaustivestruct
+		return types.ResourceMeta{}, false // nolint: exhaustivestruct
 	}
 
-	return resourceCache.Exists(lctx, resourceName, GetPropertyValue(device, constants.K8sDeviceNamespacePropertyKey))
+	return resourceCache.Exists(lctx, resourceName, GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey), softRefresh)
 }
 
-// GetResourceNameFromDevice get
-func GetResourceNameFromDevice(resource enums.ResourceType, device *models.Device) (cache.ResourceName, error) {
-	return cache.ResourceName{
-		Name:     GetPropertyValue(device, constants.K8sDeviceNamePropertyKey),
-		Resource: resource,
+// GetResourceNameFromResource get
+func GetResourceNameFromResource(rt enums.ResourceType, resource *models.Device) (types.ResourceName, error) {
+	return types.ResourceName{
+		Name:     GetResourcePropertyValue(resource, constants.K8sResourceNamePropertyKey),
+		Resource: rt,
 	}, nil
+}
+
+func EvaluateExclusion(labels map[string]string) bool {
+	for k, v := range labels {
+		if k == "logicmonitor/monitoring" && v == "disable" {
+			return false
+		}
+	}
+
+	return true
+}
+
+func IsArgusPod(lctx *lmctx.LMContext, rt enums.ResourceType, resource *models.Device) bool {
+	if rt == enums.Pods {
+		for _, kv := range resource.CustomProperties {
+			if *kv.Name == constants.LabelCustomPropertyPrefix+"app" &&
+				(*kv.Value == "argus" || *kv.Value == "collectorset-controller") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func IsArgusPodCacheMeta(lctx *lmctx.LMContext, rt enums.ResourceType, meta types.ResourceMeta) bool {
+	if rt == enums.Pods {
+		for k, v := range meta.Labels {
+			if k == "app" &&
+				(v == "argus" || v == "collectorset-controller") {
+				return true
+			}
+		}
+	}
+	return false
 }

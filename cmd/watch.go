@@ -6,6 +6,7 @@ import (
 	"os"
 
 	argus "github.com/logicmonitor/k8s-argus/pkg"
+	"github.com/logicmonitor/k8s-argus/pkg/client/logicmonitor"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/connection"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -13,8 +14,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
-	"github.com/logicmonitor/k8s-argus/pkg/permission"
-	ratelimiter "github.com/logicmonitor/k8s-argus/pkg/rl"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -48,8 +47,8 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			fmt.Println("Failed to initialise Kubernetes client: %w", err) // nolint: forbidigo
 			os.Exit(constants.ConfigInitK8sClientExitCode)
 		}
-		// Application configuration
-		if err := config.Load(); err != nil {
+
+		if err := config.InitConfig(); err != nil {
 			fmt.Println("failed to load application config from configmaps") // nolint: forbidigo
 			os.Exit(constants.ConfigInitExitCode)
 		}
@@ -63,7 +62,6 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		config.Run()
 
 		filters.Init()
-		ratelimiter.Init()
 
 		if logLevel := os.Getenv("LOG_LEVEL"); util.IsLocal() && logLevel != "" {
 			level, err := logrus.ParseLevel(logLevel)
@@ -74,20 +72,17 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 				logrus.SetLevel(level)
 			}
 		} else {
-			logrus.SetLevel(conf.LogLevel)
+			logrus.SetLevel(*conf.LogLevel)
 			// Monitor config for log level change
 			lmlog.MonitorConfig()
 		}
 
-		// Instantiate the base struct.
-		base, err := argus.NewBase(conf)
+		// LogicMonitor API client.
+		lmClient, err := logicmonitor.NewLMClient(conf)
 		if err != nil {
 			logrus.Fatal(err.Error())
 			return
 		}
-
-		// Init the permission component
-		permission.Init(base.K8sClient)
 
 		if util.IsLocal() {
 			logrus.SetFormatter(&logrus.TextFormatter{ // nolint: exhaustivestruct
@@ -99,22 +94,32 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			connection.CreateConnectionHandler()
 		}
 
+		argusObj, err := argus.CreateArgus(lmClient)
+		if err != nil {
+			return
+		}
+		err = argusObj.Init()
 		// Instantiate the application and add watchers.
-		argus, err := argus.NewArgus(base)
+		if err != nil {
+			logrus.Fatal(err.Error())
+			return
+		}
+		if err := argusObj.CreateWatchers(); err != nil {
+			logrus.Fatal(err.Error())
+			return
+		}
+		argusObj.Watch()
+
+		// To update K8s & Helm properties in cluster resource group periodically with the server
+		err = cronjob.StartTelemetryCron(argusObj.ResourceCache, argusObj.LMRequester)
 		if err != nil {
 			logrus.Fatal(err.Error())
 			return
 		}
 
-		// Invoke the watcher.
-		argus.Watch()
-
-		// To update K8s & Helm properties in cluster device group periodically with the server
-		cronjob.UpdateTelemetryCron(base)
-
 		http.Handle("/metrics", promhttp.Handler())
 		go func() {
-			addr := ":" + conf.GetOpenmetricsPort()
+			addr := fmt.Sprintf(":%d", *conf.OpenMetricsConfig.Port)
 			logrus.Fatal(http.ListenAndServe(addr, nil))
 		}()
 

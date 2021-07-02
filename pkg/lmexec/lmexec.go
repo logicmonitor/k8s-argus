@@ -2,108 +2,124 @@ package lmexec
 
 import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // LMExec Provides utility function for SDK calls using Base object
-// LMExec is holding device related api calls at the moment to mitigate rate limit handling
+// LMExec is holding resource related api calls at the moment to mitigate rate limit handling
 type LMExec struct {
-	*types.Base
+	LMClient *client.LMSdkGo
 }
 
-// AddDevice Add new device
-func (lmexec *LMExec) AddDevice(params *lm.AddDeviceParams) types.ExecRequest {
+// addResource Add new resource
+func (lmexec *LMExec) addResource(params *lm.AddDeviceParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.AddDevice(params)
 	}
 }
 
-// UpdateDevice Add new device
-func (lmexec *LMExec) UpdateDevice(params *lm.UpdateDeviceParams) types.ExecRequest {
+// updateResource Add new resource
+func (lmexec *LMExec) updateResource(params *lm.UpdateDeviceParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.UpdateDevice(params)
 	}
 }
 
-// GetDeviceByID get device by id
-func (lmexec *LMExec) GetDeviceByID(params *lm.GetDeviceByIDParams) types.ExecRequest {
+// getResourceByID get resource by id
+func (lmexec *LMExec) getResourceByID(params *lm.GetDeviceByIDParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.GetDeviceByID(params)
 	}
 }
 
-// GetDeviceList Add new device
-func (lmexec *LMExec) GetDeviceList(params *lm.GetDeviceListParams) types.ExecRequest {
+// getResourceList Add new resource
+func (lmexec *LMExec) getResourceList(params *lm.GetDeviceListParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.GetDeviceList(params)
 	}
 }
 
-// PatchDevice Add new device
-func (lmexec *LMExec) PatchDevice(params *lm.PatchDeviceParams) types.ExecRequest {
+// patchResource Add new resource
+func (lmexec *LMExec) patchResource(params *lm.PatchDeviceParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.PatchDevice(params)
 	}
 }
 
-// DeleteDeviceByID Add new device
-func (lmexec *LMExec) DeleteDeviceByID(params *lm.DeleteDeviceByIDParams) types.ExecRequest {
+// deleteResourceByID Add new resource
+func (lmexec *LMExec) deleteResourceByID(params *lm.DeleteDeviceByIDParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.DeleteDeviceByID(params)
 	}
 }
 
-// GetImmediateDeviceListByDeviceGroupID Add new device
-func (lmexec *LMExec) GetImmediateDeviceListByDeviceGroupID(params *lm.GetImmediateDeviceListByDeviceGroupIDParams) types.ExecRequest {
+// getImmediateResourceListByResourceGroupID Add new resource
+func (lmexec *LMExec) getImmediateResourceListByResourceGroupID(params *lm.GetImmediateDeviceListByDeviceGroupIDParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.GetImmediateDeviceListByDeviceGroupID(params)
 	}
 }
 
-// AddDeviceErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) AddDeviceErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.AddDeviceDefault).Payload // nolint: errorlint
-}
-
-// UpdateDeviceErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) UpdateDeviceErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.UpdateDeviceDefault).Payload // nolint: errorlint
-}
-
-// GetDeviceByIDErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) GetDeviceByIDErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.GetDeviceByIDDefault).Payload // nolint: errorlint
-}
-
-// UpdateDevicePropertyErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) UpdateDevicePropertyErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.UpdateDevicePropertyByNameDefault).Payload // nolint: errorlint
-}
-
-// UpdateDevicePropertyByName updates specified device property.
-func (lmexec *LMExec) UpdateDevicePropertyByName(params *lm.UpdateDevicePropertyByNameParams) types.ExecRequest {
+// updateResourcePropertyByName updates specified resource property.
+func (lmexec *LMExec) updateResourcePropertyByName(params *lm.UpdateDevicePropertyByNameParams) types.ExecRequest {
 	return func() (interface{}, error) {
 		return lmexec.LMClient.LM.UpdateDevicePropertyByName(params)
 	}
 }
 
-// GetDeviceListErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) GetDeviceListErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.GetDeviceListDefault).Payload // nolint: errorlint
+// updateResourcePropertyByName updates specified resource property.
+func (lmexec *LMExec) addResourceGroup(params *lm.AddDeviceGroupParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.AddDeviceGroup(params)
+	}
 }
 
-// PatchDeviceErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) PatchDeviceErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.PatchDeviceDefault).Payload // nolint: errorlint
+// updateDeviceGroupByIDGroup updates specified resource property.
+func (lmexec *LMExec) updateResourceGroupByID(params *lm.UpdateDeviceGroupByIDParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.UpdateDeviceGroupByID(params)
+	}
 }
 
-// DeleteDeviceByIDErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) DeleteDeviceByIDErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.DeleteDeviceByIDDefault).Payload // nolint: errorlint
+// addResourceGroupProperty updates specified resource property.
+func (lmexec *LMExec) addResourceGroupProperty(params *lm.AddDeviceGroupPropertyParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.AddDeviceGroupProperty(params)
+	}
 }
 
-// GetImmediateDeviceListByDeviceGroupIDErrResp parse error object and returns models.ErrorResponse
-func (lmexec *LMExec) GetImmediateDeviceListByDeviceGroupIDErrResp(err error) *models.ErrorResponse {
-	return err.(*lm.GetImmediateDeviceListByDeviceGroupIDDefault).Payload // nolint: errorlint
+// updateResourceGroupPropertyByName updates specified resource property.
+func (lmexec *LMExec) updateResourceGroupPropertyByName(params *lm.UpdateDeviceGroupPropertyByNameParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.UpdateDeviceGroupPropertyByName(params)
+	}
+}
+
+// deleteResourceGroupPropertyByName updates specified resource property.
+func (lmexec *LMExec) deleteResourceGroupPropertyByName(params *lm.DeleteDeviceGroupPropertyByNameParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.DeleteDeviceGroupPropertyByName(params)
+	}
+}
+
+// getResourceGroupByID updates specified resource property.
+func (lmexec *LMExec) getResourceGroupByID(params *lm.GetDeviceGroupByIDParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.GetDeviceGroupByID(params)
+	}
+}
+
+// deleteResourceGroupByID updates specified resource property.
+func (lmexec *LMExec) deleteResourceGroupByID(params *lm.DeleteDeviceGroupByIDParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.DeleteDeviceGroupByID(params)
+	}
+}
+
+// getResourceGroupList updates specified resource property.
+func (lmexec *LMExec) getResourceGroupList(params *lm.GetDeviceGroupListParams) types.ExecRequest {
+	return func() (interface{}, error) {
+		return lmexec.LMClient.LM.GetDeviceGroupList(params)
+	}
 }

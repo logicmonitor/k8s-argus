@@ -16,21 +16,21 @@ import (
 type Watcher struct{}
 
 // AddFuncOptions addfunc options
-func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, error) {
+func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
 		if rt != enums.Pods {
-			return []types.DeviceOption{}, fmt.Errorf("resourceType is not of type pods")
+			return []types.ResourceOption{}, fmt.Errorf("resourceType is not of type pods")
 		}
 		p := obj.(*corev1.Pod) // nolint: forcetypeassert
 		if p.Status.PodIP == "" {
-			return []types.DeviceOption{}, fmt.Errorf("empty Status.PodIP")
+			return []types.ResourceOption{}, fmt.Errorf("empty Status.PodIP")
 		}
 		// If pod is in succeeded state, means it completed it execution
 		// perhaps pods created for jobs, goes in succeeded state
 		if p.Status.Phase == corev1.PodSucceeded {
-			return []types.DeviceOption{}, fmt.Errorf("pod status is \"Succeeded\", not adding it into monitoring")
+			return []types.ResourceOption{}, fmt.Errorf("pod status is \"Succeeded\", not adding it into monitoring")
 		}
-		options := []types.DeviceOption{
+		options := []types.ResourceOption{
 			b.Name(getPodDNSName(p)),
 			b.System("ips", p.Status.PodIP),
 		}
@@ -45,11 +45,11 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 }
 
 // UpdateFuncOptions update
-func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.DeviceBuilder) ([]types.DeviceOption, bool, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, bool, error) {
+func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 		oldPod := oldObj.(*corev1.Pod) // nolint: forcetypeassert
 		p := newObj.(*corev1.Pod)      // nolint: forcetypeassert
-		options := make([]types.DeviceOption, 0)
+		options := make([]types.ResourceOption, 0)
 		// If pod is in succeeded state, means it completed it execution
 		// perhaps pods created for jobs, goes in succeeded state
 		if p.Status.Phase == corev1.PodSucceeded {
@@ -59,7 +59,7 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 			return options, false, fmt.Errorf("empty Status.PodIP")
 		}
 		if oldPod.Status.PodIP != p.Status.PodIP {
-			options = append(options, []types.DeviceOption{
+			options = append(options, []types.ResourceOption{
 				b.Name(getPodDNSName(p)),
 				b.System("ips", p.Status.PodIP),
 			}...)
@@ -81,14 +81,14 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 }
 
 // DeleteFuncOptions delete
-func (w *Watcher) DeleteFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.DeviceOption {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.DeviceOption {
-		return []types.DeviceOption{}
+func (w *Watcher) DeleteFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
+		return []types.ResourceOption{}
 	}
 }
 
 func getPodDNSName(pod *corev1.Pod) string {
-	// if the pod is configured as "hostnetwork=true" or running on fargate, we will use the pod name as the IP/DNS name of the pod device
+	// if the pod is configured as "hostnetwork=true" or running on fargate, we will use the pod name as the IP/DNS name of the pod resource
 	if pod.Spec.HostNetwork || pod.Labels[constants.LabelFargateProfile] != "" {
 		return pod.Name
 	}

@@ -23,7 +23,7 @@ filters:
 	filters.Init()
 }*/
 
-const nodeName = "node-device"
+const nodeName = "node-resource"
 
 func TestEvaluate(t *testing.T) {
 	t.Parallel()
@@ -143,7 +143,7 @@ func getEvalTestData() []struct {
 func getSampleEvaluationParamsForPod1() map[string]interface{} {
 	labels := make(map[string]interface{})
 	labels["p1"] = "v1"
-	labels["name"] = "pod_device"
+	labels["name"] = "pod_resource"
 
 	return labels
 }
@@ -152,7 +152,7 @@ func getSampleEvaluationParamsForPod2() map[string]interface{} {
 	labels := make(map[string]interface{})
 	labels["p1"] = "v2"
 	labels["p3"] = "v4"
-	labels["name"] = "pod-device2"
+	labels["name"] = "pod-resource2"
 
 	return labels
 }
@@ -160,7 +160,7 @@ func getSampleEvaluationParamsForPod2() map[string]interface{} {
 func getSampleEvaluationParamsForDep1() map[string]interface{} {
 	labels := make(map[string]interface{})
 	labels["d1"] = "v1"
-	labels["name"] = "depl-device"
+	labels["name"] = "depl-resource"
 
 	return labels
 }
@@ -169,7 +169,7 @@ func getSampleEvaluationParamsForDep2() map[string]interface{} {
 	labels := make(map[string]interface{})
 	labels["d2"] = "v1"
 	labels["d3"] = "v4"
-	labels["name"] = "depl-device2"
+	labels["name"] = "depl-resource2"
 
 	return labels
 }
@@ -177,7 +177,7 @@ func getSampleEvaluationParamsForDep2() map[string]interface{} {
 func getSampleEvaluationParamsForSvc1() map[string]interface{} {
 	labels := make(map[string]interface{})
 	labels["s1"] = "dev"
-	labels["name"] = "svc-device"
+	labels["name"] = "svc-resource"
 
 	return labels
 }
@@ -186,7 +186,7 @@ func getSampleEvaluationParamsForSvc2() map[string]interface{} {
 	labels := make(map[string]interface{})
 	labels["s1"] = "qa"
 	labels["s3"] = "v3"
-	labels["name"] = "svc-device2"
+	labels["name"] = "svc-resource2"
 
 	return labels
 }

@@ -12,10 +12,9 @@ import (
 	"io/ioutil"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -413,7 +412,6 @@ func (m *website) Type() string {
 
 // SetType sets the type of this polymorphic type
 func (m *website) SetType(val string) {
-
 }
 
 // UseDefaultAlertSetting gets the use default alert setting of this polymorphic type
@@ -515,7 +513,6 @@ func unmarshalWebsite(data []byte, consumer runtime.Consumer) (Website, error) {
 
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
-
 }
 
 // Validate validates this website
@@ -549,7 +546,6 @@ func (m *website) Validate(formats strfmt.Registry) error {
 }
 
 func (m *website) validateCheckpoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Checkpoints()) { // not required
 		return nil
 	}
@@ -574,7 +570,6 @@ func (m *website) validateCheckpoints(formats strfmt.Registry) error {
 }
 
 func (m *website) validateCollectors(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Collectors()) { // not required
 		return nil
 	}
@@ -599,7 +594,6 @@ func (m *website) validateCollectors(formats strfmt.Registry) error {
 }
 
 func (m *website) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -608,7 +602,6 @@ func (m *website) validateName(formats strfmt.Registry) error {
 }
 
 func (m *website) validateProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Properties()) { // not required
 		return nil
 	}
@@ -633,7 +626,6 @@ func (m *website) validateProperties(formats strfmt.Registry) error {
 }
 
 func (m *website) validateTestLocation(formats strfmt.Registry) error {
-
 	if err := validate.Required("testLocation", "body", m.TestLocation()); err != nil {
 		return err
 	}

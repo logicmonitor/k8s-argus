@@ -18,10 +18,10 @@ func MonitorConfig() {
 		t := time.NewTicker(defaultMonitorDuration)
 		for range t.C {
 			conf, err := config.GetConfig()
-			if err == nil && c != conf.LogLevel {
+			if err == nil && c != *conf.LogLevel {
 				logrus.Infof("Setting log level %s", conf.LogLevel)
-				logrus.SetLevel(conf.LogLevel)
-				c = conf.LogLevel
+				logrus.SetLevel(*conf.LogLevel)
+				c = *conf.LogLevel
 			}
 		}
 	}(logrus.GetLevel())

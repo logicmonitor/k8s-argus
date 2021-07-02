@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -260,7 +259,6 @@ func (m *InterfBandwidthReport) Type() string {
 
 // SetType sets the type of this subtype
 func (m *InterfBandwidthReport) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -558,7 +556,6 @@ func (m *InterfBandwidthReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *InterfBandwidthReport) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -567,7 +564,6 @@ func (m *InterfBandwidthReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *InterfBandwidthReport) validateRecipients(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}

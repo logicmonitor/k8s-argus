@@ -1,35 +1,21 @@
 package argus
 
 import (
-	"net/http"
-	"net/url"
 	"time"
 
-	httptransport "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/strfmt"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
-	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/device"
-	"github.com/logicmonitor/k8s-argus/pkg/device/builder"
-	"github.com/logicmonitor/k8s-argus/pkg/devicecache"
-	cache2 "github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
-	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
-	"github.com/logicmonitor/k8s-argus/pkg/facade"
-	"github.com/logicmonitor/k8s-argus/pkg/lmexec"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
+	"github.com/logicmonitor/k8s-argus/pkg/resource/builder"
+	"github.com/logicmonitor/k8s-argus/pkg/resourcecache"
 	"github.com/logicmonitor/k8s-argus/pkg/sync"
 	"github.com/logicmonitor/k8s-argus/pkg/tree"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/namespace"
-	"github.com/logicmonitor/k8s-argus/pkg/watch/resource"
-	"github.com/logicmonitor/k8s-argus/pkg/worker"
-	"github.com/logicmonitor/lm-sdk-go/client"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
-	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/resourcewatcher"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -38,251 +24,111 @@ import (
 
 // Argus represents the Argus cli.
 type Argus struct {
-	*types.Base
-	types.LMFacade
-	types.DeviceManager
+	*types.LMRequester
+	types.ResourceManager
+	types.ResourceCache
 	Watchers               []types.ResourceWatcher
 	controllerStateHolders map[enums.ResourceType]*types.ControllerInitSyncStateHolder
 	NSWatcher              *namespace.OldWatcher
 }
 
-func newLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
-	conf := client.NewConfig()
-	conf.SetAccessID(&argusConfig.ID)
-	conf.SetAccessKey(&argusConfig.Key)
-	domain := argusConfig.Account + ".logicmonitor.com"
-	conf.SetAccountDomain(&domain)
-	// conf.UserAgent = constants.UserAgentBase + constants.Version
-	if argusConfig.ProxyURL == "" {
-		if argusConfig.IgnoreSSL {
-			return newLMClientWithoutSSL(conf)
-		}
-
-		return client.New(conf), nil
-	}
-
-	return newLMClientWithProxy(conf, argusConfig)
-}
-
-func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*client.LMSdkGo, error) {
-	proxyURL, err := url.Parse(argusConfig.ProxyURL)
+func (a *Argus) Init() error {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"argus": "init"}))
+	conf, err := config.GetConfig()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if argusConfig.ProxyUser != "" {
-		if argusConfig.ProxyPass != "" {
-			proxyURL.User = url.UserPassword(argusConfig.ProxyUser, argusConfig.ProxyPass)
-		} else {
-			proxyURL.User = url.User(argusConfig.ProxyUser)
-		}
+	var resourceGroupTree *types.ResourceGroupTree
+	if conf.EnableNewResourceTree {
+		resourceGroupTree, err = tree.GetResourceGroupTree2(lctx, a.ResourceManager, a.LMRequester)
+	} else {
+		resourceGroupTree, err = tree.GetResourceGroupTree(lctx, a.ResourceManager, a.LMRequester)
 	}
-	logrus.Infof("Using http/s proxy: %s", argusConfig.ProxyURL)
-	httpClient := http.Client{
-		Transport: &http.Transport{ // nolint: exhaustivestruct
-			Proxy: http.ProxyURL(proxyURL),
-		},
+	if err := a.CreateResourceGroupTree(lctx, resourceGroupTree, true); err != nil {
+		return err
 	}
-	transport := httptransport.NewWithClient(config.TransportCfg.Host, config.TransportCfg.BasePath, config.TransportCfg.Schemes, &httpClient)
-	authInfo := client.LMv1Auth(*config.AccessID, *config.AccessKey)
-	clientObj := new(client.LMSdkGo)
-	clientObj.Transport = transport
-	clientObj.LM = lm.New(transport, strfmt.Default, authInfo)
-
-	return clientObj, nil
-}
-
-func newLMClientWithoutSSL(config *client.Config) (*client.LMSdkGo, error) {
-	opts := httptransport.TLSClientOptions{InsecureSkipVerify: true}
-	httpClient, err := httptransport.TLSClient(opts)
 	if err != nil {
-		return nil, err
-	}
-	transport := httptransport.NewWithClient(config.TransportCfg.Host, config.TransportCfg.BasePath, config.TransportCfg.Schemes, httpClient)
-	authInfo := client.LMv1Auth(*config.AccessID, *config.AccessKey)
-	cli := new(client.LMSdkGo)
-	cli.Transport = transport
-	cli.LM = lm.New(transport, strfmt.Default, authInfo)
-
-	return cli, nil
-}
-
-// NewArgus instantiates and returns argus.
-func NewArgus(base *types.Base) (*Argus, error) {
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"function": "new-argus"}))
-	facadeObj := facade.NewFacade()
-	argus := &Argus{ // nolint: exhaustivestruct
-		Base:                   base,
-		LMFacade:               facadeObj,
-		controllerStateHolders: make(map[enums.ResourceType]*types.ControllerInitSyncStateHolder),
-	}
-	lmExecObj := &lmexec.LMExec{
-		Base: base,
+		return err
 	}
 
-	resourceCache := devicecache.NewResourceCache(base, base.Config.GetCacheSyncInterval())
-	resourceCache.Run()
-
-	deviceManager := &device.Manager{ // nolint: exhaustivestruct
-		Base:          base,
-		LMExecutor:    lmExecObj,
-		LMFacade:      facadeObj,
-		ResourceCache: resourceCache,
-	}
-	argus.DeviceManager = deviceManager
-
-	deviceTree := &tree.DeviceTree{
-		Base:          base,
-		ResourceCache: resourceCache,
-	}
-
-	deviceGroups, err := deviceTree.CreateDeviceTree(lctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Graceful rebuild
-	if devicegroup.GetClusterGroupProperty(lctx, constants.ResyncCacheProp, base.LMClient) == "true" {
-		resourceCache.Rebuild(lctx)
-		clusterGroupID := util.GetClusterGroupID(lctx, base.LMClient)
-		devicegroup.DeleteDeviceGroupPropertyByName(lctx, clusterGroupID, &models.EntityProperty{Name: constants.ResyncCacheProp, Value: "true"}, base.LMClient)
-	}
-
-	storeDeviceGroupsInCache(base, deviceGroups, resourceCache)
-	logrus.Infof("Device group tree: %v", deviceGroups)
-
-	deviceTree2 := &tree.DeviceTree2{
-		Base:          base,
-		ResourceCache: resourceCache,
-	}
-	deviceGroups2, err2 := deviceTree2.CreateDeviceTree(lctx)
-	if err2 != nil {
-		return nil, err2
-	}
-	logrus.Infof("New Device group tree : %v", deviceGroups2)
-
-	createWatchers(argus)
-
-	argus.NSWatcher = &namespace.OldWatcher{
-		Resource:      enums.Namespaces,
-		Base:          base,
-		DeviceGroups:  deviceGroups,
-		DeviceGroups2: deviceGroups2,
-		ResourceCache: resourceCache,
-	}
-
-	startWorkers(argus)
-	// init sync to delete the non-exist resource devices through LogicMonitor API
+	// init sync to delete the non-exist resource resources through LogicMonitor API
 	initSyncer := sync.InitSyncer{
-		DeviceManager: deviceManager,
+		LMRequester:     a.LMRequester,
+		ResourceManager: a.ResourceManager,
 	}
 
 	lctx2 := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "init-sync"}))
 	initSyncer.Sync(lctx2)
 
-	// periodically delete the non-exist resource devices through logicmonitor API based on specified time interval.
-	initSyncer.RunPeriodicSync(base.Config.GetPeriodicDeleteInterval())
+	// periodically delete the non-exist resource resources through logicmonitor API based on specified time interval.
+	initSyncer.RunPeriodicSync()
 
-	a, err3 := discoverETCDNodes(base, deviceManager)
-	if err3 != nil {
-		return a, err3
+	err = discoverETCDNodes(a.ResourceManager)
+	if err != nil {
+		return err
 	}
-	logrus.Debugf("Initialized argus")
-
-	return argus, nil
+	return nil
 }
 
-func discoverETCDNodes(base *types.Base, deviceManager *device.Manager) (*Argus, error) {
-	if base.Config.EtcdDiscoveryToken != "" {
+// NewArgus instantiates and returns argus.
+// nolint: cyclop
+func NewArgus(lmrequester *types.LMRequester, resourceManager types.ResourceManager, resourceCache *resourcecache.ResourceCache) (*Argus, error) {
+	return &Argus{ // nolint: exhaustivestruct
+		LMRequester:            lmrequester,
+		ResourceManager:        resourceManager,
+		ResourceCache:          resourceCache,
+		controllerStateHolders: make(map[enums.ResourceType]*types.ControllerInitSyncStateHolder),
+	}, nil
+}
+
+func discoverETCDNodes(resourceManager types.ResourceManager) error {
+	conf, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
+	if conf.EtcdDiscoveryToken != "" {
 		etcdController := etcd.Controller{
-			DeviceManager: deviceManager,
+			ResourceManager: resourceManager,
 		}
 		_, err := etcdController.DiscoverByToken()
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
-	return nil, nil
+	return nil
 }
 
-func startWorkers(argus *Argus) {
-	// Start workers
-	for _, w := range argus.Watchers {
-		resourceType := w.ResourceType()
-		c := w.GetConfig()
-		if c == nil {
-			logrus.Warningf("Watcher %v doesn't have worker config, couldn't run worker for it", w)
-
-			continue
-		}
-		wc := worker.NewWorker(c)
-		b, err := argus.LMFacade.RegisterWorker(c.ID, wc)
-		if err != nil {
-			logrus.Errorf("Failed to register worker for resource for: %s", resourceType.String())
-		}
-		if b {
-			wc.Run()
-		}
+func (a *Argus) CreateWatchers() error {
+	conf, err := config.GetConfig()
+	if err != nil {
+		return err
 	}
-}
-
-func createWatchers(argus *Argus) {
+	m := make(map[enums.ResourceType]*struct{})
+	for _, d := range conf.DisableResourceMonitoring {
+		m[d] = nil
+	}
 	for _, rt := range enums.ALLResourceTypes {
 		// These need special handling
 		if rt == enums.Namespaces || rt == enums.ETCD {
 			continue
 		}
-		argus.Watchers = append(argus.Watchers, &resource.Watcher{Resource: rt, WConfig: types.NewHTTPWConfig(rt)})
-	}
-}
-
-func storeDeviceGroupsInCache(base *types.Base, deviceGroups map[string]int32, resourceCache *devicecache.ResourceCache) {
-	// TODO: Temporary added here, move to its respective place
-	for k, v := range deviceGroups {
-		parent := util.ClusterGroupName(base.Config.ClusterName)
-		switch k {
-		case constants.AllNodeDeviceGroupName:
-			// the all nodes group should be nested in 'Nodes'
-			parent = constants.NodeDeviceGroupName
-		case util.ClusterGroupName(base.Config.ClusterName):
-			parent = ""
+		if _, ok := m[rt]; ok {
+			logrus.Warnf("Resource %s is being disabled for monitoring", rt.String())
+			continue
 		}
-
-		resourceCache.Set(cache2.ResourceName{
-			Name:     k,
-			Resource: enums.Namespaces,
-		}, cache2.ResourceMeta{ // nolint: exhaustivestruct
-			Container: parent,
-			LMID:      v,
-		})
+		a.Watchers = append(a.Watchers, &resourcewatcher.Watcher{Resource: rt})
 	}
-}
-
-// NewBase instantiates and returns the base structure used throughout Argus.
-func NewBase(conf *config.Config) (*types.Base, error) {
-	// LogicMonitor API client.
-	lmClient, err := newLMClient(conf)
-	if err != nil {
-		return nil, err
-	}
-
-	// check and update the params
-	checkAndUpdateClusterGroup(conf, lmClient)
-
-	// Kubernetes API client.
-	k8sClient := config.GetClientSet()
-
-	base := &types.Base{
-		LMClient:  lmClient,
-		K8sClient: k8sClient,
-		Config:    conf,
-	}
-
-	return base, nil
+	a.NSWatcher = namespace.NewOldWatcher(a.ResourceManager, a.ResourceCache, a.LMRequester)
+	return nil
 }
 
 // Watch watches the API for events.
 func (a *Argus) Watch() {
-	syncInterval := a.Base.Config.GetPeriodicSyncInterval()
+	conf, err := config.GetConfig()
+	if err != nil {
+		return
+	}
+	syncInterval := *conf.Intervals.PeriodicSyncInterval
 	logrus.Debugf("Starting watchers")
 	b := &builder.Builder{}
 
@@ -300,7 +146,7 @@ func (a *Argus) Watch() {
 
 			continue
 		}
-		watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(a.K8sClient, rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
+		watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
 		controller := a.createNewInformer(watchlist, rt, syncInterval, b)
 		logrus.Debugf("Starting watcher of %v", rt.String())
 		stop := make(chan struct{})
@@ -316,65 +162,95 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 		watchlist,
 		rt.K8SObjectType(),
 		syncInterval,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: resource.AddFuncDispatcher(
-				resource.AddFuncWithExclude(
-					resource.PreprocessAddEventForOldUID(
-						a.DeviceManager.GetResourceCache(),
-						a.DeviceManager.DeleteFunc(),
-						b,
-						resource.AddOrUpdateFunc(
-							a.controllerStateHolders,
-							b.AddFuncWithDefaults(
-								resource.WatcherConfigurer(rt),
-								a.DeviceManager,
+		cache.FilteringResourceEventHandler{
+			FilterFunc: a.genericObjectFilterFunc(),
+			Handler: cache.ResourceEventHandlerFuncs{
+				AddFunc: resourcewatcher.AddFuncDispatcher(
+					resourcewatcher.AddFuncWithExclude(
+						resourcewatcher.PreprocessAddEventForOldUID(
+							a.ResourceManager.GetResourceCache(),
+							a.ResourceManager.DeleteFunc(),
+							b,
+							resourcewatcher.AddOrUpdateFunc(
+								a.controllerStateHolders,
+								b.AddFuncWithDefaults(
+									resourcewatcher.WatcherConfigurer(rt),
+									a.ResourceManager,
+								),
+								b.UpdateFuncWithDefaults(
+									resourcewatcher.UpsertBasedOnCache(
+										a.ResourceManager.GetResourceCache(),
+										resourcewatcher.WatcherConfigurer(rt),
+										a.ResourceManager,
+										b,
+									),
+								),
 							),
+						),
+						b.DeleteFuncWithDefaults(resourcewatcher.WatcherConfigurer(rt), a.ResourceManager.DeleteFunc()),
+					),
+				),
+				UpdateFunc: resourcewatcher.UpdateFuncDispatcher(
+					resourcewatcher.UpdateFuncWithExclude(
+						resourcewatcher.PreprocessUpdateEventForOldUID(
+							a.ResourceManager.GetResourceCache(),
+							a.ResourceManager.DeleteFunc(),
+							b,
 							b.UpdateFuncWithDefaults(
-								resource.UpsertBasedOnCache(
-									a.DeviceManager.GetResourceCache(),
-									resource.WatcherConfigurer(rt),
-									a.DeviceManager,
+								resourcewatcher.UpsertBasedOnCache(
+									a.ResourceManager.GetResourceCache(),
+									resourcewatcher.WatcherConfigurer(rt),
+									a.ResourceManager,
 									b,
 								),
 							),
 						),
+						b.DeleteFuncWithDefaults(resourcewatcher.WatcherConfigurer(rt), a.ResourceManager.DeleteFunc()),
 					),
-					b.DeleteFuncWithDefaults(resource.WatcherConfigurer(rt), a.DeviceManager.DeleteFunc()),
 				),
-			),
-			UpdateFunc: resource.UpdateFuncDispatcher(
-				resource.UpdateFuncWithExclude(
-					resource.PreprocessUpdateEventForOldUID(
-						a.DeviceManager.GetResourceCache(),
-						a.DeviceManager.DeleteFunc(),
-						b,
-						b.UpdateFuncWithDefaults(
-							resource.UpsertBasedOnCache(
-								a.DeviceManager.GetResourceCache(),
-								resource.WatcherConfigurer(rt),
-								a.DeviceManager,
-								b,
-							),
-						),
-					),
-					b.DeleteFuncWithDefaults(resource.WatcherConfigurer(rt), a.DeviceManager.DeleteFunc()),
+				DeleteFunc: resourcewatcher.DeleteFuncDispatcher(
+					b.DeleteFuncWithDefaults(resourcewatcher.WatcherConfigurer(rt), a.ResourceManager.DeleteFunc()),
 				),
-			),
-			DeleteFunc: resource.DeleteFuncDispatcher(
-				b.DeleteFuncWithDefaults(resource.WatcherConfigurer(rt), a.DeviceManager.DeleteFunc()),
-			),
+			},
 		},
 	)
 	return controller
 }
 
+func (a *Argus) genericObjectFilterFunc() func(obj interface{}) bool {
+	if conf, err := config.GetConfig(); err == nil {
+		if conf.RegisterGenericFilter {
+			return func(obj interface{}) bool {
+				if rt, ok := resourcewatcher.InferResourceType(obj); ok {
+					if meta := rt.ObjectMeta(obj); meta != nil {
+						val := util.EvaluateExclusion(meta.Labels)
+						if !val {
+							logrus.Tracef("returning exclusion for: %s-%s", meta.Name, meta.Namespace)
+						}
+						return val
+					}
+					logrus.Tracef("cannot get ObjectMeta to run exclusion filter for ResourceType %s: %v", rt.String(), obj)
+
+				} else {
+					logrus.Tracef("cannot infer object type to run exclusion filter: %v", obj)
+				}
+				logrus.Tracef("returning true for %v", obj)
+				return true
+			}
+		}
+	}
+	return func(obj interface{}) bool {
+		return true
+	}
+}
+
 func (a *Argus) RunNSWatcher(syncInterval time.Duration) (enums.ResourceType, cache.Controller) {
-	nsRT := a.NSWatcher.ResourceType()
+	rt := a.NSWatcher.ResourceType()
 	// start ns watcher
-	watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(a.K8sClient, nsRT.K8SAPIVersion()), nsRT.String(), corev1.NamespaceAll, fields.Everything())
+	watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
 	_, controller := cache.NewInformer(
 		watchlist,
-		nsRT.K8SObjectType(),
+		rt.K8SObjectType(),
 		syncInterval,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    a.NSWatcher.AddFunc(),
@@ -382,19 +258,5 @@ func (a *Argus) RunNSWatcher(syncInterval time.Duration) (enums.ResourceType, ca
 			DeleteFunc: a.NSWatcher.DeleteFunc(),
 		},
 	)
-	return nsRT, controller
-}
-
-// check the cluster group ID, if the group does not exist, just use the root group
-func checkAndUpdateClusterGroup(config *config.Config, lmClient *client.LMSdkGo) {
-	// do not need to check the root group
-	if config.ClusterGroupID == constants.RootDeviceGroupID {
-		return
-	}
-
-	// if the group does not exist anymore, we will add the cluster to the root group
-	if !devicegroup.ExistsByID(config.ClusterGroupID, lmClient) {
-		logrus.Warnf("The device group (id=%v) does not exist, the cluster will be added to the root group", config.ClusterGroupID)
-		config.ClusterGroupID = constants.RootDeviceGroupID
-	}
+	return rt, controller
 }

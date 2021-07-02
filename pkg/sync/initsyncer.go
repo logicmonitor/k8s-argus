@@ -1,20 +1,19 @@
 package sync
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/logicmonitor/k8s-argus/pkg/client/k8s"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	"github.com/logicmonitor/k8s-argus/pkg/device"
-	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
-	"github.com/logicmonitor/k8s-argus/pkg/devicegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/resourcegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,36 +21,43 @@ import (
 
 // InitSyncer implements the initial sync through logicmonitor API
 type InitSyncer struct {
-	DeviceManager *device.Manager
+	*types.LMRequester
+	ResourceManager types.ResourceManager
 }
 
 // Sync sync
+// nolint: cyclop
 func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	log := lmlog.Logger(lctx)
 	// Graceful conflicts resolution
 	resolveConflicts := false
-	clusterGroupID := util.GetClusterGroupID(lctx, i.DeviceManager.LMClient)
+	clusterGroupID := util.GetClusterGroupID(lctx, i.LMRequester)
 
-	if devicegroup.GetClusterGroupProperty(lctx, constants.ResyncConflictingResourcesProp, i.DeviceManager.LMClient) == "true" {
+	if resourcegroup.GetClusterGroupProperty(lctx, constants.ResyncConflictingResourcesProp, i.LMRequester) == "true" {
 		resolveConflicts = true
 	}
 	log.Infof("resolveConflicts is: %v", resolveConflicts)
+	conf, err := config.GetConfig()
+	if err != nil {
+		log.Errorf("Failed to get config")
+		return
+	}
 	defer func() {
+		childLctx := lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: conf.ClusterName})
 		// Reset property so that this would happen gracefully
-		devicegroup.DeleteDeviceGroupPropertyByName(lctx, clusterGroupID, &models.EntityProperty{Name: constants.ResyncConflictingResourcesProp, Value: "true"}, i.DeviceManager.LMClient)
+		resourcegroup.DeleteResourceGroupPropertyByName(childLctx, clusterGroupID, &models.EntityProperty{Name: constants.ResyncConflictingResourcesProp, Value: "true"}, i.LMRequester)
 	}()
-	allK8SResourcesStore := i.DeviceManager.GetAllK8SResources()
+	allK8SResourcesStore := k8s.GetAllK8SResources()
 	log.Tracef("Resources present on cluster: %v", allK8SResourcesStore)
-	resourcesToDelete := map[enums.ResourceType]bool{
-		enums.Pods:        true,
-		enums.Deployments: true,
-		enums.Services:    true,
-		enums.Nodes:       true,
-		enums.Hpas:        true,
+	ignoreSync := map[enums.ResourceType]bool{
+		enums.ETCD:       true,
+		enums.Unknown:    true,
+		enums.Namespaces: true,
 	}
 
-	list := i.DeviceManager.ResourceCache.List()
+	list := i.ResourceManager.GetResourceCache().List()
 	log.Tracef("Current cache: %v", list)
+
 	for _, entry := range list {
 		log.Tracef("Iterate resource cache entry : %v ", entry)
 		cacheResourceName := entry.K
@@ -63,29 +69,33 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 			"ns":    cacheResourceMeta.Container,
 			"event": "sync",
 		})
+		childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
 
-		if !resourcesToDelete[cacheResourceName.Resource] {
+		if ignoreSync[cacheResourceName.Resource] {
 			continue
 		}
 
 		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
 		// Delete resource if no more exists or delete if UID does not match.
-		if !ok || clusterPresentMeta.UID != cacheResourceMeta.UID {
-			i.deleteDevice(childLctx, log, cacheResourceName, cacheResourceMeta)
+		if !ok ||
+			clusterPresentMeta.UID != cacheResourceMeta.UID ||
+			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) {
+
+			i.deleteResource(childLctx, log, cacheResourceName, cacheResourceMeta)
 		} else if resolveConflicts {
 			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName, log)
 		}
 	}
 
 	// Flush updated cache to configmaps
-	err3 := i.DeviceManager.ResourceCache.Save()
+	err3 := i.ResourceManager.GetResourceCache().Save()
 	if err3 != nil {
 		log.Errorf("Failed to flush resource cache after resync: %s", err3)
 	}
 }
 
 // nolint: gocognit
-func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta cache.ResourceMeta, clusterResourceMeta cache.ResourceMeta, cacheResourceName cache.ResourceName, log *logrus.Entry) {
+func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.ResourceMeta, clusterResourceMeta types.ResourceMeta, cacheResourceName types.ResourceName, log *logrus.Entry) {
 	rt := cacheResourceName.Resource
 	if clusterResourceMeta.DisplayName != cacheMeta.DisplayName || cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
 		conf, err := config.GetConfig()
@@ -99,108 +109,70 @@ func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta cache.Res
 		}, conf)
 		if cacheMeta.DisplayName != displayNameNew || cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
 			log.Infof("Updating resource by changing displayName to %s", displayNameNew)
-			resource, err := i.DeviceManager.FetchDevice(lctx, rt, cacheMeta.LMID)
+			options := []types.ResourceOption{
+				i.ResourceManager.DisplayName(displayNameNew),
+				i.ResourceManager.SystemCategory(rt.GetConflictsCategory(), enums.Delete),
+			}
+			_, err = i.ResourceManager.UpdateResourceByID(lctx, rt, cacheMeta.LMID, options...)
 			if err != nil {
-				log.Errorf("failed to fetch resource to change displayname: %v", cacheMeta.LMID)
+				log.Errorf("Failed to update resource with error: %s", err)
+
 				return
 			}
-			options := []types.DeviceOption{
-				i.DeviceManager.DisplayName(displayNameNew),
-				i.DeviceManager.SystemCategory(rt.GetConflictsCategory(), enums.Delete),
-			}
-			modifiedResourceValue := *resource
-			modifiedResource, err := util.BuildDevice(lctx, conf, &modifiedResourceValue, options...)
-			if err != nil {
-				log.Errorf("Failed to build modified resource")
-				return
-			}
-			_, err = i.DeviceManager.UpdateAndReplaceResource(lctx, rt, modifiedResource.ID, modifiedResource)
-			if err != nil {
-				i.handleConflictResource(lctx, err, log, cacheMeta, rt, conf, resource)
-				return
-			}
+
 			return
 		}
 		log.Infof("No change in settings to change displayName")
 	}
 }
 
-func (i *InitSyncer) handleConflictResource(lctx *lmctx.LMContext, err error, log *logrus.Entry, cacheMeta cache.ResourceMeta, rt enums.ResourceType, conf *config.Config, resource *models.Device) {
-	deviceDefault := err.(*lm.UpdateDeviceDefault) // nolint: errorlint
-	if deviceDefault != nil && deviceDefault.Code() == http.StatusConflict {
-		log.Warnf("Still resource conflicts, ignoring resolve conflict for resource")
-		if !cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
-			modifiedResource, err := util.BuildDevice(lctx, conf, resource, i.DeviceManager.SystemCategory(rt.GetConflictsCategory(), enums.Add))
-			if err != nil {
-				log.Errorf("Failed to modify resource to add conflicts category: %s", err)
-				return
-			}
-			_, err = i.DeviceManager.UpdateAndReplaceResource(lctx, rt, modifiedResource.ID, modifiedResource)
-			if err != nil {
-				log.Errorf("Failed to add conflicts category on resource: %s", err)
-			}
-		}
-		return
-	}
-	log.Errorf("Failed to modify resource name")
-}
-
-func (i *InitSyncer) deleteDevice(lctx *lmctx.LMContext, log *logrus.Entry, resourceName cache.ResourceName, resourceMeta cache.ResourceMeta) {
+func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, log *logrus.Entry, resourceName types.ResourceName, resourceMeta types.ResourceMeta) {
 	conf, err := config.GetConfig()
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return
 	}
-	if conf.DeleteDevices {
-		log.Debugf("Deleting device: %s %v", resourceName.Name, resourceMeta)
-		err := i.DeviceManager.DeleteByID(lctx, resourceName.Resource, resourceMeta.LMID)
+	if conf.DeleteResources &&
+		!util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta) {
+		log.Info("Deleting resource")
+		err := i.ResourceManager.DeleteResourceByID(lctx, resourceName.Resource, resourceMeta.LMID)
 		if err != nil {
 			sc := util.GetHTTPStatusCodeFromLMSDKError(err)
 			if sc == http.StatusNotFound {
-				log.Tracef("Device does not exist %s, %v", resourceName.Name, resourceMeta.LMID)
-				i.DeviceManager.ResourceCache.Unset(resourceName, resourceMeta.Container)
+				log.Tracef("Resource does not exist %s, %v", resourceName.Name, resourceMeta.LMID)
+				i.ResourceManager.GetResourceCache().Unset(lctx, resourceName, resourceMeta.Container)
 			} else {
-				log.Errorf("Failed to delete dangling device %s with ID %v : %s", resourceName.Name, resourceMeta.LMID, err)
+				log.Errorf("Failed to delete dangling resource %s with ID %v : %s", resourceName.Name, resourceMeta.LMID, err)
 			}
 		} else {
-			i.DeviceManager.ResourceCache.Unset(resourceName, resourceMeta.Container)
-			log.Tracef("Deleted dangling device %s with id: %v", resourceName.Name, resourceMeta.LMID)
+			i.ResourceManager.GetResourceCache().Unset(lctx, resourceName, resourceMeta.Container)
+			log.Tracef("Deleted dangling resource %s with id: %v", resourceName.Name, resourceMeta.LMID)
 		}
 	} else {
-		log.Infof("Soft delete")
-		deleteOptions := i.DeviceManager.GetMarkDeleteOptions(lctx, resourceName.Resource, &metav1.ObjectMeta{})
-		id, err := util.GetCollectorID()
-		if err != nil {
-			log.Errorf("Failed to get collector id")
+		log.Info("Soft delete")
+		deleteOptions := i.ResourceManager.GetMarkDeleteOptions(lctx, resourceName.Resource, &metav1.ObjectMeta{})
 
-			return
-		}
-		resource := &models.Device{
-			ID:                   resourceMeta.LMID,
-			Name:                 &resourceMeta.Name,
-			DisplayName:          &resourceMeta.DisplayName,
-			PreferredCollectorID: &id,
-		}
-		resource, err = util.BuildDevice(lctx, conf, resource, deleteOptions...)
+		_, err = i.ResourceManager.UpdateResourceByID(lctx, resourceName.Resource, resourceMeta.LMID, deleteOptions...)
 		if err != nil {
-			log.Errorf("Unable to build resource to mark it as delete")
+			log.Errorf("failed to mark resource as deleted: %s", err)
 		} else {
-			_, err = i.DeviceManager.UpdateAndReplaceResource(lctx, resourceName.Resource, resource.ID, resource)
-			if err != nil {
-				log.Errorf("failed to mark resource as deleted")
-			} else {
-				log.Infof("Marked resource as deleted")
-			}
+			log.Infof("Marked resource as deleted")
 		}
 	}
 }
 
 // RunPeriodicSync runs synchronization periodically.
-func (i *InitSyncer) RunPeriodicSync(syncTime time.Duration) {
+func (i *InitSyncer) RunPeriodicSync() {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "periodic-sync"}))
+
 	go func() {
 		for {
-			time.Sleep(syncTime)
+			conf, err := config.GetConfig()
+			if err != nil {
+				time.Sleep(constants.DefaultPeriodicDeleteInterval) // nolint: gomnd
+			} else {
+				time.Sleep(*conf.Intervals.PeriodicDeleteInterval)
+			}
 			i.Sync(lctx)
 		}
 	}()

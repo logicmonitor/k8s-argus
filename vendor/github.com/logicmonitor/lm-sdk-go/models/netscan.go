@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -224,7 +223,6 @@ func (m *netscan) Method() string {
 
 // SetMethod sets the method of this polymorphic type
 func (m *netscan) SetMethod(val string) {
-
 }
 
 // Name gets the name of this polymorphic type
@@ -384,7 +382,6 @@ func unmarshalNetscan(data []byte, consumer runtime.Consumer) (Netscan, error) {
 
 	}
 	return nil, errors.New(422, "invalid method value: %q", getType.Method)
-
 }
 
 // Validate validates this netscan
@@ -414,7 +411,6 @@ func (m *netscan) Validate(formats strfmt.Registry) error {
 }
 
 func (m *netscan) validateCollector(formats strfmt.Registry) error {
-
 	if err := validate.Required("collector", "body", m.Collector()); err != nil {
 		return err
 	}
@@ -423,7 +419,6 @@ func (m *netscan) validateCollector(formats strfmt.Registry) error {
 }
 
 func (m *netscan) validateDuplicate(formats strfmt.Registry) error {
-
 	if err := validate.Required("duplicate", "body", m.Duplicate()); err != nil {
 		return err
 	}
@@ -441,7 +436,6 @@ func (m *netscan) validateDuplicate(formats strfmt.Registry) error {
 }
 
 func (m *netscan) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -450,7 +444,6 @@ func (m *netscan) validateName(formats strfmt.Registry) error {
 }
 
 func (m *netscan) validateSchedule(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Schedule()) { // not required
 		return nil
 	}

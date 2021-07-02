@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -53,7 +52,6 @@ func (m *NetAppAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *NetAppAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // InstanceDescription gets the instance description of this subtype
@@ -231,7 +229,6 @@ func (m *NetAppAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NetAppAutoDiscoveryMethod) validateType(formats strfmt.Registry) error {
-
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}

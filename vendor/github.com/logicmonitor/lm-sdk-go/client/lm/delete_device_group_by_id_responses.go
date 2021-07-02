@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -34,6 +32,19 @@ func (o *DeleteDeviceGroupByIDReader) ReadResponse(response runtime.ClientRespon
 
 	default:
 		result := NewDeleteDeviceGroupByIDDefault(response.Code())
+		if result.Code() == 429 {
+			errResp := &models.ErrorResponse{
+				ErrorCode: 429,
+				ErrorDetail: map[string]interface{}{
+					"x-rate-limit-limit":     response.GetHeader("x-rate-limit-limit"),
+					"x-rate-limit-remaining": response.GetHeader("x-rate-limit-remaining"),
+					"x-rate-limit-window":    response.GetHeader("x-rate-limit-window"),
+				},
+				ErrorMessage: "Customized response from argus sdk",
+			}
+			result.Payload = errResp
+			return nil, result
+		}
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -62,7 +73,6 @@ func (o *DeleteDeviceGroupByIDOK) Error() string {
 }
 
 func (o *DeleteDeviceGroupByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
@@ -98,7 +108,6 @@ func (o *DeleteDeviceGroupByIDDefault) Error() string {
 }
 
 func (o *DeleteDeviceGroupByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

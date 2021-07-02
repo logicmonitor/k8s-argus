@@ -9,24 +9,19 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/swag"
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewPatchAdminByIDParams creates a new PatchAdminByIDParams object
 // with the default values initialized.
 func NewPatchAdminByIDParams() *PatchAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 
@@ -37,9 +32,7 @@ func NewPatchAdminByIDParams() *PatchAdminByIDParams {
 // NewPatchAdminByIDParamsWithTimeout creates a new PatchAdminByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewPatchAdminByIDParamsWithTimeout(timeout time.Duration) *PatchAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 
@@ -50,9 +43,7 @@ func NewPatchAdminByIDParamsWithTimeout(timeout time.Duration) *PatchAdminByIDPa
 // NewPatchAdminByIDParamsWithContext creates a new PatchAdminByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewPatchAdminByIDParamsWithContext(ctx context.Context) *PatchAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 
@@ -63,9 +54,7 @@ func NewPatchAdminByIDParamsWithContext(ctx context.Context) *PatchAdminByIDPara
 // NewPatchAdminByIDParamsWithHTTPClient creates a new PatchAdminByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewPatchAdminByIDParamsWithHTTPClient(client *http.Client) *PatchAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 		HTTPClient:     client,
@@ -157,7 +146,6 @@ func (o *PatchAdminByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchAdminByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

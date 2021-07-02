@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewGetWebsiteGroupListParams creates a new GetWebsiteGroupListParams object
@@ -176,7 +174,6 @@ func (o *GetWebsiteGroupListParams) SetSize(size *int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetWebsiteGroupListParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

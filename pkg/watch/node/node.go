@@ -1,11 +1,12 @@
 // Package node provides the logic for mapping a Kubernetes Node to a
-// LogicMonitor device.
+// LogicMonitor resource.
 package node
 
 import (
 	"fmt"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -16,18 +17,18 @@ import (
 type Watcher struct{}
 
 // AddFuncOptions add
-func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, error) {
+func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
 		if rt != enums.Nodes {
-			return []types.DeviceOption{}, fmt.Errorf("resourceType is not of type nodes")
+			return []types.ResourceOption{}, fmt.Errorf("resourceType is not of type nodes")
 		}
 		node := obj.(*corev1.Node) // nolint: forcetypeassert
 		internalAddress := getInternalAddress(node.Status.Addresses)
 		if internalAddress == nil {
-			return []types.DeviceOption{}, fmt.Errorf("no internal ip address present")
+			return []types.ResourceOption{}, fmt.Errorf("no internal ip address present")
 		}
 
-		options := []types.DeviceOption{
+		options := []types.ResourceOption{
 			b.Name(internalAddress.Address),
 		}
 
@@ -36,20 +37,20 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 }
 
 // UpdateFuncOptions update
-func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.DeviceBuilder) ([]types.DeviceOption, bool, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.DeviceBuilder) ([]types.DeviceOption, bool, error) {
+func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 		if rt != enums.Nodes {
-			return []types.DeviceOption{}, false, fmt.Errorf("resourceType is not of type nodes")
+			return []types.ResourceOption{}, false, fmt.Errorf("resourceType is not of type nodes")
 		}
 		oldNode := oldObj.(*corev1.Node) // nolint: forcetypeassert
 		node := newObj.(*corev1.Node)    // nolint: forcetypeassert
 		// If the old node does not have an IP, then there is no way we could
-		// have added it to LogicMonitor. Therefore, it must be a new device.
+		// have added it to LogicMonitor. Therefore, it must be a new resource.
 		oldInternalAddress := getInternalAddress(oldNode.Status.Addresses)
 		internalAddress := getInternalAddress(node.Status.Addresses)
 
 		var err error
-		var options []types.DeviceOption
+		var options []types.ResourceOption
 		if internalAddress == nil {
 			err = fmt.Errorf("no internal ip address present")
 		} else if oldInternalAddress.Address != internalAddress.Address {
@@ -68,14 +69,14 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 			return options, false, err
 		}
 
-		return options, false, fmt.Errorf("no change in additional options")
+		return options, false, aerrors.ErrNoChangeInUpdateOptions
 	}
 }
 
 // DeleteFuncOptions delete
-func (w *Watcher) DeleteFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.DeviceOption {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.DeviceOption {
-		return []types.DeviceOption{}
+func (w *Watcher) DeleteFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
+		return []types.ResourceOption{}
 	}
 }
 

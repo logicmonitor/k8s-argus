@@ -29,3 +29,7 @@ func LMContextWithFields(lctx *lmctx.LMContext, fields logrus.Fields) *lmctx.LMC
 
 	return ctx
 }
+
+func LMContextWithLMResourceID(lctx *lmctx.LMContext, lmid int32) *lmctx.LMContext {
+	return LMContextWithFields(lctx, logrus.Fields{"lm_resource_id": lmid})
+}

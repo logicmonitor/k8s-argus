@@ -9,22 +9,18 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewGetWebsiteByIDParams creates a new GetWebsiteByIDParams object
 // with the default values initialized.
 func NewGetWebsiteByIDParams() *GetWebsiteByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetWebsiteByIDParams{
 		Format: &formatDefault,
 
@@ -35,9 +31,7 @@ func NewGetWebsiteByIDParams() *GetWebsiteByIDParams {
 // NewGetWebsiteByIDParamsWithTimeout creates a new GetWebsiteByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewGetWebsiteByIDParamsWithTimeout(timeout time.Duration) *GetWebsiteByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetWebsiteByIDParams{
 		Format: &formatDefault,
 
@@ -48,9 +42,7 @@ func NewGetWebsiteByIDParamsWithTimeout(timeout time.Duration) *GetWebsiteByIDPa
 // NewGetWebsiteByIDParamsWithContext creates a new GetWebsiteByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewGetWebsiteByIDParamsWithContext(ctx context.Context) *GetWebsiteByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetWebsiteByIDParams{
 		Format: &formatDefault,
 
@@ -61,9 +53,7 @@ func NewGetWebsiteByIDParamsWithContext(ctx context.Context) *GetWebsiteByIDPara
 // NewGetWebsiteByIDParamsWithHTTPClient creates a new GetWebsiteByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewGetWebsiteByIDParamsWithHTTPClient(client *http.Client) *GetWebsiteByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetWebsiteByIDParams{
 		Format:     &formatDefault,
 		HTTPClient: client,
@@ -142,7 +132,6 @@ func (o *GetWebsiteByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetWebsiteByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

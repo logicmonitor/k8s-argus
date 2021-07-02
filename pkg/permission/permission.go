@@ -3,30 +3,21 @@ package permission
 import (
 	"sync"
 
+	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 var (
 	enable  = true
 	disable = false
 
-	client kubernetes.Interface
-
 	deploymentPermissionFlag              *bool
 	horizontalPodAutoscalerPermissionFlag *bool
 	mu                                    sync.Mutex
 )
-
-// Init is a function than init the permission context
-func Init(k8sClient kubernetes.Interface) {
-	mu.Lock()
-	defer mu.Unlock()
-	client = k8sClient
-}
 
 // HasDeploymentPermissions is a function that check if the deployment resource has permissions
 // nolint: dupl
@@ -36,7 +27,7 @@ func HasDeploymentPermissions() bool {
 	}
 	mu.Lock()
 	defer mu.Unlock()
-	_, err := client.AppsV1().Deployments(corev1.NamespaceAll).List(metav1.ListOptions{})
+	_, err := config.GetClientSet().AppsV1().Deployments(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		deploymentPermissionFlag = &disable
 		logrus.Errorf("Failed to list deployments: %+v", err)
@@ -57,7 +48,7 @@ func HasHorizontalPodAutoscalerPermissions() bool {
 	mu.Lock()
 	defer mu.Unlock()
 
-	_, err := client.AutoscalingV1().HorizontalPodAutoscalers(corev1.NamespaceAll).List(metav1.ListOptions{})
+	_, err := config.GetClientSet().AutoscalingV1().HorizontalPodAutoscalers(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		horizontalPodAutoscalerPermissionFlag = &disable
 

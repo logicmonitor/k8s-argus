@@ -1,6 +1,6 @@
 package types
 
-// go:generate mockgen -destination=../mocks/mock_types.go -package=mocks github.com/logicmonitor/k8s-argus/pkg/types LMFacade,Watcher,DeviceManager,DeviceMapper,DeviceBuilder
+// go:generate mockgen -destination=../mocks/mock_types.go -package=mocks github.com/logicmonitor/k8s-argus/pkg/types LMFacade,Watcher,ResourceManager,ResourceMapper,ResourceBuilder
 
 import (
 	"fmt"
@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
-	"github.com/logicmonitor/k8s-argus/pkg/devicecache/cache"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/lm-sdk-go/client"
-	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	toolscache "k8s.io/client-go/tools/cache"
 )
@@ -29,25 +28,19 @@ type Base struct {
 
 // WConfig worker configuration
 type WConfig struct {
-	ID         enums.ResourceType
-	Channels   map[string]chan ICommand
-	RetryLimit int
+	ID       int
+	inCh     chan *WorkerCommand
+	MaxRetry int
 }
 
 // NewHTTPWConfig new
-func NewHTTPWConfig(rt enums.ResourceType) *WConfig {
-	ch := make(chan ICommand)
+func NewHTTPWConfig(id int) *WConfig {
+	ch := make(chan *WorkerCommand)
 
 	return &WConfig{
-		Channels: map[string]chan ICommand{
-			"GET":    ch,
-			"POST":   ch,
-			"DELETE": ch,
-			"PUT":    ch,
-			"PATCH":  ch,
-		},
-		RetryLimit: defaultWorkerRetryLimit,
-		ID:         rt,
+		inCh:     ch,
+		MaxRetry: defaultWorkerRetryLimit,
+		ID:       id,
 	}
 }
 
@@ -57,20 +50,13 @@ func (wc *WConfig) GetConfig() *WConfig {
 }
 
 // GetChannel Get channel for mentioned command
-func (wc *WConfig) GetChannel(command ICommand) chan ICommand {
-	// Convert to switch case when adding new if conditions
-	if command, ok := command.(IHTTPCommand); ok {
-		m := command.(IHTTPCommand).GetMethod()
-
-		return wc.Channels[m]
-	}
-
-	return nil
+func (wc *WConfig) GetChannel() chan *WorkerCommand {
+	return wc.inCh
 }
 
 // Watcher is the LogicMonitor Watcher interface.
 type Watcher interface {
-	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, []DeviceOption)
+	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, []ResourceOption)
 	DeleteFunc() func(interface{})
 	UpdateFunc() func(oldObj, newObj interface{})
 	GetConfig() *WConfig
@@ -79,84 +65,135 @@ type Watcher interface {
 
 // ResourceWatcher is the LogicMonitor Watcher interface.
 type ResourceWatcher interface {
-	GetConfig() *WConfig
 	ResourceType() enums.ResourceType
 }
 
 // WatcherConfigurer is the LogicMonitor Watcher interface.
 type WatcherConfigurer interface {
-	AddFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, DeviceBuilder) ([]DeviceOption, error)
-	UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, DeviceBuilder) ([]DeviceOption, bool, error)
-	DeleteFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}) []DeviceOption
+	AddFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, ResourceBuilder) ([]ResourceOption, error)
+	UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ResourceBuilder) ([]ResourceOption, bool, error)
+	DeleteFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}) []ResourceOption
 }
 
 // ResourceCache cache
 type ResourceCache interface {
 	Run()
-	Set(cache.ResourceName, cache.ResourceMeta) bool
-	Exists(*lmctx.LMContext, cache.ResourceName, string) (cache.ResourceMeta, bool)
-	Get(lctx *lmctx.LMContext, name cache.ResourceName) ([]cache.ResourceMeta, bool)
-	Unset(cache.ResourceName, string) bool
-	Load() error
+	Set(*lmctx.LMContext, ResourceName, ResourceMeta) bool
+	Exists(*lmctx.LMContext, ResourceName, string, bool) (ResourceMeta, bool)
+	Get(lctx *lmctx.LMContext, name ResourceName) ([]ResourceMeta, bool)
+	Unset(*lmctx.LMContext, ResourceName, string) bool
+	Load(*lmctx.LMContext) error
 	Save() error
-	List() []cache.IterItem
-	UnsetLMID(enums.ResourceType, int32) bool
+	List() []IterItem
+	UnsetLMID(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) bool
+	SoftRefresh(*lmctx.LMContext, string)
+	AddCacheHook(hook CacheHook)
 }
 
-// DeviceManager is an interface that describes how resources in Kubernetes
-// are mapped into LogicMonitor as devices.
-type DeviceManager interface {
-	DeviceMapper
-	DeviceBuilder
+// ResourceGroupManager interface for resource group operations
+type ResourceGroupManager interface {
+	ResourceGroupBuilder
+	CreateResourceGroupTree(lctx *lmctx.LMContext, tree *ResourceGroupTree, update bool) error
+	DeleteResourceGroup(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) error
+}
+
+// ResourceManager is an interface that describes how resources in Kubernetes
+// are mapped into LogicMonitor as resources.
+type ResourceManager interface {
+	ResourceMapper
+	ResourceBuilder
 	Actions
+	ResourceGroupManager
 	GetResourceCache() ResourceCache
 }
 
 // Actions actions
 type Actions interface {
 	// AddFunc wrapper
-	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) (*models.Device, error)
-	UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...DeviceOption) (*models.Device, error)
-	DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) error
+	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption) (*models.Device, error)
+	UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...ResourceOption) (*models.Device, error)
+	DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption) error
 }
 
-// DeviceMapper is the interface responsible for mapping a Kubernetes resource to
-// a LogicMonitor device.
-type DeviceMapper interface {
-	// FindByDisplayName searches for a device by it's display name. It will
-	// returns a device if and only if
-	// one device was found, and
+// SyncUpdater methods for syncer only
+type SyncUpdater interface {
+	UpdateResourceByID(*lmctx.LMContext, enums.ResourceType, int32, ...ResourceOption) (*models.Device, error)
+	DeleteResourceByID(*lmctx.LMContext, enums.ResourceType, int32) error
+}
+
+// ResourceMapper is the interface responsible for mapping a Kubernetes resource to
+// a LogicMonitor resource.
+type ResourceMapper interface {
+	SyncUpdater
+	// FindByDisplayName searches for a resource by it's display name. It will
+	// returns a resource if and only if
+	// one resource was found, and
 	// returns nil otherwise.
 	FindByDisplayName(*lmctx.LMContext, enums.ResourceType, string) (*models.Device, error)
-	// Add adds a device to a LogicMonitor account.
-	Add(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) (*models.Device, error)
-	// DeleteByID deletes a device by device ID.
+	// DeleteByID deletes a resource by resource ID.
 	DeleteByID(*lmctx.LMContext, enums.ResourceType, int32) error
 }
 
-// DeviceOption is the function definition for the functional options pattern.
-type DeviceOption func(*models.Device)
+// ResourceOption is the function definition for the functional options pattern.
+type ResourceOption func(*models.Device)
 
-// DeviceBuilder is the interface responsible for building a device struct.
-type DeviceBuilder interface {
-	// Name sets the device name.
-	Name(string) DeviceOption
-	// DisplayName sets the device name.
-	DisplayName(string) DeviceOption
-	// CollectorID sets the preferred collector ID for the device.
-	CollectorID(int32) DeviceOption
-	// SystemCategory sets the system.categories property on the device.
-	SystemCategory(string, enums.BuilderAction) DeviceOption
-	// ResourceLabels sets custom properties for the device
-	ResourceLabels(map[string]string) DeviceOption
-	// Auto adds an auto property to the device.
-	Auto(string, string) DeviceOption
-	// System adds a system property to the device.
-	System(string, string) DeviceOption
-	// Custom adds a custom property to the device.
-	Custom(string, string) DeviceOption
-	// DeletedOn adds kubernetes.resourceDeletedOn property to the device.
-	DeletedOn(time.Time) DeviceOption
+// ResourceBuilder is the interface responsible for building a resource struct.
+type ResourceBuilder interface {
+	// Name sets the resource name.
+	Name(string) ResourceOption
+	// DisplayName sets the resource name.
+	DisplayName(string) ResourceOption
+	// CollectorID sets the preferred collector ID for the resource.
+	CollectorID(int32) ResourceOption
+	// SystemCategory sets the system.categories property on the resource.
+	SystemCategory(string, enums.BuilderAction) ResourceOption
+	// ResourceLabels sets custom properties for the resource
+	ResourceLabels(map[string]string) ResourceOption
+	// Auto adds an auto property to the resource.
+	Auto(string, string) ResourceOption
+	// System adds a system property to the resource.
+	System(string, string) ResourceOption
+	// Custom adds a custom property to the resource.
+	Custom(string, string) ResourceOption
+	// DeletedOn adds kubernetes.resourceDeletedOn property to the resource.
+	DeletedOn(time.Time) ResourceOption
+
+	GetMarkDeleteOptions(*lmctx.LMContext, enums.ResourceType, *metav1.ObjectMeta) []ResourceOption
+}
+
+// AppliesToBuilder is an interface for building an appliesTo string.
+type AppliesToBuilder interface {
+	HasCategory(string) AppliesToBuilder
+	Auto(string) AppliesToBuilder
+	And() AppliesToBuilder
+	OpenBracket() AppliesToBuilder
+	TrimOrCloseBracket() AppliesToBuilder
+	Custom(string) AppliesToBuilder
+	Or() AppliesToBuilder
+	Equals(string) AppliesToBuilder
+	Exists(string) AppliesToBuilder
+	Build() string
+}
+
+// PropertyBuilder is an interface for building properties
+type PropertyBuilder interface {
+	Add(string, string, bool) PropertyBuilder
+	AddProperties([]config.PropOpts) PropertyBuilder
+	Build([]*models.NameAndValue) []*models.NameAndValue
+}
+
+// ResourceGroupOption is the function definition for the functional options pattern.
+type ResourceGroupOption func(group *models.DeviceGroup)
+
+// ResourceGroupBuilder is the interface responsible for building a resource struct.
+type ResourceGroupBuilder interface {
+	// GroupName sets the resource name.
+	GroupName(string) ResourceGroupOption
+	// ParentID parent group id
+	ParentID(int32) ResourceGroupOption
+	DisableAlerting(bool) ResourceGroupOption
+	AppliesTo(AppliesToBuilder) ResourceGroupOption
+	CustomProperties(builder PropertyBuilder) ResourceGroupOption
 }
 
 // UpdateFilter is a boolean function to run predicate and
@@ -168,33 +205,6 @@ type ExecRequest func() (interface{}, error)
 
 // ParseErrResp function signature to parse error response
 type ParseErrResp func(error) *models.ErrorResponse
-
-// LMExecutor All the
-type LMExecutor interface {
-	AddDevice(*lm.AddDeviceParams) ExecRequest
-	AddDeviceErrResp(error) *models.ErrorResponse
-
-	UpdateDevice(*lm.UpdateDeviceParams) ExecRequest
-	UpdateDeviceErrResp(error) *models.ErrorResponse
-
-	GetDeviceByID(params *lm.GetDeviceByIDParams) ExecRequest
-	GetDeviceByIDErrResp(error) *models.ErrorResponse
-
-	UpdateDevicePropertyByName(*lm.UpdateDevicePropertyByNameParams) ExecRequest
-	UpdateDevicePropertyErrResp(error) *models.ErrorResponse
-
-	GetDeviceList(*lm.GetDeviceListParams) ExecRequest
-	GetDeviceListErrResp(error) *models.ErrorResponse
-
-	PatchDevice(*lm.PatchDeviceParams) ExecRequest
-	PatchDeviceErrResp(error) *models.ErrorResponse
-
-	DeleteDeviceByID(*lm.DeleteDeviceByIDParams) ExecRequest
-	DeleteDeviceByIDErrResp(error) *models.ErrorResponse
-
-	GetImmediateDeviceListByDeviceGroupID(*lm.GetImmediateDeviceListByDeviceGroupIDParams) ExecRequest
-	GetImmediateDeviceListByDeviceGroupIDErrResp(error) *models.ErrorResponse
-}
 
 // WorkerResponse wraps response and error
 type WorkerResponse struct {
@@ -305,19 +315,19 @@ type LMFacade interface {
 	// Send(command ICommand)
 
 	// SendReceive sync api call
-	SendReceive(*lmctx.LMContext, enums.ResourceType, ICommand) (interface{}, error)
+	SendReceive(*lmctx.LMContext, *WorkerCommand) (interface{}, error)
 	// RegisterWorker registers worker to facade client to put command objects on channel
-	RegisterWorker(enums.ResourceType, Worker) (bool, error)
+	RegisterWorker(Worker) (bool, error)
+	// UnregisterWorker registers worker to facade client to put command objects on channel
+	UnregisterWorker(Worker) (bool, error)
+	// Count registers worker to facade client to put command objects on channel
+	Count() int
 }
 
-// RateLimitUpdateRequest struct to send new rate limits received from server to manager
-type RateLimitUpdateRequest struct {
-	IsGlobal bool
-	Worker   enums.ResourceType
-	Category string
-	Method   string
-	Limit    int64
-	Window   int
+// RateLimits struct to send new rate limits received from server to manager
+type RateLimits struct {
+	Limit  int64
+	Window int
 }
 
 // WorkerRateLimitsUpdate struct to send new rate limits received from server to manager
@@ -331,22 +341,14 @@ type WorkerRateLimitsUpdate struct {
 // RateLimitManager interface for rate limit manager
 type RateLimitManager interface {
 	// GetUpdateRequestChannel channel to send new limits to rate limit manager
-	GetUpdateRequestChannel() chan RateLimitUpdateRequest
+	GetUpdateRequestChannel() chan RateLimits
 	// GetRateLimitConfig sends config for requested resource
 	GetRateLimitConfig(resource string) map[string]int
 	// RegisterWorkerNotifyChannel register channel to send updates to workers
 	RegisterWorkerNotifyChannel(resource string, ch chan WorkerRateLimitsUpdate) (bool, error)
 }
 
-// DeviceExists error when device is already present in LM
-type DeviceExists struct{}
-
-// Error implements error interface
-func (err DeviceExists) Error() string {
-	return "device already present, ignoring add event"
-}
-
-// GetCollectorIDError error when device is already present in LM
+// GetCollectorIDError error when resource is already present in LM
 type GetCollectorIDError struct {
 	Err error
 }
@@ -404,17 +406,17 @@ func (stateHolder *ControllerInitSyncStateHolder) Run() {
 
 type (
 	AddPreprocessFunc func(*lmctx.LMContext, enums.ResourceType, interface{})
-	AddProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
+	AddProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption)
 )
 
 type (
 	UpdatePreprocessFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{})
-	UpdateProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, []DeviceOption, []DeviceOption)
+	UpdateProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, []ResourceOption, []ResourceOption)
 )
 
 type (
 	DeletePreprocessFunc func(*lmctx.LMContext, enums.ResourceType, interface{})
-	DeleteProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption)
+	DeleteProcessFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption)
 )
 
 type (
@@ -424,7 +426,13 @@ type (
 )
 
 type (
-	ExecAddFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) (*models.Device, error)
-	ExecUpdateFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...DeviceOption) (*models.Device, error)
-	ExecDeleteFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, ...DeviceOption) error
+	ExecAddFunc    func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption) (*models.Device, error)
+	ExecUpdateFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...ResourceOption) (*models.Device, error)
+	ExecDeleteFunc func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption) error
 )
+
+// LMRequester this is just to tiw facade and executor together, never mix or attach executor with facade
+type LMRequester struct {
+	LMFacade
+	LMExecutor
+}

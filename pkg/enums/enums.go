@@ -1,9 +1,7 @@
 package enums
 
 import (
-	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -168,6 +166,43 @@ func ParseShortResourceType(shortResourceType string) (ShortResourceType, error)
 	return ShortResourceType(l), nil
 }
 
+// TitlePlural returns string name in proper case
+func (resourceType *ResourceType) TitlePlural() string {
+	return fmt.Sprintf("%ss", resourceType.Title())
+}
+
+// Title returns string name in proper case
+func (resourceType *ResourceType) Title() string {
+	switch *resourceType {
+	case Pods:
+
+		return "Pod"
+	case Deployments:
+
+		return "Deployment"
+	case Services:
+
+		return "Service"
+	case Hpas:
+
+		return "HorizontalPodAutoscaler"
+	case Nodes:
+
+		return "Node"
+	case ETCD:
+
+		return "Etcd"
+	case Namespaces:
+
+		return "Namespace"
+	case Unknown:
+
+		return "Unknown"
+	}
+
+	return "Unknown"
+}
+
 // K8SObjectType returns runtime.Object to create watcher
 // NOTE: RESOURCE_MODIFICATION need to change when adding/deleting resource for monitoring
 func (resourceType *ResourceType) K8SObjectType() runtime.Object {
@@ -275,37 +310,7 @@ func (resourceType *ResourceType) IsNamespaceScopedResource() bool {
 // GetCategory returns category name for conflicts group
 // NOTE: RESOURCE_MODIFICATION need to change when adding/deleting resource for monitoring
 func (resourceType *ResourceType) GetCategory() string {
-	switch *resourceType {
-	case Pods:
-
-		return constants.PodCategory
-	case Deployments:
-
-		return constants.DeploymentCategory
-	case Services:
-
-		return constants.ServiceCategory
-	case Nodes:
-
-		return constants.NodeCategory
-	case Hpas:
-
-		return constants.HorizontalPodAutoscalerCategory
-	case ETCD:
-
-		return constants.EtcdCategory
-	case Namespaces:
-
-		return constants.NamespaceCategory
-	case Unknown:
-		unknown := Unknown
-
-		return unknown.String()
-	default:
-		unknown := Unknown
-
-		return unknown.String()
-	}
+	return fmt.Sprintf("%s%s", "Kubernetes", resourceType.Title())
 }
 
 // APIGroup returns string name
@@ -347,109 +352,4 @@ func (resourceType *ResourceType) IsK8SPingResource() bool {
 
 		return true
 	}
-}
-
-// END sections ends here when enum added or modified
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-// String returns string name
-func (resourceType ResourceType) String() string {
-	bytes, err := json.Marshal(resourceType)
-	if err != nil {
-		return ""
-	}
-	if str, err := strconv.Unquote(fmt.Sprintf(`%s`, bytes)); err == nil {
-		return str
-	}
-
-	return ""
-}
-
-// FQName returns string name
-func (resourceType *ResourceType) FQName(name string) string {
-	if apiGroup := resourceType.APIGroup(); apiGroup != "" {
-		return fmt.Sprintf("%s.%s/%s", resourceType.Singular(), apiGroup, name)
-	}
-
-	return fmt.Sprintf("%s/%s", resourceType.Singular(), name)
-}
-
-// Singular returns string name
-func (resourceType *ResourceType) Singular() string {
-	bytes, err := json.Marshal(resourceType)
-	if err != nil {
-		return ""
-	}
-	if str, err := strconv.Unquote(fmt.Sprintf(`%s`, bytes)); err == nil {
-		return strings.TrimSuffix(str, "s")
-	}
-
-	return ""
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (resourceType *ResourceType) UnmarshalText(text []byte) error {
-	l, err := ParseResourceType(string(text))
-	if err != nil {
-		return err
-	}
-
-	*resourceType = l
-
-	return nil
-}
-
-// LMName lmname
-func (resourceType ResourceType) LMName(meta *metav1.ObjectMeta) string {
-	s := ShortResourceType(resourceType)
-	if resourceType.IsNamespaceScopedResource() {
-		return fmt.Sprintf("%s-%s-%s", meta.Name, s.String(), meta.Namespace)
-	}
-
-	return fmt.Sprintf("%s-%s", meta.Name, s.String())
-}
-
-// ShortResourceType to specifically use as short resource type
-type ShortResourceType ResourceType
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (resourceType *ShortResourceType) UnmarshalText(text []byte) error {
-	l, err := ParseShortResourceType(string(text))
-	if err != nil {
-		return err
-	}
-	*resourceType = l
-
-	return nil
-}
-
-// String returns string name
-func (resourceType *ShortResourceType) String() string {
-	bytes, err := json.Marshal(resourceType)
-	if err != nil {
-		return ""
-	}
-	if str, err := strconv.Unquote(fmt.Sprintf(`%s`, bytes)); err == nil {
-		return str
-	}
-
-	return ""
-}
-
-// GetConflictsCategory returns category name for conflicts group
-func (resourceType *ResourceType) GetConflictsCategory() string {
-	return fmt.Sprintf("%s%s", resourceType.GetCategory(), "Conflict")
-}
-
-// GetDeletedCategory returns category name for conflicts group
-func (resourceType *ResourceType) GetDeletedCategory() string {
-	return fmt.Sprintf("%s%s", resourceType.GetCategory(), "Deleted")
 }
