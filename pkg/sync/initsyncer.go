@@ -1,9 +1,12 @@
 package sync
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/logicmonitor/k8s-argus/pkg/types"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/device"
@@ -41,6 +44,7 @@ func (i *InitSyncer) InitSync(lctx *lmctx.LMContext, isRestart bool) {
 	if rest == nil {
 		return
 	}
+
 	// get the node, pod, service, deployment info
 	if rest.SubGroups != nil && len(rest.SubGroups) != 0 {
 		i.runSync(lctx, rest, isRestart)
@@ -48,6 +52,7 @@ func (i *InitSyncer) InitSync(lctx *lmctx.LMContext, isRestart bool) {
 	log.Infof("Finished syncing the resource devices")
 }
 
+// nolint
 func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup, isRestart bool) {
 	log := lmlog.Logger(lctx)
 	wg := sync.WaitGroup{}
@@ -66,14 +71,22 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup, is
 			go func() {
 				defer wg.Done()
 				lctxPods := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-pods"}))
-				i.initSyncNamespacedResource(lctxPods, constants.PodDeviceGroupName, rest.ID, isRestart)
+				// require restart of argus pod, disabling it on periodic sync calls, to avoid get device group rest api
+				resyncPods := isRestart && devicegroup.GetClusterGroupProperty(rest, constants.ResyncPodsClusterProperty) == "true"
+				log.Infof("resync-pods is: %v", resyncPods)
+				i.initSyncNamespacedResource(lctxPods, constants.PodDeviceGroupName, rest.ID, isRestart, resyncPods)
+				defer func() {
+					if resyncPods {
+						devicegroup.DeleteDeviceGroupPropertyByName(lctx, rest.ID, &models.EntityProperty{Name: constants.ResyncPodsClusterProperty, Value: "true"}, i.DeviceManager.LMClient)
+					}
+				}()
 				log.Infof("Finish syncing %v", constants.PodDeviceGroupName)
 			}()
 		case constants.ServiceDeviceGroupName:
 			go func() {
 				defer wg.Done()
 				lctxServices := lmlog.NewLMContextWith(log.WithFields(logrus.Fields{"res": "init-sync-services"}))
-				i.initSyncNamespacedResource(lctxServices, constants.ServiceDeviceGroupName, rest.ID, isRestart)
+				i.initSyncNamespacedResource(lctxServices, constants.ServiceDeviceGroupName, rest.ID, isRestart, false)
 				log.Infof("Finish syncing %v", constants.ServiceDeviceGroupName)
 			}()
 		case constants.DeploymentDeviceGroupName:
@@ -84,7 +97,7 @@ func (i *InitSyncer) runSync(lctx *lmctx.LMContext, rest *models.DeviceGroup, is
 					log.Warnf("Resource deployments has no permissions, ignore sync")
 					return
 				}
-				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID, isRestart)
+				i.initSyncNamespacedResource(lctxDeployments, constants.DeploymentDeviceGroupName, rest.ID, isRestart, false)
 				log.Infof("Finish syncing %v", constants.DeploymentDeviceGroupName)
 			}()
 		case constants.HorizontalPodAutoscalerDeviceGroupName:
@@ -122,7 +135,7 @@ func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32, i
 		return
 	}
 
-	//get node info from k8s
+	// get node info from k8s
 	nodesMap, err := node.GetNodesMap(i.DeviceManager.K8sClient, i.DeviceManager.Config().ClusterName)
 	if err != nil || nodesMap == nil {
 		log.Warnf("Failed to get the nodes from k8s, err: %v", err)
@@ -134,11 +147,11 @@ func (i *InitSyncer) initSyncNodes(lctx *lmctx.LMContext, parentGroupID int32, i
 		if subGroup.Name != constants.AllNodeDeviceGroupName {
 			continue
 		}
-		i.syncDevices(lctx, constants.NodeDeviceGroupName, nodesMap, subGroup, isRestart)
+		i.syncDevices(lctx, constants.NodeDeviceGroupName, nodesMap, subGroup, isRestart, false)
 	}
 }
 
-func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceType string, parentGroupID int32, isRestart bool) {
+func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceType string, parentGroupID int32, isRestart bool, resyncPodIPs bool) {
 	log := lmlog.Logger(lctx)
 	rest, err := devicegroup.Find(parentGroupID, deviceType, i.DeviceManager.LMClient)
 	if err != nil || rest == nil {
@@ -151,7 +164,7 @@ func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceTyp
 
 	// loop every namespace
 	for _, subGroup := range rest.SubGroups {
-		//get pod/service/deployment info from k8s
+		// get pod/service/deployment info from k8s
 		var deviceMap map[string]string
 		clusterName := i.DeviceManager.Config().ClusterName
 
@@ -170,11 +183,12 @@ func (i *InitSyncer) initSyncNamespacedResource(lctx *lmctx.LMContext, deviceTyp
 		}
 
 		// get and check all the devices in the group
-		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart)
+		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart, resyncPodIPs)
 	}
 }
 
-func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData, isRestart bool) {
+// nolint
+func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, subGroup *models.DeviceGroupData, isRestart bool, resyncPodIPs bool) {
 	log := lmlog.Logger(lctx)
 	if len(resourcesMap) == 0 {
 		log.Debugf("Ignoring sub group %v for synchronization", subGroup.FullPath)
@@ -190,38 +204,85 @@ func (i *InitSyncer) syncDevices(lctx *lmctx.LMContext, resourceType string, res
 		log.Warnf("There is no device in the group: %v", subGroup.FullPath)
 		return
 	}
-	for _, device := range devices {
+	for _, deviceObj := range devices {
 		// the "auto.clustername" property checking is used to prevent unexpected deletion of the normal non-k8s device
 		// which may be assigned to the cluster group
-		autoClusterName := util.GetPropertyValue(device, constants.K8sClusterNamePropertyKey)
+		autoClusterName := util.GetPropertyValue(deviceObj, constants.K8sClusterNamePropertyKey)
 		if autoClusterName != i.DeviceManager.Config().ClusterName {
 			log.Infof("Ignore the device (%v) which does not have property %v:%v",
-				*device.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
+				*deviceObj.DisplayName, constants.K8sClusterNamePropertyKey, i.DeviceManager.Config().ClusterName)
 			continue
 		}
 
 		// ignore the device if it is moved in _deleted group
-		if util.GetPropertyValue(device, constants.K8sResourceDeletedOnPropertyKey) != "" {
-			log.Debugf("Ignore the device (%v) for synchronization as it is moved in _deleted group", *device.DisplayName)
+		if util.GetPropertyValue(deviceObj, constants.K8sResourceDeletedOnPropertyKey) != "" {
+			log.Debugf("Ignore the device (%v) for synchronization as it is moved in _deleted group", *deviceObj.DisplayName)
 			continue
 		}
 
 		// the displayName may be renamed, we should use the complete displayName for comparison.
-		fullDisplayName := util.GetFullDisplayName(device, resourceType, autoClusterName)
+		fullDisplayName := util.GetFullDisplayName(deviceObj, resourceType, autoClusterName)
 		_, exist := resourcesMap[fullDisplayName]
 		if !exist {
-			log.Infof("Delete the non-exist %v device: %v", resourceType, *device.DisplayName)
-			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), device.ID)
+			log.Infof("Delete the non-exist %v device: %v", resourceType, *deviceObj.DisplayName)
+			err := i.DeviceManager.DeleteByID(lctx, strings.ToLower(resourceType), deviceObj.ID)
 			if err != nil {
-				log.Warnf("Failed to delete the device: %v", *device.DisplayName)
+				log.Warnf("Failed to delete the device: %v", *deviceObj.DisplayName)
 			}
+			delete(resourcesMap, fullDisplayName)
 			continue
 		}
-		// Rename devices as per config parameters only on Argus restart.
+
 		if isRestart {
-			i.renameDeviceToDesiredName(lctx, device, resourceType)
+			// Rename devices as per config parameters only on Argus restart.
+			i.renameDeviceToDesiredName(lctx, deviceObj, resourceType)
+		}
+
+		// resync pod ips and correct them
+		if resyncPodIPs {
+			if err := i.resyncPodIPs(lctx, resourceType, resourcesMap, deviceObj, autoClusterName, fullDisplayName); err != nil {
+				log.Errorf("failed to resync pod IPs with error :%v", err)
+				return
+			}
 		}
 	}
+}
+
+func (i *InitSyncer) resyncPodIPs(lctx *lmctx.LMContext, resourceType string, resourcesMap map[string]string, deviceObj *models.Device, autoClusterName string, fullDisplayName string) error {
+	log := lmlog.Logger(lctx)
+	namespace := util.GetPropertyValue(deviceObj, constants.K8sDeviceNamespacePropertyKey)
+	ipMap, err := pod.GetPodIPMap(i.DeviceManager.K8sClient, namespace, autoClusterName)
+	if err != nil || ipMap == nil {
+		return fmt.Errorf("failed to get the %s from k8s, namespace: %v, err: %v", resourceType, namespace, err)
+	}
+
+	currentAddress, exist := ipMap[fullDisplayName]
+	podName := resourcesMap[fullDisplayName]
+	prevPodIP := util.GetPropertyValue(deviceObj, constants.K8sSystemIPsPropertyKey)
+	if exist && currentAddress != prevPodIP {
+		log.Debugf("device %s has LM device podIP [%s] and current PodIP [%s]", *deviceObj.DisplayName, prevPodIP, currentAddress)
+		options := []types.DeviceOption{
+			i.DeviceManager.Name(podName),
+			i.DeviceManager.System("ips", currentAddress),
+		}
+		updateDevice, err := i.DeviceManager.UpdateDeviceName(lctx, strings.ToLower(resourceType), deviceObj, append(options, i.DeviceManager.Name(currentAddress))...)
+		if err != nil {
+			return fmt.Errorf("failed to update IP address for %s from k8s, err: %s", *deviceObj.DisplayName, err)
+		}
+
+		if err := i.DeviceManager.WaitToUpdateSysIps(lctx, deviceObj, resourceType, currentAddress, 5*time.Minute); err != nil {
+			return fmt.Errorf("failed waiting to set system.ips for %s with error: %s", *deviceObj.DisplayName, err)
+		}
+
+		log.Infof("reverting pod name of device %s", *deviceObj.DisplayName)
+		if podName != currentAddress {
+			_, err1 := i.DeviceManager.UpdateDeviceName(lctx, strings.ToLower(resourceType), updateDevice, options...)
+			if err1 != nil {
+				return fmt.Errorf("failed to revert name for %s from k8s, err: %s", *deviceObj.DisplayName, err1)
+			}
+		}
+	}
+	return nil
 }
 
 func (i *InitSyncer) renameDeviceToDesiredName(lctx *lmctx.LMContext, device *models.Device, resourceType string) {
@@ -279,6 +340,6 @@ func (i *InitSyncer) initSyncHPA(parentGroupID int32, isRestart bool) {
 		}
 
 		// get and check all the devices in the group
-		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart)
+		i.syncDevices(lctx, deviceType, deviceMap, subGroup, isRestart, false)
 	}
 }
