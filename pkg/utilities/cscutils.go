@@ -22,7 +22,12 @@ func GetCollectorID() (int32, error) {
 
 		return int32(id), nil
 	}
-	reply, err := connection.GetCSCClient().CollectorID(context.Background(), &api.CollectorIDRequest{})
+
+	client := connection.GetCSCClient()
+	if client == nil {
+		return 0, fmt.Errorf("client is not initialized: %v", client)
+	}
+	reply, err := client.CollectorID(context.Background(), &api.CollectorIDRequest{})
 	if err != nil || reply == nil {
 		return 0, fmt.Errorf("failed to get collector ID: %w", err)
 	}
