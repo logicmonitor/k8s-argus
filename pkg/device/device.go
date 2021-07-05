@@ -439,7 +439,6 @@ func (m *Manager) UpdateAndReplaceByDisplayName(lctx *lmctx.LMContext, resource,
 		return nil, err
 	}
 
-
 	isExclude := m.evalExclusion(lctx, device, resource, labels)
 	if isExclude {
 		// delete existing resource which is mentioned for discovery filtering.
@@ -687,10 +686,7 @@ func (m *Manager) DeleteByDisplayName(lctx *lmctx.LMContext, resource, name, ful
 	if err2 != nil {
 		return err2
 	}
-
 	m.DC.Unset(fullName)
-
-
 	log.Infof("Deleted device %q", name)
 
 	return nil

@@ -2,7 +2,6 @@ package utilities
 
 import (
 	"regexp"
-
 	"strconv"
 	"time"
 
@@ -39,7 +38,6 @@ func LogDeleteEventLatency(deletionTimestamp *v1.Time, name string) {
 	}
 }
 
-
 // GetHTTPStatusCodeFromLMSDKError retrieve status code from error.
 func GetHTTPStatusCodeFromLMSDKError(err error) int {
 	errRegex := regexp.MustCompile(`(?P<api>\[.*\])\[(?P<code>\d+)\].*`)
@@ -54,4 +52,3 @@ func GetHTTPStatusCodeFromLMSDKError(err error) int {
 	}
 	return code
 }
-
