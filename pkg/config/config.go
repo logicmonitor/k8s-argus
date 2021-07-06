@@ -287,7 +287,7 @@ func validateIntervals(i *Intervals) {
 func validateOpenMetricsConfig(oc *OpenmetricsConfig) {
 	if oc.Port == nil {
 		logrus.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting \"%s\" to its default : %v", "openmetrics.port", "2112")
-		d := uint16(2112)
+		d := uint16(2112) // nolint: gomnd
 		oc.Port = &d
 	}
 }
