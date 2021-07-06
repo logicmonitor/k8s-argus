@@ -226,6 +226,6 @@ func (w *Worker) setNewLimit(lctx *lmctx.LMContext, req *types.RateLimits, comma
 	currentLimit, _ := GetCurrentLimit(command.APIInfo.GetPatternKey())
 	if newLimit != 0 && currentLimit != newLimit {
 		log.Infof("Setting new rate limits for \"%s\": %v", command.APIInfo.GetPatternKey(), newLimit)
-		AddLimiter(command.APIInfo.GetPatternKey(), newLimit)
+		AddLimiter(lctx, command.APIInfo.GetPatternKey(), newLimit)
 	}
 }

@@ -78,8 +78,8 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 		fields["display_name"] = util.GetDisplayNameNew(rt, objectMeta, conf)
 	}
 
-	lctx = lmlog.LMContextWithFields(lctx, fields)
-	lctx.Set(constants.PartitionKey, fmt.Sprintf("%s-%s", rt.String(), objectMeta.Name))
+	clctx := lmlog.LMContextWithFields(lctx, fields)
+	clctx.Set(constants.PartitionKey, fmt.Sprintf("%s-%s", rt.String(), objectMeta.Name))
 	return lctx
 }
 
@@ -97,11 +97,12 @@ func RecordDeleteEventLatency(lctx *lmctx.LMContext, rt enums.ResourceType, obj 
 
 // EvaluateResourceExclusion eval
 func EvaluateResourceExclusion(lctx *lmctx.LMContext, resourceType enums.ResourceType, meta metav1.ObjectMeta) (bool, error) {
-	return filters.Eval(lctx, resourceType, getEvalInput(meta))
+	return filters.Eval(lctx, resourceType, getEvalInput(lctx, meta))
 }
 
 // getEvalInput generates evaluation parameters based on labels and specified resource
-func getEvalInput(meta metav1.ObjectMeta) govaluate.MapParameters {
+func getEvalInput(lctx *lmctx.LMContext, meta metav1.ObjectMeta) govaluate.MapParameters {
+	log := lmlog.Logger(lctx)
 	evaluationParams := make(govaluate.MapParameters)
 	// adding annotations first and then labels, so that labels get higher precedence
 	for key, value := range meta.Annotations {
@@ -118,7 +119,7 @@ func getEvalInput(meta metav1.ObjectMeta) govaluate.MapParameters {
 	evaluationParams["name"] = filters.SanitiseEvalInput(meta.Name)
 	evaluationParams["ns"] = filters.SanitiseEvalInput(meta.Namespace)
 	evaluationParams["namespace"] = filters.SanitiseEvalInput(meta.Namespace)
-	logrus.Tracef("Eval Input: %v", evaluationParams)
+	log.Tracef("Eval Input: %v", evaluationParams)
 
 	return evaluationParams
 }

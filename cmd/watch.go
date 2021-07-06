@@ -61,8 +61,6 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		// Once minimal configuration gets loaded, start config watcher to watch on events
 		config.Run()
 
-		filters.Init()
-
 		if logLevel := os.Getenv("LOG_LEVEL"); util.IsLocal() && logLevel != "" {
 			level, err := logrus.ParseLevel(logLevel)
 			if err != nil {
@@ -74,13 +72,17 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		} else {
 			logrus.SetLevel(*conf.LogLevel)
 			// Monitor config for log level change
-			lmlog.MonitorConfig()
+			registerLogLevelChangeHook()
 		}
 
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"watch": "init"}))
+		log := lmlog.Logger(lctx)
+
+		filters.Init(lctx)
 		// LogicMonitor API client.
 		lmClient, err := logicmonitor.NewLMClient(conf)
 		if err != nil {
-			logrus.Fatal(err.Error())
+			log.Fatal(err.Error())
 			return
 		}
 
@@ -90,47 +92,64 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			})
 		} else {
 			// Set up a gRPC connection and CSC Client.
-			connection.Initialize(conf)
-			connection.CreateConnectionHandler()
+			if err := connection.Initialize(lctx, conf); err != nil {
+				log.Fatalf("failed to initialize collectorset-controller connection: %s", err)
+			}
+			connection.RunGrpcHeartBeater()
 		}
 
-		argusObj, err := argus.CreateArgus(lmClient)
+		argusObj, err := argus.CreateArgus(lctx, lmClient)
 		if err != nil {
 			return
 		}
 		err = argusObj.Init()
 		// Instantiate the application and add watchers.
 		if err != nil {
-			logrus.Fatal(err.Error())
+			log.Fatal(err.Error())
 			return
 		}
-		if err := argusObj.CreateWatchers(); err != nil {
-			logrus.Fatal(err.Error())
+		if err := argusObj.CreateWatchers(lctx); err != nil {
+			log.Fatal(err.Error())
 			return
 		}
-		argusObj.Watch()
+		argusObj.Watch(lctx)
 
 		// To update K8s & Helm properties in cluster resource group periodically with the server
 		err = cronjob.StartTelemetryCron(argusObj.ResourceCache, argusObj.LMRequester)
 		if err != nil {
-			logrus.Fatal(err.Error())
+			log.Fatal(err.Error())
 			return
 		}
 
 		http.Handle("/metrics", promhttp.Handler())
 		go func() {
 			addr := fmt.Sprintf(":%d", *conf.OpenMetricsConfig.Port)
-			logrus.Fatal(http.ListenAndServe(addr, nil))
+			log.Fatal(http.ListenAndServe(addr, nil))
 		}()
 
 		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)
 
-		logrus.Fatal(http.ListenAndServe(":8080", nil))
+		log.Fatal(http.ListenAndServe(":8080", nil))
 	},
 }
 
 // nolint: gochecknoinits
 func init() {
 	RootCmd.AddCommand(watchCmd)
+}
+
+// registerLogLevelChangeHook keeps eye on log level in config with interval of 5 seconds and changes logger level accordingly.
+func registerLogLevelChangeHook() {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"config_hook": "log_level"}))
+	log := lmlog.Logger(lctx)
+	config.AddConfigHook(config.ConfHook{
+		Hook: func(prev *config.Config, updated *config.Config) {
+			log.Infof("Setting log level %s", *updated.LogLevel)
+			logrus.SetLevel(*updated.LogLevel)
+		},
+		Predicate: func(prev *config.Config, updated *config.Config) bool {
+			return prev == nil || *prev.LogLevel != *updated.LogLevel
+		},
+	})
 }

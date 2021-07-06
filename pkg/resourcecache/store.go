@@ -7,7 +7,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
-	"github.com/sirupsen/logrus"
 )
 
 // Store store
@@ -25,8 +24,9 @@ func NewStore() *Store {
 }
 
 // Set adds entry into cache map
-func (store *Store) Set(name types.ResourceName, meta types.ResourceMeta) bool {
-	logrus.Tracef("Setting cache entry %s", name)
+func (store *Store) Set(lctx *lmctx.LMContext, name types.ResourceName, meta types.ResourceMeta) bool {
+	log := lmlog.Logger(lctx)
+	log.Tracef("Setting cache entry %s", name)
 	store.rwm.Lock()
 	defer store.rwm.Unlock()
 	b, done := store.setInternal(name, meta)
@@ -100,8 +100,9 @@ func (store *Store) Get(lctx *lmctx.LMContext, name types.ResourceName) ([]types
 }
 
 // Unset checks entry into cache map
-func (store *Store) Unset(name types.ResourceName, namespace string) (types.ResourceMeta, bool) {
-	logrus.Tracef("Deleting cache entry %s", name)
+func (store *Store) Unset(lctx *lmctx.LMContext, name types.ResourceName, namespace string) (types.ResourceMeta, bool) {
+	log := lmlog.Logger(lctx)
+	log.Tracef("Deleting cache entry %s", name)
 	store.rwm.Lock()
 	defer store.rwm.Unlock()
 	list, ok := store.InternalMap[name]

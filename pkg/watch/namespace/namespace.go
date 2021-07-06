@@ -45,10 +45,12 @@ func NewOldWatcher(manager types.ResourceManager, resourceCache types.ResourceCa
 }
 
 func getHook(watcher *OldWatcher, action types.CacheAction) func(rn types.ResourceName, meta types.ResourceMeta) {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"cache_hook": "namespace", "action": action.String()}))
+	log := lmlog.Logger(lctx)
 	return func(rn types.ResourceName, meta types.ResourceMeta) {
 		watcher.mu.Lock()
 		defer watcher.mu.Unlock()
-		logrus.Tracef("Hook %s called for: %s %d", action, rn.Name, meta.LMID)
+		log.Tracef("Hook %s called for: %s %d", action, rn.Name, meta.LMID)
 		if action == types.CacheSet {
 			watcher.ResourceGroups[rn.Name] = meta.LMID
 		} else if action == types.CacheUnset {
@@ -58,6 +60,8 @@ func getHook(watcher *OldWatcher, action types.CacheAction) func(rn types.Resour
 }
 
 func getHookPredicate(expectedAction types.CacheAction) func(action types.CacheAction, rn types.ResourceName, meta types.ResourceMeta) bool {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"cache_hook_predicate": "namespace", "action": expectedAction.String()}))
+	log := lmlog.Logger(lctx)
 	return func(action types.CacheAction, rn types.ResourceName, meta types.ResourceMeta) bool {
 		ok := false
 		if action == expectedAction && rn.Resource == enums.Namespaces {
@@ -68,7 +72,7 @@ func getHookPredicate(expectedAction types.CacheAction) func(action types.CacheA
 				}
 			}
 		}
-		logrus.Tracef("Evaluating %s hook predicate for %s %s: %v", expectedAction, rn.Resource, rn.Name, ok)
+		log.Tracef("Evaluating %s hook predicate for %s %s: %v", expectedAction, rn.Resource, rn.Name, ok)
 
 		return ok
 	}

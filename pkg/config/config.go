@@ -10,6 +10,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -101,14 +102,17 @@ func InitConfig() error {
 	if err := Load(); err != nil {
 		return err
 	}
-
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"cm_hook": "config.yaml"}))
+	log := lmlog.Logger(lctx)
 	w.AddConfigMapHook(Hook{
 		Hook: func(key string, value string) {
+			log.Tracef("config update hook called: %s", key)
 			if err := conf.UpdateConfig(value); err != nil {
-				logrus.Errorf("Failed to hot load config with error: %s", err)
+				log.Errorf("Failed to hot load config with error: %s", err)
 			}
 		},
 		Predicate: func(action Action, key string, value string) bool {
+			log.Tracef("config update hook predicate called. action: %s, key: %s ", action, key)
 			return action == Set && key == constants.ConfigFileName
 		},
 	})
@@ -138,12 +142,17 @@ func (c *config) setConf(conf *Config) {
 }
 
 // AddConfigHook returns the application configuration specified by the config file.
-func (c *config) AddConfigHook(hook ConfHook) {
+func AddConfigHook(hook ConfHook) {
+	conf.addConfigHook(hook)
+}
+
+// AddConfigHook returns the application configuration specified by the config file.
+func (c *config) addConfigHook(hook ConfHook) {
 	c.hooksrwm.Lock()
 	defer c.hooksrwm.Unlock()
 	c.hooks = append(c.hooks, hook)
-	if conf := c.getConf(); hook.Predicate(conf, conf) {
-		hook.Hook(conf, conf)
+	if conf := c.getConf(); hook.Predicate(nil, conf) {
+		hook.Hook(nil, conf)
 	}
 }
 
@@ -186,7 +195,6 @@ func postLoad(pconf *Config, uconf *Config) {
 	retainFields(t, v, nv)
 	logrus.Tracef("After Old: %v", spew.Sdump(pconf))
 	logrus.Tracef("After New: %v", spew.Sdump(uconf))
-	// retain refresh scope no fields
 }
 
 func retainFields(t reflect.Type, v reflect.Value, nv reflect.Value) {
@@ -216,7 +224,8 @@ func GetConfig() (*Config, error) {
 func validateConfig(conf *Config) {
 	if conf.LogLevel == nil {
 		fmt.Print("logLevel is not configured, setting it to default \"info\"") // nolint: forbidigo
-		*conf.LogLevel = logrus.InfoLevel
+		level := logrus.InfoLevel
+		conf.LogLevel = &level
 	}
 	if conf.ResourceContainerGroupID == nil {
 		rootGroup := constants.RootResourceGroupID
@@ -242,30 +251,33 @@ func validateConfig(conf *Config) {
 
 func validateIntervals(i *Intervals) {
 	if i.CacheSyncMinInterval == nil {
-		*i.CacheSyncMinInterval = constants.DefaultCacheResyncInterval
+		d := constants.DefaultCacheResyncInterval
+		i.CacheSyncMinInterval = &d
 	}
 	if i.CacheSyncInterval == nil {
-		*i.CacheSyncInterval = *i.CacheSyncMinInterval
+		i.CacheSyncInterval = i.CacheSyncMinInterval
 	} else if *i.CacheSyncInterval < *i.CacheSyncMinInterval {
 		*i.CacheSyncInterval = *i.CacheSyncMinInterval
 		logrus.Warnf("Please provide valid value for cacheSyncMinInterval. Continuing with default: %v", *i.CacheSyncMinInterval)
 	}
 
 	if i.PeriodicSyncMinInterval == nil {
-		*i.PeriodicSyncMinInterval = constants.DefaultPeriodicSyncInterval
+		d := constants.DefaultPeriodicSyncInterval
+		i.PeriodicSyncMinInterval = &d
 	}
 	if i.PeriodicSyncInterval == nil {
-		*i.PeriodicSyncInterval = *i.PeriodicSyncMinInterval
+		i.PeriodicSyncInterval = i.PeriodicSyncMinInterval
 	} else if *i.PeriodicSyncInterval < *i.PeriodicSyncMinInterval {
 		*i.PeriodicSyncInterval = *i.PeriodicSyncMinInterval
 		logrus.Warnf("Please provide valid value for periodicSyncInterval. Continuing with default: %v", *i.PeriodicSyncInterval)
 	}
 
 	if i.PeriodicDeleteMinInterval == nil {
-		*i.PeriodicDeleteMinInterval = constants.DefaultPeriodicDeleteInterval
+		d := constants.DefaultPeriodicDeleteInterval
+		i.PeriodicDeleteMinInterval = &d
 	}
 	if i.PeriodicDeleteInterval == nil {
-		*i.PeriodicDeleteInterval = *i.PeriodicDeleteMinInterval
+		i.PeriodicDeleteInterval = i.PeriodicDeleteMinInterval
 	} else if *i.PeriodicDeleteInterval < *i.PeriodicDeleteMinInterval {
 		*i.PeriodicDeleteInterval = *i.PeriodicDeleteMinInterval
 		logrus.Warnf("Please provide valid value for periodicDeleteInterval. Continuing with default: %v", *i.PeriodicDeleteInterval)
@@ -275,6 +287,7 @@ func validateIntervals(i *Intervals) {
 func validateOpenMetricsConfig(oc *OpenmetricsConfig) {
 	if oc.Port == nil {
 		logrus.Warnf("Looks like helm chart is of previous version than the current Argus expects. Please upgrade helm chart. Setting \"%s\" to its default : %v", "openmetrics.port", "2112")
-		*oc.Port = 2112
+		d := uint16(2112)
+		oc.Port = &d
 	}
 }

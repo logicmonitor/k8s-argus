@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-collectorset-controller/api"
 	collectorsetconstants "github.com/logicmonitor/k8s-collectorset-controller/pkg/constants"
 	"github.com/sirupsen/logrus"
@@ -32,30 +34,28 @@ const (
 )
 
 // Initialize - it will initialize gRPC connection & csc client
-func Initialize(config *config.Config) {
-	logrus.Info("Initializing gRPC connection & CSC Client.")
+func Initialize(lctx *lmctx.LMContext, config *config.Config) error {
+	log := lmlog.Logger(lctx)
+	log.Info("Initializing gRPC connection & CSC Client.")
 	appConfig = config
-	createConnection()
+	return createConnection(lctx)
 }
 
-func createConnection() {
-	conn, grpcErr := createGRPCConnection()
+func createConnection(lctx *lmctx.LMContext) error {
+	conn, grpcErr := createGRPCConnection(lctx)
 	if grpcErr != nil {
-		logrus.Errorf("Error while creating gRPC connection. Error: %v", grpcErr.Error())
-
-		return
+		return fmt.Errorf("error while creating gRPC connection. Error: %w", grpcErr)
 	}
 
 	setGRPCConn(conn)
 
-	client, cscErr := createCSCClient()
+	client, cscErr := createCSCClient(lctx)
 	if cscErr != nil {
-		logrus.Errorf("Error while creating gRPC connection. Error: %v", cscErr.Error())
-
-		return
+		return fmt.Errorf("error while creating Collectorset-controller client. Error: %w", cscErr)
 	}
 
 	setCSCClient(client)
+	return nil
 }
 
 func setGRPCConn(conn *grpc.ClientConn) {
@@ -85,22 +85,23 @@ func GetCSCClient() api.CollectorSetControllerClient {
 	return cscClient
 }
 
-func createGRPCConnection() (*grpc.ClientConn, error) {
+func createGRPCConnection(lctx *lmctx.LMContext) (*grpc.ClientConn, error) {
+	log := lmlog.Logger(lctx)
 	timeout := time.After(defaultGRPCDialTimeout)
-	ticker := time.NewTicker(defaultGRPCDialRetryDuration)
 
+	var gerr error
 	for {
 		select {
 		case <-timeout:
-			return nil, fmt.Errorf("timeout waiting for gRPC connection")
+			return nil, fmt.Errorf("timeout waiting for gRPC connection: %w", gerr)
 		default:
-			conn, err := grpcDial()
-			if err != nil {
-				logrus.Errorf("Error while creating gRPC connection. Error: %v", err.Error())
+			conn, gerr := grpcDial()
+			if gerr != nil {
+				log.Warnf("Error while creating gRPC connection. Error: %s", gerr)
 			} else {
 				return conn, nil
 			}
-			<-ticker.C
+			time.Sleep(defaultGRPCDialRetryDuration)
 		}
 	}
 }
@@ -113,33 +114,32 @@ func grpcDial() (*grpc.ClientConn, error) {
 	return conn, err
 }
 
-func createCSCClient() (api.CollectorSetControllerClient, error) {
+func createCSCClient(lctx *lmctx.LMContext) (api.CollectorSetControllerClient, error) {
+	log := lmlog.Logger(lctx)
 	conn := getGRPCConn()
 	client := api.NewCollectorSetControllerClient(conn)
 
 	timeout := time.After(defaultCSCClientTimeout)
-	ticker := time.NewTicker(defaultCSCClientRetryDuration)
 	hc := healthpb.NewHealthClient(conn)
 
+	var lastKnownStatus healthpb.HealthCheckResponse_ServingStatus
 	for {
 		select {
 		case <-timeout:
 
 			return client, fmt.Errorf("timeout waiting for collectors to become available")
 		default:
-			healthCheckResponse := getCSCHealth(hc)
-			if healthCheckResponse.GetStatus() == healthpb.HealthCheckResponse_SERVING {
+			lastKnownStatus = getCSCHealth(hc).GetStatus()
+			if lastKnownStatus == healthpb.HealthCheckResponse_SERVING {
 				return client, nil
 			}
-			logrus.Debugf("The collectors are not ready: %v", healthCheckResponse.GetStatus().String())
-			<-ticker.C
+			log.Warnf("The collectorset controller is not yet ready to serve argus requests (typically it waits for all collector installations to complete)): %s", lastKnownStatus)
+			time.Sleep(defaultCSCClientRetryDuration)
 		}
 	}
 }
 
 func getCSCHealth(hc healthpb.HealthClient) *healthpb.HealthCheckResponse {
-	logrus.Debug("Checking collectors status")
-
 	ctx, cancel := context.WithTimeout(context.Background(), healthRequestTimeout)
 	defer cancel()
 
@@ -154,21 +154,25 @@ func getCSCHealth(hc healthpb.HealthClient) *healthpb.HealthCheckResponse {
 	return healthCheckResponse
 }
 
-// CreateConnectionHandler - It will create a go routine for handling gRPC connection creation
-func CreateConnectionHandler() {
+// RunGrpcHeartBeater - It will create a go routine for handling gRPC connection creation
+func RunGrpcHeartBeater() {
 	go func() {
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"grpc": "heartbeater"}))
 		for {
 			time.Sleep(grpCDialRetry)
-			checkGRPCState()
+			checkGRPCState(lctx)
 		}
 	}()
 }
 
 // checkGRPCState - It will check gRPC state & call createConnection if required
-func checkGRPCState() {
+func checkGRPCState(lctx *lmctx.LMContext) {
+	log := lmlog.Logger(lctx)
 	state := getGRPCConn().GetState()
 	if state == connectivity.Shutdown {
-		logrus.Infof("gRPC is in \"%v\" state. Creating new gRPC connection & CSC client.", state.String())
-		createConnection()
+		log.Infof("gRPC is in \"%s\" state. Creating new gRPC connection & CSC client.", state)
+		if err := createConnection(lctx); err != nil {
+			log.Errorf("Failed to reinitialise collectorset-controller client")
+		}
 	}
 }

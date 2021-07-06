@@ -47,7 +47,11 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		// Reset property so that this would happen gracefully
 		resourcegroup.DeleteResourceGroupPropertyByName(childLctx, clusterGroupID, &models.EntityProperty{Name: constants.ResyncConflictingResourcesProp, Value: "true"}, i.LMRequester)
 	}()
-	allK8SResourcesStore := k8s.GetAllK8SResources()
+	allK8SResourcesStore, err := k8s.GetAllK8SResources(lctx)
+	if err != nil {
+		log.Errorf("Failed to fetch current resource present on cluster: %s", err)
+		return
+	}
 	log.Tracef("Resources present on cluster: %v", allK8SResourcesStore)
 	ignoreSync := map[enums.ResourceType]bool{
 		enums.ETCD:       true,
@@ -88,7 +92,7 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	}
 
 	// Flush updated cache to configmaps
-	err3 := i.ResourceManager.GetResourceCache().Save()
+	err3 := i.ResourceManager.GetResourceCache().Save(lctx)
 	if err3 != nil {
 		log.Errorf("Failed to flush resource cache after resync: %s", err3)
 	}

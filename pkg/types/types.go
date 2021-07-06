@@ -83,7 +83,7 @@ type ResourceCache interface {
 	Get(lctx *lmctx.LMContext, name ResourceName) ([]ResourceMeta, bool)
 	Unset(*lmctx.LMContext, ResourceName, string) bool
 	Load(*lmctx.LMContext) error
-	Save() error
+	Save(*lmctx.LMContext) error
 	List() []IterItem
 	UnsetLMID(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) bool
 	SoftRefresh(*lmctx.LMContext, string)

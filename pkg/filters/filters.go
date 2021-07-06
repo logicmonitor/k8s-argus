@@ -63,13 +63,15 @@ func Eval(lctx *lmctx.LMContext, resource enums.ResourceType, evaluationParams m
 var filterConfig *Config
 
 // Init package init block so that filterConfig-filterConfig will be loaded on application start
-func Init() {
+func Init(lctx *lmctx.LMContext) {
+	clctx := lmlog.LMContextWithFields(lctx, logrus.Fields{"filter": "init"})
+	log := lmlog.Logger(clctx)
 	// skip launching filterConfig file read when invoked via go test.
 	if len(os.Args) > 1 && strings.HasPrefix(os.Args[1], "-test.") {
 		return
 	}
-	filterConfig = readFilterConfig()
-	logrus.Infof("Rule engine loaded with rules: %v", filterConfig)
+	filterConfig = readFilterConfig(clctx)
+	log.Infof("Rule engine loaded with rules: %v", filterConfig)
 }
 
 // Config config
@@ -77,36 +79,37 @@ type Config struct {
 	Filters map[enums.ResourceType][]Rule `yaml:"filters"`
 }
 
-func readFilterConfig() *Config {
-	// configBytes, err := ioutil.ReadFile("/etc/argus/filters-config.yaml")
+func readFilterConfig(lctx *lmctx.LMContext) *Config {
+	log := lmlog.Logger(lctx)
 	configString, err := config.GetWatchConfig("filters-config.yaml")
 	if err != nil {
-		logrus.Errorf("Failed to read FiltersConfig conf file: filters-config.yaml")
+		log.Errorf("Failed to read FiltersConfig conf file: filters-config.yaml")
 	}
 
-	return parseConfig([]byte(configString))
+	return parseConfig(lctx, []byte(configString))
 }
 
-func parseConfig(configBytes []byte) *Config {
+func parseConfig(lctx *lmctx.LMContext, configBytes []byte) *Config {
+	log := lmlog.Logger(lctx)
 	conf := &Config{} // nolint: exhaustivestruct
-	logrus.Tracef("conf bytes %s ", configBytes)
+	log.Tracef("conf bytes %s ", configBytes)
 	err := yaml.Unmarshal(configBytes, conf)
 	if err != nil {
-		logrus.Warnf("Couldn't parse filters-config.yaml file: %s", err)
+		log.Warnf("Couldn't parse filters-config.yaml file: %s", err)
 		confv1 := &ConfigV1{}
 		err := yaml.Unmarshal(configBytes, confv1)
 		if err != nil {
-			logrus.Errorf("Couldn't parse filters-config.yaml file to config version v1: %s", err)
+			log.Errorf("Couldn't parse filters-config.yaml file to config version v1: %s", err)
 			return conf
 		}
 		if c, er := confv1.ToV2(); er == nil {
-			logrus.Infof("Filters loaded with v1 version, recommended to change argus-configuration.yaml file into new format")
+			log.Infof("Filters loaded with v1 version, recommended to change argus-configuration.yaml file into new format")
 			return c
 		}
-		logrus.Errorf("Failed to convert v1 config into v2 format, change argus-configuration.yaml file into new format")
+		log.Errorf("Failed to convert v1 config into v2 format, change argus-configuration.yaml file into new format")
 		return conf
 	}
-	logrus.Tracef("Filter conf read: %v", conf)
+	log.Tracef("Filter conf read: %v", conf)
 
 	return conf
 }

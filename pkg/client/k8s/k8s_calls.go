@@ -4,26 +4,24 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcecache"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
-	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // GetAllK8SResources get all k8s resources present in cluster
-func GetAllK8SResources() *resourcecache.Store {
+func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 	tmpStore := resourcecache.NewStore()
 	conf, err := config.GetConfig()
 	if err != nil {
-		logrus.Errorf("Failed to read config")
-
-		return nil
+		return nil, err
 	}
 	for _, rt := range enums.ALLResourceTypes {
 		for _, meta := range GetAndStoreAll(rt) {
 			displayName := util.GetDisplayNameNew(rt, &meta, conf) //nolint:gosec
-			tmpStore.Set(types.ResourceName{
+			tmpStore.Set(lctx, types.ResourceName{
 				Name:     meta.Name,
 				Resource: rt,
 			}, types.ResourceMeta{ // nolint: exhaustivestruct
@@ -35,7 +33,7 @@ func GetAllK8SResources() *resourcecache.Store {
 		}
 	}
 
-	return tmpStore
+	return tmpStore, nil
 }
 
 // GetAndStoreAll get

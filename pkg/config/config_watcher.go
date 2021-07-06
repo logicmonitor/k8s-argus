@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -114,7 +115,7 @@ func Load() error {
 	if len(cmList.Items) == 0 {
 		return fmt.Errorf("could not find configmap with selector %s", w.labelSelector)
 	}
-	logrus.Infof("Configmap Data: %v", cmList.Items[0].Data)
+	logrus.Infof("Init Configmap Data: %v", cmList.Items[0].Data)
 	// configmap cannot be shared across namespace so even if multiple presents, namespace of any configmap represents it
 	w.Set("namespace", cmList.Items[0].Namespace)
 	for k, v := range cmList.Items[0].Data {
@@ -163,7 +164,9 @@ func AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		o := obj.(*corev1.ConfigMap) // nolint: forcetypeassert
 		o.ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		logrus.Infof("Add Configmap: %v", o)
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"type": "cm_watcher", "event": "add", "name": o.Name}))
+		log := lmlog.Logger(lctx)
+		log.Infof("Add Configmap: %v", o)
 
 		for k, v := range o.Data {
 			w.Set(k, v)
@@ -178,7 +181,9 @@ func UpdateFunc() func(oldObj, newObj interface{}) {
 		n := newObj.(*corev1.ConfigMap) // nolint: forcetypeassert
 		o.ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
 		n.ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		logrus.Infof("Update Configmap: %v changed to new %v", o, n)
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"type": "cm_watcher", "event": "update", "name": n.Name}))
+		log := lmlog.Logger(lctx)
+		log.Infof("Update Configmap: %v changed to new %v", o, n)
 		for k, v := range n.Data {
 			w.Set(k, v)
 		}
@@ -191,7 +196,9 @@ func DeleteFunc() func(obj interface{}) {
 		o := obj.(*corev1.ConfigMap) // nolint: forcetypeassert
 		// Deliberately delete not implemented, deleting config map could abnormally stop application.
 		// user may delete configmap while updating any param - delete and recreate.
-		logrus.Warnf("Delete Configmap does not change loaded application as application may stop abnormally: %v", o)
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"type": "cm_watcher", "event": "delete", "name": o.Name}))
+		log := lmlog.Logger(lctx)
+		log.Warnf("Delete Configmap does not change loaded application as application may stop abnormally: %v", o)
 	}
 }
 

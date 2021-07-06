@@ -6,7 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"golang.org/x/time/rate"
 )
 
@@ -15,8 +16,9 @@ var (
 	mu           sync.Mutex
 )
 
-func AddLimiter(key string, limit rate.Limit) {
-	logrus.Infof("Setting new Limit for %s: %v", key, limit)
+func AddLimiter(lctx *lmctx.LMContext, key string, limit rate.Limit) {
+	log := lmlog.Logger(lctx)
+	log.Infof("Setting new Limit for %s: %v", key, limit)
 	if limiter, ok := getLimiter(key); ok {
 		limiter.SetLimit(limit)
 	} else {

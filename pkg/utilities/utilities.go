@@ -10,6 +10,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
+	"github.com/logicmonitor/k8s-argus/pkg/client/csc"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -268,7 +269,7 @@ func BuildResource(lctx *lmctx.LMContext, c *config.Config, d *models.Device, op
 			option(d)
 		}
 
-		collectorID, err := GetCollectorID()
+		collectorID, err := getCollectorID()
 		if err != nil {
 			return d, &types.GetCollectorIDError{Err: err}
 		}
@@ -280,6 +281,20 @@ func BuildResource(lctx *lmctx.LMContext, c *config.Config, d *models.Device, op
 	}
 
 	return d, nil
+}
+
+func getCollectorID() (int32, error) {
+	// when argus is running out cluster on local env, grpc connection with csc of cluster cannot be opened hence
+	// returns static id
+	if IsLocal() {
+		id, err := strconv.ParseInt(os.Getenv("COLLECTOR_ID"), 10, 32)
+		if err != nil {
+			return 0, fmt.Errorf("could not parse collector id from ENV: COLLECTOR_ID: %w", err)
+		}
+
+		return int32(id), nil
+	}
+	return csc.GetCollectorID()
 }
 
 // DoesResourceExistInCacheUtil exists

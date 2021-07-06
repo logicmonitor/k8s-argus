@@ -6,6 +6,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/resource/builder"
@@ -98,7 +99,8 @@ func discoverETCDNodes(resourceManager types.ResourceManager) error {
 	return nil
 }
 
-func (a *Argus) CreateWatchers() error {
+func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
+	log := lmlog.Logger(lctx)
 	conf, err := config.GetConfig()
 	if err != nil {
 		return err
@@ -113,7 +115,7 @@ func (a *Argus) CreateWatchers() error {
 			continue
 		}
 		if _, ok := m[rt]; ok {
-			logrus.Warnf("Resource %s is being disabled for monitoring", rt.String())
+			log.Warnf("Resource %s is being disabled for monitoring", rt.String())
 			continue
 		}
 		a.Watchers = append(a.Watchers, &resourcewatcher.Watcher{Resource: rt})
@@ -123,17 +125,18 @@ func (a *Argus) CreateWatchers() error {
 }
 
 // Watch watches the API for events.
-func (a *Argus) Watch() {
+func (a *Argus) Watch(lctx *lmctx.LMContext) {
+	log := lmlog.Logger(lctx)
 	conf, err := config.GetConfig()
 	if err != nil {
 		return
 	}
 	syncInterval := *conf.Intervals.PeriodicSyncInterval
-	logrus.Debugf("Starting watchers")
+	log.Debugf("Starting watchers")
 	b := &builder.Builder{}
 
 	nsRT, controller := a.RunNSWatcher(syncInterval)
-	logrus.Debugf("Starting ns watcher of %v", nsRT.String())
+	log.Debugf("Starting ns watcher of %v", nsRT.String())
 	stop := make(chan struct{})
 	go controller.Run(stop)
 
@@ -142,13 +145,13 @@ func (a *Argus) Watch() {
 		// TODO: has permission and check for enabled flag in case if user wants to avoid all resource of specific type
 		//  earlier all resources used to ignore from filter config but still it used to put pressure on k8s api-server to unnecessary polls
 		if !permission.HasPermissions(rt) {
-			logrus.Warnf("Have no permission for resource %s", rt.String())
+			log.Warnf("Have no permission for resource %s", rt.String())
 
 			continue
 		}
 		watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
 		controller := a.createNewInformer(watchlist, rt, syncInterval, b)
-		logrus.Debugf("Starting watcher of %v", rt.String())
+		log.Debugf("Starting watcher of %s", rt)
 		stop := make(chan struct{})
 		stateHolder := types.NewControllerInitSyncStateHolder(controller)
 		stateHolder.Run()

@@ -42,13 +42,13 @@ func StartWorkers(lctx *lmctx.LMContext, facade types.LMFacade) error {
 	return nil
 }
 
-func CreateArgus(lmClient *client.LMSdkGo) (*Argus, error) {
-	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"argus": "create"}))
+func CreateArgus(lctx *lmctx.LMContext, lmClient *client.LMSdkGo) (*Argus, error) {
+	clctx := lmlog.LMContextWithFields(lctx, logrus.Fields{"argus": "create"})
 	conf, err := config.GetConfig()
 	if err != nil {
 		return nil, err
 	}
-	lmrequester, err := CreateLMRequester(lctx, lmClient)
+	lmrequester, err := CreateLMRequester(clctx, lmClient)
 	if err != nil {
 		return nil, err
 	}
