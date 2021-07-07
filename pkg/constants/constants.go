@@ -156,6 +156,8 @@ const (
 const (
 	// ConfigFileName config file name to read from configmap
 	ConfigFileName = "config.yaml"
+	// FiltersConfigFileName config file name to read from configmap
+	FiltersConfigFileName = "filters-config.yaml"
 	// EnvVarArgusConfigPrefix prefix to parse environment variables into config struct
 	EnvVarArgusConfigPrefix = "argus"
 )

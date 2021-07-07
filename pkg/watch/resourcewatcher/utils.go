@@ -10,6 +10,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/logicmonitor/k8s-argus/pkg/eventprocessor"
 	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
@@ -80,7 +81,7 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 
 	clctx := lmlog.LMContextWithFields(lctx, fields)
 	clctx.Set(constants.PartitionKey, fmt.Sprintf("%s-%s", rt.String(), objectMeta.Name))
-	return lctx
+	return clctx
 }
 
 // RecordDeleteEventLatency logs latency of receiving delete event to argus.
@@ -122,4 +123,16 @@ func getEvalInput(lctx *lmctx.LMContext, meta metav1.ObjectMeta) govaluate.MapPa
 	log.Tracef("Eval Input: %v", evaluationParams)
 
 	return evaluationParams
+}
+
+func sendToFacade(facade eventprocessor.RunnerFacade, lctx *lmctx.LMContext, function func()) {
+	log := lmlog.Logger(lctx)
+	if err := facade.Send(lctx, &eventprocessor.RunnerCommand{
+		ExecFunc: function,
+		Lctx:     lctx,
+	}); err != nil {
+		log.Errorf("Failed to perform event processing: %s", err)
+		return
+	}
+	log.Debug("event processing completed")
 }

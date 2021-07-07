@@ -1,3 +1,4 @@
+// Package aerrors has all predefined argus errors on which errors.Is or errors.As can be used
 package aerrors
 
 import "errors"

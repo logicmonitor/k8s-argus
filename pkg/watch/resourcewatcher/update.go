@@ -9,6 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/logicmonitor/k8s-argus/pkg/eventprocessor"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/resource/builder"
@@ -45,9 +46,7 @@ func UpdateFuncWithExclude(
 }
 
 // UpdateFuncDispatcher update
-func UpdateFuncDispatcher(
-	updateFunc types.UpdatePreprocessFunc,
-) types.WatcherUpdateFunc {
+func UpdateFuncDispatcher(facade eventprocessor.RunnerFacade, updateFunc types.UpdatePreprocessFunc) types.WatcherUpdateFunc {
 	return func(oldObj, newObj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithTime(time.Now()))
 		log := lmlog.Logger(lctx)
@@ -72,7 +71,9 @@ func UpdateFuncDispatcher(
 
 		log.Debugf("Received update event")
 		rt.ObjectMeta(newObj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		updateFunc(lctx, rt, oldObj, newObj)
+		sendToFacade(facade, lctx, func() {
+			updateFunc(lctx, rt, oldObj, newObj)
+		})
 	}
 }
 

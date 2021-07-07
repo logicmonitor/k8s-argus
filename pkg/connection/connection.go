@@ -172,7 +172,7 @@ func checkGRPCState(lctx *lmctx.LMContext) {
 	if state == connectivity.Shutdown {
 		log.Infof("gRPC is in \"%s\" state. Creating new gRPC connection & CSC client.", state)
 		if err := createConnection(lctx); err != nil {
-			log.Errorf("Failed to reinitialise collectorset-controller client")
+			log.Errorf("Failed to reinitialise collectorset-controller client: %s", err)
 		}
 	}
 }

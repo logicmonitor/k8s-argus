@@ -4,6 +4,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/logicmonitor/k8s-argus/pkg/eventprocessor"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -12,9 +13,7 @@ import (
 )
 
 // DeleteFuncDispatcher delete
-func DeleteFuncDispatcher(
-	deleteFunc types.DeletePreprocessFunc,
-) types.WatcherDeleteFunc {
+func DeleteFuncDispatcher(facade eventprocessor.RunnerFacade, deleteFunc types.DeletePreprocessFunc) types.WatcherDeleteFunc {
 	return func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithTime(time.Now()))
 		log := lmlog.Logger(lctx)
@@ -39,6 +38,9 @@ func DeleteFuncDispatcher(
 		log.Debugf("Received delete event")
 		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
 		RecordDeleteEventLatency(lctx, rt, obj)
-		deleteFunc(lctx, rt, obj)
+
+		sendToFacade(facade, lctx, func() {
+			deleteFunc(lctx, rt, obj)
+		})
 	}
 }

@@ -78,7 +78,10 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"watch": "init"}))
 		log := lmlog.Logger(lctx)
 
-		filters.Init(lctx)
+		if err := filters.Init(lctx); err != nil {
+			log.Fatal(err.Error())
+			return
+		}
 		// LogicMonitor API client.
 		lmClient, err := logicmonitor.NewLMClient(conf)
 		if err != nil {
@@ -112,7 +115,15 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			log.Fatal(err.Error())
 			return
 		}
-		argusObj.Watch(lctx)
+		if err := argusObj.CreateParallelRunners(lctx); err != nil {
+			log.Fatalf("Could not start parallel event runners: %s", err)
+			return
+		}
+
+		if err := argusObj.Watch(lctx); err != nil {
+			log.Fatalf("Could not start event watchers: %s", err)
+			return
+		}
 
 		// To update K8s & Helm properties in cluster resource group periodically with the server
 		err = cronjob.StartTelemetryCron(argusObj.ResourceCache, argusObj.LMRequester)

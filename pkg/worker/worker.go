@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -29,11 +28,9 @@ const (
 
 // Worker object
 type Worker struct {
-	config         *types.WConfig
-	initialized    bool
-	running        bool
-	tokenizers     *sync.Map
-	cancelContexts map[<-chan interface{}]func()
+	config      *types.WConfig
+	initialized bool
+	running     bool
 }
 
 // GetConfig returns the config object
@@ -44,11 +41,9 @@ func (w *Worker) GetConfig() *types.WConfig {
 // NewWorker creates a worker with provided config
 func NewWorker(c *types.WConfig) *Worker {
 	return &Worker{
-		config:         c,
-		initialized:    false,
-		running:        false,
-		tokenizers:     &sync.Map{},
-		cancelContexts: make(map[<-chan interface{}]func()),
+		config:      c,
+		initialized: false,
+		running:     false,
 	}
 }
 

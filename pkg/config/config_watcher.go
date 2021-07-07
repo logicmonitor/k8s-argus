@@ -92,6 +92,10 @@ func (cw *watcher) AddConfigMapHook(hook Hook) {
 	}
 }
 
+func AddConfigMapHook(hook Hook) {
+	w.AddConfigMapHook(hook)
+}
+
 // NewConfigWatcher creates new config watcher
 func NewConfigWatcher() *watcher { // nolint: golint,revive
 	return &watcher{

@@ -33,8 +33,8 @@ type WConfig struct {
 	MaxRetry int
 }
 
-// NewHTTPWConfig new
-func NewHTTPWConfig(id int) *WConfig {
+// NewWConfig new
+func NewWConfig(id int) *WConfig {
 	ch := make(chan *WorkerCommand)
 
 	return &WConfig{

@@ -32,6 +32,8 @@ type Config struct {
 	IgnoreSSL                     bool                    `yaml:"ignore_ssl"`
 	OpenMetricsConfig             *OpenmetricsConfig      `yaml:"openmetrics"`
 	NumberOfWorkers               *int                    `yaml:"number_of_workers" refresh_scope:"no"`
+	NumberOfParallelRunners       *int                    `yaml:"number_of_parallel_runners" refresh_scope:"no"`
+	ParallelRunnerQueueSize       *int                    `yaml:"parallel_runner_queue_size" refresh_scope:"no"`
 	EnableNewResourceTree         bool                    `yaml:"enable_new_resource_tree"`
 	EnableNamespacesDeletedGroups bool                    `yaml:"enable_namespaces_deleted_groups"`
 	RegisterGenericFilter         bool                    `yaml:"register_generic_filter"`
@@ -234,6 +236,14 @@ func validateConfig(conf *Config) {
 	if conf.NumberOfWorkers == nil {
 		defaultWorkers := 10
 		conf.NumberOfWorkers = &defaultWorkers
+	}
+	if conf.NumberOfParallelRunners == nil {
+		defaultRunners := 10
+		conf.NumberOfParallelRunners = &defaultRunners
+	}
+	if conf.ParallelRunnerQueueSize == nil {
+		defaultQueueSize := 100
+		conf.ParallelRunnerQueueSize = &defaultQueueSize
 	}
 	if conf.DeleteArgusPodAfter == nil {
 		scheduledDeleteTime := "P10DT0H0M0S"

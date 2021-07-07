@@ -6,6 +6,7 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/logicmonitor/k8s-argus/pkg/eventprocessor"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/resource/builder"
@@ -58,9 +59,7 @@ func AddOrUpdateFunc(
 }
 
 // AddFuncDispatcher add dispatcher
-func AddFuncDispatcher(
-	addFunc types.AddPreprocessFunc,
-) types.WatcherAddFunc {
+func AddFuncDispatcher(facade eventprocessor.RunnerFacade, addFunc types.AddPreprocessFunc) types.WatcherAddFunc {
 	return func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithTime(time.Now()))
 		log := lmlog.Logger(lctx)
@@ -84,7 +83,9 @@ func AddFuncDispatcher(
 
 		log.Debugf("Received add event")
 		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		addFunc(lctx, rt, obj)
+		sendToFacade(facade, lctx, func() {
+			addFunc(lctx, rt, obj)
+		})
 	}
 }
 

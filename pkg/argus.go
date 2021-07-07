@@ -6,6 +6,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/etcd"
+	"github.com/logicmonitor/k8s-argus/pkg/eventprocessor"
+	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/permission"
@@ -31,6 +33,7 @@ type Argus struct {
 	Watchers               []types.ResourceWatcher
 	controllerStateHolders map[enums.ResourceType]*types.ControllerInitSyncStateHolder
 	NSWatcher              *namespace.OldWatcher
+	RunnerFacade           eventprocessor.RunnerFacade
 }
 
 func (a *Argus) Init() error {
@@ -125,11 +128,11 @@ func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
 }
 
 // Watch watches the API for events.
-func (a *Argus) Watch(lctx *lmctx.LMContext) {
+func (a *Argus) Watch(lctx *lmctx.LMContext) error {
 	log := lmlog.Logger(lctx)
 	conf, err := config.GetConfig()
 	if err != nil {
-		return
+		return err
 	}
 	syncInterval := *conf.Intervals.PeriodicSyncInterval
 	log.Debugf("Starting watchers")
@@ -150,7 +153,8 @@ func (a *Argus) Watch(lctx *lmctx.LMContext) {
 			continue
 		}
 		watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
-		controller := a.createNewInformer(watchlist, rt, syncInterval, b)
+		clientState, controller := a.createNewInformer(watchlist, rt, syncInterval, b)
+		go watchForFilterRuleChange(rt, clientState)
 		log.Debugf("Starting watcher of %s", rt)
 		stop := make(chan struct{})
 		stateHolder := types.NewControllerInitSyncStateHolder(controller)
@@ -158,10 +162,30 @@ func (a *Argus) Watch(lctx *lmctx.LMContext) {
 		a.controllerStateHolders[rt] = &stateHolder
 		go controller.Run(stop)
 	}
+	return nil
 }
 
-func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.ResourceType, syncInterval time.Duration, b *builder.Builder) cache.Controller {
-	_, controller := cache.NewInformer(
+func watchForFilterRuleChange(rt enums.ResourceType, clientstate cache.Store) {
+	func() {
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"filter_hook": rt.String()}))
+		log := lmlog.Logger(lctx)
+		filters.AddFilterHook(filters.FilterHook{
+			Hook: func(c *filters.Config, c2 *filters.Config) {
+				err := clientstate.Resync()
+				if err != nil {
+					log.Errorf("Failed to run graceful resync on exclusion rules change: %s", err)
+				}
+				log.Infof("Resync initiatiated on exclusion rules change")
+			},
+			Predicate: func(c *filters.Config, c2 *filters.Config) bool {
+				return true
+			},
+		})
+	}()
+}
+
+func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.ResourceType, syncInterval time.Duration, b *builder.Builder) (cache.Store, cache.Controller) {
+	return cache.NewInformer(
 		watchlist,
 		rt.K8SObjectType(),
 		syncInterval,
@@ -169,6 +193,7 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 			FilterFunc: a.genericObjectFilterFunc(),
 			Handler: cache.ResourceEventHandlerFuncs{
 				AddFunc: resourcewatcher.AddFuncDispatcher(
+					a.RunnerFacade,
 					resourcewatcher.AddFuncWithExclude(
 						resourcewatcher.PreprocessAddEventForOldUID(
 							a.ResourceManager.GetResourceCache(),
@@ -194,6 +219,7 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 					),
 				),
 				UpdateFunc: resourcewatcher.UpdateFuncDispatcher(
+					a.RunnerFacade,
 					resourcewatcher.UpdateFuncWithExclude(
 						resourcewatcher.PreprocessUpdateEventForOldUID(
 							a.ResourceManager.GetResourceCache(),
@@ -212,12 +238,12 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 					),
 				),
 				DeleteFunc: resourcewatcher.DeleteFuncDispatcher(
+					a.RunnerFacade,
 					b.DeleteFuncWithDefaults(resourcewatcher.WatcherConfigurer(rt), a.ResourceManager.DeleteFunc()),
 				),
 			},
 		},
 	)
-	return controller
 }
 
 func (a *Argus) genericObjectFilterFunc() func(obj interface{}) bool {
@@ -262,4 +288,13 @@ func (a *Argus) RunNSWatcher(syncInterval time.Duration) (enums.ResourceType, ca
 		},
 	)
 	return rt, controller
+}
+
+func (a *Argus) CreateParallelRunners(lctx *lmctx.LMContext) error {
+	runnerFacade, err := createRunnerFacade(lctx)
+	if err != nil {
+		return err
+	}
+	a.RunnerFacade = runnerFacade
+	return nil
 }

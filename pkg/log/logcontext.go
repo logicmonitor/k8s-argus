@@ -12,8 +12,10 @@ import (
 // NewLMContextWith creates context with provided log entry
 func NewLMContextWith(logger *logrus.Entry) *lmctx.LMContext {
 	ctx := lmctx.NewLMContext()
-	entryWithDebugID := logger.WithFields(logrus.Fields{"debug_id": getShortUUID()})
+	debugID := getShortUUID()
+	entryWithDebugID := logger.WithFields(logrus.Fields{"debug_id": debugID})
 	ctx.Set("logger", entryWithDebugID)
+	ctx.Set("debug_id", debugID)
 
 	return ctx
 }
@@ -27,7 +29,9 @@ func Logger(lctx *lmctx.LMContext) *logrus.Entry {
 func LMContextWithFields(lctx *lmctx.LMContext, fields logrus.Fields) *lmctx.LMContext {
 	ctx := lctx.Copy()
 	entry := Logger(ctx)
-	ctx.Set("logger", entry.WithFields(fields).WithFields(logrus.Fields{"p_debug_id": ctx.Extract("debug_id"), "debug_id": getShortUUID()}))
+	debugID := getShortUUID()
+	ctx.Set("logger", entry.WithFields(fields).WithFields(logrus.Fields{"p_debug_id": ctx.Extract("debug_id"), "debug_id": debugID}))
+	ctx.Set("debug_id", debugID)
 
 	return ctx
 }
