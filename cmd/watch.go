@@ -108,11 +108,11 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		err = argusObj.Init()
 		// Instantiate the application and add watchers.
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatalf("Failed to initialize argus: %s", err)
 			return
 		}
 		if err := argusObj.CreateWatchers(lctx); err != nil {
-			log.Fatal(err.Error())
+			log.Fatalf("Failed to create resource watchers: %s", err)
 			return
 		}
 		if err := argusObj.CreateParallelRunners(lctx); err != nil {
@@ -128,7 +128,7 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		// To update K8s & Helm properties in cluster resource group periodically with the server
 		err = cronjob.StartTelemetryCron(argusObj.ResourceCache, argusObj.LMRequester)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatalf("Failed to start telemetry collector: %s", err)
 			return
 		}
 

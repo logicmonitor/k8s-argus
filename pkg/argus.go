@@ -276,9 +276,9 @@ func (a *Argus) genericObjectFilterFunc() func(obj interface{}) bool {
 func (a *Argus) RunNSWatcher(syncInterval time.Duration) (enums.ResourceType, cache.Controller) {
 	rt := a.NSWatcher.ResourceType()
 	// start ns watcher
-	watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
+	listWatch := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
 	_, controller := cache.NewInformer(
-		watchlist,
+		listWatch,
 		rt.K8SObjectType(),
 		syncInterval,
 		cache.ResourceEventHandlerFuncs{

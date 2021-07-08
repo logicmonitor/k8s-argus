@@ -24,12 +24,10 @@ func (m *Manager) AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface
 		log := lmlog.Logger(lctx)
 		d, err := m.Add(lctx, rt, obj, options...)
 		if err != nil {
-			if errors.Is(err, aerrors.ErrResourceExists) {
-				log.Warnf("%s", err)
-
+			if !errors.Is(err, aerrors.ErrResourceExists) {
 				return nil, err
 			}
-			return nil, err
+			log.Warnf("%s", err)
 		}
 
 		log.Infof("Added resource")
@@ -122,8 +120,13 @@ func (m *Manager) createNodeRoleGroups(lctx *lmctx.LMContext, rt enums.ResourceT
 	}
 	cacheMetaList, _ := m.ResourceCache.Get(lctx, rn)
 	parentID := int32(0)
+	clusterGroupID, err := util.GetClusterGroupID(lctx, m.LMRequester)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 	for _, cacheMeta := range cacheMetaList {
-		if cacheMeta.Container == fmt.Sprintf("%d", util.GetClusterGroupID(lctx, m.LMRequester)) {
+		if cacheMeta.Container == fmt.Sprintf("%d", clusterGroupID) {
 			parentID = cacheMeta.LMID
 		}
 	}

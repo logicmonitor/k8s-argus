@@ -19,60 +19,26 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 		return nil, err2
 	}
 	nodes := enums.Nodes
-	pods := enums.Pods
 	etcd := enums.ETCD
-	deployments := enums.Deployments
-	services := enums.Services
-	hpas := enums.Hpas
 	doNotCreateDeletedGroup := conf.DeleteResources
-	return &types.ResourceGroupTree{
+	clusterProps, ok := conf.ResourceGroupProperties.Raw["cluster"]
+	if !ok {
+		clusterProps = []config.PropOpts{}
+	}
+	treeObj := &types.ResourceGroupTree{
 		Options: []types.ResourceGroupOption{
 			dgBuilder.GroupName(util.ClusterGroupName(conf.ClusterName)),
 			dgBuilder.ParentID(conf.ClusterGroupID),
 			dgBuilder.DisableAlerting(conf.DisableAlerting),
 			dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(conf.ClusterName)),
-			dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Cluster)),
+			dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(clusterProps)),
 		},
 		ChildGroups: []*types.ResourceGroupTree{
 			{
 				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(deployments.TitlePlural()),
-					dgBuilder.DisableAlerting(true),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Deployments)),
-				},
-				ChildGroups: []*types.ResourceGroupTree{
-					{
-						DontCreate: doNotCreateDeletedGroup,
-						Options: []types.ResourceGroupOption{
-							dgBuilder.GroupName(constants.DeletedResourceGroup),
-							dgBuilder.DisableAlerting(true),
-							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(deployments.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-						},
-					},
-				},
-			},
-			{
-				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(hpas.TitlePlural()),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.HPA)),
-				},
-				ChildGroups: []*types.ResourceGroupTree{
-					{
-						DontCreate: doNotCreateDeletedGroup,
-						Options: []types.ResourceGroupOption{
-							dgBuilder.GroupName(constants.DeletedResourceGroup),
-							dgBuilder.DisableAlerting(true),
-							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(hpas.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-						},
-					},
-				},
-			},
-			{
-				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(nodes.TitlePlural()),
 					dgBuilder.DisableAlerting(conf.DisableAlerting),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Nodes)),
+					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.Nodes))),
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
@@ -93,50 +59,40 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 				},
 			},
 			{
-				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(pods.TitlePlural()),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Pods)),
-				},
-				ChildGroups: []*types.ResourceGroupTree{
-					{
-						DontCreate: doNotCreateDeletedGroup,
-						Options: []types.ResourceGroupOption{
-							dgBuilder.GroupName(constants.DeletedResourceGroup),
-							dgBuilder.DisableAlerting(true),
-							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(pods.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-						},
-					},
-				},
-			},
-			{
-				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(services.TitlePlural()),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Services)),
-				},
-				ChildGroups: []*types.ResourceGroupTree{
-					{
-						DontCreate: doNotCreateDeletedGroup,
-						Options: []types.ResourceGroupOption{
-							dgBuilder.GroupName(constants.DeletedResourceGroup),
-							dgBuilder.DisableAlerting(true),
-							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(services.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-						},
-					},
-				},
-			},
-			{
 				ChildGroups: nil,
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.EtcdResourceGroupName),
 					dgBuilder.DisableAlerting(conf.DisableAlerting),
 					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.ETCD)),
+					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
 				},
 			},
 		},
-	}, nil
+	}
+
+	for _, resource := range enums.ALLResourceTypes {
+		if resource.IsNamespaceScopedResource() {
+			treeObj.ChildGroups = append(treeObj.ChildGroups,
+				&types.ResourceGroupTree{
+					Options: []types.ResourceGroupOption{
+						dgBuilder.GroupName(resource.TitlePlural()),
+						dgBuilder.DisableAlerting(true),
+						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
+					},
+					ChildGroups: []*types.ResourceGroupTree{
+						{
+							DontCreate: doNotCreateDeletedGroup,
+							Options: []types.ResourceGroupOption{
+								dgBuilder.GroupName(constants.DeletedResourceGroup),
+								dgBuilder.DisableAlerting(true),
+								dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
+							},
+						},
+					},
+				})
+		}
+	}
+	return treeObj, nil
 }
 
 // GetResourceGroupTree2 creates the Resource tree that will represent the cluster in LogicMonitor.
@@ -159,13 +115,18 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 		deletedBuilder = deletedBuilder.HasCategory(e.GetDeletedCategory()).Or()
 	}
 	deletedBuilder.TrimOrCloseBracket()
+
+	clusterProps, ok := conf.ResourceGroupProperties.Raw["cluster"]
+	if !ok {
+		clusterProps = []config.PropOpts{}
+	}
 	return &types.ResourceGroupTree{
 		Options: []types.ResourceGroupOption{
 			dgBuilder.GroupName(util.ClusterGroupName(conf.ClusterName)),
 			dgBuilder.ParentID(conf.ClusterGroupID),
 			dgBuilder.DisableAlerting(conf.DisableAlerting),
 			dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(constants.ClusterCategory).And().Auto("clustername").Equals(conf.ClusterName)),
-			dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Cluster)),
+			dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(clusterProps)),
 		},
 		ChildGroups: []*types.ResourceGroupTree{
 			{
@@ -173,13 +134,13 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 					dgBuilder.GroupName(constants.EtcdResourceGroupName),
 					dgBuilder.DisableAlerting(conf.DisableAlerting),
 					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.ETCD)),
+					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
 				},
 			},
 			{
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(nodes.TitlePlural()),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Nodes)),
+					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.Nodes))),
 					dgBuilder.DisableAlerting(conf.DisableAlerting),
 				},
 				ChildGroups: []*types.ResourceGroupTree{

@@ -57,7 +57,11 @@ func GetByID(lctx *lmctx.LMContext, groupID int32, requester *types.LMRequester)
 
 func GetClusterGroupProperty(lctx *lmctx.LMContext, name string, client *types.LMRequester) string {
 	log := lmlog.Logger(lctx)
-	clusterGroupID := util.GetClusterGroupID(lctx, client)
+	clusterGroupID, err := util.GetClusterGroupID(lctx, client)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
 	resourceGroup, err := GetByID(lctx, clusterGroupID, client)
 	if err != nil {
 		log.Errorf("Failed to fetch cluster group [%d]: %s", clusterGroupID, err)

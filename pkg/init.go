@@ -54,11 +54,14 @@ func CreateArgus(lctx *lmctx.LMContext, lmClient *client.LMSdkGo) (*Argus, error
 		return nil, err
 	}
 
-	resourceCache := resourcecache.NewResourceCache(lmrequester, *conf.Intervals.CacheSyncInterval)
+	resourceCache := resourcecache.NewResourceCache(lmrequester)
 	// Graceful rebuild
 	if resourcegroup.GetClusterGroupProperty(lctx, constants.ResyncCacheProp, lmrequester) == "true" {
 		resourceCache.Rebuild(lctx)
-		clusterGroupID := util.GetClusterGroupID(lctx, lmrequester)
+		clusterGroupID, err := util.GetClusterGroupID(lctx, lmrequester)
+		if err != nil {
+			return nil, err
+		}
 		clctx := lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: conf.ClusterName})
 		defer resourcegroup.DeleteResourceGroupPropertyByName(clctx, clusterGroupID, &models.EntityProperty{Name: constants.ResyncCacheProp, Value: "true"}, lmrequester)
 	}

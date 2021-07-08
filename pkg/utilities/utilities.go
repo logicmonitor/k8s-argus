@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
 	"github.com/logicmonitor/k8s-argus/pkg/client/csc"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -18,7 +17,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
-	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -209,14 +207,13 @@ func GetDisplayNameNew(rt enums.ResourceType, meta *metav1.ObjectMeta, conf *con
 
 // GetClusterGroupID avoid call to Santaba and
 // returns from cache, cluster root grp is stagnant once created
-func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) int32 {
-	if clusterGroupID != -1 {
-		return clusterGroupID
+func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) (int32, error) {
+	if clusterGroupID > 0 {
+		return clusterGroupID, nil
 	}
 	conf, err := config.GetConfig()
 	if err != nil {
-		logrus.Errorf("Failed to get config")
-		return -2
+		return -2, fmt.Errorf("failed to get config: %w", err)
 	}
 	clusterGroupName := ClusterGroupName(conf.ClusterName)
 	clctx := lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: clusterGroupName})
@@ -226,14 +223,11 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) int32 {
 	command := client.GetResourceGroupByIDCommand(clctx, params)
 	g, err := client.SendReceive(clctx, command)
 	if err != nil {
-		logrus.Errorf("Error while fetching cluster resource group %v", err)
-
-		return -3
+		return -3, fmt.Errorf("error while fetching cluster resource group %w", err)
 	}
 
 	clusterGrpID := int32(-4)
 
-	logrus.Tracef("Cluster Parent resourceGroup: %v", spew.Sdump(g.(*lm.GetDeviceGroupByIDOK).Payload))
 	for _, sg := range g.(*lm.GetDeviceGroupByIDOK).Payload.SubGroups {
 		if sg.Name == clusterGroupName {
 			clusterGrpID = sg.ID
@@ -241,9 +235,12 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) int32 {
 			break
 		}
 	}
+	if clusterGrpID <= 0 {
+		return -4, fmt.Errorf("no child resource group present of name [%s] under resource group [%d]", clusterGroupName, conf.ClusterGroupID)
+	}
 	clusterGroupID = clusterGrpID
 
-	return clusterGrpID
+	return clusterGrpID, nil
 }
 
 // BuildResource build

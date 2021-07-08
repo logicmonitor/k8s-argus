@@ -61,13 +61,15 @@ type PropOpts struct {
 
 // ResourceGroupProperties represents the properties applied on resource groups
 type ResourceGroupProperties struct {
-	Cluster     []PropOpts `yaml:"cluster"`
-	Pods        []PropOpts `yaml:"pods"`
-	Services    []PropOpts `yaml:"services"`
-	Deployments []PropOpts `yaml:"deployments"`
-	Nodes       []PropOpts `yaml:"nodes"`
-	ETCD        []PropOpts `yaml:"etcd"`
-	HPA         []PropOpts `yaml:"hpas"`
+	Raw           map[string][]PropOpts `yaml:",inline"`
+	resourceProps map[enums.ResourceType][]PropOpts
+}
+
+func (rgp *ResourceGroupProperties) Get(e enums.ResourceType) []PropOpts {
+	if props, ok := rgp.resourceProps[e]; ok {
+		return props
+	}
+	return []PropOpts{}
 }
 
 // Intervals represents default and min values for periodic sync, periodic delete and resource cache sycn intervals
@@ -87,14 +89,14 @@ type OpenmetricsConfig struct {
 
 type config struct {
 	*Config
-	mu       sync.Mutex
+	rwmu     sync.RWMutex
 	hooks    []ConfHook
 	hooksrwm sync.RWMutex
 }
 
 var conf = &config{
 	Config:   nil,
-	mu:       sync.Mutex{},
+	rwmu:     sync.RWMutex{},
 	hooks:    make([]ConfHook, 0),
 	hooksrwm: sync.RWMutex{},
 }
@@ -122,14 +124,14 @@ func InitConfig() error {
 }
 
 func (c *config) getConf() *Config {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.rwmu.RLock()
+	defer c.rwmu.RUnlock()
 	return c.Config
 }
 
 func (c *config) setConf(conf *Config) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.rwmu.Lock()
+	defer c.rwmu.Unlock()
 	prev := c.Config
 	c.Config = conf
 	go func() {
@@ -171,6 +173,7 @@ func (c *config) UpdateConfig(value string) error {
 	if err != nil {
 		return err
 	}
+	postProcess(uconf)
 
 	validateConfig(uconf)
 	pconf, err := GetConfig()
@@ -186,6 +189,16 @@ func (c *config) UpdateConfig(value string) error {
 	// update config
 	c.setConf(uconf)
 	return nil
+}
+
+func postProcess(uconf *Config) {
+	uconf.ResourceGroupProperties.resourceProps = make(map[enums.ResourceType][]PropOpts)
+	for k, v := range uconf.ResourceGroupProperties.Raw {
+		rt, err := enums.ParseResourceType(k)
+		if err == nil {
+			uconf.ResourceGroupProperties.resourceProps[rt] = v
+		}
+	}
 }
 
 func postLoad(pconf *Config, uconf *Config) {
@@ -218,8 +231,8 @@ func retainFields(t reflect.Type, v reflect.Value, nv reflect.Value) {
 
 // GetConfig returns the application configuration specified by the config file.
 func GetConfig() (*Config, error) {
-	conf.mu.Lock()
-	defer conf.mu.Unlock()
+	conf.rwmu.RLock()
+	defer conf.rwmu.RUnlock()
 	return conf.Config, nil
 }
 

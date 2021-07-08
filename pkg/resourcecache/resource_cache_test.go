@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
-	"time"
 
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcecache"
@@ -15,7 +14,7 @@ import (
 var lctx = lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"resource_cache": "test"}))
 
 func BenchmarkCacheSetSameObject(b *testing.B) {
-	cache2 := resourcecache.NewResourceCache(nil, 1*time.Second)
+	cache2 := resourcecache.NewResourceCache(nil)
 	for i := 0; i < b.N; i++ {
 		cache2.Set(lctx, types.ResourceName{Name: "abc", Resource: 1}, types.ResourceMeta{ // nolint: exhaustivestruct
 			Container:     "xyz",
@@ -27,7 +26,7 @@ func BenchmarkCacheSetSameObject(b *testing.B) {
 }
 
 func BenchmarkCacheSetDiffObject(b *testing.B) {
-	cache2 := resourcecache.NewResourceCache(nil, 1*time.Second)
+	cache2 := resourcecache.NewResourceCache(nil)
 	for i := 0; i < b.N; i++ {
 		cache2.Set(lctx, types.ResourceName{Name: "abc", Resource: 1}, types.ResourceMeta{ // nolint: exhaustivestruct
 			Container:     fmt.Sprintf("xyz-%v", i),
@@ -39,7 +38,7 @@ func BenchmarkCacheSetDiffObject(b *testing.B) {
 }
 
 func BenchmarkCacheSetDiffDuplObject(b *testing.B) {
-	cache2 := resourcecache.NewResourceCache(nil, 1*time.Second)
+	cache2 := resourcecache.NewResourceCache(nil)
 	for i := 0; i < b.N; i++ {
 		cache2.Set(lctx, types.ResourceName{Name: "abc", Resource: 1}, types.ResourceMeta{ // nolint: exhaustivestruct
 			Container:     fmt.Sprintf("xyz-%v", i%5),

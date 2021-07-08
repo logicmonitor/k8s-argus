@@ -31,7 +31,12 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	log := lmlog.Logger(lctx)
 	// Graceful conflicts resolution
 	resolveConflicts := false
-	clusterGroupID := util.GetClusterGroupID(lctx, i.LMRequester)
+	clusterGroupID, err := util.GetClusterGroupID(lctx, i.LMRequester)
+	if err != nil {
+		log.Error(err.Error())
+
+		return
+	}
 
 	if resourcegroup.GetClusterGroupProperty(lctx, constants.ResyncConflictingResourcesProp, i.LMRequester) == "true" {
 		resolveConflicts = true

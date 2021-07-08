@@ -1,8 +1,8 @@
 FROM golang:1.14 as build
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
-ARG VERSION
+ARG DOCKER_TAG
 COPY ./ ./
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /argus -ldflags "-X \"github.com/logicmonitor/k8s-argus/pkg/constants.Version=${VERSION}\""
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /argus -ldflags "-X \"github.com/logicmonitor/k8s-argus/pkg/constants.Version=${DOCKER_TAG}\""
 
 FROM golangci/golangci-lint:v1.40 as lint
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus

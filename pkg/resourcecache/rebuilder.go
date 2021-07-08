@@ -30,7 +30,7 @@ func (rc *ResourceCache) rebuildCache(gauge prometheus.Gauge) {
 	log.Infof("Resource cache fetching resources")
 	resources, err := rc.getAllResources(lctx)
 	if resources == nil || err != nil {
-		log.Errorf("Failed to fetch resources")
+		log.Errorf("Failed to fetch resources: %s", err)
 	} else {
 		log.Debugf("Resync cache map")
 		rc.resetCacheStore(resources)
@@ -54,11 +54,9 @@ type DeviceGroupData struct {
 
 func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) {
 	log := lmlog.Logger(lctx)
-	clusterGroupID := util.GetClusterGroupID(lctx, rc.LMRequester)
-
-	if clusterGroupID == -1 {
-		err := fmt.Errorf("no cluster resource group found")
-		log.Errorf(err.Error())
+	clusterGroupID, err := util.GetClusterGroupID(lctx, rc.LMRequester)
+	if err != nil {
+		log.Error(err.Error())
 
 		return nil, err
 	}
@@ -73,7 +71,7 @@ func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) 
 
 	grpIDChan := make(chan int32)
 
-	go rc.fetchGroupDevices(lctx, rc.LMRequester, grpIDChan, resourceChan)
+	go rc.fetchGroupDevices(lctx, grpIDChan, resourceChan)
 
 	grpIDChan <- clusterGroupID
 	if conf, err := config.GetConfig(); err == nil {
@@ -120,7 +118,7 @@ func (rc *ResourceCache) getDevices(lctx *lmctx.LMContext, grpID int32) (*lm.Get
 	return resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK), nil
 }
 
-func (rc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, b *types.LMRequester, inChan <-chan int32, outChan chan<- *models.Device) {
+func (rc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, inChan <-chan int32, outChan chan<- *models.Device) {
 	log := lmlog.Logger(lctx)
 	start := time.Now()
 	defer func() {

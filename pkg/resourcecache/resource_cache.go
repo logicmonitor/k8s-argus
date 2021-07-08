@@ -33,7 +33,6 @@ type ResourceCache struct {
 	store         *Store
 	rwm           sync.RWMutex
 	rebuildMutex  sync.Mutex
-	resyncPeriod  time.Duration
 	flushTimeToCM time.Duration
 	flushMU       sync.Mutex
 	*types.LMRequester
@@ -52,11 +51,10 @@ type ResourceCache struct {
 }
 
 // NewResourceCache create new ResourceCache object
-func NewResourceCache(facadeObj *types.LMRequester, rp time.Duration) *ResourceCache {
+func NewResourceCache(facadeObj *types.LMRequester) *ResourceCache {
 	resourceCache := &ResourceCache{
 		store:         NewStore(),
 		rwm:           sync.RWMutex{},
-		resyncPeriod:  rp,
 		flushTimeToCM: 1 * time.Minute,
 		flushMU:       sync.Mutex{},
 		LMRequester:   facadeObj,
@@ -120,8 +118,13 @@ func (rc *ResourceCache) AutoCacheBuilder(initialised chan<- bool) {
 	close(initialised)
 
 	for {
+		sleep := time.Hour
+		conf, err := config.GetConfig()
+		if err == nil {
+			sleep = *conf.Intervals.CacheSyncInterval
+		}
 		// to keep constant interval between cache rebuild runs, as rebuild cache is heavy operation so ticker may lead back to back runs
-		time.Sleep(rc.resyncPeriod)
+		time.Sleep(sleep)
 		rc.rebuildCache(gauge)
 	}
 }
