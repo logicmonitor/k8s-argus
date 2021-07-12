@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -57,9 +58,9 @@ func (resourceType *ResourceType) UnmarshalText(text []byte) error {
 }
 
 // LMName lmname
-func (resourceType ResourceType) LMName(meta *metav1.ObjectMeta) string {
+func (resourceType ResourceType) LMName(meta *metav1.PartialObjectMetadata) string {
 	s := ShortResourceType(resourceType)
-	if resourceType.IsNamespaceScopedResource() {
+	if resourceType != Namespaces && resourceType.IsNamespaceScopedResource() {
 		return fmt.Sprintf("%s-%s-%s", meta.Name, s.String(), meta.Namespace)
 	}
 
@@ -101,4 +102,26 @@ func (resourceType *ResourceType) GetConflictsCategory() string {
 // GetDeletedCategory returns category name for conflicts group
 func (resourceType *ResourceType) GetDeletedCategory() string {
 	return fmt.Sprintf("%s%s", resourceType.GetCategory(), "Deleted")
+}
+
+// GetCategory returns category name for group
+func (resourceType *ResourceType) GetCategory() string {
+	return fmt.Sprintf("%s%s", "Kubernetes", resourceType.Title())
+}
+
+// ObjectMeta returns object meta from interface object
+func (resourceType *ResourceType) ObjectMeta(obj interface{}) *metav1.PartialObjectMetadata {
+	if *resourceType == ETCD || *resourceType == Unknown {
+		return nil
+	}
+	accessor, err := meta.Accessor(obj)
+	if err != nil {
+		return nil
+	}
+	return meta.AsPartialObjectMetadata(accessor)
+}
+
+// TitlePlural returns string name in proper case
+func (resourceType *ResourceType) TitlePlural() string {
+	return fmt.Sprintf("%ss", resourceType.Title())
 }

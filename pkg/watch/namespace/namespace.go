@@ -149,7 +149,7 @@ func (w *OldWatcher) DeleteFunc() func(obj interface{}) {
 		}
 		for _, meta := range metaList {
 			clctx := lmlog.LMContextWithLMResourceID(lctx, meta.LMID)
-			err := w.DeleteResourceGroup(clctx, enums.Namespaces, meta.LMID)
+			err := w.DeleteResourceGroup(clctx, enums.Namespaces, meta.LMID, false)
 			if err != nil {
 				log.Errorf("Failed to delete resource group for namespace [%d] of parent [%s]: %s", meta.LMID, meta.Container, err)
 			} else {

@@ -75,7 +75,7 @@ func GetResourceType(resource *models.Device) (enums.ResourceType, error) {
 	return enums.Unknown, fmt.Errorf("no valid category found in system.categories")
 }
 
-func IsArgusPodObject(lctx *lmctx.LMContext, rt enums.ResourceType, meta *metav1.ObjectMeta) bool {
+func IsArgusPodObject(lctx *lmctx.LMContext, rt enums.ResourceType, meta *metav1.PartialObjectMetadata) bool {
 	if rt == enums.Pods {
 		for k, v := range meta.Labels {
 			if k == "app" && (v == constants.Argus || v == constants.CollectorsetController) {

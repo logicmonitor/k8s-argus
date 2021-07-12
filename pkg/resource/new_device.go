@@ -30,7 +30,7 @@ func (m *Manager) Add(lctx *lmctx.LMContext, rt enums.ResourceType, obj interfac
 		return nil, fmt.Errorf("could not build resource object: %w", err)
 	}
 
-	objectMeta := *rt.ObjectMeta(obj)
+	objectMeta := rt.ObjectMeta(obj)
 	warn, valid, err2 := validateNewResource(lctx, rt, resource, objectMeta)
 	if !valid {
 		return nil, err2

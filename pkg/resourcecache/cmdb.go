@@ -200,7 +200,7 @@ func (rc *ResourceCache) updateIncrementalCache(lctx *lmctx.LMContext) {
 			continue
 		}
 		count := 0
-		if resp != nil && util.GetHTTPStatusCodeFromLMSDKError(resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK)) == http.StatusOK {
+		if resp != nil && resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK) != nil {
 			for _, resource := range resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK).Payload.Items {
 				if rc.storeDevice(lctx, resource, conf.ClusterName, rc.store) {
 					count++

@@ -4,76 +4,33 @@ import (
 	"sync"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
-	"github.com/sirupsen/logrus"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/client-go/tools/cache"
 )
 
 var (
-	enable  = true
-	disable = false
-
-	deploymentPermissionFlag              *bool
-	horizontalPodAutoscalerPermissionFlag *bool
-	mu                                    sync.Mutex
+	m  sync.Map
+	mu sync.Mutex
 )
-
-// HasDeploymentPermissions is a function that check if the deployment resource has permissions
-// nolint: dupl
-func HasDeploymentPermissions() bool {
-	if deploymentPermissionFlag != nil {
-		return *deploymentPermissionFlag
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	_, err := config.GetClientSet().AppsV1().Deployments(corev1.NamespaceAll).List(metav1.ListOptions{})
-	if err != nil {
-		deploymentPermissionFlag = &disable
-		logrus.Errorf("Failed to list deployments: %+v", err)
-	} else {
-		deploymentPermissionFlag = &enable
-	}
-
-	return *deploymentPermissionFlag
-}
-
-// HasHorizontalPodAutoscalerPermissions is a function that checks if the Horizontal Pod Autoscaler resource has permissions
-// nolint: dupl
-func HasHorizontalPodAutoscalerPermissions() bool {
-	if horizontalPodAutoscalerPermissionFlag != nil {
-		return *horizontalPodAutoscalerPermissionFlag
-	}
-
-	mu.Lock()
-	defer mu.Unlock()
-
-	_, err := config.GetClientSet().AutoscalingV1().HorizontalPodAutoscalers(corev1.NamespaceAll).List(metav1.ListOptions{})
-	if err != nil {
-		horizontalPodAutoscalerPermissionFlag = &disable
-
-		logrus.Errorf("Failed to list horizontalPodAutoscalers: %+v", err)
-	} else {
-		horizontalPodAutoscalerPermissionFlag = &enable
-	}
-
-	return *horizontalPodAutoscalerPermissionFlag
-}
 
 // HasPermissions has permission
 func HasPermissions(rt enums.ResourceType) bool {
-	switch rt {
-	case enums.Deployments:
-
-		return HasDeploymentPermissions()
-	case enums.Hpas:
-
-		return HasHorizontalPodAutoscalerPermissions()
-	case enums.ETCD, enums.Namespaces, enums.Nodes, enums.Pods, enums.Services, enums.Unknown:
-
-		return true
-	default:
-
+	if rt == enums.ETCD || rt == enums.Unknown {
 		return true
 	}
+	load, ok := m.Load(rt)
+	if ok {
+		return load.(bool)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	listWatch := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
+	listWatch.DisableChunking = true
+	_, err := listWatch.List(constants.DefaultListOptions)
+	m.Store(rt, err == nil)
+	return err == nil
 }

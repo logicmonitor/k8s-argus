@@ -134,7 +134,7 @@ outer:
 			log.Warningf("Request failed with error %v, retrying for %v time...", err, i)
 			time.Sleep(retryBackoffTimeDurationDefault)
 		case code == http.StatusTooManyRequests:
-			log.Infof("Rate limits reached")
+			log.Infof("Rate limits reached for: %s", command.APIInfo.GetPatternKey())
 			req := w.getRLLimit(lctx, err)
 			if req != nil {
 				w.setNewLimit(lctx, req, command)

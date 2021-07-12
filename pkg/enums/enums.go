@@ -8,7 +8,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -166,11 +165,6 @@ func ParseShortResourceType(shortResourceType string) (ShortResourceType, error)
 	return ShortResourceType(l), nil
 }
 
-// TitlePlural returns string name in proper case
-func (resourceType *ResourceType) TitlePlural() string {
-	return fmt.Sprintf("%ss", resourceType.Title())
-}
-
 // Title returns string name in proper case
 func (resourceType *ResourceType) Title() string {
 	switch *resourceType {
@@ -259,37 +253,6 @@ func (resourceType *ResourceType) K8SAPIVersion() string {
 	}
 }
 
-// ObjectMeta returns object meta from interface object
-// NOTE: RESOURCE_MODIFICATION need to change when adding/deleting resource for monitoring
-func (resourceType *ResourceType) ObjectMeta(obj interface{}) *metav1.ObjectMeta {
-	switch *resourceType {
-	case Pods:
-
-		return &obj.(*corev1.Pod).ObjectMeta
-	case Deployments:
-
-		return &obj.(*appsv1.Deployment).ObjectMeta
-	case Services:
-
-		return &obj.(*corev1.Service).ObjectMeta
-	case Hpas:
-
-		return &obj.(*autoscalingv1.HorizontalPodAutoscaler).ObjectMeta
-	case Nodes:
-
-		return &obj.(*corev1.Node).ObjectMeta
-	case Namespaces:
-
-		return &obj.(*corev1.Namespace).ObjectMeta
-	case ETCD, Unknown:
-
-		return nil
-	default:
-
-		return nil
-	}
-}
-
 // IsNamespaceScopedResource returns true if namespace scoped
 // NOTE: RESOURCE_MODIFICATION need to change when adding/deleting resource for monitoring
 func (resourceType *ResourceType) IsNamespaceScopedResource() bool {
@@ -305,12 +268,6 @@ func (resourceType *ResourceType) IsNamespaceScopedResource() bool {
 
 		return false
 	}
-}
-
-// GetCategory returns category name for conflicts group
-// NOTE: RESOURCE_MODIFICATION need to change when adding/deleting resource for monitoring
-func (resourceType *ResourceType) GetCategory() string {
-	return fmt.Sprintf("%s%s", "Kubernetes", resourceType.Title())
 }
 
 // APIGroup returns string name

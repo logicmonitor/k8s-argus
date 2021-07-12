@@ -76,7 +76,7 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 		fields["event"] = event
 	}
 	if conf, err := config.GetConfig(); err == nil {
-		fields["display_name"] = util.GetDisplayNameNew(rt, objectMeta, conf)
+		fields["display_name"] = util.GetDisplayName(rt, objectMeta, conf)
 	}
 
 	clctx := lmlog.LMContextWithFields(lctx, fields)
@@ -97,12 +97,12 @@ func RecordDeleteEventLatency(lctx *lmctx.LMContext, rt enums.ResourceType, obj 
 }
 
 // EvaluateResourceExclusion eval
-func EvaluateResourceExclusion(lctx *lmctx.LMContext, resourceType enums.ResourceType, meta metav1.ObjectMeta) (bool, error) {
+func EvaluateResourceExclusion(lctx *lmctx.LMContext, resourceType enums.ResourceType, meta *metav1.PartialObjectMetadata) (bool, error) {
 	return filters.Eval(lctx, resourceType, getEvalInput(lctx, meta))
 }
 
 // getEvalInput generates evaluation parameters based on labels and specified resource
-func getEvalInput(lctx *lmctx.LMContext, meta metav1.ObjectMeta) govaluate.MapParameters {
+func getEvalInput(lctx *lmctx.LMContext, meta *metav1.PartialObjectMetadata) govaluate.MapParameters {
 	log := lmlog.Logger(lctx)
 	evaluationParams := make(govaluate.MapParameters)
 	// adding annotations first and then labels, so that labels get higher precedence

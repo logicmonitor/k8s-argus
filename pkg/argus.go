@@ -21,6 +21,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/watch/resourcewatcher"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/tools/cache"
 )
@@ -251,10 +252,11 @@ func (a *Argus) genericObjectFilterFunc() func(obj interface{}) bool {
 		if conf.RegisterGenericFilter {
 			return func(obj interface{}) bool {
 				if rt, ok := resourcewatcher.InferResourceType(obj); ok {
-					if meta := rt.ObjectMeta(obj); meta != nil {
-						val := util.EvaluateExclusion(meta.Labels)
+					if metaObj, err := meta.Accessor(obj); err == nil {
+						m2 := meta.AsPartialObjectMetadata(metaObj)
+						val := util.EvaluateExclusion(m2.Labels)
 						if !val {
-							logrus.Tracef("returning exclusion for: %s-%s", meta.Name, meta.Namespace)
+							logrus.Tracef("returning exclusion for: %s-%s", m2.Name, m2.Namespace)
 						}
 						return val
 					}

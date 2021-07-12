@@ -71,7 +71,7 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 	}
 
 	for _, resource := range enums.ALLResourceTypes {
-		if resource.IsNamespaceScopedResource() {
+		if resource != enums.Namespaces && resource.IsNamespaceScopedResource() {
 			treeObj.ChildGroups = append(treeObj.ChildGroups,
 				&types.ResourceGroupTree{
 					Options: []types.ResourceGroupOption{

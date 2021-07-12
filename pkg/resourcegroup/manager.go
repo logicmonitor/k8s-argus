@@ -121,7 +121,20 @@ func (m *Manager) updateResourceGroup(lctx *lmctx.LMContext, tree *types.Resourc
 }
 
 // DeleteResourceGroup deletes a resource group with the specified resourceGroupID.
-func (m *Manager) DeleteResourceGroup(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) error {
+func (m *Manager) DeleteResourceGroup(lctx *lmctx.LMContext, rt enums.ResourceType, id int32, deleteIfEmpty bool) error {
+	if deleteIfEmpty {
+		group, err := m.GetResourceGroupByID(lctx, rt, id)
+		if err != nil && util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
+			m.UnsetLMIDInCache(lctx, rt, id)
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("failed to retrieve resource group to check its number of resources: %w", err)
+		}
+		if group.NumOfHosts > 0 {
+			return fmt.Errorf("%w: %d", aerrors.ErrResourceGroupIsNotEmpty, group.NumOfHosts)
+		}
+	}
 	params := lm.NewDeleteDeviceGroupByIDParams()
 	params.ID = id
 	deleteChildren := true
@@ -134,4 +147,19 @@ func (m *Manager) DeleteResourceGroup(lctx *lmctx.LMContext, rt enums.ResourceTy
 		m.UnsetLMIDInCache(lctx, rt, id)
 	}
 	return err
+}
+
+// GetResourceGroupByID deletes a resource group with the specified resourceGroupID.
+func (m *Manager) GetResourceGroupByID(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) (*models.DeviceGroup, error) {
+	params := lm.NewGetDeviceGroupByIDParams()
+	params.ID = id
+	command := m.GetResourceGroupByIDCommand(lctx, params)
+	resp, err := m.SendReceive(lctx, command)
+	if err != nil && util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
+		m.UnsetLMIDInCache(lctx, rt, id)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*lm.GetDeviceGroupByIDOK).Payload, err
 }

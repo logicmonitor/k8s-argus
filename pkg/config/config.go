@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -202,14 +201,10 @@ func postProcess(uconf *Config) {
 }
 
 func postLoad(pconf *Config, uconf *Config) {
-	logrus.Tracef("Before Old: %v", spew.Sdump(pconf))
-	logrus.Tracef("Before New: %v", spew.Sdump(uconf))
 	t := reflect.TypeOf(pconf).Elem()
 	v := reflect.ValueOf(pconf).Elem()
 	nv := reflect.ValueOf(uconf).Elem()
 	retainFields(t, v, nv)
-	logrus.Tracef("After Old: %v", spew.Sdump(pconf))
-	logrus.Tracef("After New: %v", spew.Sdump(uconf))
 }
 
 func retainFields(t reflect.Type, v reflect.Value, nv reflect.Value) {

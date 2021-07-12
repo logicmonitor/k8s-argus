@@ -14,6 +14,7 @@ import (
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -219,8 +220,12 @@ func (b *Builder) AddFuncWithDefaults(
 
 			return
 		}
-		objectMeta := rt.ObjectMeta(obj)
-		options := b.GetDefaultsResourceOptions(rt, objectMeta, conf)
+		accessor, err := meta.Accessor(obj)
+		if err != nil {
+			log.Errorf("failed to get objectmeta: %s", err)
+			return
+		}
+		options := b.GetDefaultsResourceOptions(rt, meta.AsPartialObjectMetadata(accessor), conf)
 		additionalOptions, err := configurer.AddFuncOptions()(lctx, rt, obj, b)
 		if err != nil {
 			log.Errorf("failed to get resource additional options: %s", err)
@@ -299,14 +304,14 @@ func (b *Builder) MarkDeleteFunc(
 }
 
 // GetDefaultsResourceOptions returns default options for resource
-func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *metav1.ObjectMeta, conf *config.Config) []types.ResourceOption {
+func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *metav1.PartialObjectMetadata, conf *config.Config) []types.ResourceOption {
 	options := []types.ResourceOption{
 		b.Name(rt.LMName(objectMeta)),
 		b.ResourceLabels(objectMeta.Labels),
-		b.DisplayName(util.GetDisplayNameNew(rt, objectMeta, conf)),
+		b.DisplayName(util.GetDisplayName(rt, objectMeta, conf)),
 		b.SystemCategory(rt.GetCategory(), enums.Add),
 		b.Auto("name", objectMeta.Name),
-		b.Auto("selflink", util.SelfLink(rt.IsNamespaceScopedResource(), rt.K8SAPIVersion(), rt.String(), *objectMeta)),
+		b.Auto("selflink", util.SelfLink(rt.IsNamespaceScopedResource(), rt.K8SAPIVersion(), rt.String(), objectMeta)),
 		b.Auto("uid", string(objectMeta.UID)),
 		b.Custom(constants.K8sResourceCreatedOnPropertyKey, strconv.FormatInt(objectMeta.CreationTimestamp.Unix(), 10)),
 	}
@@ -318,7 +323,7 @@ func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *
 }
 
 // GetMarkDeleteOptions mark delete
-func (b *Builder) GetMarkDeleteOptions(lctx *lmctx.LMContext, rt enums.ResourceType, meta *metav1.ObjectMeta) []types.ResourceOption {
+func (b *Builder) GetMarkDeleteOptions(lctx *lmctx.LMContext, rt enums.ResourceType, meta *metav1.PartialObjectMetadata) []types.ResourceOption {
 	if meta.DeletionTimestamp == nil {
 		t := metav1.Now()
 		meta.DeletionTimestamp = &t

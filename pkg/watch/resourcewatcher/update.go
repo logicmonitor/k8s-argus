@@ -26,7 +26,7 @@ func UpdateFuncWithExclude(
 ) func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}) {
 		log := lmlog.Logger(lctx)
-		objectMeta := *rt.ObjectMeta(newObj)
+		objectMeta := rt.ObjectMeta(newObj)
 		exclude, err := EvaluateResourceExclusion(lctx, rt, objectMeta)
 		// NOTE: non nil err not considered for returning back to caller, exclude flag will decide it. err can be non nil for subset of rules
 		if err != nil {

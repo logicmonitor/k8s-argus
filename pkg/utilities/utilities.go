@@ -197,12 +197,10 @@ func ClusterGroupName(clusterName string) string {
 	return constants.ClusterResourceGroupPrefix + clusterName
 }
 
-// GetDisplayNameNew returns desired name
-// TODO: eventually get rid of these options, include namespace and include cluster name, always generate a unique name to reduce complexity
-func GetDisplayNameNew(rt enums.ResourceType, meta *metav1.ObjectMeta, conf *config.Config) string {
+// GetDisplayName returns desired name
+func GetDisplayName(rt enums.ResourceType, meta *metav1.PartialObjectMetadata, conf *config.Config) string {
 	// Use full name always to enforce unique name, as freedom to displayname impacts argus performance landing into several lm calls per event
 	return fmt.Sprintf("%s-%s", rt.LMName(meta), conf.ClusterName)
-	// return getDisplayNameAsPerSettings(rt, meta, conf)
 }
 
 // GetClusterGroupID avoid call to Santaba and

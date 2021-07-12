@@ -88,13 +88,15 @@ type ResourceCache interface {
 	UnsetLMID(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) bool
 	SoftRefresh(*lmctx.LMContext, string)
 	AddCacheHook(hook CacheHook)
+	ListWithFilter(f func(k ResourceName, v ResourceMeta) bool) []IterItem
 }
 
 // ResourceGroupManager interface for resource group operations
 type ResourceGroupManager interface {
 	ResourceGroupBuilder
 	CreateResourceGroupTree(lctx *lmctx.LMContext, tree *ResourceGroupTree, update bool) error
-	DeleteResourceGroup(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) error
+	GetResourceGroupByID(lctx *lmctx.LMContext, rt enums.ResourceType, id int32) (*models.DeviceGroup, error)
+	DeleteResourceGroup(lctx *lmctx.LMContext, rt enums.ResourceType, id int32, deleteIfEmpty bool) error
 }
 
 // ResourceManager is an interface that describes how resources in Kubernetes
@@ -158,7 +160,7 @@ type ResourceBuilder interface {
 	// DeletedOn adds kubernetes.resourceDeletedOn property to the resource.
 	DeletedOn(time.Time) ResourceOption
 
-	GetMarkDeleteOptions(*lmctx.LMContext, enums.ResourceType, *metav1.ObjectMeta) []ResourceOption
+	GetMarkDeleteOptions(*lmctx.LMContext, enums.ResourceType, *metav1.PartialObjectMetadata) []ResourceOption
 }
 
 // AppliesToBuilder is an interface for building an appliesTo string.

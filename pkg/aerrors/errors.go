@@ -15,5 +15,8 @@ var ErrInvalidCache = errors.New("invalid cache error")
 // ErrCacheMiss when cache entry is not present
 var ErrCacheMiss = errors.New("cache miss error")
 
-// ErrGetConfig when cache entry is not present
-var ErrGetConfig = errors.New("")
+// ErrResourceGroupIsNotEmpty when resource group has resources in it
+var ErrResourceGroupIsNotEmpty = errors.New("resource group is not empty, it has resources in it")
+
+// ErrResourceGroupParentIsNotValid parent resource group is not valid
+var ErrResourceGroupParentIsNotValid = errors.New("parent of resource group is not valid")
