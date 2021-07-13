@@ -10,6 +10,7 @@ import (
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/cache"
 )
 
 // DeleteFuncDispatcher delete
@@ -17,6 +18,12 @@ func DeleteFuncDispatcher(facade eventprocessor.RunnerFacade, deleteFunc types.D
 	return func(obj interface{}) {
 		lctx := lmlog.NewLMContextWith(logrus.WithTime(time.Now()))
 		log := lmlog.Logger(lctx)
+		if dfs, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+			logrus.Warnf("Delete event context is of type: %t", obj)
+			// TODO: run partial sync for specified object key in the event: refer cache.DeletedFinalStateUnknown
+			//  meanwhile continuing with stale object as its deletion so shouldn't be a problem
+			obj = dfs.Obj
+		}
 		defer func() {
 			if r := recover(); r != nil {
 				log.Errorf("Panic for %s: %s", util.GetCurrentFunctionName(), r)

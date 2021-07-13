@@ -33,7 +33,7 @@ type Argus struct {
 	types.ResourceCache
 	Watchers               []types.ResourceWatcher
 	controllerStateHolders map[enums.ResourceType]*types.ControllerInitSyncStateHolder
-	NSWatcher              *namespace.OldWatcher
+	NSWatcher              *namespace.Watcher
 	RunnerFacade           eventprocessor.RunnerFacade
 }
 
@@ -124,7 +124,7 @@ func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
 		}
 		a.Watchers = append(a.Watchers, &resourcewatcher.Watcher{Resource: rt})
 	}
-	a.NSWatcher = namespace.NewOldWatcher(a.ResourceManager, a.ResourceCache, a.LMRequester)
+	a.NSWatcher = namespace.NewWatcher(a.ResourceManager, a.ResourceCache, a.LMRequester)
 	return nil
 }
 

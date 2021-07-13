@@ -12,12 +12,13 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/cache"
 )
 
 var rt = enums.Namespaces
 
-// OldWatcher represents a watcher type that watches namespaces.
-type OldWatcher struct {
+// Watcher represents a watcher type that watches namespaces.
+type Watcher struct {
 	ResourceGroups map[string]int32
 	mu             sync.RWMutex
 	types.ResourceManager
@@ -25,8 +26,8 @@ type OldWatcher struct {
 	*types.LMRequester
 }
 
-func NewOldWatcher(manager types.ResourceManager, resourceCache types.ResourceCache, lmRequester *types.LMRequester) *OldWatcher {
-	watcher := &OldWatcher{
+func NewWatcher(manager types.ResourceManager, resourceCache types.ResourceCache, lmRequester *types.LMRequester) *Watcher {
+	watcher := &Watcher{
 		ResourceGroups:  make(map[string]int32),
 		ResourceManager: manager,
 		ResourceCache:   resourceCache,
@@ -44,7 +45,7 @@ func NewOldWatcher(manager types.ResourceManager, resourceCache types.ResourceCa
 	return watcher
 }
 
-func getHook(watcher *OldWatcher, action types.CacheAction) func(rn types.ResourceName, meta types.ResourceMeta) {
+func getHook(watcher *Watcher, action types.CacheAction) func(rn types.ResourceName, meta types.ResourceMeta) {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"cache_hook": "namespace", "action": action.String()}))
 	log := lmlog.Logger(lctx)
 	return func(rn types.ResourceName, meta types.ResourceMeta) {
@@ -79,17 +80,17 @@ func getHookPredicate(expectedAction types.CacheAction) func(action types.CacheA
 }
 
 // ResourceType resource
-func (w *OldWatcher) ResourceType() enums.ResourceType {
+func (w *Watcher) ResourceType() enums.ResourceType {
 	return enums.Namespaces
 }
 
 // GetConfig get
-func (w *OldWatcher) GetConfig() *types.WConfig {
+func (w *Watcher) GetConfig() *types.WConfig {
 	return nil
 }
 
 // AddFunc is a function that implements the Watcher interface.
-func (w *OldWatcher) AddFunc() func(obj interface{}) {
+func (w *Watcher) AddFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		namespace := obj.(*corev1.Namespace) // nolint: forcetypeassert
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": namespace.Name, "event": "add", "type": rt.Singular()}))
@@ -100,7 +101,7 @@ func (w *OldWatcher) AddFunc() func(obj interface{}) {
 	}
 }
 
-func (w *OldWatcher) createNamspaceResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
+func (w *Watcher) createNamspaceResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
 	conf, err := config.GetConfig()
 	if err != nil {
 		return
@@ -115,7 +116,7 @@ func (w *OldWatcher) createNamspaceResourceGroupTree(lctx *lmctx.LMContext, name
 }
 
 // UpdateFunc is a function that implements the Watcher interface.
-func (w *OldWatcher) UpdateFunc() func(oldObj, newObj interface{}) {
+func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 	return func(oldObj, newObj interface{}) {
 		namespace := newObj.(*corev1.Namespace) // nolint: forcetypeassert
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": namespace.Name, "event": "update", "type": rt.Singular()}))
@@ -126,13 +127,23 @@ func (w *OldWatcher) UpdateFunc() func(oldObj, newObj interface{}) {
 }
 
 // DeleteFunc is a function that implements the Watcher interface.
-func (w *OldWatcher) DeleteFunc() func(obj interface{}) {
+func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
 		conf, err := config.GetConfig()
 		if err != nil {
 			return
 		}
-		namespace := obj.(*corev1.Namespace) // nolint: forcetypeassert
+		if dfs, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+			logrus.Warnf("Delete namespace event context is of type: %t", obj)
+			// TODO: run partial sync for specified object key in the event: refer cache.DeletedFinalStateUnknown
+			//  meanwhile continuing with stale object as its deletion so shouldn't be a problem
+			obj = dfs.Obj
+		}
+		namespace, ok := obj.(*corev1.Namespace) // nolint: forcetypeassert
+		if !ok {
+			logrus.Errorf("Cannot convert event context object to Namespace: %t", obj)
+			return
+		}
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": namespace.Name, "event": "delete", "type": rt.Singular()}))
 		lctx = lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: conf.ClusterName})
 
@@ -160,7 +171,7 @@ func (w *OldWatcher) DeleteFunc() func(obj interface{}) {
 }
 
 // nolint: unused
-func (w *OldWatcher) createNewResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
+func (w *Watcher) createNewResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
 	log := lmlog.Logger(lctx)
 	meta, ok := w.ResourceCache.Get(lctx, types.ResourceName{
 		Name:     "Namespaces",
@@ -218,7 +229,7 @@ func (w *OldWatcher) createNewResourceGroupTree(lctx *lmctx.LMContext, namespace
 	}
 }
 
-func (w *OldWatcher) createPreviousResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
+func (w *Watcher) createPreviousResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
 	log := lmlog.Logger(lctx)
 	conf, err := config.GetConfig()
 	if err != nil {
