@@ -145,6 +145,7 @@ func (m *Manager) DeleteResourceGroup(lctx *lmctx.LMContext, rt enums.ResourceTy
 	_, err := m.SendReceive(lctx, command)
 	if err == nil || util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
 		m.UnsetLMIDInCache(lctx, rt, id)
+		return nil
 	}
 	return err
 }

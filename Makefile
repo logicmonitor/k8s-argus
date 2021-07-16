@@ -21,13 +21,13 @@ ifeq ($(shell uname -s), Darwin)
 endif
 
 build: gofmt
-	docker build --build-arg DOCKER_TAG=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) .
+	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) .
 
 dev: gofmt
-	docker build --build-arg DOCKER_TAG=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.dev .
+	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.dev .
 
 lint: gofmt
-	docker build --build-arg DOCKER_TAG=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.lint .
+	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.lint .
 
 mockgen:
 	go generate ./...

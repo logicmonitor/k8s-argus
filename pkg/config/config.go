@@ -125,7 +125,11 @@ func InitConfig() error {
 func (c *config) getConf() *Config {
 	c.rwmu.RLock()
 	defer c.rwmu.RUnlock()
-	return c.Config
+	if c.Config == nil {
+		return nil
+	}
+	sc := *c.Config
+	return &sc
 }
 
 func (c *config) setConf(conf *Config) {
@@ -175,10 +179,7 @@ func (c *config) UpdateConfig(value string) error {
 	postProcess(uconf)
 
 	validateConfig(uconf)
-	pconf, err := GetConfig()
-	if err != nil {
-		return err
-	}
+	pconf := c.getConf()
 	if pconf == nil {
 		pconf = uconf
 	}
@@ -226,9 +227,11 @@ func retainFields(t reflect.Type, v reflect.Value, nv reflect.Value) {
 
 // GetConfig returns the application configuration specified by the config file.
 func GetConfig() (*Config, error) {
-	conf.rwmu.RLock()
-	defer conf.rwmu.RUnlock()
-	return conf.Config, nil
+	v := conf.getConf()
+	if v == nil {
+		return nil, fmt.Errorf("config is not available: %v", v)
+	}
+	return v, nil
 }
 
 func validateConfig(conf *Config) {
