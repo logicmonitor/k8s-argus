@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -299,7 +298,6 @@ func (m *WebCheck) Type() string {
 
 // SetType sets the type of this subtype
 func (m *WebCheck) SetType(val string) {
-
 }
 
 // UseDefaultAlertSetting gets the use default alert setting of this subtype
@@ -715,7 +713,6 @@ func (m *WebCheck) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebCheck) validateCheckpoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Checkpoints()) { // not required
 		return nil
 	}
@@ -740,7 +737,6 @@ func (m *WebCheck) validateCheckpoints(formats strfmt.Registry) error {
 }
 
 func (m *WebCheck) validateCollectors(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Collectors()) { // not required
 		return nil
 	}
@@ -765,7 +761,6 @@ func (m *WebCheck) validateCollectors(formats strfmt.Registry) error {
 }
 
 func (m *WebCheck) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -774,7 +769,6 @@ func (m *WebCheck) validateName(formats strfmt.Registry) error {
 }
 
 func (m *WebCheck) validateProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Properties()) { // not required
 		return nil
 	}
@@ -799,7 +793,6 @@ func (m *WebCheck) validateProperties(formats strfmt.Registry) error {
 }
 
 func (m *WebCheck) validateTestLocation(formats strfmt.Registry) error {
-
 	if err := validate.Required("testLocation", "body", m.TestLocation()); err != nil {
 		return err
 	}
@@ -817,7 +810,6 @@ func (m *WebCheck) validateTestLocation(formats strfmt.Registry) error {
 }
 
 func (m *WebCheck) validateDomain(formats strfmt.Registry) error {
-
 	if err := validate.Required("domain", "body", m.Domain); err != nil {
 		return err
 	}
@@ -826,7 +818,6 @@ func (m *WebCheck) validateDomain(formats strfmt.Registry) error {
 }
 
 func (m *WebCheck) validateSteps(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Steps) { // not required
 		return nil
 	}

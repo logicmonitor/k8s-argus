@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -40,7 +39,6 @@ func (m *CIMAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *CIMAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // CimClass gets the cim class of this subtype
@@ -170,7 +168,6 @@ func (m *CIMAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CIMAutoDiscoveryMethod) validateCimClass(formats strfmt.Registry) error {
-
 	if err := validate.Required("cimClass", "body", m.CimClass); err != nil {
 		return err
 	}
@@ -179,7 +176,6 @@ func (m *CIMAutoDiscoveryMethod) validateCimClass(formats strfmt.Registry) error
 }
 
 func (m *CIMAutoDiscoveryMethod) validateNamespace(formats strfmt.Registry) error {
-
 	if err := validate.Required("namespace", "body", m.Namespace); err != nil {
 		return err
 	}
@@ -188,7 +184,6 @@ func (m *CIMAutoDiscoveryMethod) validateNamespace(formats strfmt.Registry) erro
 }
 
 func (m *CIMAutoDiscoveryMethod) validateProperty(formats strfmt.Registry) error {
-
 	if err := validate.Required("property", "body", m.Property); err != nil {
 		return err
 	}

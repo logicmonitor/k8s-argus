@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -262,7 +261,6 @@ func (m *HostInventoryReport) Type() string {
 
 // SetType sets the type of this subtype
 func (m *HostInventoryReport) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -578,7 +576,6 @@ func (m *HostInventoryReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *HostInventoryReport) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -587,7 +584,6 @@ func (m *HostInventoryReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *HostInventoryReport) validateRecipients(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -612,7 +608,6 @@ func (m *HostInventoryReport) validateRecipients(formats strfmt.Registry) error 
 }
 
 func (m *HostInventoryReport) validateMetrics(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Metrics) { // not required
 		return nil
 	}
@@ -637,7 +632,6 @@ func (m *HostInventoryReport) validateMetrics(formats strfmt.Registry) error {
 }
 
 func (m *HostInventoryReport) validateProperties(formats strfmt.Registry) error {
-
 	if err := validate.Required("properties", "body", m.Properties); err != nil {
 		return err
 	}

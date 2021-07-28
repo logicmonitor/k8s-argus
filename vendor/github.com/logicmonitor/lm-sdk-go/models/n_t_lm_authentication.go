@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -44,7 +43,6 @@ func (m *NTLMAuthentication) Type() string {
 
 // SetType sets the type of this subtype
 func (m *NTLMAuthentication) SetType(val string) {
-
 }
 
 // UserName gets the user name of this subtype
@@ -166,7 +164,6 @@ func (m *NTLMAuthentication) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NTLMAuthentication) validatePassword(formats strfmt.Registry) error {
-
 	if err := validate.Required("password", "body", m.Password()); err != nil {
 		return err
 	}
@@ -175,7 +172,6 @@ func (m *NTLMAuthentication) validatePassword(formats strfmt.Registry) error {
 }
 
 func (m *NTLMAuthentication) validateUserName(formats strfmt.Registry) error {
-
 	if err := validate.Required("userName", "body", m.UserName()); err != nil {
 		return err
 	}

@@ -12,10 +12,9 @@ import (
 	"io/ioutil"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -348,7 +347,6 @@ func (m *reportBase) Type() string {
 
 // SetType sets the type of this polymorphic type
 func (m *reportBase) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this polymorphic type
@@ -549,7 +547,6 @@ func unmarshalReportBase(data []byte, consumer runtime.Consumer) (ReportBase, er
 
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
-
 }
 
 // Validate validates this report base
@@ -571,7 +568,6 @@ func (m *reportBase) Validate(formats strfmt.Registry) error {
 }
 
 func (m *reportBase) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -580,7 +576,6 @@ func (m *reportBase) validateName(formats strfmt.Registry) error {
 }
 
 func (m *reportBase) validateRecipients(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}

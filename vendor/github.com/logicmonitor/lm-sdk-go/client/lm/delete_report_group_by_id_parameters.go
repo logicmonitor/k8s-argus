@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewDeleteReportGroupByIDParams creates a new DeleteReportGroupByIDParams object
@@ -117,7 +115,6 @@ func (o *DeleteReportGroupByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteReportGroupByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

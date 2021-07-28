@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *GetWebsitePropertyListByWebsiteIDOK) Error() string {
 }
 
 func (o *GetWebsitePropertyListByWebsiteIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.PropertyPaginationResponse)
 
 	// response payload
@@ -100,7 +97,6 @@ func (o *GetWebsitePropertyListByWebsiteIDDefault) Error() string {
 }
 
 func (o *GetWebsitePropertyListByWebsiteIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

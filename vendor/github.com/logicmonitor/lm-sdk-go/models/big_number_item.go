@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -66,7 +65,6 @@ func (m *BigNumberItem) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberItem) validateColorThresholds(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ColorThresholds) { // not required
 		return nil
 	}
@@ -91,7 +89,6 @@ func (m *BigNumberItem) validateColorThresholds(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberItem) validateDataPointName(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataPointName", "body", m.DataPointName); err != nil {
 		return err
 	}
@@ -100,7 +97,6 @@ func (m *BigNumberItem) validateDataPointName(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberItem) validateUseCommaSeparators(formats strfmt.Registry) error {
-
 	if err := validate.Required("useCommaSeparators", "body", m.UseCommaSeparators); err != nil {
 		return err
 	}

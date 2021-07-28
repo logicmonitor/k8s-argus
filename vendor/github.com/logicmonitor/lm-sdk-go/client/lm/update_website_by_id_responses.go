@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *UpdateWebsiteByIDOK) Error() string {
 }
 
 func (o *UpdateWebsiteByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	// response payload as interface type
 	payload, err := models.UnmarshalWebsite(response.Body(), consumer)
 	if err != nil {
@@ -100,7 +97,6 @@ func (o *UpdateWebsiteByIDDefault) Error() string {
 }
 
 func (o *UpdateWebsiteByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

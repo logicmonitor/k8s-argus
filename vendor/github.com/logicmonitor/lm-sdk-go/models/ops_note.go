@@ -11,10 +11,9 @@ import (
 	"io"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -178,7 +177,6 @@ func (m *OpsNote) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OpsNote) validateNote(formats strfmt.Registry) error {
-
 	if err := validate.Required("note", "body", m.Note); err != nil {
 		return err
 	}
@@ -187,27 +185,23 @@ func (m *OpsNote) validateNote(formats strfmt.Registry) error {
 }
 
 func (m *OpsNote) validateScopes(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Scopes()) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.Scopes()); i++ {
-
 		if err := m.scopesField[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("scopes" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
-
 	}
 
 	return nil
 }
 
 func (m *OpsNote) validateTags(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Tags) { // not required
 		return nil
 	}

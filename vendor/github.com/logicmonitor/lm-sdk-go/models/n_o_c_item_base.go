@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -40,7 +39,6 @@ func (m *nOCItemBase) Type() string {
 
 // SetType sets the type of this polymorphic type
 func (m *nOCItemBase) SetType(val string) {
-
 }
 
 // UnmarshalNOCItemBaseSlice unmarshals polymorphic slices of NOCItemBase
@@ -112,7 +110,6 @@ func unmarshalNOCItemBase(data []byte, consumer runtime.Consumer) (NOCItemBase, 
 
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
-
 }
 
 // Validate validates this n o c item base

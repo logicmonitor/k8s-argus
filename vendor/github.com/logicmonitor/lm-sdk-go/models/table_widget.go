@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -149,7 +148,6 @@ func (m *TableWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *TableWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -375,7 +373,6 @@ func (m *TableWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TableWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -384,7 +381,6 @@ func (m *TableWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *TableWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -393,7 +389,6 @@ func (m *TableWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *TableWidget) validateColumns(formats strfmt.Registry) error {
-
 	if err := validate.Required("columns", "body", m.Columns); err != nil {
 		return err
 	}
@@ -418,7 +413,6 @@ func (m *TableWidget) validateColumns(formats strfmt.Registry) error {
 }
 
 func (m *TableWidget) validateForecast(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Forecast) { // not required
 		return nil
 	}
@@ -436,7 +430,6 @@ func (m *TableWidget) validateForecast(formats strfmt.Registry) error {
 }
 
 func (m *TableWidget) validateRows(formats strfmt.Registry) error {
-
 	if err := validate.Required("rows", "body", m.Rows); err != nil {
 		return err
 	}

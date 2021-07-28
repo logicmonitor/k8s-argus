@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -47,7 +46,6 @@ func (m *ScriptAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *ScriptAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // GroovyScript gets the groovy script of this subtype
@@ -201,7 +199,6 @@ func (m *ScriptAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ScriptAutoDiscoveryMethod) validateType(formats strfmt.Registry) error {
-
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}

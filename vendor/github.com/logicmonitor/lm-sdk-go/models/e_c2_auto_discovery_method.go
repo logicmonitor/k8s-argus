@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -36,7 +35,6 @@ func (m *EC2AutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *EC2AutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // AccessKeyID gets the access key Id of this subtype
@@ -148,7 +146,6 @@ func (m *EC2AutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *EC2AutoDiscoveryMethod) validateAccessKeyID(formats strfmt.Registry) error {
-
 	if err := validate.Required("accessKeyId", "body", m.AccessKeyID); err != nil {
 		return err
 	}
@@ -157,7 +154,6 @@ func (m *EC2AutoDiscoveryMethod) validateAccessKeyID(formats strfmt.Registry) er
 }
 
 func (m *EC2AutoDiscoveryMethod) validateSecretAccessKey(formats strfmt.Registry) error {
-
 	if err := validate.Required("secretAccessKey", "body", m.SecretAccessKey); err != nil {
 		return err
 	}

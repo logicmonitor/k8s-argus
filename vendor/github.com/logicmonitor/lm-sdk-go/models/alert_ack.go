@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -37,7 +36,6 @@ func (m *AlertAck) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertAck) validateAckComment(formats strfmt.Registry) error {
-
 	if err := validate.Required("ackComment", "body", m.AckComment); err != nil {
 		return err
 	}

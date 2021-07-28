@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *GetDeviceConfigSourceConfigByIDOK) Error() string {
 }
 
 func (o *GetDeviceConfigSourceConfigByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.DeviceDataSourceInstanceConfig)
 
 	// response payload
@@ -100,7 +97,6 @@ func (o *GetDeviceConfigSourceConfigByIDDefault) Error() string {
 }
 
 func (o *GetDeviceConfigSourceConfigByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

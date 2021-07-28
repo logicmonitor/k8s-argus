@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -143,7 +142,6 @@ func (m *AlertWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *AlertWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -349,7 +347,6 @@ func (m *AlertWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -358,7 +355,6 @@ func (m *AlertWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -367,7 +363,6 @@ func (m *AlertWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateFilters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Filters) { // not required
 		return nil
 	}
@@ -385,7 +380,6 @@ func (m *AlertWidget) validateFilters(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateParsedFilters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ParsedFilters) { // not required
 		return nil
 	}

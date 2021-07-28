@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -97,7 +96,6 @@ func (m *WebsiteGroup) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteGroup) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -106,7 +104,6 @@ func (m *WebsiteGroup) validateName(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteGroup) validateProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Properties) { // not required
 		return nil
 	}
@@ -131,7 +128,6 @@ func (m *WebsiteGroup) validateProperties(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteGroup) validateTestLocation(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.TestLocation) { // not required
 		return nil
 	}

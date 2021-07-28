@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *UpdateNetscanOK) Error() string {
 }
 
 func (o *UpdateNetscanOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	// response payload as interface type
 	payload, err := models.UnmarshalNetscan(response.Body(), consumer)
 	if err != nil {
@@ -100,7 +97,6 @@ func (o *UpdateNetscanDefault) Error() string {
 }
 
 func (o *UpdateNetscanDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

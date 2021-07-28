@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -169,7 +168,6 @@ func (m *DeviceDataSource) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceDataSource) validateAlertingDisabledOn(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AlertingDisabledOn) { // not required
 		return nil
 	}
@@ -187,7 +185,6 @@ func (m *DeviceDataSource) validateAlertingDisabledOn(formats strfmt.Registry) e
 }
 
 func (m *DeviceDataSource) validateGraphs(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Graphs) { // not required
 		return nil
 	}
@@ -212,7 +209,6 @@ func (m *DeviceDataSource) validateGraphs(formats strfmt.Registry) error {
 }
 
 func (m *DeviceDataSource) validateGroupsDisabledThisSource(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.GroupsDisabledThisSource) { // not required
 		return nil
 	}
@@ -237,7 +233,6 @@ func (m *DeviceDataSource) validateGroupsDisabledThisSource(formats strfmt.Regis
 }
 
 func (m *DeviceDataSource) validateOverviewGraphs(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.OverviewGraphs) { // not required
 		return nil
 	}

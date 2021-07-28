@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -40,7 +39,6 @@ func (m *netflowDataBase) DataType() string {
 
 // SetDataType sets the data type of this polymorphic type
 func (m *netflowDataBase) SetDataType(val string) {
-
 }
 
 // UnmarshalNetflowDataBaseSlice unmarshals polymorphic slices of NetflowDataBase
@@ -126,7 +124,6 @@ func unmarshalNetflowDataBase(data []byte, consumer runtime.Consumer) (NetflowDa
 
 	}
 	return nil, errors.New(422, "invalid dataType value: %q", getType.DataType)
-
 }
 
 // Validate validates this netflow data base

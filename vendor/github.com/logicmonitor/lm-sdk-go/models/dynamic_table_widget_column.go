@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -76,7 +75,6 @@ func (m *DynamicTableWidgetColumn) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidgetColumn) validateColorThresholds(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ColorThresholds) { // not required
 		return nil
 	}
@@ -101,7 +99,6 @@ func (m *DynamicTableWidgetColumn) validateColorThresholds(formats strfmt.Regist
 }
 
 func (m *DynamicTableWidgetColumn) validateColumnName(formats strfmt.Registry) error {
-
 	if err := validate.Required("columnName", "body", m.ColumnName); err != nil {
 		return err
 	}
@@ -110,7 +107,6 @@ func (m *DynamicTableWidgetColumn) validateColumnName(formats strfmt.Registry) e
 }
 
 func (m *DynamicTableWidgetColumn) validateDataPointID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataPointId", "body", m.DataPointID); err != nil {
 		return err
 	}

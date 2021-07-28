@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -74,7 +73,6 @@ func (m *CustomGraph) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CustomGraph) validateDataPoints(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataPoints", "body", m.DataPoints); err != nil {
 		return err
 	}
@@ -99,7 +97,6 @@ func (m *CustomGraph) validateDataPoints(formats strfmt.Registry) error {
 }
 
 func (m *CustomGraph) validateVirtualDataPoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.VirtualDataPoints) { // not required
 		return nil
 	}

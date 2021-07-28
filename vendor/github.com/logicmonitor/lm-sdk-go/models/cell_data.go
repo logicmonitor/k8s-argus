@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -60,7 +59,6 @@ func (m *CellData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CellData) validateDaysUntilAlertList(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.DaysUntilAlertList) { // not required
 		return nil
 	}

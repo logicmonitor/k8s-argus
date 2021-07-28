@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -166,7 +165,6 @@ func (m *DeviceSLAWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *DeviceSLAWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -458,7 +456,6 @@ func (m *DeviceSLAWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceSLAWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -467,7 +464,6 @@ func (m *DeviceSLAWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *DeviceSLAWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -476,7 +472,6 @@ func (m *DeviceSLAWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DeviceSLAWidget) validateColorThresholds(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ColorThresholds) { // not required
 		return nil
 	}
@@ -501,7 +496,6 @@ func (m *DeviceSLAWidget) validateColorThresholds(formats strfmt.Registry) error
 }
 
 func (m *DeviceSLAWidget) validateMetrics(formats strfmt.Registry) error {
-
 	if err := validate.Required("metrics", "body", m.Metrics); err != nil {
 		return err
 	}

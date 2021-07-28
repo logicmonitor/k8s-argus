@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -47,7 +46,6 @@ func (m *TableWidgetData) Type() string {
 
 // SetType sets the type of this subtype
 func (m *TableWidgetData) SetType(val string) {
-
 }
 
 // ColumnHeaders gets the column headers of this subtype
@@ -167,7 +165,6 @@ func (m *TableWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetData) validateColumnHeaders(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ColumnHeaders) { // not required
 		return nil
 	}
@@ -192,7 +189,6 @@ func (m *TableWidgetData) validateColumnHeaders(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetData) validateRows(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Rows) { // not required
 		return nil
 	}

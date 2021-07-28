@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -284,7 +283,6 @@ func (m *HostMetricsReport) Type() string {
 
 // SetType sets the type of this subtype
 func (m *HostMetricsReport) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -678,7 +676,6 @@ func (m *HostMetricsReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *HostMetricsReport) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -687,7 +684,6 @@ func (m *HostMetricsReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *HostMetricsReport) validateRecipients(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -712,7 +708,6 @@ func (m *HostMetricsReport) validateRecipients(formats strfmt.Registry) error {
 }
 
 func (m *HostMetricsReport) validateColumns(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Columns) { // not required
 		return nil
 	}
@@ -737,7 +732,6 @@ func (m *HostMetricsReport) validateColumns(formats strfmt.Registry) error {
 }
 
 func (m *HostMetricsReport) validateHostsValType(formats strfmt.Registry) error {
-
 	if err := validate.Required("hostsValType", "body", m.HostsValType); err != nil {
 		return err
 	}
@@ -746,7 +740,6 @@ func (m *HostMetricsReport) validateHostsValType(formats strfmt.Registry) error 
 }
 
 func (m *HostMetricsReport) validateMetrics(formats strfmt.Registry) error {
-
 	if err := validate.Required("metrics", "body", m.Metrics); err != nil {
 		return err
 	}
@@ -771,7 +764,6 @@ func (m *HostMetricsReport) validateMetrics(formats strfmt.Registry) error {
 }
 
 func (m *HostMetricsReport) validateRowFormat(formats strfmt.Registry) error {
-
 	if err := validate.Required("rowFormat", "body", m.RowFormat); err != nil {
 		return err
 	}
@@ -780,7 +772,6 @@ func (m *HostMetricsReport) validateRowFormat(formats strfmt.Registry) error {
 }
 
 func (m *HostMetricsReport) validateSortedBy(formats strfmt.Registry) error {
-
 	if err := validate.Required("sortedBy", "body", m.SortedBy); err != nil {
 		return err
 	}
@@ -789,7 +780,6 @@ func (m *HostMetricsReport) validateSortedBy(formats strfmt.Registry) error {
 }
 
 func (m *HostMetricsReport) validateTop10Only(formats strfmt.Registry) error {
-
 	if err := validate.Required("top10Only", "body", m.Top10Only); err != nil {
 		return err
 	}

@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -54,7 +53,6 @@ func (m *TableWidgetDataPoint) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetDataPoint) validateDataPointID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataPointId", "body", m.DataPointID); err != nil {
 		return err
 	}
@@ -63,7 +61,6 @@ func (m *TableWidgetDataPoint) validateDataPointID(formats strfmt.Registry) erro
 }
 
 func (m *TableWidgetDataPoint) validateDataSourceID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataSourceId", "body", m.DataSourceID); err != nil {
 		return err
 	}

@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewGetDeviceGroupDatasourceListParams creates a new GetDeviceGroupDatasourceListParams object
@@ -29,8 +27,8 @@ func NewGetDeviceGroupDatasourceListParams() *GetDeviceGroupDatasourceListParams
 	)
 	return &GetDeviceGroupDatasourceListParams{
 		IncludeDisabledDataSourceWithoutInstance: &includeDisabledDataSourceWithoutInstanceDefault,
-		Offset: &offsetDefault,
-		Size:   &sizeDefault,
+		Offset:                                   &offsetDefault,
+		Size:                                     &sizeDefault,
 
 		timeout: cr.DefaultTimeout,
 	}
@@ -46,8 +44,8 @@ func NewGetDeviceGroupDatasourceListParamsWithTimeout(timeout time.Duration) *Ge
 	)
 	return &GetDeviceGroupDatasourceListParams{
 		IncludeDisabledDataSourceWithoutInstance: &includeDisabledDataSourceWithoutInstanceDefault,
-		Offset: &offsetDefault,
-		Size:   &sizeDefault,
+		Offset:                                   &offsetDefault,
+		Size:                                     &sizeDefault,
 
 		timeout: timeout,
 	}
@@ -63,8 +61,8 @@ func NewGetDeviceGroupDatasourceListParamsWithContext(ctx context.Context) *GetD
 	)
 	return &GetDeviceGroupDatasourceListParams{
 		IncludeDisabledDataSourceWithoutInstance: &includeDisabledDataSourceWithoutInstanceDefault,
-		Offset: &offsetDefault,
-		Size:   &sizeDefault,
+		Offset:                                   &offsetDefault,
+		Size:                                     &sizeDefault,
 
 		Context: ctx,
 	}
@@ -80,9 +78,9 @@ func NewGetDeviceGroupDatasourceListParamsWithHTTPClient(client *http.Client) *G
 	)
 	return &GetDeviceGroupDatasourceListParams{
 		IncludeDisabledDataSourceWithoutInstance: &includeDisabledDataSourceWithoutInstanceDefault,
-		Offset:     &offsetDefault,
-		Size:       &sizeDefault,
-		HTTPClient: client,
+		Offset:                                   &offsetDefault,
+		Size:                                     &sizeDefault,
+		HTTPClient:                               client,
 	}
 }
 
@@ -210,7 +208,6 @@ func (o *GetDeviceGroupDatasourceListParams) SetSize(size *int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDeviceGroupDatasourceListParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

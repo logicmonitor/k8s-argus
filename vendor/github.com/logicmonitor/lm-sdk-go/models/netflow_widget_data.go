@@ -11,10 +11,9 @@ import (
 	"io"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -47,7 +46,6 @@ func (m *NetflowWidgetData) Type() string {
 
 // SetType sets the type of this subtype
 func (m *NetflowWidgetData) SetType(val string) {
-
 }
 
 // Items gets the items of this subtype
@@ -175,20 +173,17 @@ func (m *NetflowWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NetflowWidgetData) validateItems(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Items()) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.Items()); i++ {
-
 		if err := m.itemsField[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("items" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
-
 	}
 
 	return nil

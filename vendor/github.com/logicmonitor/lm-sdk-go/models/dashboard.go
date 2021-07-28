@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -83,7 +82,6 @@ func (m *Dashboard) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Dashboard) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -92,7 +90,6 @@ func (m *Dashboard) validateName(formats strfmt.Registry) error {
 }
 
 func (m *Dashboard) validateWidgetTokens(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.WidgetTokens) { // not required
 		return nil
 	}

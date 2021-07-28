@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -46,7 +45,6 @@ func (m *WebsiteSLAWidgetData) Type() string {
 
 // SetType sets the type of this subtype
 func (m *WebsiteSLAWidgetData) SetType(val string) {
-
 }
 
 // Availability gets the availability of this subtype

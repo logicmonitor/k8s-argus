@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -40,7 +39,6 @@ func (m *Ec2DDR) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Ec2DDR) validateAssignment(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Assignment) { // not required
 		return nil
 	}

@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -39,7 +38,6 @@ func (m *NetflowQoSReportTableRow) DataType() string {
 
 // SetDataType sets the data type of this subtype
 func (m *NetflowQoSReportTableRow) SetDataType(val string) {
-
 }
 
 // Received gets the received of this subtype

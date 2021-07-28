@@ -1,8 +1,11 @@
 *
-!Gopkg*
 !cmd
 !hack
 !main.go
 !pkg
 !scripts
 !vendor
+!.golangci.yml
+!.gomodguard.yaml
+!go.mod
+!go.sum

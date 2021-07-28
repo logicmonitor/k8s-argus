@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -75,7 +74,6 @@ func (m *OnetimeUpgradeInfo) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OnetimeUpgradeInfo) validateMajorVersion(formats strfmt.Registry) error {
-
 	if err := validate.Required("majorVersion", "body", m.MajorVersion); err != nil {
 		return err
 	}
@@ -84,7 +82,6 @@ func (m *OnetimeUpgradeInfo) validateMajorVersion(formats strfmt.Registry) error
 }
 
 func (m *OnetimeUpgradeInfo) validateMinorVersion(formats strfmt.Registry) error {
-
 	if err := validate.Required("minorVersion", "body", m.MinorVersion); err != nil {
 		return err
 	}
@@ -93,7 +90,6 @@ func (m *OnetimeUpgradeInfo) validateMinorVersion(formats strfmt.Registry) error
 }
 
 func (m *OnetimeUpgradeInfo) validateStartEpoch(formats strfmt.Registry) error {
-
 	if err := validate.Required("startEpoch", "body", m.StartEpoch); err != nil {
 		return err
 	}

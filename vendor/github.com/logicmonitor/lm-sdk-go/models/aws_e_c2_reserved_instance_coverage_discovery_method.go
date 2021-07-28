@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -28,7 +27,6 @@ func (m *AwsEC2ReservedInstanceCoverageDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *AwsEC2ReservedInstanceCoverageDiscoveryMethod) SetName(val string) {
-
 }
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure

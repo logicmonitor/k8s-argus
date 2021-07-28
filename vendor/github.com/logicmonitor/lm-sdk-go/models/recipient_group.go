@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -53,7 +52,6 @@ func (m *RecipientGroup) Validate(formats strfmt.Registry) error {
 }
 
 func (m *RecipientGroup) validateGroupName(formats strfmt.Registry) error {
-
 	if err := validate.Required("groupName", "body", m.GroupName); err != nil {
 		return err
 	}
@@ -62,7 +60,6 @@ func (m *RecipientGroup) validateGroupName(formats strfmt.Registry) error {
 }
 
 func (m *RecipientGroup) validateRecipients(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Recipients) { // not required
 		return nil
 	}

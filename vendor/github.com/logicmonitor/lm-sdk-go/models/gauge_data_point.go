@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -74,7 +73,6 @@ func (m *GaugeDataPoint) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GaugeDataPoint) validateDeviceDisplayName(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceDisplayName", "body", m.DeviceDisplayName); err != nil {
 		return err
 	}
@@ -83,7 +81,6 @@ func (m *GaugeDataPoint) validateDeviceDisplayName(formats strfmt.Registry) erro
 }
 
 func (m *GaugeDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceGroupFullPath", "body", m.DeviceGroupFullPath); err != nil {
 		return err
 	}
@@ -92,7 +89,6 @@ func (m *GaugeDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry) er
 }
 
 func (m *GaugeDataPoint) validateInstanceName(formats strfmt.Registry) error {
-
 	if err := validate.Required("instanceName", "body", m.InstanceName); err != nil {
 		return err
 	}

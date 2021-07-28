@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -261,7 +260,6 @@ func (m *AuditLogReport) Type() string {
 
 // SetType sets the type of this subtype
 func (m *AuditLogReport) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -571,7 +569,6 @@ func (m *AuditLogReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AuditLogReport) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -580,7 +577,6 @@ func (m *AuditLogReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AuditLogReport) validateRecipients(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -605,7 +601,6 @@ func (m *AuditLogReport) validateRecipients(formats strfmt.Registry) error {
 }
 
 func (m *AuditLogReport) validateColumns(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Columns) { // not required
 		return nil
 	}

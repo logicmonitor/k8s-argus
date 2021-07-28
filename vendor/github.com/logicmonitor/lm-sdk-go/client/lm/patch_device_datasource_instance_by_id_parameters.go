@@ -9,24 +9,19 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/swag"
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewPatchDeviceDatasourceInstanceByIDParams creates a new PatchDeviceDatasourceInstanceByIDParams object
 // with the default values initialized.
 func NewPatchDeviceDatasourceInstanceByIDParams() *PatchDeviceDatasourceInstanceByIDParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceDatasourceInstanceByIDParams{
 		OpType: &opTypeDefault,
 
@@ -37,9 +32,7 @@ func NewPatchDeviceDatasourceInstanceByIDParams() *PatchDeviceDatasourceInstance
 // NewPatchDeviceDatasourceInstanceByIDParamsWithTimeout creates a new PatchDeviceDatasourceInstanceByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewPatchDeviceDatasourceInstanceByIDParamsWithTimeout(timeout time.Duration) *PatchDeviceDatasourceInstanceByIDParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceDatasourceInstanceByIDParams{
 		OpType: &opTypeDefault,
 
@@ -50,9 +43,7 @@ func NewPatchDeviceDatasourceInstanceByIDParamsWithTimeout(timeout time.Duration
 // NewPatchDeviceDatasourceInstanceByIDParamsWithContext creates a new PatchDeviceDatasourceInstanceByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewPatchDeviceDatasourceInstanceByIDParamsWithContext(ctx context.Context) *PatchDeviceDatasourceInstanceByIDParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceDatasourceInstanceByIDParams{
 		OpType: &opTypeDefault,
 
@@ -63,9 +54,7 @@ func NewPatchDeviceDatasourceInstanceByIDParamsWithContext(ctx context.Context) 
 // NewPatchDeviceDatasourceInstanceByIDParamsWithHTTPClient creates a new PatchDeviceDatasourceInstanceByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewPatchDeviceDatasourceInstanceByIDParamsWithHTTPClient(client *http.Client) *PatchDeviceDatasourceInstanceByIDParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceDatasourceInstanceByIDParams{
 		OpType:     &opTypeDefault,
 		HTTPClient: client,
@@ -186,7 +175,6 @@ func (o *PatchDeviceDatasourceInstanceByIDParams) SetOpType(opType *string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchDeviceDatasourceInstanceByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

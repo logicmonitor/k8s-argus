@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *GetReportByIDOK) Error() string {
 }
 
 func (o *GetReportByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	// response payload as interface type
 	payload, err := models.UnmarshalReportBase(response.Body(), consumer)
 	if err != nil {
@@ -100,7 +97,6 @@ func (o *GetReportByIDDefault) Error() string {
 }
 
 func (o *GetReportByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

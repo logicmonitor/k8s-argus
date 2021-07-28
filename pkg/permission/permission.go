@@ -1,55 +1,36 @@
 package permission
 
 import (
-	log "github.com/sirupsen/logrus"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"sync"
+
+	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/client-go/tools/cache"
 )
 
 var (
-	enable  = true
-	disable = false
-
-	client kubernetes.Interface
-
-	deploymentPermissionFlag              *bool
-	horizontalPodAutoscalerPermissionFlag *bool
+	m  sync.Map
+	mu sync.Mutex
 )
 
-// Init is a function than init the permission context
-func Init(k8sClient kubernetes.Interface) {
-	client = k8sClient
-}
-
-// HasDeploymentPermissions is a function that check if the deployment resource has permissions
-// nolint: dupl
-func HasDeploymentPermissions() bool {
-	if deploymentPermissionFlag != nil {
-		return *deploymentPermissionFlag
+// HasPermissions has permission
+func HasPermissions(rt enums.ResourceType) bool {
+	if rt == enums.ETCD || rt == enums.Unknown {
+		return true
 	}
-	_, err := client.AppsV1().Deployments(v1.NamespaceAll).List(metav1.ListOptions{})
-	if err != nil {
-		deploymentPermissionFlag = &disable
-		log.Errorf("Failed to list deployments: %+v", err)
-	} else {
-		deploymentPermissionFlag = &enable
+	load, ok := m.Load(rt)
+	if ok {
+		return load.(bool)
 	}
-	return *deploymentPermissionFlag
-}
-
-// HasHorizontalPodAutoscalerPermissions is a function that checks if the Horizontal Pod Autoscaler resource has permissions
-// nolint: dupl
-func HasHorizontalPodAutoscalerPermissions() bool {
-	if horizontalPodAutoscalerPermissionFlag != nil {
-		return *horizontalPodAutoscalerPermissionFlag
-	}
-	_, err := client.AutoscalingV1().HorizontalPodAutoscalers(v1.NamespaceAll).List(metav1.ListOptions{})
-	if err != nil {
-		horizontalPodAutoscalerPermissionFlag = &disable
-		log.Errorf("Failed to list horizontalPodAutoscalers: %+v", err)
-	} else {
-		horizontalPodAutoscalerPermissionFlag = &enable
-	}
-	return *horizontalPodAutoscalerPermissionFlag
+	mu.Lock()
+	defer mu.Unlock()
+	listWatch := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
+	listWatch.DisableChunking = true
+	_, err := listWatch.List(constants.DefaultListOptions)
+	m.Store(rt, err == nil)
+	return err == nil
 }

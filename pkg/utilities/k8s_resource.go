@@ -20,12 +20,14 @@ func selfLink(namespaced bool, apiVersion string, kind string, namespace string,
 		if namespace == "" {
 			return ""
 		}
+
 		return fmt.Sprintf(selfLinkAPIPrefix+"/%s/namespaces/%s/%s/%s", apiVersion, namespace, kind, name)
 	}
+
 	return fmt.Sprintf(selfLinkAPIPrefix+"/%s/%s/%s", apiVersion, kind, name)
 }
 
 // SelfLink utility to create self links
-func SelfLink(namespaced bool, apiVersion string, kind string, objectMeta metav1.ObjectMeta) string {
+func SelfLink(namespaced bool, apiVersion string, kind string, objectMeta *metav1.PartialObjectMetadata) string {
 	return selfLink(namespaced, apiVersion, kind, objectMeta.Namespace, objectMeta.Name)
 }

@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -239,7 +238,6 @@ func (m *DeviceClusterAlertDefSDT) Type() string {
 
 // SetType sets the type of this subtype
 func (m *DeviceClusterAlertDefSDT) SetType(val string) {
-
 }
 
 // WeekDay gets the week day of this subtype
@@ -539,7 +537,6 @@ func (m *DeviceClusterAlertDefSDT) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceClusterAlertDefSDT) validateDeviceClusterAlertDefID(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceClusterAlertDefId", "body", m.DeviceClusterAlertDefID); err != nil {
 		return err
 	}

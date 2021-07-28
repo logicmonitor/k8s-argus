@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -167,7 +166,6 @@ func (m *OverviewGraphWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *OverviewGraphWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -457,7 +455,6 @@ func (m *OverviewGraphWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OverviewGraphWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -466,7 +463,6 @@ func (m *OverviewGraphWidget) validateDashboardID(formats strfmt.Registry) error
 }
 
 func (m *OverviewGraphWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -475,7 +471,6 @@ func (m *OverviewGraphWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *OverviewGraphWidget) validateDsigID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dsigId", "body", m.DsigID); err != nil {
 		return err
 	}
@@ -484,7 +479,6 @@ func (m *OverviewGraphWidget) validateDsigID(formats strfmt.Registry) error {
 }
 
 func (m *OverviewGraphWidget) validateHID(formats strfmt.Registry) error {
-
 	if err := validate.Required("hId", "body", m.HID); err != nil {
 		return err
 	}

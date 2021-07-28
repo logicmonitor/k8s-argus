@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -30,7 +29,6 @@ func (m *OpsNoteGroupAllScope) Type() string {
 
 // SetType sets the type of this subtype
 func (m *OpsNoteGroupAllScope) SetType(val string) {
-
 }
 
 // GroupID gets the group Id of this subtype
