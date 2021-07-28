@@ -9,24 +9,19 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/swag"
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewPatchDeviceParams creates a new PatchDeviceParams object
 // with the default values initialized.
 func NewPatchDeviceParams() *PatchDeviceParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceParams{
 		OpType: &opTypeDefault,
 
@@ -37,9 +32,7 @@ func NewPatchDeviceParams() *PatchDeviceParams {
 // NewPatchDeviceParamsWithTimeout creates a new PatchDeviceParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewPatchDeviceParamsWithTimeout(timeout time.Duration) *PatchDeviceParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceParams{
 		OpType: &opTypeDefault,
 
@@ -50,9 +43,7 @@ func NewPatchDeviceParamsWithTimeout(timeout time.Duration) *PatchDeviceParams {
 // NewPatchDeviceParamsWithContext creates a new PatchDeviceParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewPatchDeviceParamsWithContext(ctx context.Context) *PatchDeviceParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceParams{
 		OpType: &opTypeDefault,
 
@@ -63,9 +54,7 @@ func NewPatchDeviceParamsWithContext(ctx context.Context) *PatchDeviceParams {
 // NewPatchDeviceParamsWithHTTPClient creates a new PatchDeviceParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewPatchDeviceParamsWithHTTPClient(client *http.Client) *PatchDeviceParams {
-	var (
-		opTypeDefault = string("refresh")
-	)
+	opTypeDefault := string("refresh")
 	return &PatchDeviceParams{
 		OpType:     &opTypeDefault,
 		HTTPClient: client,
@@ -209,7 +198,6 @@ func (o *PatchDeviceParams) SetStart(start *int64) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchDeviceParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

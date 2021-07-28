@@ -11,10 +11,9 @@ import (
 	"io"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -190,7 +189,6 @@ func (m *AutoDiscoveryConfiguration) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AutoDiscoveryConfiguration) validateFilters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Filters) { // not required
 		return nil
 	}
@@ -215,7 +213,6 @@ func (m *AutoDiscoveryConfiguration) validateFilters(formats strfmt.Registry) er
 }
 
 func (m *AutoDiscoveryConfiguration) validateMethod(formats strfmt.Registry) error {
-
 	if err := m.Method().Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("method")

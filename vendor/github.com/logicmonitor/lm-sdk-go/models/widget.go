@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -195,7 +194,6 @@ func (m *widget) Type() string {
 
 // SetType sets the type of this polymorphic type
 func (m *widget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this polymorphic type
@@ -459,7 +457,6 @@ func unmarshalWidget(data []byte, consumer runtime.Consumer) (Widget, error) {
 
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
-
 }
 
 // Validate validates this widget
@@ -481,7 +478,6 @@ func (m *widget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *widget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -490,7 +486,6 @@ func (m *widget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *widget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}

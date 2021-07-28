@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -32,7 +31,6 @@ func (m *ESXAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *ESXAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // Entity gets the entity of this subtype
@@ -126,7 +124,6 @@ func (m *ESXAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ESXAutoDiscoveryMethod) validateEntity(formats strfmt.Registry) error {
-
 	if err := validate.Required("entity", "body", m.Entity); err != nil {
 		return err
 	}

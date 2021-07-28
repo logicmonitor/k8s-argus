@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -234,7 +233,6 @@ func (m *DeviceGroupSDT) Type() string {
 
 // SetType sets the type of this subtype
 func (m *DeviceGroupSDT) SetType(val string) {
-
 }
 
 // WeekDay gets the week day of this subtype

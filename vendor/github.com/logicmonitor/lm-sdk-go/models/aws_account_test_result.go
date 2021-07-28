@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -48,7 +47,6 @@ func (m *AwsAccountTestResult) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AwsAccountTestResult) validateNoPermissionServices(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.NoPermissionServices) { // not required
 		return nil
 	}
@@ -61,7 +59,6 @@ func (m *AwsAccountTestResult) validateNoPermissionServices(formats strfmt.Regis
 }
 
 func (m *AwsAccountTestResult) validateNonPermissionErrors(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.NonPermissionErrors) { // not required
 		return nil
 	}

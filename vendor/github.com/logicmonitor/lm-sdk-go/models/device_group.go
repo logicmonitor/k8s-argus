@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -183,7 +182,6 @@ func (m *DeviceGroup) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceGroup) validateAwsTestResult(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AwsTestResult) { // not required
 		return nil
 	}
@@ -201,7 +199,6 @@ func (m *DeviceGroup) validateAwsTestResult(formats strfmt.Registry) error {
 }
 
 func (m *DeviceGroup) validateAzureTestResult(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AzureTestResult) { // not required
 		return nil
 	}
@@ -219,7 +216,6 @@ func (m *DeviceGroup) validateAzureTestResult(formats strfmt.Registry) error {
 }
 
 func (m *DeviceGroup) validateCustomProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.CustomProperties) { // not required
 		return nil
 	}
@@ -244,7 +240,6 @@ func (m *DeviceGroup) validateCustomProperties(formats strfmt.Registry) error {
 }
 
 func (m *DeviceGroup) validateGcpTestResult(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.GcpTestResult) { // not required
 		return nil
 	}
@@ -262,7 +257,6 @@ func (m *DeviceGroup) validateGcpTestResult(formats strfmt.Registry) error {
 }
 
 func (m *DeviceGroup) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -271,7 +265,6 @@ func (m *DeviceGroup) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DeviceGroup) validateSubGroups(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.SubGroups) { // not required
 		return nil
 	}

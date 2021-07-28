@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *UpdateSDTByIDOK) Error() string {
 }
 
 func (o *UpdateSDTByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	// response payload as interface type
 	payload, err := models.UnmarshalSDT(response.Body(), consumer)
 	if err != nil {
@@ -100,7 +97,6 @@ func (o *UpdateSDTByIDDefault) Error() string {
 }
 
 func (o *UpdateSDTByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

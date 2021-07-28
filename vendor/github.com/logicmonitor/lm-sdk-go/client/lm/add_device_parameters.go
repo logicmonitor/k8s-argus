@@ -9,24 +9,19 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/swag"
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewAddDeviceParams creates a new AddDeviceParams object
 // with the default values initialized.
 func NewAddDeviceParams() *AddDeviceParams {
-	var (
-		addFromWizardDefault = bool(false)
-	)
+	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
 		AddFromWizard: &addFromWizardDefault,
 
@@ -37,9 +32,7 @@ func NewAddDeviceParams() *AddDeviceParams {
 // NewAddDeviceParamsWithTimeout creates a new AddDeviceParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewAddDeviceParamsWithTimeout(timeout time.Duration) *AddDeviceParams {
-	var (
-		addFromWizardDefault = bool(false)
-	)
+	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
 		AddFromWizard: &addFromWizardDefault,
 
@@ -50,9 +43,7 @@ func NewAddDeviceParamsWithTimeout(timeout time.Duration) *AddDeviceParams {
 // NewAddDeviceParamsWithContext creates a new AddDeviceParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewAddDeviceParamsWithContext(ctx context.Context) *AddDeviceParams {
-	var (
-		addFromWizardDefault = bool(false)
-	)
+	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
 		AddFromWizard: &addFromWizardDefault,
 
@@ -63,9 +54,7 @@ func NewAddDeviceParamsWithContext(ctx context.Context) *AddDeviceParams {
 // NewAddDeviceParamsWithHTTPClient creates a new AddDeviceParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewAddDeviceParamsWithHTTPClient(client *http.Client) *AddDeviceParams {
-	var (
-		addFromWizardDefault = bool(false)
-	)
+	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
 		AddFromWizard: &addFromWizardDefault,
 		HTTPClient:    client,
@@ -183,7 +172,6 @@ func (o *AddDeviceParams) SetStart(start *int64) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *AddDeviceParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

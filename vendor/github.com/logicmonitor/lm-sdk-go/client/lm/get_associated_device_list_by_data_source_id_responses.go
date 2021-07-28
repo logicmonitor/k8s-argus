@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *GetAssociatedDeviceListByDataSourceIDOK) Error() string {
 }
 
 func (o *GetAssociatedDeviceListByDataSourceIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.DeviceDataSourceAssociatedPaginationResponse)
 
 	// response payload
@@ -100,7 +97,6 @@ func (o *GetAssociatedDeviceListByDataSourceIDDefault) Error() string {
 }
 
 func (o *GetAssociatedDeviceListByDataSourceIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

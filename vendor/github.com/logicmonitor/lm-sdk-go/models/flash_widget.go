@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -144,7 +143,6 @@ func (m *FlashWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *FlashWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -348,7 +346,6 @@ func (m *FlashWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *FlashWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -357,7 +354,6 @@ func (m *FlashWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *FlashWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -366,7 +362,6 @@ func (m *FlashWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *FlashWidget) validateURL(formats strfmt.Registry) error {
-
 	if err := validate.Required("url", "body", m.URL); err != nil {
 		return err
 	}

@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -40,7 +39,6 @@ func (m *CloudWatchAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *CloudWatchAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // ClusterDimension gets the cluster dimension of this subtype
@@ -170,7 +168,6 @@ func (m *CloudWatchAutoDiscoveryMethod) Validate(formats strfmt.Registry) error 
 }
 
 func (m *CloudWatchAutoDiscoveryMethod) validateClusterDimension(formats strfmt.Registry) error {
-
 	if err := validate.Required("clusterDimension", "body", m.ClusterDimension); err != nil {
 		return err
 	}
@@ -179,7 +176,6 @@ func (m *CloudWatchAutoDiscoveryMethod) validateClusterDimension(formats strfmt.
 }
 
 func (m *CloudWatchAutoDiscoveryMethod) validateNamespace(formats strfmt.Registry) error {
-
 	if err := validate.Required("namespace", "body", m.Namespace); err != nil {
 		return err
 	}
@@ -188,7 +184,6 @@ func (m *CloudWatchAutoDiscoveryMethod) validateNamespace(formats strfmt.Registr
 }
 
 func (m *CloudWatchAutoDiscoveryMethod) validateNodeDimension(formats strfmt.Registry) error {
-
 	if err := validate.Required("nodeDimension", "body", m.NodeDimension); err != nil {
 		return err
 	}

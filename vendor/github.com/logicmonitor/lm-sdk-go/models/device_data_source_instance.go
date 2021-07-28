@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -118,7 +117,6 @@ func (m *DeviceDataSourceInstance) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceDataSourceInstance) validateAutoProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AutoProperties) { // not required
 		return nil
 	}
@@ -143,7 +141,6 @@ func (m *DeviceDataSourceInstance) validateAutoProperties(formats strfmt.Registr
 }
 
 func (m *DeviceDataSourceInstance) validateCustomProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.CustomProperties) { // not required
 		return nil
 	}
@@ -168,7 +165,6 @@ func (m *DeviceDataSourceInstance) validateCustomProperties(formats strfmt.Regis
 }
 
 func (m *DeviceDataSourceInstance) validateDisplayName(formats strfmt.Registry) error {
-
 	if err := validate.Required("displayName", "body", m.DisplayName); err != nil {
 		return err
 	}
@@ -177,7 +173,6 @@ func (m *DeviceDataSourceInstance) validateDisplayName(formats strfmt.Registry) 
 }
 
 func (m *DeviceDataSourceInstance) validateSystemProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.SystemProperties) { // not required
 		return nil
 	}
@@ -202,7 +197,6 @@ func (m *DeviceDataSourceInstance) validateSystemProperties(formats strfmt.Regis
 }
 
 func (m *DeviceDataSourceInstance) validateWildValue(formats strfmt.Registry) error {
-
 	if err := validate.Required("wildValue", "body", m.WildValue); err != nil {
 		return err
 	}

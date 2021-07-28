@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -45,7 +44,6 @@ func (m *ILP) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ILP) validateLMName(formats strfmt.Registry) error {
-
 	if err := validate.Required("lmName", "body", m.LMName); err != nil {
 		return err
 	}
@@ -54,7 +52,6 @@ func (m *ILP) validateLMName(formats strfmt.Registry) error {
 }
 
 func (m *ILP) validateWmiName(formats strfmt.Registry) error {
-
 	if err := validate.Required("wmiName", "body", m.WmiName); err != nil {
 		return err
 	}

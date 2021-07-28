@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -145,7 +144,6 @@ func (m *DeviceStatus) Type() string {
 
 // SetType sets the type of this subtype
 func (m *DeviceStatus) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -351,7 +349,6 @@ func (m *DeviceStatus) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceStatus) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -360,7 +357,6 @@ func (m *DeviceStatus) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *DeviceStatus) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -369,7 +365,6 @@ func (m *DeviceStatus) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DeviceStatus) validateDeviceID(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceId", "body", m.DeviceID); err != nil {
 		return err
 	}

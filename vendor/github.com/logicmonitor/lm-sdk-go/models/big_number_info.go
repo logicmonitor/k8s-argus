@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -61,7 +60,6 @@ func (m *BigNumberInfo) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberInfo) validateBigNumberItems(formats strfmt.Registry) error {
-
 	if err := validate.Required("bigNumberItems", "body", m.BigNumberItems); err != nil {
 		return err
 	}
@@ -86,7 +84,6 @@ func (m *BigNumberInfo) validateBigNumberItems(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberInfo) validateCounters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Counters) { // not required
 		return nil
 	}
@@ -111,7 +108,6 @@ func (m *BigNumberInfo) validateCounters(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberInfo) validateDataPoints(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataPoints", "body", m.DataPoints); err != nil {
 		return err
 	}
@@ -136,7 +132,6 @@ func (m *BigNumberInfo) validateDataPoints(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberInfo) validateVirtualDataPoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.VirtualDataPoints) { // not required
 		return nil
 	}

@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -98,7 +97,6 @@ func (m *AlertRule) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validateDeviceGroups(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.DeviceGroups) { // not required
 		return nil
 	}
@@ -111,7 +109,6 @@ func (m *AlertRule) validateDeviceGroups(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validateDevices(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Devices) { // not required
 		return nil
 	}
@@ -124,7 +121,6 @@ func (m *AlertRule) validateDevices(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validateEscalatingChainID(formats strfmt.Registry) error {
-
 	if err := validate.Required("escalatingChainId", "body", m.EscalatingChainID); err != nil {
 		return err
 	}
@@ -133,7 +129,6 @@ func (m *AlertRule) validateEscalatingChainID(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -142,7 +137,6 @@ func (m *AlertRule) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validatePriority(formats strfmt.Registry) error {
-
 	if err := validate.Required("priority", "body", m.Priority); err != nil {
 		return err
 	}

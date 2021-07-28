@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source argus.rc
+go run main.go watch --kubeconfig ~/.kube/config 2>&1 | tee localrun.logs

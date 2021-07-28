@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -40,7 +39,6 @@ func (m *autoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this polymorphic type
 func (m *autoDiscoveryMethod) SetName(val string) {
-
 }
 
 // UnmarshalAutoDiscoveryMethodSlice unmarshals polymorphic slices of AutoDiscoveryMethod
@@ -336,7 +334,6 @@ func unmarshalAutoDiscoveryMethod(data []byte, consumer runtime.Consumer) (AutoD
 
 	}
 	return nil, errors.New(422, "invalid name value: %q", getType.Name)
-
 }
 
 // Validate validates this auto discovery method

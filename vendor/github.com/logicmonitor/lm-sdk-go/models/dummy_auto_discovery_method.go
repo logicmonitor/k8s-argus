@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -40,7 +39,6 @@ func (m *DummyAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *DummyAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // GenerateCount gets the generate count of this subtype
@@ -170,7 +168,6 @@ func (m *DummyAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DummyAutoDiscoveryMethod) validateGenerateCount(formats strfmt.Registry) error {
-
 	if err := validate.Required("generateCount", "body", m.GenerateCount); err != nil {
 		return err
 	}
@@ -179,7 +176,6 @@ func (m *DummyAutoDiscoveryMethod) validateGenerateCount(formats strfmt.Registry
 }
 
 func (m *DummyAutoDiscoveryMethod) validateGetGenerateCount2(formats strfmt.Registry) error {
-
 	if err := validate.Required("getGenerateCount2", "body", m.GetGenerateCount2); err != nil {
 		return err
 	}
@@ -188,7 +184,6 @@ func (m *DummyAutoDiscoveryMethod) validateGetGenerateCount2(formats strfmt.Regi
 }
 
 func (m *DummyAutoDiscoveryMethod) validateMaxNumber(formats strfmt.Registry) error {
-
 	if err := validate.Required("maxNumber", "body", m.MaxNumber); err != nil {
 		return err
 	}

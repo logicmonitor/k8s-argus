@@ -9,24 +9,19 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/swag"
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewExecuteDebugCommandParams creates a new ExecuteDebugCommandParams object
 // with the default values initialized.
 func NewExecuteDebugCommandParams() *ExecuteDebugCommandParams {
-	var (
-		collectorIDDefault = int32(-1)
-	)
+	collectorIDDefault := int32(-1)
 	return &ExecuteDebugCommandParams{
 		CollectorID: &collectorIDDefault,
 
@@ -37,9 +32,7 @@ func NewExecuteDebugCommandParams() *ExecuteDebugCommandParams {
 // NewExecuteDebugCommandParamsWithTimeout creates a new ExecuteDebugCommandParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewExecuteDebugCommandParamsWithTimeout(timeout time.Duration) *ExecuteDebugCommandParams {
-	var (
-		collectorIDDefault = int32(-1)
-	)
+	collectorIDDefault := int32(-1)
 	return &ExecuteDebugCommandParams{
 		CollectorID: &collectorIDDefault,
 
@@ -50,9 +43,7 @@ func NewExecuteDebugCommandParamsWithTimeout(timeout time.Duration) *ExecuteDebu
 // NewExecuteDebugCommandParamsWithContext creates a new ExecuteDebugCommandParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewExecuteDebugCommandParamsWithContext(ctx context.Context) *ExecuteDebugCommandParams {
-	var (
-		collectorIdDefault = int32(-1)
-	)
+	collectorIdDefault := int32(-1)
 	return &ExecuteDebugCommandParams{
 		CollectorID: &collectorIdDefault,
 
@@ -63,9 +54,7 @@ func NewExecuteDebugCommandParamsWithContext(ctx context.Context) *ExecuteDebugC
 // NewExecuteDebugCommandParamsWithHTTPClient creates a new ExecuteDebugCommandParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewExecuteDebugCommandParamsWithHTTPClient(client *http.Client) *ExecuteDebugCommandParams {
-	var (
-		collectorIdDefault = int32(-1)
-	)
+	collectorIdDefault := int32(-1)
 	return &ExecuteDebugCommandParams{
 		CollectorID: &collectorIdDefault,
 		HTTPClient:  client,
@@ -144,7 +133,6 @@ func (o *ExecuteDebugCommandParams) SetCollectorID(collectorID *int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *ExecuteDebugCommandParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

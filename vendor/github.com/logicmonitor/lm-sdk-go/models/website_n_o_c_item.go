@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -43,7 +42,6 @@ func (m *WebsiteNOCItem) Type() string {
 
 // SetType sets the type of this subtype
 func (m *WebsiteNOCItem) SetType(val string) {
-
 }
 
 // GroupBy gets the group by of this subtype
@@ -185,7 +183,6 @@ func (m *WebsiteNOCItem) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteNOCItem) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -194,7 +191,6 @@ func (m *WebsiteNOCItem) validateName(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteNOCItem) validateWebsiteGroupName(formats strfmt.Registry) error {
-
 	if err := validate.Required("websiteGroupName", "body", m.WebsiteGroupName); err != nil {
 		return err
 	}
@@ -203,7 +199,6 @@ func (m *WebsiteNOCItem) validateWebsiteGroupName(formats strfmt.Registry) error
 }
 
 func (m *WebsiteNOCItem) validateWebsiteName(formats strfmt.Registry) error {
-
 	if err := validate.Required("websiteName", "body", m.WebsiteName); err != nil {
 		return err
 	}

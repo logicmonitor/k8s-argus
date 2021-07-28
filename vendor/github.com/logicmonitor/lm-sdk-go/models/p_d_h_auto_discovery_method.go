@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -36,7 +35,6 @@ func (m *PDHAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *PDHAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // Category gets the category of this subtype
@@ -148,7 +146,6 @@ func (m *PDHAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PDHAutoDiscoveryMethod) validateCategory(formats strfmt.Registry) error {
-
 	if err := validate.Required("category", "body", m.Category); err != nil {
 		return err
 	}
@@ -157,7 +154,6 @@ func (m *PDHAutoDiscoveryMethod) validateCategory(formats strfmt.Registry) error
 }
 
 func (m *PDHAutoDiscoveryMethod) validateObjRegex(formats strfmt.Registry) error {
-
 	if err := validate.Required("objRegex", "body", m.ObjRegex); err != nil {
 		return err
 	}

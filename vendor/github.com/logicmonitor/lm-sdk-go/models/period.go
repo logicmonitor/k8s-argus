@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -61,7 +60,6 @@ func (m *Period) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateEndMinutes(formats strfmt.Registry) error {
-
 	if err := validate.Required("endMinutes", "body", m.EndMinutes); err != nil {
 		return err
 	}
@@ -70,7 +68,6 @@ func (m *Period) validateEndMinutes(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateStartMinutes(formats strfmt.Registry) error {
-
 	if err := validate.Required("startMinutes", "body", m.StartMinutes); err != nil {
 		return err
 	}
@@ -79,7 +76,6 @@ func (m *Period) validateStartMinutes(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateTimezone(formats strfmt.Registry) error {
-
 	if err := validate.Required("timezone", "body", m.Timezone); err != nil {
 		return err
 	}
@@ -88,7 +84,6 @@ func (m *Period) validateTimezone(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateWeekDays(formats strfmt.Registry) error {
-
 	if err := validate.Required("weekDays", "body", m.WeekDays); err != nil {
 		return err
 	}

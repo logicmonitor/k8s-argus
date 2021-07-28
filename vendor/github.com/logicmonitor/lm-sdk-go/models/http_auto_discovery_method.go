@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -52,7 +51,6 @@ func (m *HTTPAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *HTTPAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // CaseSensitive gets the case sensitive of this subtype
@@ -236,7 +234,6 @@ func (m *HTTPAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateCaseSensitive(formats strfmt.Registry) error {
-
 	if err := validate.Required("caseSensitive", "body", m.CaseSensitive); err != nil {
 		return err
 	}
@@ -245,7 +242,6 @@ func (m *HTTPAutoDiscoveryMethod) validateCaseSensitive(formats strfmt.Registry)
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateFollowRedirect(formats strfmt.Registry) error {
-
 	if err := validate.Required("followRedirect", "body", m.FollowRedirect); err != nil {
 		return err
 	}
@@ -254,7 +250,6 @@ func (m *HTTPAutoDiscoveryMethod) validateFollowRedirect(formats strfmt.Registry
 }
 
 func (m *HTTPAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
-
 	if err := validate.Required("ports", "body", m.Ports); err != nil {
 		return err
 	}
@@ -263,7 +258,6 @@ func (m *HTTPAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateRegex(formats strfmt.Registry) error {
-
 	if err := validate.Required("regex", "body", m.Regex); err != nil {
 		return err
 	}
@@ -272,7 +266,6 @@ func (m *HTTPAutoDiscoveryMethod) validateRegex(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateURI(formats strfmt.Registry) error {
-
 	if err := validate.Required("uri", "body", m.URI); err != nil {
 		return err
 	}
@@ -281,7 +274,6 @@ func (m *HTTPAutoDiscoveryMethod) validateURI(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateUseSSL(formats strfmt.Registry) error {
-
 	if err := validate.Required("useSSL", "body", m.UseSSL); err != nil {
 		return err
 	}

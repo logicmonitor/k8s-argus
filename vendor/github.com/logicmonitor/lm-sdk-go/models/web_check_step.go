@@ -10,10 +10,9 @@ import (
 	"encoding/json"
 	"io"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -418,7 +417,6 @@ func (m *WebCheckStep) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebCheckStep) validateAuth(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Auth()) { // not required
 		return nil
 	}

@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -163,7 +162,6 @@ func (m *DynamicTableWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *DynamicTableWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -445,7 +443,6 @@ func (m *DynamicTableWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -454,7 +451,6 @@ func (m *DynamicTableWidget) validateDashboardID(formats strfmt.Registry) error 
 }
 
 func (m *DynamicTableWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -463,7 +459,6 @@ func (m *DynamicTableWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateColumns(formats strfmt.Registry) error {
-
 	if err := validate.Required("columns", "body", m.Columns); err != nil {
 		return err
 	}
@@ -488,7 +483,6 @@ func (m *DynamicTableWidget) validateColumns(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateDataSourceID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataSourceId", "body", m.DataSourceID); err != nil {
 		return err
 	}
@@ -497,7 +491,6 @@ func (m *DynamicTableWidget) validateDataSourceID(formats strfmt.Registry) error
 }
 
 func (m *DynamicTableWidget) validateForecast(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Forecast) { // not required
 		return nil
 	}
@@ -515,7 +508,6 @@ func (m *DynamicTableWidget) validateForecast(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateRows(formats strfmt.Registry) error {
-
 	if err := validate.Required("rows", "body", m.Rows); err != nil {
 		return err
 	}

@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -288,7 +287,6 @@ func (m *PingCheck) Type() string {
 
 // SetType sets the type of this subtype
 func (m *PingCheck) SetType(val string) {
-
 }
 
 // UseDefaultAlertSetting gets the use default alert setting of this subtype
@@ -654,7 +652,6 @@ func (m *PingCheck) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateCheckpoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Checkpoints()) { // not required
 		return nil
 	}
@@ -679,7 +676,6 @@ func (m *PingCheck) validateCheckpoints(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateCollectors(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Collectors()) { // not required
 		return nil
 	}
@@ -704,7 +700,6 @@ func (m *PingCheck) validateCollectors(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -713,7 +708,6 @@ func (m *PingCheck) validateName(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Properties()) { // not required
 		return nil
 	}
@@ -738,7 +732,6 @@ func (m *PingCheck) validateProperties(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateTestLocation(formats strfmt.Registry) error {
-
 	if err := validate.Required("testLocation", "body", m.TestLocation()); err != nil {
 		return err
 	}
@@ -756,7 +749,6 @@ func (m *PingCheck) validateTestLocation(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateHost(formats strfmt.Registry) error {
-
 	if err := validate.Required("host", "body", m.Host); err != nil {
 		return err
 	}

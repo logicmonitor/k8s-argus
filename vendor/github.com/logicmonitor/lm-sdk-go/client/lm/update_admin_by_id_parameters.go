@@ -9,24 +9,19 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/swag"
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewUpdateAdminByIDParams creates a new UpdateAdminByIDParams object
 // with the default values initialized.
 func NewUpdateAdminByIDParams() *UpdateAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &UpdateAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 
@@ -37,9 +32,7 @@ func NewUpdateAdminByIDParams() *UpdateAdminByIDParams {
 // NewUpdateAdminByIDParamsWithTimeout creates a new UpdateAdminByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewUpdateAdminByIDParamsWithTimeout(timeout time.Duration) *UpdateAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &UpdateAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 
@@ -50,9 +43,7 @@ func NewUpdateAdminByIDParamsWithTimeout(timeout time.Duration) *UpdateAdminByID
 // NewUpdateAdminByIDParamsWithContext creates a new UpdateAdminByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewUpdateAdminByIDParamsWithContext(ctx context.Context) *UpdateAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &UpdateAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 
@@ -63,9 +54,7 @@ func NewUpdateAdminByIDParamsWithContext(ctx context.Context) *UpdateAdminByIDPa
 // NewUpdateAdminByIDParamsWithHTTPClient creates a new UpdateAdminByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewUpdateAdminByIDParamsWithHTTPClient(client *http.Client) *UpdateAdminByIDParams {
-	var (
-		changePasswordDefault = bool(false)
-	)
+	changePasswordDefault := bool(false)
 	return &UpdateAdminByIDParams{
 		ChangePassword: &changePasswordDefault,
 		HTTPClient:     client,
@@ -157,7 +146,6 @@ func (o *UpdateAdminByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *UpdateAdminByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

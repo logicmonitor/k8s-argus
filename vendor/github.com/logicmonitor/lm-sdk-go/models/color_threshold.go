@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -53,7 +52,6 @@ func (m *ColorThreshold) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ColorThreshold) validateLevel(formats strfmt.Registry) error {
-
 	if err := validate.Required("level", "body", m.Level); err != nil {
 		return err
 	}
@@ -62,7 +60,6 @@ func (m *ColorThreshold) validateLevel(formats strfmt.Registry) error {
 }
 
 func (m *ColorThreshold) validateRelation(formats strfmt.Registry) error {
-
 	if err := validate.Required("relation", "body", m.Relation); err != nil {
 		return err
 	}
@@ -71,7 +68,6 @@ func (m *ColorThreshold) validateRelation(formats strfmt.Registry) error {
 }
 
 func (m *ColorThreshold) validateThreshold(formats strfmt.Registry) error {
-
 	if err := validate.Required("threshold", "body", m.Threshold); err != nil {
 		return err
 	}

@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -314,7 +313,6 @@ func (m *sdt) Type() string {
 
 // SetType sets the type of this polymorphic type
 func (m *sdt) SetType(val string) {
-
 }
 
 // WeekDay gets the week day of this polymorphic type
@@ -483,7 +481,6 @@ func unmarshalSDT(data []byte, consumer runtime.Consumer) (SDT, error) {
 
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
-
 }
 
 // Validate validates this SDT

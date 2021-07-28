@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -31,7 +30,6 @@ func (m *PerfmonCollectorAttribute) Name() string {
 
 // SetName sets the name of this subtype
 func (m *PerfmonCollectorAttribute) SetName(val string) {
-
 }
 
 // Counters gets the counters of this subtype
@@ -123,7 +121,6 @@ func (m *PerfmonCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PerfmonCollectorAttribute) validateCounters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Counters) { // not required
 		return nil
 	}
