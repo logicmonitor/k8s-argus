@@ -151,6 +151,8 @@ type ResourceBuilder interface {
 	SystemCategory(string, enums.BuilderAction) ResourceOption
 	// ResourceLabels sets custom properties for the resource
 	ResourceLabels(map[string]string) ResourceOption
+	// ResourceLabels sets custom properties for the resource
+	ResourceAnnotations(map[string]string) ResourceOption
 	// Auto adds an auto property to the resource.
 	Auto(string, string) ResourceOption
 	// System adds a system property to the resource.

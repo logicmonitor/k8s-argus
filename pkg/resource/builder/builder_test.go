@@ -88,6 +88,79 @@ func TestResourceLabels_ExistingCustomProperties(t *testing.T) {
 	}
 }
 
+func TestResourceAnnotations_NilDevice(t *testing.T) {
+	t.Parallel()
+	properties := map[string]string{
+		propName:  propValue1,
+		prop2Name: propValue2,
+	}
+
+	b := builder.Builder{} // nolint: exhaustivestruct
+
+	resourceAnnotation := b.ResourceAnnotations(properties)
+	resourceAnnotation(nil)
+	if resourceAnnotation == nil {
+		t.Errorf("TestResourceAnnotations_NilDevice - invalid inputs")
+	}
+}
+
+func TestResourceAnnotations_NilCustomProperties(t *testing.T) {
+	t.Parallel()
+	resource := &models.Device{
+		CustomProperties: []*models.NameAndValue{},
+	}
+
+	properties := map[string]string{
+		propName:  propValue1,
+		prop2Name: propValue2,
+	}
+
+	b := builder.Builder{} // nolint: exhaustivestruct
+
+	resourceAnnotation := b.ResourceAnnotations(properties)
+	resourceAnnotation(resource)
+
+	kubernetesPropName := constants.AnnotationCustomPropertyPrefix + propName
+	if propValue1 != getResourcePropValueByName(resource, kubernetesPropName) {
+		t.Errorf("TestResourceAnnotations_NilCustomProperties - failed to set resource property %s", kubernetesPropName)
+	}
+
+	kubernetesPropName2 := constants.AnnotationCustomPropertyPrefix + prop2Name
+	if propValue2 != getResourcePropValueByName(resource, kubernetesPropName2) {
+		t.Errorf("TestResourceAnnotations_NilCustomProperties - failed to set resource property %s", kubernetesPropName2)
+	}
+}
+
+func TestResourceAnnotations_ExistingCustomProperties(t *testing.T) {
+	t.Parallel()
+	resource := &models.Device{
+		CustomProperties: []*models.NameAndValue{
+			{
+				Name:  &propName,
+				Value: &propValue1,
+			}, {
+				Name:  &prop2Name,
+				Value: &propValue2,
+			},
+		},
+	}
+
+	properties := map[string]string{
+		propName:  propValue1,
+		prop2Name: propValue2,
+	}
+
+	b := builder.Builder{} // nolint: exhaustivestruct
+	resourceAnnotation := b.ResourceAnnotations(properties)
+	resourceAnnotation(resource)
+	if propValue1 != getResourcePropValueByName(resource, propName) {
+		t.Errorf("TestResourceAnnotations_ExistingCustomProperties - failed to set resource property %s", propName)
+	}
+	if propValue2 != getResourcePropValueByName(resource, prop2Name) {
+		t.Errorf("TestResourceAnnotations_ExistingCustomProperties- failed to set resource property %s", prop2Name)
+	}
+}
+
 func getResourcePropValueByName(d *models.Device, name string) string {
 	if d == nil || d.CustomProperties == nil {
 		return ""

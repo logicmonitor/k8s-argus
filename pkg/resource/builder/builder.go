@@ -48,6 +48,40 @@ func (b *Builder) SystemCategory(category string, action enums.BuilderAction) ty
 	return setProperty(constants.K8sSystemCategoriesPropertyKey, category, action)
 }
 
+// ResourceAnnotations implements types.ResourceBuilder
+func (b *Builder) ResourceAnnotations(properties map[string]string) types.ResourceOption {
+	return func(resource *models.Device) {
+		if resource == nil {
+			return
+		}
+		if resource.CustomProperties == nil {
+			resource.CustomProperties = []*models.NameAndValue{}
+		}
+		for name, value := range properties {
+			propName := constants.AnnotationCustomPropertyPrefix + name
+			propValue := value
+			if propValue == "" {
+				propValue = constants.LabelNullPlaceholder
+			}
+			existed := false
+			for _, prop := range resource.CustomProperties {
+				if *prop.Name == propName {
+					*prop.Value = propValue
+					existed = true
+
+					break
+				}
+			}
+			if !existed {
+				resource.CustomProperties = append(resource.CustomProperties, &models.NameAndValue{
+					Name:  &propName,
+					Value: &propValue,
+				})
+			}
+		}
+	}
+}
+
 // ResourceLabels implements types.ResourceBuilder
 func (b *Builder) ResourceLabels(properties map[string]string) types.ResourceOption {
 	return func(resource *models.Device) {
@@ -308,6 +342,7 @@ func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *
 	options := []types.ResourceOption{
 		b.Name(rt.LMName(objectMeta)),
 		b.ResourceLabels(objectMeta.Labels),
+		b.ResourceAnnotations(objectMeta.Annotations),
 		b.DisplayName(util.GetDisplayName(rt, objectMeta, conf)),
 		b.SystemCategory(rt.GetCategory(), enums.Add),
 		b.Auto("name", objectMeta.Name),
