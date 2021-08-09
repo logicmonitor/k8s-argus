@@ -71,7 +71,7 @@ func UpdateFuncDispatcher(facade eventprocessor.RunnerFacade, updateFunc types.U
 
 		log.Debugf("Received update event")
 		rt.ObjectMeta(newObj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		sendToFacade(facade, lctx, func() {
+		sendToFacade(facade, lctx, rt, "update", func() {
 			updateFunc(lctx, rt, oldObj, newObj)
 		})
 	}

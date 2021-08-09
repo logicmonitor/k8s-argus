@@ -46,7 +46,7 @@ func DeleteFuncDispatcher(facade eventprocessor.RunnerFacade, deleteFunc types.D
 		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
 		RecordDeleteEventLatency(lctx, rt, obj)
 
-		sendToFacade(facade, lctx, func() {
+		sendToFacade(facade, lctx, rt, "delete", func() {
 			deleteFunc(lctx, rt, obj)
 		})
 	}

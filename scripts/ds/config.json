@@ -1,0 +1,146 @@
+{
+  "apis": [
+    {
+      "verb": "post",
+      "status_code": "1XX"
+    },
+    {
+      "verb": "post",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "post",
+      "status_code": "3XX"
+    },
+    {
+      "verb": "post",
+      "status_code": "4XX"
+    },
+    {
+      "verb": "post",
+      "status_code": "5XX"
+    },
+    {
+      "verb": "get",
+      "status_code": "1XX"
+    },
+    {
+      "verb": "get",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "get",
+      "status_code": "3XX"
+    },
+    {
+      "verb": "get",
+      "status_code": "4XX"
+    },
+    {
+      "verb": "get",
+      "status_code": "5XX"
+    },
+    {
+      "verb": "delete",
+      "status_code": "1XX"
+    },
+    {
+      "verb": "delete",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "delete",
+      "status_code": "3XX"
+    },
+    {
+      "verb": "delete",
+      "status_code": "4XX"
+    },
+    {
+      "verb": "delete",
+      "status_code": "5XX"
+    },
+    {
+      "verb": "put",
+      "status_code": "1XX"
+    },
+    {
+      "verb": "put",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "put",
+      "status_code": "3XX"
+    },
+    {
+      "verb": "put",
+      "status_code": "4XX"
+    },
+    {
+      "verb": "put",
+      "status_code": "5XX"
+    },
+    {
+      "verb": "post",
+      "status_code": "409"
+    },
+    {
+      "verb": "delete",
+      "status_code": "404"
+    },
+    {
+      "verb": "update",
+      "status_code": "404"
+    },
+    {
+      "verb": "*",
+      "status_code": "408"
+    },
+    {
+      "verb": "*",
+      "status_code": "429"
+    },
+    {
+      "verb": "post",
+      "status_code": "400"
+    }
+  ],
+  "graphs": [
+    {
+      "verb": "get",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "delete",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "post",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "put",
+      "status_code": "2XX"
+    },
+    {
+      "verb": "delete",
+      "status_code": "404"
+    },
+    {
+      "verb": "post",
+      "status_code": "409"
+    },
+    {
+      "verb": "*",
+      "status_code": "408"
+    },
+    {
+      "verb": "*",
+      "status_code": "429"
+    },
+    {
+      "verb": "post",
+      "status_code": "400"
+    }
+  ]
+}

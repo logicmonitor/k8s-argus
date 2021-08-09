@@ -1,6 +1,7 @@
 package argus
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -49,10 +50,10 @@ func (a *Argus) Init() error {
 	} else {
 		resourceGroupTree, err = tree.GetResourceGroupTree(lctx, a.ResourceManager, a.LMRequester)
 	}
-	if err := a.CreateResourceGroupTree(lctx, resourceGroupTree, true); err != nil {
-		return err
-	}
 	if err != nil {
+		return fmt.Errorf("failed to build resource tree: %w", err)
+	}
+	if err := a.CreateResourceGroupTree(lctx, resourceGroupTree, true); err != nil {
 		return err
 	}
 
@@ -158,7 +159,7 @@ func (a *Argus) Watch(lctx *lmctx.LMContext) error {
 		go watchForFilterRuleChange(rt, clientState)
 		log.Debugf("Starting watcher of %s", rt)
 		stop := make(chan struct{})
-		stateHolder := types.NewControllerInitSyncStateHolder(controller)
+		stateHolder := types.NewControllerInitSyncStateHolder(rt, controller)
 		stateHolder.Run()
 		a.controllerStateHolders[rt] = &stateHolder
 		go controller.Run(stop)

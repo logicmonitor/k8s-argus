@@ -14,6 +14,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcecache"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -33,6 +34,7 @@ type InitSyncer struct {
 // Sync sync
 // nolint: cyclop
 func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
+	defer metrics.ObserveTime(metrics.StartTimeObserver(metrics.SyncTimeSummary))
 	log := lmlog.Logger(lctx)
 	// Graceful conflicts resolution
 	resolveConflicts := false

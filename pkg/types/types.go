@@ -10,6 +10,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -367,11 +368,13 @@ type ControllerInitSyncStateHolder struct {
 	Controller toolscache.Controller
 	hasSynced  bool
 	mu         sync.RWMutex
+	Resource   enums.ResourceType
 }
 
 // NewControllerInitSyncStateHolder create
-func NewControllerInitSyncStateHolder(controller toolscache.Controller) ControllerInitSyncStateHolder {
+func NewControllerInitSyncStateHolder(rt enums.ResourceType, controller toolscache.Controller) ControllerInitSyncStateHolder {
 	return ControllerInitSyncStateHolder{
+		Resource:   rt,
 		Controller: controller,
 		hasSynced:  false,
 		mu:         sync.RWMutex{},
@@ -395,6 +398,7 @@ func (stateHolder *ControllerInitSyncStateHolder) markSynced() {
 // Run starts watching on controller status and stops when it completes initial sync
 func (stateHolder *ControllerInitSyncStateHolder) Run() {
 	go func() {
+		defer metrics.SetGauge(metrics.StartGaugeTime(metrics.InitBulkDiscoveryTime.WithLabelValues(stateHolder.Resource.String())))
 		for {
 			hs := stateHolder.Controller.HasSynced()
 			if hs {

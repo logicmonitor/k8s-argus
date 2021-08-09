@@ -83,7 +83,7 @@ func AddFuncDispatcher(facade eventprocessor.RunnerFacade, addFunc types.AddPrep
 
 		log.Debugf("Received add event")
 		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		sendToFacade(facade, lctx, func() {
+		sendToFacade(facade, lctx, rt, "add", func() {
 			addFunc(lctx, rt, obj)
 		})
 	}
