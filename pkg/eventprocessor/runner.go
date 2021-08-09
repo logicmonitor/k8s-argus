@@ -1,10 +1,14 @@
 package eventprocessor
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,14 +39,29 @@ func (r *Runner) Run() {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"runner": r.config.ID}))
 	log := lmlog.Logger(lctx)
 	log.Debugf("Starting Runner")
+	g := promauto.NewGaugeFunc(
+		prometheus.GaugeOpts{
+			Namespace:   metrics.ArgusNamespace,
+			Subsystem:   metrics.RunnerSubsystem,
+			Name:        "queued_count",
+			Help:        "Number of fetched events present in runner queue",
+			ConstLabels: map[string]string{"runner_id": fmt.Sprintf("%d", r.config.ID)},
+		},
+		func() float64 {
+			return float64(len(r.config.inCh))
+		},
+	)
+
 	go func(inch chan *RunnerCommand) {
 		defer func() {
 			r.running = false
+			prometheus.Unregister(g)
 		}()
 		for {
 			timeout := time.NewTicker(idleNotifyTimeout)
 			select {
 			case command := <-inch:
+				metrics.RunnerEventsReceivedCount.WithLabelValues(fmt.Sprintf("%d", r.config.ID)).Inc()
 				lctx2 := command.Lctx
 				commandCtx := lmlog.LMContextWithFields(lctx2, logrus.Fields{"runner": r.config.ID})
 				log2 := lmlog.Logger(commandCtx)

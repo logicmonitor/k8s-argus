@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -58,6 +59,12 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			os.Exit(constants.GetConfigExitCode)
 		}
 
+		http.Handle("/metrics", promhttp.Handler())
+		go func() {
+			addr := fmt.Sprintf(":%d", *conf.OpenMetricsConfig.Port)
+			log.Fatal(http.ListenAndServe(addr, nil))
+		}()
+
 		// Once minimal configuration gets loaded, start config watcher to watch on events
 		config.Run()
 
@@ -103,6 +110,7 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 
 		argusObj, err := argus.CreateArgus(lctx, lmClient)
 		if err != nil {
+			log.Fatalf("Failed to create argus object at initialization: %s", err)
 			return
 		}
 		err = argusObj.Init()
@@ -131,12 +139,6 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			log.Fatalf("Failed to start telemetry collector: %s", err)
 			return
 		}
-
-		http.Handle("/metrics", promhttp.Handler())
-		go func() {
-			addr := fmt.Sprintf(":%d", *conf.OpenMetricsConfig.Port)
-			log.Fatal(http.ListenAndServe(addr, nil))
-		}()
 
 		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)

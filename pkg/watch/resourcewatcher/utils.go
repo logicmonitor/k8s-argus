@@ -14,6 +14,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
@@ -88,9 +89,11 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 func RecordDeleteEventLatency(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 	log := lmlog.Logger(lctx)
 	if meta := rt.ObjectMeta(obj); meta.DeletionTimestamp != nil {
+		metrics.DeleteEventLatencySummary.WithLabelValues(rt.String()).Observe(float64(time.Since(meta.DeletionTimestamp.Time).Nanoseconds()))
 		// TODO: PROM_METRIC stats: stats of delete event according to object type, time (max, min, average)
 		log.Infof("delete event latency %v", time.Since(meta.DeletionTimestamp.Time))
 	} else {
+		metrics.DeleteEventMissingTimestamp.WithLabelValues(rt.String()).Inc()
 		// TODO: PROM_METRIC counter: object without delete timestamp
 		log.Warnf("delete event context doesn't have deleteTimestamp on it")
 	}
@@ -125,13 +128,15 @@ func getEvalInput(lctx *lmctx.LMContext, meta *metav1.PartialObjectMetadata) gov
 	return evaluationParams
 }
 
-func sendToFacade(facade eventprocessor.RunnerFacade, lctx *lmctx.LMContext, function func()) {
+func sendToFacade(facade eventprocessor.RunnerFacade, lctx *lmctx.LMContext, rt enums.ResourceType, event string, function func()) {
 	log := lmlog.Logger(lctx)
+	defer metrics.ObserveTime(metrics.StartTimeObserver(metrics.ResourceHandlerProcessingTimeSummary.WithLabelValues(rt.String(), event)))
 	if err := facade.Send(lctx, &eventprocessor.RunnerCommand{
 		ExecFunc: function,
 		Lctx:     lctx,
 	}); err != nil {
 		log.Errorf("Failed to perform event processing: %s", err)
+
 		return
 	}
 	log.Debug("event processing completed")

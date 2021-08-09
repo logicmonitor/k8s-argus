@@ -11,19 +11,18 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
-	"github.com/logicmonitor/k8s-argus/pkg/promperf"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
-func (rc *ResourceCache) rebuildCache(gauge prometheus.Gauge) {
+func (rc *ResourceCache) rebuildCache() {
 	rc.rebuildMutex.Lock()
 	defer rc.rebuildMutex.Unlock()
-	defer promperf.Duration(promperf.Track(gauge))
+	defer metrics.ObserveTime(metrics.StartTimeObserver(metrics.CacheBuilderSummary))
 	debugID := util.GetShortUUID()
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"debug_id": debugID}))
 	log := lmlog.Logger(lctx)

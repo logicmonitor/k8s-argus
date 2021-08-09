@@ -65,6 +65,10 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 			options = append(options, b.ResourceLabels(node.Labels))
 		}
 
+		if !cmp.Equal(oldNode.Annotations, node.Annotations) {
+			options = append(options, b.ResourceAnnotations(node.Annotations))
+		}
+
 		if len(options) > 0 {
 			return options, false, err
 		}
