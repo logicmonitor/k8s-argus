@@ -22,7 +22,7 @@ for api in jsonNode['apis']:
     graph = eT.SubElement(datapoints, "datapoint")
     eT.SubElement(graph, "name").text = "argus_lm_api_response_time_" + (
         api['verb'] if api['verb'] != "*" else "all") + "_" + str(
-        api['status_code']) + "_count"
+        api['status_code']) + "_rate"
     eT.SubElement(graph, "dataType").text = str(7)
     eT.SubElement(graph, "type").text = str(1)
     eT.SubElement(graph, "postprocessormethod").text = "regex"
@@ -166,15 +166,19 @@ for graph in graphs:
     graphs.remove(graph)
 for api in jsonNode['graphs']:
     graph = eT.SubElement(graphs, "graph")
-    eT.SubElement(graph, "name").text = (api['verb'].upper() if api['verb'] != "*" else "ALL") + " " + str(
-        api['status_code'])
-    eT.SubElement(graph, "title").text = (api['verb'].upper() if api['verb'] != "*" else "ALL") + " " + str(
-        api['status_code'])
-    eT.SubElement(graph, "verticallabel").text = "ms"
+    # eT.SubElement(graph, "name").text = (api['verb'].upper() if api['verb'] != "*" else "ALL") + " " + str(
+    #     api['status_code'])
+    # eT.SubElement(graph, "title").text = (api['verb'].upper() if api['verb'] != "*" else "ALL") + " " + str(
+    #     api['status_code'])
+
+    eT.SubElement(graph, "name").text = api['title']
+    eT.SubElement(graph, "title").text = api['title']
+
+    eT.SubElement(graph, "verticallabel").text = "milliseconds"
     eT.SubElement(graph, "rigid").text = "false"
     eT.SubElement(graph, "maxvalue").text = "NaN"
     eT.SubElement(graph, "minvalue").text = "NaN"
-    eT.SubElement(graph, "displayprio").text = "1"
+    eT.SubElement(graph, "displayprio").text = api['disp_prio']
     eT.SubElement(graph, "timescale").text = "1day"
     eT.SubElement(graph, "base1024").text = "false"
     gps = eT.SubElement(graph, "graphdatapoints")
@@ -217,9 +221,9 @@ for api in jsonNode['graphs']:
 
 ographs = tree.find(".//entry/overviewgraphs")
 ograph = eT.SubElement(ographs, "overviewgraph")
-eT.SubElement(ograph, "name").text = "API TREND"
-eT.SubElement(ograph, "title").text = "API TREND"
-eT.SubElement(ograph, "verticallabel").text = "count"
+eT.SubElement(ograph, "name").text = "API Requests HTTP Stats"
+eT.SubElement(ograph, "title").text = "API Requests HTTP Stats"
+eT.SubElement(ograph, "verticallabel").text = "requests rate"
 eT.SubElement(ograph, "rigid").text = "false"
 eT.SubElement(ograph, "maxvalue").text = "NaN"
 eT.SubElement(ograph, "minvalue").text = "0"
@@ -234,9 +238,9 @@ ovdps = eT.SubElement(ograph, "virtualdatapoints")
 olines = eT.SubElement(ograph, "lines")
 for dp in datapoints:
     for c in dp:
-        if c.tag == "name" and c.text.startswith("argus_lm_api_response_time_") and c.text.endswith("_count"):
+        if c.tag == "name" and c.text.startswith("argus_lm_api_response_time_") and c.text.endswith("_rate"):
             name = c.text[len("argus_lm_api_response_time_"):]
-            name = name[:-len("_count")]
+            name = name[:-len("_rate")]
             if not name.startswith("all"):
                 odp = eT.SubElement(odps, "overviewgraphdatapoint")
                 eT.SubElement(odp, "name").text = c.text
