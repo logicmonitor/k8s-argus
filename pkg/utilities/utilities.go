@@ -217,7 +217,7 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) (int32,
 	if clusterGroupID > 0 {
 		return clusterGroupID, nil
 	}
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return -2, fmt.Errorf("failed to get config: %w", err)
 	}

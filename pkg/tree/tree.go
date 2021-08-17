@@ -76,7 +76,7 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 				&types.ResourceGroupTree{
 					Options: []types.ResourceGroupOption{
 						dgBuilder.GroupName(resource.TitlePlural()),
-						dgBuilder.DisableAlerting(true),
+						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
 						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
 					},
 					ChildGroups: []*types.ResourceGroupTree{
@@ -182,7 +182,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 }
 
 func getConf(lctx *lmctx.LMContext, requester *types.LMRequester) (*config.Config, error) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}

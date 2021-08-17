@@ -74,7 +74,7 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 	if event != "" {
 		fields["event"] = event
 	}
-	if conf, err := config.GetConfig(); err == nil {
+	if conf, err := config.GetConfig(lctx); err == nil {
 		fields["display_name"] = util.GetDisplayName(rt, objectMeta, conf)
 	}
 

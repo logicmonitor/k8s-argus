@@ -40,7 +40,7 @@ type Argus struct {
 
 func (a *Argus) Init() error {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"argus": "init"}))
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,8 @@ func (a *Argus) Init() error {
 	// periodically delete the non-exist resource resources through logicmonitor API based on specified time interval.
 	initSyncer.RunPeriodicSync()
 
-	err = discoverETCDNodes(a.ResourceManager)
+	lctx3 := lmlog.LMContextWithFields(lctx, logrus.Fields{"argus": "init", "discovery": "etcd"})
+	err = discoverETCDNodes(lctx3, a.ResourceManager)
 	if err != nil {
 		return err
 	}
@@ -87,8 +88,8 @@ func NewArgus(lmrequester *types.LMRequester, resourceManager types.ResourceMana
 	}, nil
 }
 
-func discoverETCDNodes(resourceManager types.ResourceManager) error {
-	conf, err := config.GetConfig()
+func discoverETCDNodes(lctx *lmctx.LMContext, resourceManager types.ResourceManager) error {
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -106,7 +107,7 @@ func discoverETCDNodes(resourceManager types.ResourceManager) error {
 
 func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -132,7 +133,7 @@ func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
 // Watch watches the API for events.
 func (a *Argus) Watch(lctx *lmctx.LMContext) error {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -249,7 +250,8 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 }
 
 func (a *Argus) genericObjectFilterFunc() func(obj interface{}) bool {
-	if conf, err := config.GetConfig(); err == nil {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"component": "generic_filter_registration"}))
+	if conf, err := config.GetConfig(lctx); err == nil {
 		if conf.RegisterGenericFilter {
 			return func(obj interface{}) bool {
 				if rt, ok := resourcewatcher.InferResourceType(obj); ok {

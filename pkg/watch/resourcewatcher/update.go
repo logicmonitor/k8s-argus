@@ -91,7 +91,7 @@ func PreprocessUpdateEventForOldUID(
 			Name:     meta.Name,
 			Resource: rt,
 		}, meta.Namespace, false); ok && cacheMeta.UID != meta.UID {
-			conf, err := config.GetConfig()
+			conf, err := config.GetConfig(lctx)
 			if err == nil {
 				log.Infof("Deleting previous resource (%d) with old UID (%s)", cacheMeta.LMID, cacheMeta.UID)
 				options := b.GetDefaultsResourceOptions(rt, meta, conf)
@@ -122,7 +122,7 @@ func UpsertBasedOnCache(
 ) types.UpdateProcessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj interface{}, newObj interface{}, oldOptions []types.ResourceOption, options []types.ResourceOption) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 		}

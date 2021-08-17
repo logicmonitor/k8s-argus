@@ -20,7 +20,7 @@ import (
 // Add implements types.ResourceManager.
 func (m *Manager) Add(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.ResourceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return nil, err
@@ -83,7 +83,7 @@ func (m *Manager) handleConflict(lctx *lmctx.LMContext, rt enums.ResourceType, o
 		if util.GetResourcePropertyValue(existingResource, constants.K8sResourceUIDPropertyKey) != "" &&
 			util.GetResourcePropertyValue(existingResource, constants.K8sResourceUIDPropertyKey) == util.GetResourcePropertyValue(resource, constants.K8sResourceUIDPropertyKey) {
 			// TODO: PROM_METRIC cache miss metrics, fetch and correlate resource - as full name is enforced now
-			conf, err5 := config.GetConfig()
+			conf, err5 := config.GetConfig(lctx)
 			if err5 != nil {
 				return nil, err5
 			}
@@ -115,7 +115,7 @@ func (m *Manager) handleConflict(lctx *lmctx.LMContext, rt enums.ResourceType, o
 // Update update
 func (m *Manager) Update(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj interface{}, newObj interface{}, options ...types.ResourceOption) (*models.Device, error) {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return nil, err
@@ -166,7 +166,7 @@ func (m *Manager) Update(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj in
 // Delete delete
 func (m *Manager) Delete(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.ResourceOption) error {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return err
@@ -200,7 +200,7 @@ func (m *Manager) Delete(lctx *lmctx.LMContext, rt enums.ResourceType, obj inter
 // MarkDeleted mark
 func (m *Manager) MarkDeleted(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.ResourceOption) error {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return err
@@ -221,7 +221,7 @@ func (m *Manager) MarkDeleted(lctx *lmctx.LMContext, rt enums.ResourceType, obj 
 	delLctx := lmlog.LMContextWithLMResourceID(lctx, ce.LMID)
 	log = lmlog.Logger(delLctx)
 	resource.ID = ce.LMID
-	conf, err2 := config.GetConfig()
+	conf, err2 := config.GetConfig(lctx)
 	if err2 != nil {
 		log.Errorf("Get configuration failed with error: %s", err2)
 

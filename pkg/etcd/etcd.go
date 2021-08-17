@@ -34,7 +34,7 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "etcd-discovery"}))
 	log := lmlog.Logger(lctx)
 	members := make([]*Member, 0)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return nil, err

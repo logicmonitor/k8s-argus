@@ -9,6 +9,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -38,7 +39,17 @@ type Config struct {
 	RegisterGenericFilter         bool                    `yaml:"register_generic_filter"`
 	DeleteArgusPodAfter           *string                 `yaml:"delete_argus_pod_after"`
 	DisableResourceMonitoring     []enums.ResourceType    `yaml:"disable_resource_monitoring"`
+	DisableResourceAlerting       []enums.ResourceType    `yaml:"disable_resource_alerting"`
 	TelemetryCronString           *string                 `yaml:"telemetry_cron_string"`
+}
+
+func (conf *Config) ShouldDisableAlerting(rt enums.ResourceType) bool {
+	for _, e := range conf.DisableResourceAlerting {
+		if e == rt {
+			return true
+		}
+	}
+	return false
 }
 
 // Secrets represents the application's sensitive configuration file.
@@ -226,11 +237,13 @@ func retainFields(t reflect.Type, v reflect.Value, nv reflect.Value) {
 }
 
 // GetConfig returns the application configuration specified by the config file.
-func GetConfig() (*Config, error) {
+func GetConfig(lctx *lmctx.LMContext) (*Config, error) {
 	v := conf.getConf()
 	if v == nil {
 		return nil, fmt.Errorf("config is not available: %v", v)
 	}
+	log := lmlog.Logger(lctx)
+	log.Tracef("Config response: %v", v)
 	return v, nil
 }
 

@@ -103,7 +103,7 @@ func PreprocessAddEventForOldUID(
 			Name:     meta.Name,
 			Resource: rt,
 		}, meta.Namespace, false); ok && cacheMeta.UID != meta.UID {
-			conf, err := config.GetConfig()
+			conf, err := config.GetConfig(lctx)
 			if err == nil {
 				log.Infof("Deleting previous resource (%d) with obj UID (%s)", cacheMeta.LMID, cacheMeta.UID)
 				options := b.GetDefaultsResourceOptions(rt, meta, conf)

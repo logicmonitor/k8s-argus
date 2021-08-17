@@ -24,7 +24,7 @@ import (
 
 func StartWorkers(lctx *lmctx.LMContext, facade types.LMFacade) error {
 	log := lmlog.Logger(lctx)
-	if conf, err := config.GetConfig(); err == nil {
+	if conf, err := config.GetConfig(lctx); err == nil {
 		for i := 0; i < *conf.NumberOfWorkers; i++ {
 			wc := worker.NewWorker(types.NewWConfig(i))
 			log.Debugf("Worker Config %d: %v", i, wc.GetConfig().GetChannel())
@@ -45,7 +45,7 @@ func StartWorkers(lctx *lmctx.LMContext, facade types.LMFacade) error {
 
 func CreateArgus(lctx *lmctx.LMContext, lmClient *client.LMSdkGo) (*Argus, error) {
 	clctx := lmlog.LMContextWithFields(lctx, logrus.Fields{"argus": "create"})
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func createRunnerFacade(lctx *lmctx.LMContext) (eventprocessor.RunnerFacade, err
 
 func startRunners(lctx *lmctx.LMContext, facade *eventprocessor.RFacade) error {
 	log := lmlog.Logger(lctx)
-	if conf, err := config.GetConfig(); err == nil {
+	if conf, err := config.GetConfig(lctx); err == nil {
 		for i := 0; i < *conf.NumberOfParallelRunners; i++ {
 			wc := eventprocessor.NewRunner(eventprocessor.NewRunnerConfig(i, *conf.ParallelRunnerQueueSize))
 			log.Debugf("Runner Config %d: %v", i, wc.GetConfig().GetChannel())

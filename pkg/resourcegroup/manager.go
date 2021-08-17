@@ -32,7 +32,7 @@ func (m *Manager) CreateResourceGroupTree(lctx *lmctx.LMContext, tree *types.Res
 	if tree.DontCreate {
 		return nil
 	}
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return aerrors.ErrCacheMiss
 	}
@@ -51,7 +51,7 @@ func (m *Manager) CreateResourceGroupTree(lctx *lmctx.LMContext, tree *types.Res
 	if meta, ok := m.ResourceCache.Exists(lctx, key, fmt.Sprintf("%d", resourceGroup.ParentID), false); ok {
 		resourceGroupID = meta.LMID
 		if update {
-			err2 := m.updateResourceGroup(lctx, tree, update, log, resourceGroupID, meta, clctx, key, resourceGroup)
+			err2 := m.updateResourceGroup(clctx, tree, update, resourceGroupID, meta, key, resourceGroup)
 			if err2 != nil {
 				return err2
 			}
@@ -95,9 +95,10 @@ func (m *Manager) createResourceGroup(log *logrus.Entry, clctx *lmctx.LMContext,
 	return createdDeviceGroup.ID, nil
 }
 
-func (m *Manager) updateResourceGroup(lctx *lmctx.LMContext, tree *types.ResourceGroupTree, update bool, log *logrus.Entry, resourceGroupID int32, meta types.ResourceMeta, clctx *lmctx.LMContext, key types.ResourceName, resourceGroup *models.DeviceGroup) error {
+func (m *Manager) updateResourceGroup(lctx *lmctx.LMContext, tree *types.ResourceGroupTree, update bool, resourceGroupID int32, meta types.ResourceMeta, key types.ResourceName, resourceGroup *models.DeviceGroup) error {
+	log := lmlog.Logger(lctx)
 	log.Infof("Updating existing resource group [%d]", resourceGroupID)
-	resp, err := m.getResourceGroupByID(meta.LMID, clctx)
+	resp, err := m.getResourceGroupByID(meta.LMID, lctx)
 	if err != nil {
 		if util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
 			// if group not found, invalidate cache and call again
@@ -108,11 +109,13 @@ func (m *Manager) updateResourceGroup(lctx *lmctx.LMContext, tree *types.Resourc
 		return fmt.Errorf("failed to retrieve resource group for updation %d: %w", meta.LMID, err)
 	}
 	existingResourceGroup := resp.(*lm.GetDeviceGroupByIDOK).Payload
-	existingResourceGroup, err = util.BuildResourceGroup(clctx, existingResourceGroup, tree.Options...)
+	log.Tracef("Existing resource group: %v", existingResourceGroup)
+	existingResourceGroup, err = util.BuildResourceGroup(lctx, existingResourceGroup, tree.Options...)
+	log.Tracef("Updated existing resource group: %v", existingResourceGroup)
 	if err != nil {
 		return fmt.Errorf("failed to modify resource group for updation %d: %w", meta.LMID, err)
 	}
-	err = m.updateResourceGroupByID(clctx, meta, existingResourceGroup)
+	err = m.updateResourceGroupByID(lctx, meta, existingResourceGroup)
 	if err != nil {
 		return fmt.Errorf("failed to update resource group %d: %w", meta.LMID, err)
 	}

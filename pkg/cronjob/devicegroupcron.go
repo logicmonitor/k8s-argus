@@ -22,13 +22,13 @@ import (
 const maxHistoryRecordsDefault = 10
 
 // StartTelemetryCron a cron job to update K8s & Helm properties in cluster resource group
-func StartTelemetryCron(resourceCache types.ResourceCache, requester *types.LMRequester) error {
+func StartTelemetryCron(lctx *lmctx.LMContext, resourceCache types.ResourceCache, requester *types.LMRequester) error {
 	tu := telemetryUpdater{
 		ResourceCache: resourceCache,
 		LMRequester:   requester,
 		seq:           0,
 	}
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (tu *telemetryUpdater) Run(lctx *lmctx.LMContext) error {
 
 // nolint: cyclop
 func (tu *telemetryUpdater) run(lctx *lmctx.LMContext) error {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}

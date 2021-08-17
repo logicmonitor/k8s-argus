@@ -53,7 +53,8 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			fmt.Println("failed to load application config from configmaps") // nolint: forbidigo
 			os.Exit(constants.ConfigInitExitCode)
 		}
-		conf, err := config.GetConfig()
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"watch": "init"}))
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			fmt.Println("Failed to get config: %w", err) // nolint: forbidigo
 			os.Exit(constants.GetConfigExitCode)
@@ -82,7 +83,6 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			registerLogLevelChangeHook()
 		}
 
-		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"watch": "init"}))
 		log := lmlog.Logger(lctx)
 
 		if err := filters.Init(lctx); err != nil {
@@ -134,7 +134,7 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		}
 
 		// To update K8s & Helm properties in cluster resource group periodically with the server
-		err = cronjob.StartTelemetryCron(argusObj.ResourceCache, argusObj.LMRequester)
+		err = cronjob.StartTelemetryCron(lctx, argusObj.ResourceCache, argusObj.LMRequester)
 		if err != nil {
 			log.Fatalf("Failed to start telemetry collector: %s", err)
 			return

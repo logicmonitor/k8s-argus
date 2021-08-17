@@ -11,7 +11,7 @@ import (
 )
 
 func (m *Manager) UpdateResourceByID(lctx *lmctx.LMContext, rt enums.ResourceType, id int32, options ...types.ResourceOption) (*models.Device, error) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}
