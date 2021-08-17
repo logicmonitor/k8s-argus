@@ -1,6 +1,8 @@
 package tree
 
 import (
+	"net/http"
+
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -202,12 +204,12 @@ func checkAndUpdateClusterGroup(lctx *lmctx.LMContext, config *config.Config, lm
 	}
 
 	rg, err := resourcegroup.GetByID(lctx, config.ClusterGroupID, lmClient)
-	if err != nil {
+	if err != nil && util.GetHTTPStatusCodeFromLMSDKError(err) != http.StatusNotFound {
 		log.Errorf("Failed to search cluster resource group [%d]: %s", config.ClusterGroupID, err)
 		return err
 	}
 	// if the group does not exist anymore, we will add the cluster to the root group
-	if rg == nil {
+	if rg == nil || util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
 		log.Warnf("The resource group (id=%v) does not exist, the cluster will be added to the root group", config.ClusterGroupID)
 		config.ClusterGroupID = constants.RootResourceGroupID
 	}
