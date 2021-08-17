@@ -124,10 +124,10 @@ func (rc *ResourceCache) AutoCacheBuilder(initialised chan<- bool) {
 		initialised <- true
 	}
 	close(initialised)
-
+	lctx := lmlog.NewLMContextWith(nil)
 	for {
 		sleep := time.Hour
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err == nil {
 			sleep = *conf.Intervals.CacheSyncInterval
 		}
@@ -293,7 +293,7 @@ func (rc *ResourceCache) UnsetLMID(lctx *lmctx.LMContext, rt enums.ResourceType,
 }
 
 func (rc *ResourceCache) SoftRefresh(lctx *lmctx.LMContext, container string) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return
 	}

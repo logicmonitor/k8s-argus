@@ -248,7 +248,7 @@ func (b *Builder) AddFuncWithDefaults(
 ) types.AddPreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
@@ -278,7 +278,7 @@ func (b *Builder) UpdateFuncWithDefaults(
 ) types.UpdatePreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
@@ -301,7 +301,7 @@ func (b *Builder) DeleteFuncWithDefaults(
 ) types.DeletePreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
@@ -322,7 +322,7 @@ func (b *Builder) MarkDeleteFunc(
 ) func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
@@ -373,7 +373,7 @@ func (b *Builder) GetMarkDeleteOptions(lctx *lmctx.LMContext, rt enums.ResourceT
 	if util.IsArgusPodObject(lctx, rt, meta) {
 		// defaults to 10 days
 		scheduledDeleteTime := "P10DT0H0M0S"
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err == nil {
 			scheduledDeleteTime = *conf.DeleteArgusPodAfter
 		}

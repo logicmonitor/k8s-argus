@@ -49,7 +49,7 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		resolveConflicts = true
 	}
 	log.Infof("resolveConflicts is: %v", resolveConflicts)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return
@@ -143,7 +143,7 @@ func (i *InitSyncer) deleteNamespace(allK8SResourcesStore *resourcecache.Store, 
 func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.ResourceMeta, clusterResourceMeta types.ResourceMeta, cacheResourceName types.ResourceName, log *logrus.Entry) {
 	rt := cacheResourceName.Resource
 	if clusterResourceMeta.DisplayName != cacheMeta.DisplayName || cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("failed to get confing")
 			return
@@ -172,7 +172,7 @@ func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.Res
 }
 
 func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, log *logrus.Entry, resourceName types.ResourceName, resourceMeta types.ResourceMeta) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return
@@ -212,7 +212,7 @@ func (i *InitSyncer) RunPeriodicSync() {
 
 	go func() {
 		for {
-			conf, err := config.GetConfig()
+			conf, err := config.GetConfig(lctx)
 			if err != nil {
 				time.Sleep(constants.DefaultPeriodicDeleteInterval) // nolint: gomnd
 			} else {

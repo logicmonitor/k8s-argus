@@ -20,7 +20,7 @@ import (
 // GetAllK8SResources get all k8s resources present in cluster
 func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 	tmpStore := resourcecache.NewStore()
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}

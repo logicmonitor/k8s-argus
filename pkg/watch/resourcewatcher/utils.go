@@ -26,6 +26,7 @@ import (
 
 // WatcherConfigurer to provide custom options provider to put extra props on resource
 func WatcherConfigurer(resourceType enums.ResourceType) types.WatcherConfigurer {
+	// nolint: exhaustive
 	switch resourceType {
 	case enums.Pods:
 
@@ -36,9 +37,6 @@ func WatcherConfigurer(resourceType enums.ResourceType) types.WatcherConfigurer 
 	case enums.Nodes:
 
 		return &node.Watcher{}
-	case enums.Deployments, enums.ETCD, enums.Hpas, enums.Namespaces, enums.Unknown:
-
-		return &emptyWatcher{}
 	default:
 
 		return &emptyWatcher{}
@@ -76,7 +74,7 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 	if event != "" {
 		fields["event"] = event
 	}
-	if conf, err := config.GetConfig(); err == nil {
+	if conf, err := config.GetConfig(lctx); err == nil {
 		fields["display_name"] = util.GetDisplayName(rt, objectMeta, conf)
 	}
 

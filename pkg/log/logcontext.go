@@ -3,6 +3,7 @@ package lmlog
 import (
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -13,6 +14,9 @@ import (
 func NewLMContextWith(logger *logrus.Entry) *lmctx.LMContext {
 	ctx := lmctx.NewLMContext()
 	debugID := getShortUUID()
+	if logger == nil {
+		logger = logrus.WithTime(time.Now())
+	}
 	entryWithDebugID := logger.WithFields(logrus.Fields{"debug_id": debugID})
 	ctx.Set("logger", entryWithDebugID)
 	ctx.Set("debug_id", debugID)

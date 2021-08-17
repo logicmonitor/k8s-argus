@@ -102,7 +102,7 @@ func (w *Watcher) AddFunc() func(obj interface{}) {
 }
 
 func (w *Watcher) createNamspaceResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return
 	}
@@ -129,10 +129,6 @@ func (w *Watcher) UpdateFunc() func(oldObj, newObj interface{}) {
 // DeleteFunc is a function that implements the Watcher interface.
 func (w *Watcher) DeleteFunc() func(obj interface{}) {
 	return func(obj interface{}) {
-		conf, err := config.GetConfig()
-		if err != nil {
-			return
-		}
 		if dfs, ok := obj.(cache.DeletedFinalStateUnknown); ok {
 			logrus.Warnf("Delete namespace event context is of type: %t", obj)
 			// TODO: run partial sync for specified object key in the event: refer cache.DeletedFinalStateUnknown
@@ -145,8 +141,11 @@ func (w *Watcher) DeleteFunc() func(obj interface{}) {
 			return
 		}
 		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": namespace.Name, "event": "delete", "type": rt.Singular()}))
+		conf, err := config.GetConfig(lctx)
+		if err != nil {
+			return
+		}
 		lctx = lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: conf.ClusterName})
-
 		log := lmlog.Logger(lctx)
 		log.Debugf("Handle delete namespace event: %s", namespace.Name)
 
@@ -182,7 +181,7 @@ func (w *Watcher) createNewResourceGroupTree(lctx *lmctx.LMContext, namespace *c
 		return
 	}
 
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return
 	}
@@ -231,7 +230,7 @@ func (w *Watcher) createNewResourceGroupTree(lctx *lmctx.LMContext, namespace *c
 
 func (w *Watcher) createPreviousResourceGroupTree(lctx *lmctx.LMContext, namespace *corev1.Namespace) {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return

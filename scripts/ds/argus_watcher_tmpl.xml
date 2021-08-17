@@ -130,7 +130,7 @@
             <overviewgraph>
                 <name>Init Discovery Time</name>
                 <title>Init Discovery Time</title>
-                <verticallabel>ms</verticallabel>
+                <verticallabel>milliseconds</verticallabel>
                 <rigid>false</rigid>
                 <maxvalue>NaN</maxvalue>
                 <minvalue>NaN</minvalue>
