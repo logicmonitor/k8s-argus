@@ -1,5 +1,6 @@
 package enums
 
+//go:generate go run resource_generator.go
 // BuilderAction action to send to build while modifying system.categories property
 type BuilderAction uint32
 
