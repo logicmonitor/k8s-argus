@@ -38,9 +38,14 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 }
 
 // UpdateFuncOptions update options
-func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
-		return []types.ResourceOption{}, false, nil
+func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceMeta, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, cacheMeta types.ResourceMeta, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+		service := newObj.(*corev1.Service) // nolint: forcetypeassert
+		var options []types.ResourceOption
+		if service.Spec.ClusterIP != "None" && cacheMeta.Name != service.Spec.ClusterIP {
+			options = append(options, b.Name(service.Spec.ClusterIP))
+		}
+		return options, false, nil
 	}
 }
 

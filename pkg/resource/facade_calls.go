@@ -56,7 +56,32 @@ func (m *Manager) UpdateAndReplaceResource(lctx *lmctx.LMContext, rt enums.Resou
 
 	if util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
 		m.UnsetResourceInCache(lctx, rt, resource)
-		return nil, fmt.Errorf("failed to fetch resource: %s: %w", err, aerrors.ErrInvalidCache)
+		return nil, fmt.Errorf("resource being updated does not exist: %s: %w", err, aerrors.ErrInvalidCache)
+	}
+
+	return nil, err
+}
+
+// PatchResource implements types.DeviceManager.
+func (m *Manager) PatchResource(lctx *lmctx.LMContext, rt enums.ResourceType, device *models.Device, fields string) (*models.Device, error) {
+	params := lm.NewPatchDeviceParams()
+	params.SetID(device.ID)
+	params.SetPatchFields(&fields)
+	params.SetBody(device)
+	opType := "replace"
+	params.SetOpType(&opType)
+
+	cmd := m.PatchResourceCommand(lctx, params)
+
+	restResponse, err := m.LMFacade.SendReceive(lctx, cmd)
+	if err == nil {
+		m.SetResourceInCache(lctx, rt, restResponse.(*lm.PatchDeviceOK).Payload)
+
+		return restResponse.(*lm.PatchDeviceOK).Payload, nil
+	}
+	if util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
+		m.UnsetResourceInCache(lctx, rt, device)
+		return nil, fmt.Errorf("resource being patched does not exist: %s: %w", err, aerrors.ErrInvalidCache)
 	}
 
 	return nil, err

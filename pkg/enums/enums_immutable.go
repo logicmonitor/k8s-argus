@@ -110,15 +110,15 @@ func (resourceType *ResourceType) GetCategory() string {
 }
 
 // ObjectMeta returns object meta from interface object
-func (resourceType *ResourceType) ObjectMeta(obj interface{}) *metav1.PartialObjectMetadata {
+func (resourceType *ResourceType) ObjectMeta(obj interface{}) (*metav1.PartialObjectMetadata, error) {
 	if *resourceType == ETCD || *resourceType == Unknown {
-		return nil
+		return nil, fmt.Errorf("no metadata for resource: %s", *resourceType)
 	}
 	accessor, err := meta.Accessor(obj)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return meta.AsPartialObjectMetadata(accessor)
+	return meta.AsPartialObjectMetadata(accessor), nil
 }
 
 // TitlePlural returns string name in proper case

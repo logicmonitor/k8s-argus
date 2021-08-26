@@ -107,7 +107,7 @@ func (m *Manager) createNodeRoleGroups(lctx *lmctx.LMContext, rt enums.ResourceT
 		return
 	}
 
-	objectMeta := rt.ObjectMeta(obj)
+	objectMeta, _ := rt.ObjectMeta(obj)
 	nodeRoleLabels := util.GetLabelsByPrefix(constants.LabelNodeRole, objectMeta.Labels)
 	if len(nodeRoleLabels) == 0 {
 		log.Debugf("No Role Labels found")

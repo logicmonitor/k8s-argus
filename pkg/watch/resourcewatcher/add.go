@@ -23,7 +23,7 @@ func AddFuncWithExclude(
 ) types.AddPreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		objectMeta := rt.ObjectMeta(obj)
+		objectMeta, _ := rt.ObjectMeta(obj)
 		exclude, err := EvaluateResourceExclusion(lctx, rt, objectMeta)
 		// NOTE: non nil err not considered for returning back to caller, exclude flag will decide it. err can be non nil for subset of rules
 		if err != nil {
@@ -82,7 +82,8 @@ func AddFuncDispatcher(facade eventprocessor.RunnerFacade, addFunc types.AddPrep
 		log = lmlog.Logger(lctx)
 
 		log.Debugf("Received add event")
-		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
+		meta, _ := rt.ObjectMeta(obj)
+		meta.ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
 		sendToFacade(facade, lctx, rt, "add", func() {
 			addFunc(lctx, rt, obj)
 		})
@@ -98,7 +99,7 @@ func PreprocessAddEventForOldUID(
 ) types.AddPreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		meta := rt.ObjectMeta(obj)
+		meta, _ := rt.ObjectMeta(obj)
 		if cacheMeta, ok := resourceCache.Exists(lctx, types.ResourceName{
 			Name:     meta.Name,
 			Resource: rt,

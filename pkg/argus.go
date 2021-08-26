@@ -111,16 +111,12 @@ func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
 	if err != nil {
 		return err
 	}
-	m := make(map[enums.ResourceType]*struct{})
-	for _, d := range conf.DisableResourceMonitoring {
-		m[d] = nil
-	}
 	for _, rt := range enums.ALLResourceTypes {
 		// These need special handling
 		if rt == enums.Namespaces || rt == enums.ETCD {
 			continue
 		}
-		if _, ok := m[rt]; ok {
+		if conf.IsMonitoringDisabled(rt) {
 			log.Warnf("Resource %s is being disabled for monitoring", rt.String())
 			continue
 		}
