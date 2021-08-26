@@ -41,6 +41,7 @@ type Config struct {
 	DisableResourceMonitoring     []enums.ResourceType    `yaml:"disable_resource_monitoring"`
 	DisableResourceAlerting       []enums.ResourceType    `yaml:"disable_resource_alerting"`
 	TelemetryCronString           *string                 `yaml:"telemetry_cron_string"`
+	SysIpsWaitTimeout             *time.Duration          `yaml:"sys_ips_wait_timeout"`
 }
 
 func (conf *Config) ShouldDisableAlerting(rt enums.ResourceType) bool {
@@ -49,6 +50,16 @@ func (conf *Config) ShouldDisableAlerting(rt enums.ResourceType) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func (conf *Config) IsMonitoringDisabled(rt enums.ResourceType) bool {
+	for _, d := range conf.DisableResourceMonitoring {
+		if d == rt {
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -277,6 +288,11 @@ func validateConfig(conf *Config) {
 		// Defaults to 10 minute if not specified
 		defaultTelemetryCron := "*/10 * * * *"
 		conf.TelemetryCronString = &defaultTelemetryCron
+	}
+	if conf.SysIpsWaitTimeout == nil {
+		// Defaults to 5 minute if not specified
+		timeout := 5 * time.Minute // nolint: gomnd
+		conf.SysIpsWaitTimeout = &timeout
 	}
 
 	validateIntervals(conf.Intervals)

@@ -179,3 +179,8 @@ const (
 	// CreatedByPrefix created by prefix
 	CreatedByPrefix = "LogicMonitor/Argus: "
 )
+
+const (
+	// NameFieldName is the field name for a device's name.
+	NameFieldName = "name"
+)

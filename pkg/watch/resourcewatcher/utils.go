@@ -65,7 +65,7 @@ func InferResourceType(newObj interface{}) (enums.ResourceType, bool) {
 }
 
 func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interface{}, event string) *lmctx.LMContext {
-	objectMeta := rt.ObjectMeta(newObj)
+	objectMeta, _ := rt.ObjectMeta(newObj)
 	fields := logrus.Fields{"name": rt.FQName(objectMeta.Name), "type": rt.Singular()}
 
 	if rt.IsNamespaceScopedResource() {
@@ -86,7 +86,7 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 // RecordDeleteEventLatency logs latency of receiving delete event to argus.
 func RecordDeleteEventLatency(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 	log := lmlog.Logger(lctx)
-	if meta := rt.ObjectMeta(obj); meta.DeletionTimestamp != nil {
+	if meta, _ := rt.ObjectMeta(obj); meta.DeletionTimestamp != nil {
 		metrics.DeleteEventLatencySummary.WithLabelValues(rt.String()).Observe(float64(time.Since(meta.DeletionTimestamp.Time).Nanoseconds()))
 		// TODO: PROM_METRIC stats: stats of delete event according to object type, time (max, min, average)
 		log.Infof("delete event latency %v", time.Since(meta.DeletionTimestamp.Time))

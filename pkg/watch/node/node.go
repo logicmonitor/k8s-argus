@@ -37,8 +37,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 }
 
 // UpdateFuncOptions update
-func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceMeta, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, cacheMeta types.ResourceMeta, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 		if rt != enums.Nodes {
 			return []types.ResourceOption{}, false, fmt.Errorf("resourceType is not of type nodes")
 		}
@@ -53,7 +53,7 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		var options []types.ResourceOption
 		if internalAddress == nil {
 			err = fmt.Errorf("no internal ip address present")
-		} else if oldInternalAddress.Address != internalAddress.Address {
+		} else if oldInternalAddress.Address != internalAddress.Address || internalAddress.Address != cacheMeta.Name {
 			options = append(options, b.Name(internalAddress.Address))
 		}
 

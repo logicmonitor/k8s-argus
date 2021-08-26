@@ -72,7 +72,7 @@ type ResourceWatcher interface {
 // WatcherConfigurer is the LogicMonitor Watcher interface.
 type WatcherConfigurer interface {
 	AddFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, ResourceBuilder) ([]ResourceOption, error)
-	UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ResourceBuilder) ([]ResourceOption, bool, error)
+	UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ResourceMeta, ResourceBuilder) ([]ResourceOption, bool, error)
 	DeleteFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}) []ResourceOption
 }
 
@@ -152,7 +152,7 @@ type ResourceBuilder interface {
 	SystemCategory(string, enums.BuilderAction) ResourceOption
 	// ResourceLabels sets custom properties for the resource
 	ResourceLabels(map[string]string) ResourceOption
-	// ResourceLabels sets custom properties for the resource
+	// ResourceAnnotations sets custom properties for the resource
 	ResourceAnnotations(map[string]string) ResourceOption
 	// Auto adds an auto property to the resource.
 	Auto(string, string) ResourceOption

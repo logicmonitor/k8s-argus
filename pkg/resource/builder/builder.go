@@ -284,8 +284,8 @@ func (b *Builder) UpdateFuncWithDefaults(
 
 			return
 		}
-		objectMeta := rt.ObjectMeta(newObj)
-		oldObjectMeta := rt.ObjectMeta(oldObj)
+		objectMeta, _ := rt.ObjectMeta(newObj)
+		oldObjectMeta, _ := rt.ObjectMeta(oldObj)
 
 		options := b.GetDefaultsResourceOptions(rt, objectMeta, conf)
 		oldObjOptions := b.GetDefaultsResourceOptions(rt, oldObjectMeta, conf)
@@ -307,7 +307,7 @@ func (b *Builder) DeleteFuncWithDefaults(
 
 			return
 		}
-		objectMeta := rt.ObjectMeta(obj)
+		objectMeta, _ := rt.ObjectMeta(obj)
 		options := b.GetDefaultsResourceOptions(rt, objectMeta, conf)
 		additionalOptions := configurer.DeleteFuncOptions()(lctx, rt, obj)
 		options = append(options, additionalOptions...)
@@ -328,7 +328,7 @@ func (b *Builder) MarkDeleteFunc(
 
 			return
 		}
-		objectMeta := rt.ObjectMeta(obj)
+		objectMeta, _ := rt.ObjectMeta(obj)
 		options := b.GetDefaultsResourceOptions(rt, objectMeta, conf)
 		additionalOptions := configurer.DeleteFuncOptions()(lctx, rt, obj)
 		options = append(options, additionalOptions...)
@@ -339,6 +339,9 @@ func (b *Builder) MarkDeleteFunc(
 
 // GetDefaultsResourceOptions returns default options for resource
 func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *metav1.PartialObjectMetadata, conf *config.Config) []types.ResourceOption {
+	if objectMeta == nil {
+		return []types.ResourceOption{}
+	}
 	options := []types.ResourceOption{
 		b.Name(rt.LMName(objectMeta)),
 		b.ResourceLabels(objectMeta.Labels),
