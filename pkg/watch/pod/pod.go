@@ -40,6 +40,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 			options = append(options, b.Custom("kubernetes.pod.hostNetwork", "true"))
 		}
 
+		options = append(options, b.Auto("nodename", p.Spec.NodeName))
+
 		return options, nil
 	}
 }
@@ -74,6 +76,11 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		if !oldOk && newOk {
 			// Pod running on fargate doesn't support HostNetwork so check fargate profile label, if label exists then mark hostNetwork as true
 			options = append(options, b.Custom("kubernetes.pod.hostNetwork", "true"))
+		}
+
+		// TODO: Just kept in options, but auto properties are not allowed to update by santaba once updated.
+		if oldPod.Spec.NodeName != p.Spec.NodeName {
+			options = append(options, b.Auto("nodename", p.Spec.NodeName))
 		}
 
 		return options, false, nil

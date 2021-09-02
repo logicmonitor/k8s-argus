@@ -39,14 +39,14 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 			{
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(nodes.TitlePlural()),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.Nodes))),
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
 						Options: []types.ResourceGroupOption{
 							dgBuilder.GroupName(constants.AllNodeResourceGroupName),
-							dgBuilder.DisableAlerting(conf.DisableAlerting),
+							dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(nodes.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 						},
 					},
@@ -64,7 +64,7 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 				ChildGroups: nil,
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
 					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
 				},
@@ -134,7 +134,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 			{
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
 					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
 				},
@@ -143,13 +143,13 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(nodes.TitlePlural()),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.Nodes))),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
 						Options: []types.ResourceGroupOption{
 							dgBuilder.GroupName(constants.AllNodeResourceGroupName),
-							dgBuilder.DisableAlerting(conf.DisableAlerting),
+							dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(nodes.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 						},
 					},
@@ -166,7 +166,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 			{
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.NamespacesGroupName),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(enums.Namespaces)),
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
