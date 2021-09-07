@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	// nolint: gosec
+	_ "net/http/pprof"
 	"os"
 
 	argus "github.com/logicmonitor/k8s-argus/pkg"
@@ -16,6 +19,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	"github.com/pkg/profile"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -142,6 +146,23 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 
 		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)
+
+		if *conf.EnableProfiling {
+			defer profile.Start(profile.CPUProfile,
+				profile.MemProfile, profile.MemProfileHeap, profile.MemProfileAllocs,
+				profile.BlockProfile, profile.MutexProfile, profile.NoShutdownHook,
+				profile.GoroutineProfile, profile.ThreadcreationProfile,
+				profile.TraceProfile,
+			).Stop()
+
+			go func() {
+				err := http.ListenAndServe(":8081", nil)
+				if err != nil {
+					log.Fatalf("Failed to start debug profiling: %s", err)
+					return
+				}
+			}()
+		}
 
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	},
