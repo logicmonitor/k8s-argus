@@ -25,6 +25,9 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 		return nil, err
 	}
 	for _, rt := range enums.ALLResourceTypes {
+		if conf.IsMonitoringDisabled(rt) {
+			continue
+		}
 		all, err := GetAndStoreAll(rt)
 		if err != nil {
 			return nil, err
