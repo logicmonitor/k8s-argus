@@ -26,7 +26,7 @@ func UpdateFuncWithExclude(
 ) func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}) {
 		log := lmlog.Logger(lctx)
-		objectMeta := rt.ObjectMeta(newObj)
+		objectMeta, _ := rt.ObjectMeta(newObj)
 		exclude, err := EvaluateResourceExclusion(lctx, rt, objectMeta)
 		// NOTE: non nil err not considered for returning back to caller, exclude flag will decide it. err can be non nil for subset of rules
 		if err != nil {
@@ -70,8 +70,9 @@ func UpdateFuncDispatcher(facade eventprocessor.RunnerFacade, updateFunc types.U
 		log = lmlog.Logger(lctx)
 
 		log.Debugf("Received update event")
-		rt.ObjectMeta(newObj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
-		sendToFacade(facade, lctx, func() {
+		meta, _ := rt.ObjectMeta(newObj)
+		meta.ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
+		sendToFacade(facade, lctx, rt, "update", func() {
 			updateFunc(lctx, rt, oldObj, newObj)
 		})
 	}
@@ -86,12 +87,12 @@ func PreprocessUpdateEventForOldUID(
 ) func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj interface{}, newObj interface{}) {
 		log := lmlog.Logger(lctx)
-		meta := rt.ObjectMeta(newObj)
+		meta, _ := rt.ObjectMeta(newObj)
 		if cacheMeta, ok := resourceCache.Exists(lctx, types.ResourceName{
 			Name:     meta.Name,
 			Resource: rt,
 		}, meta.Namespace, false); ok && cacheMeta.UID != meta.UID {
-			conf, err := config.GetConfig()
+			conf, err := config.GetConfig(lctx)
 			if err == nil {
 				log.Infof("Deleting previous resource (%d) with old UID (%s)", cacheMeta.LMID, cacheMeta.UID)
 				options := b.GetDefaultsResourceOptions(rt, meta, conf)
@@ -122,7 +123,7 @@ func UpsertBasedOnCache(
 ) types.UpdateProcessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj interface{}, newObj interface{}, oldOptions []types.ResourceOption, options []types.ResourceOption) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 		}
@@ -147,7 +148,7 @@ func UpsertBasedOnCache(
 		}
 		upLctx := lmlog.LMContextWithLMResourceID(lctx, ce.LMID)
 		log = lmlog.Logger(upLctx)
-		updateOptions, needDelete, err := configurer.UpdateFuncOptions()(upLctx, rt, oldObj, newObj, b)
+		updateOptions, needDelete, err := configurer.UpdateFuncOptions()(upLctx, rt, oldObj, newObj, ce, b)
 
 		if needDelete {
 			log.Infof("Deleting resource, if any")
@@ -183,7 +184,7 @@ func UpsertBasedOnCache(
 
 func hasDelta(lctx *lmctx.LMContext, resourceType enums.ResourceType, cacheMeta types.ResourceMeta, newObj interface{}) bool {
 	log := lmlog.Logger(lctx)
-	objMeta := resourceType.ObjectMeta(newObj)
+	objMeta, _ := resourceType.ObjectMeta(newObj)
 	log.Tracef("Existing labels: %v new lables: %v", cacheMeta.Labels, objMeta.Labels)
 	if cacheMeta.Labels != nil && objMeta.Labels != nil && len(cacheMeta.Labels) > 0 && len(objMeta.Labels) > 0 {
 		return !reflect.DeepEqual(cacheMeta.Labels, objMeta.Labels)

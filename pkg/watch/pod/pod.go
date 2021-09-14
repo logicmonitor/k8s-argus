@@ -40,13 +40,15 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 			options = append(options, b.Custom("kubernetes.pod.hostNetwork", "true"))
 		}
 
+		options = append(options, b.Auto("nodename", p.Spec.NodeName))
+
 		return options, nil
 	}
 }
 
 // UpdateFuncOptions update
-func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
-	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceMeta, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
+	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, cacheMeta types.ResourceMeta, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 		oldPod := oldObj.(*corev1.Pod) // nolint: forcetypeassert
 		p := newObj.(*corev1.Pod)      // nolint: forcetypeassert
 		options := make([]types.ResourceOption, 0)
@@ -58,7 +60,7 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		if p.Status.PodIP == "" {
 			return options, false, fmt.Errorf("empty Status.PodIP")
 		}
-		if oldPod.Status.PodIP != p.Status.PodIP {
+		if oldPod.Status.PodIP != p.Status.PodIP || (!p.Spec.HostNetwork && cacheMeta.Name != getPodDNSName(p)) {
 			options = append(options, []types.ResourceOption{
 				b.Name(getPodDNSName(p)),
 				b.System("ips", p.Status.PodIP),
@@ -74,6 +76,11 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		if !oldOk && newOk {
 			// Pod running on fargate doesn't support HostNetwork so check fargate profile label, if label exists then mark hostNetwork as true
 			options = append(options, b.Custom("kubernetes.pod.hostNetwork", "true"))
+		}
+
+		// TODO: Just kept in options, but auto properties are not allowed to update by santaba once updated.
+		if oldPod.Spec.NodeName != p.Spec.NodeName {
+			options = append(options, b.Auto("nodename", p.Spec.NodeName))
 		}
 
 		return options, false, nil

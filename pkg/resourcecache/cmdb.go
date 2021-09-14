@@ -178,7 +178,7 @@ func getChunks(m map[types.ResourceName][]types.ResourceMeta) ([][]byte, error) 
 func (rc *ResourceCache) updateIncrementalCache(lctx *lmctx.LMContext) {
 	log := lmlog.Logger(lctx)
 	log.Infof("Update incremental cache that might not have dumped into configmap cache..")
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Warnf("Failed to get config")
 		return

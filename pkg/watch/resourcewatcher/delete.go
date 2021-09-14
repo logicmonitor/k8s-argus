@@ -43,10 +43,11 @@ func DeleteFuncDispatcher(facade eventprocessor.RunnerFacade, deleteFunc types.D
 
 		log = lmlog.Logger(lctx)
 		log.Debugf("Received delete event")
-		rt.ObjectMeta(obj).ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
+		meta, _ := rt.ObjectMeta(obj)
+		meta.ManagedFields = make([]metav1.ManagedFieldsEntry, 0)
 		RecordDeleteEventLatency(lctx, rt, obj)
 
-		sendToFacade(facade, lctx, func() {
+		sendToFacade(facade, lctx, rt, "delete", func() {
 			deleteFunc(lctx, rt, obj)
 		})
 	}

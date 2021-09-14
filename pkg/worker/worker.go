@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -8,9 +9,12 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	m "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 )
@@ -52,14 +56,28 @@ func (w *Worker) Run() {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"worker": w.config.ID}))
 	log := lmlog.Logger(lctx)
 	log.Debugf("Starting worker")
+	workerQueueCount := promauto.NewGaugeFunc(
+		prometheus.GaugeOpts{
+			Namespace:   metrics.ArgusNamespace,
+			Subsystem:   metrics.WorkerSubsystem,
+			Name:        "commands_queued",
+			Help:        "Number of worker commands queued",
+			ConstLabels: map[string]string{"worker_id": fmt.Sprintf("%d", w.config.ID)},
+		},
+		func() float64 {
+			return float64(len(w.config.GetChannel()))
+		},
+	)
 	go func(inch chan *types.WorkerCommand) {
 		defer func() {
 			w.running = false
+			prometheus.Unregister(workerQueueCount)
 		}()
 		for {
 			timeout := time.NewTicker(workerIdleNotifyTimeout)
 			select {
 			case command := <-inch:
+				metrics.WorkerCommandsTotal.WithLabelValues(fmt.Sprintf("%d", w.config.ID)).Inc()
 				lctx2 := command.Lctx
 				commandCtx := lmlog.LMContextWithFields(lctx2, logrus.Fields{"worker": w.config.ID})
 				log2 := lmlog.Logger(commandCtx)

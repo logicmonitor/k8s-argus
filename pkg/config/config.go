@@ -9,6 +9,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
+	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -38,7 +39,29 @@ type Config struct {
 	RegisterGenericFilter         bool                    `yaml:"register_generic_filter"`
 	DeleteArgusPodAfter           *string                 `yaml:"delete_argus_pod_after"`
 	DisableResourceMonitoring     []enums.ResourceType    `yaml:"disable_resource_monitoring"`
+	DisableResourceAlerting       []enums.ResourceType    `yaml:"disable_resource_alerting"`
 	TelemetryCronString           *string                 `yaml:"telemetry_cron_string"`
+	SysIpsWaitTimeout             *time.Duration          `yaml:"sys_ips_wait_timeout"`
+	EnableProfiling               *bool                   `yaml:"enable_profiling"`
+}
+
+func (conf *Config) ShouldDisableAlerting(rt enums.ResourceType) bool {
+	for _, e := range conf.DisableResourceAlerting {
+		if e == rt {
+			return true
+		}
+	}
+	return false
+}
+
+func (conf *Config) IsMonitoringDisabled(rt enums.ResourceType) bool {
+	for _, d := range conf.DisableResourceMonitoring {
+		if d == rt {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Secrets represents the application's sensitive configuration file.
@@ -183,6 +206,7 @@ func (c *config) UpdateConfig(value string) error {
 	if pconf == nil {
 		pconf = uconf
 	}
+	postProcess(uconf)
 
 	postLoad(pconf, uconf)
 
@@ -226,11 +250,13 @@ func retainFields(t reflect.Type, v reflect.Value, nv reflect.Value) {
 }
 
 // GetConfig returns the application configuration specified by the config file.
-func GetConfig() (*Config, error) {
+func GetConfig(lctx *lmctx.LMContext) (*Config, error) {
 	v := conf.getConf()
 	if v == nil {
 		return nil, fmt.Errorf("config is not available: %v", v)
 	}
+	log := lmlog.Logger(lctx)
+	log.Tracef("Config response: %v", v)
 	return v, nil
 }
 
@@ -265,6 +291,15 @@ func validateConfig(conf *Config) {
 		defaultTelemetryCron := "*/10 * * * *"
 		conf.TelemetryCronString = &defaultTelemetryCron
 	}
+	if conf.SysIpsWaitTimeout == nil {
+		// Defaults to 5 minute if not specified
+		timeout := 5 * time.Minute // nolint: gomnd
+		conf.SysIpsWaitTimeout = &timeout
+	}
+	if conf.EnableProfiling == nil {
+		disable := false
+		conf.EnableProfiling = &disable
+	}
 
 	validateIntervals(conf.Intervals)
 	validateOpenMetricsConfig(conf.OpenMetricsConfig)
@@ -292,6 +327,24 @@ func validateIntervals(i *Intervals) {
 		*i.PeriodicSyncInterval = *i.PeriodicSyncMinInterval
 		logrus.Warnf("Please provide valid value for periodicSyncInterval. Continuing with default: %v", *i.PeriodicSyncInterval)
 	}
+	if i.PeriodicSyncInterval == nil {
+		i.PeriodicSyncInterval = i.PeriodicSyncMinInterval
+	} else if *i.PeriodicSyncInterval < *i.PeriodicSyncMinInterval {
+		*i.PeriodicSyncInterval = *i.PeriodicSyncMinInterval
+		logrus.Warnf("Please provide valid value for periodicSyncInterval. Continuing with default: %v", *i.PeriodicSyncInterval)
+	}
+
+	if i.PeriodicDeleteMinInterval == nil {
+		d := constants.DefaultPeriodicDeleteInterval
+		i.PeriodicDeleteMinInterval = &d
+	}
+	if i.PeriodicDeleteInterval == nil {
+		i.PeriodicDeleteInterval = i.PeriodicDeleteMinInterval
+	} else if *i.PeriodicDeleteInterval < *i.PeriodicDeleteMinInterval {
+		*i.PeriodicDeleteInterval = *i.PeriodicDeleteMinInterval
+		logrus.Warnf("Please provide valid value for periodicDeleteInterval. Continuing with default: %v", *i.PeriodicDeleteInterval)
+	}
+}
 
 	if i.PeriodicDeleteMinInterval == nil {
 		d := constants.DefaultPeriodicDeleteInterval

@@ -11,19 +11,18 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
-	"github.com/logicmonitor/k8s-argus/pkg/promperf"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
-func (rc *ResourceCache) rebuildCache(gauge prometheus.Gauge) {
+func (rc *ResourceCache) rebuildCache() {
 	rc.rebuildMutex.Lock()
 	defer rc.rebuildMutex.Unlock()
-	defer promperf.Duration(promperf.Track(gauge))
+	defer metrics.ObserveTime(metrics.StartTimeObserver(metrics.CacheBuilderSummary))
 	debugID := util.GetShortUUID()
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"debug_id": debugID}))
 	log := lmlog.Logger(lctx)
@@ -74,7 +73,7 @@ func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) 
 	go rc.fetchGroupDevices(lctx, grpIDChan, resourceChan)
 
 	grpIDChan <- clusterGroupID
-	if conf, err := config.GetConfig(); err == nil {
+	if conf, err := config.GetConfig(lctx); err == nil {
 		g, err := rc.getDeviceGroupByID(lctx, clusterGroupID)
 		if err != nil {
 			return nil, err
@@ -87,7 +86,7 @@ func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) 
 		}
 	}
 	start := time.Now()
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err == nil && conf.ResourceContainerGroupID != nil {
 		grpIDChan <- *conf.ResourceContainerGroupID
 	}
@@ -102,7 +101,7 @@ func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) 
 }
 
 func (rc *ResourceCache) getDevices(lctx *lmctx.LMContext, grpID int32) (*lm.GetImmediateDeviceListByDeviceGroupIDOK, error) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +163,7 @@ func (rc *ResourceCache) accumulateDeviceCache(lctx *lmctx.LMContext, inChan <-c
 		log.Infof("Resource accumulation completed in %v seconds", time.Since(start).Seconds())
 	}()
 	clusterName := "unknown"
-	if conf, err := config.GetConfig(); err == nil {
+	if conf, err := config.GetConfig(lctx); err == nil {
 		clusterName = conf.ClusterName
 	}
 
@@ -293,7 +292,7 @@ func (rc *ResourceCache) getAllGroups(lctx *lmctx.LMContext, grpid int32, outCha
 }
 
 func (rc *ResourceCache) getDeviceGroupByID(lctx *lmctx.LMContext, grpid int32) (*lm.GetDeviceGroupByIDOK, error) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}

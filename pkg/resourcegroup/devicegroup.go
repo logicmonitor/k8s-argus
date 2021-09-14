@@ -15,7 +15,7 @@ import (
 
 // ExistsByID returns true if we could get the group by id
 func ExistsByID(lctx *lmctx.LMContext, groupID int32, client *types.LMRequester) (bool, error) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return false, err
 	}
@@ -39,7 +39,7 @@ func ExistsByID(lctx *lmctx.LMContext, groupID int32, client *types.LMRequester)
 
 // GetByID returns true if we could get the group by id
 func GetByID(lctx *lmctx.LMContext, groupID int32, requester *types.LMRequester) (*models.DeviceGroup, error) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}

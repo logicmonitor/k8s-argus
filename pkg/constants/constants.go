@@ -31,6 +31,8 @@ const (
 	LabelNodeRole = "node-role.kubernetes.io/"
 	// LabelCustomPropertyPrefix is the prefix to use for custom properties based of labels
 	LabelCustomPropertyPrefix = "kubernetes.label."
+	// AnnotationCustomPropertyPrefix is the prefix to use for custom properties based of labels
+	AnnotationCustomPropertyPrefix = "kubernetes.annotation."
 	// LabelNullPlaceholder is the string used to represent null values in custom properties
 	LabelNullPlaceholder = "null"
 	// LabelFargateProfile is the label name used for fargate profile to distinguish between fargate & other Pods
@@ -176,4 +178,9 @@ const (
 
 	// CreatedByPrefix created by prefix
 	CreatedByPrefix = "LogicMonitor/Argus: "
+)
+
+const (
+	// NameFieldName is the field name for a device's name.
+	NameFieldName = "name"
 )

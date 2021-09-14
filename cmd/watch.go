@@ -2,7 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+
+	// nolint: gosec
+	_ "net/http/pprof"
 	"os"
 
 	argus "github.com/logicmonitor/k8s-argus/pkg"
@@ -15,6 +19,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/healthz"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	"github.com/pkg/profile"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -52,11 +57,18 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			fmt.Println("failed to load application config from configmaps") // nolint: forbidigo
 			os.Exit(constants.ConfigInitExitCode)
 		}
-		conf, err := config.GetConfig()
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"watch": "init"}))
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			fmt.Println("Failed to get config: %w", err) // nolint: forbidigo
 			os.Exit(constants.GetConfigExitCode)
 		}
+
+		http.Handle("/metrics", promhttp.Handler())
+		go func() {
+			addr := fmt.Sprintf(":%d", *conf.OpenMetricsConfig.Port)
+			log.Fatal(http.ListenAndServe(addr, nil))
+		}()
 
 		// Once minimal configuration gets loaded, start config watcher to watch on events
 		config.Run()
@@ -75,7 +87,6 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			registerLogLevelChangeHook()
 		}
 
-		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"watch": "init"}))
 		log := lmlog.Logger(lctx)
 
 		if err := filters.Init(lctx); err != nil {
@@ -103,6 +114,7 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 
 		argusObj, err := argus.CreateArgus(lctx, lmClient)
 		if err != nil {
+			log.Fatalf("Failed to create argus object at initialization: %s", err)
 			return
 		}
 		err = argusObj.Init()
@@ -126,20 +138,31 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		}
 
 		// To update K8s & Helm properties in cluster resource group periodically with the server
-		err = cronjob.StartTelemetryCron(argusObj.ResourceCache, argusObj.LMRequester)
+		err = cronjob.StartTelemetryCron(lctx, argusObj.ResourceCache, argusObj.LMRequester)
 		if err != nil {
 			log.Fatalf("Failed to start telemetry collector: %s", err)
 			return
 		}
 
-		http.Handle("/metrics", promhttp.Handler())
-		go func() {
-			addr := fmt.Sprintf(":%d", *conf.OpenMetricsConfig.Port)
-			log.Fatal(http.ListenAndServe(addr, nil))
-		}()
-
 		// Health check.
 		http.HandleFunc("/healthz", healthz.HandleFunc)
+
+		if *conf.EnableProfiling {
+			defer profile.Start(profile.CPUProfile,
+				profile.MemProfile, profile.MemProfileHeap, profile.MemProfileAllocs,
+				profile.BlockProfile, profile.MutexProfile, profile.NoShutdownHook,
+				profile.GoroutineProfile, profile.ThreadcreationProfile,
+				profile.TraceProfile,
+			).Stop()
+
+			go func() {
+				err := http.ListenAndServe(":8081", nil)
+				if err != nil {
+					log.Fatalf("Failed to start debug profiling: %s", err)
+					return
+				}
+			}()
+		}
 
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	},

@@ -2,10 +2,15 @@ package types
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
+	"strconv"
+	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 )
 
 type HTTPMethod string
@@ -66,5 +71,64 @@ func (wc *WorkerCommand) GetContext() context.Context {
 }
 
 func (wc *WorkerCommand) Execute() (interface{}, error) {
-	return wc.ExecFunc()
+	start := time.Now()
+	code := http.StatusOK
+	defer func() {
+		metrics.APIResponseTimeSummary.
+			WithLabelValues(wc.APIInfo.URLPattern,
+				string(wc.APIInfo.Method),
+				fmt.Sprintf("%d", code)).
+			Observe(float64(time.Since(start).Nanoseconds()))
+		// TODO: following needs to remove when openmetrics collection works with aggregate
+		metrics.APIResponseTimeSummary.
+			WithLabelValues(wc.APIInfo.URLPattern,
+				string(wc.APIInfo.Method),
+				fmt.Sprintf("%d%s", code/100, "XX")). // nolint: gomnd
+			Observe(float64(time.Since(start).Nanoseconds()))
+		// TODO: following needs to remove when openmetrics collection works with aggregate
+		metrics.APIResponseTimeSummary.
+			WithLabelValues(wc.APIInfo.URLPattern, "all", fmt.Sprintf("%d", code)).
+			Observe(float64(time.Since(start).Nanoseconds()))
+	}()
+	resp, err := wc.ExecFunc()
+	code = GetCode(resp, err)
+	return resp, err
+}
+
+func GetCode(resp interface{}, err error) int {
+	code := http.StatusOK
+	if err != nil {
+		code = GetHTTPStatusCodeFromLMSDKError(err)
+	} else {
+		e2, ok := resp.(error)
+		if ok {
+			if c := GetHTTPStatusCodeFromLMSDKError(e2); c > 0 {
+				code = c
+			}
+		}
+	}
+	return code
+}
+
+// GetHTTPStatusCodeFromLMSDKError get code
+func GetHTTPStatusCodeFromLMSDKError(err error) int {
+	if err == nil {
+		return -2
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		// 408 client timeout error
+		return http.StatusRequestTimeout
+	}
+	errRegex := regexp.MustCompile(`(?P<api>\[.*\])\[(?P<code>\d+)\].*`)
+	matches := errRegex.FindStringSubmatch(err.Error())
+	if len(matches) < 3 { // nolint: gomnd
+		return -1
+	}
+
+	code, err := strconv.Atoi(matches[2])
+	if err != nil {
+		return -1
+	}
+
+	return code
 }

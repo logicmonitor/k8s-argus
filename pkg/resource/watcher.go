@@ -62,7 +62,7 @@ func (m *Manager) UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.ResourceOption) error {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.ResourceOption) error {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config")
 			return err
@@ -101,13 +101,13 @@ func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 func (m *Manager) createNodeRoleGroups(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 	log := lmlog.Logger(lctx)
 
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return
 	}
 
-	objectMeta := rt.ObjectMeta(obj)
+	objectMeta, _ := rt.ObjectMeta(obj)
 	nodeRoleLabels := util.GetLabelsByPrefix(constants.LabelNodeRole, objectMeta.Labels)
 	if len(nodeRoleLabels) == 0 {
 		log.Debugf("No Role Labels found")

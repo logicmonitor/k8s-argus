@@ -2,7 +2,10 @@ package resourcecache
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -11,8 +14,6 @@ import (
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -97,35 +98,42 @@ func (rc *ResourceCache) Run() {
 
 	// Wait for first initialization
 	<-initialised
+	// register after first initialization to avoid half cache to override previously stored cache
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	go func() {
+		lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"shutdown_hook": "resource_cache"}))
+		log := lmlog.Logger(lctx)
+		log.Infof("Shutdown hook registered to storing cache to configmap on exit")
+		<-c
+		log.Infof("Shutting down, storing cache to configmap")
+		err := rc.Save(lctx)
+		if err != nil {
+			log.Errorf("Failed to store cache to configmap")
+		}
+		log.Infof("Stored cache to configmap")
+		os.Exit(1)
+	}()
 }
 
 func (rc *ResourceCache) AutoCacheBuilder(initialised chan<- bool) {
-	gauge := promauto.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace:   "resource",
-			Subsystem:   "cache",
-			Name:        "rebuild_time",
-			Help:        "Time taken to rebuild cache",
-			ConstLabels: prometheus.Labels{"run": "auto"},
-		})
-
 	if !rc.stateLoaded {
-		rc.rebuildCache(gauge)
+		rc.rebuildCache()
 		initialised <- true
 	} else {
 		initialised <- true
 	}
 	close(initialised)
-
+	lctx := lmlog.NewLMContextWith(nil)
 	for {
 		sleep := time.Hour
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err == nil {
 			sleep = *conf.Intervals.CacheSyncInterval
 		}
 		// to keep constant interval between cache rebuild runs, as rebuild cache is heavy operation so ticker may lead back to back runs
 		time.Sleep(sleep)
-		rc.rebuildCache(gauge)
+		rc.rebuildCache()
 	}
 }
 
@@ -150,15 +158,7 @@ func (rc *ResourceCache) CacheToConfigMapDumper() {
 func (rc *ResourceCache) Rebuild(lctx *lmctx.LMContext) {
 	log := lmlog.Logger(lctx)
 	log.Infof("Gracefully building cache")
-	gauge := promauto.NewGauge(
-		prometheus.GaugeOpts{
-			Namespace:   "cache",
-			Subsystem:   "resource",
-			Name:        "rebuild_time",
-			Help:        "Time taken to rebuild cache",
-			ConstLabels: prometheus.Labels{"run": "graceful"},
-		})
-	rc.rebuildCache(gauge)
+	rc.rebuildCache()
 }
 
 // Set adds entry into cache map
@@ -293,7 +293,7 @@ func (rc *ResourceCache) UnsetLMID(lctx *lmctx.LMContext, rt enums.ResourceType,
 }
 
 func (rc *ResourceCache) SoftRefresh(lctx *lmctx.LMContext, container string) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return
 	}

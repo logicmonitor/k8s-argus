@@ -48,6 +48,40 @@ func (b *Builder) SystemCategory(category string, action enums.BuilderAction) ty
 	return setProperty(constants.K8sSystemCategoriesPropertyKey, category, action)
 }
 
+// ResourceAnnotations implements types.ResourceBuilder
+func (b *Builder) ResourceAnnotations(properties map[string]string) types.ResourceOption {
+	return func(resource *models.Device) {
+		if resource == nil {
+			return
+		}
+		if resource.CustomProperties == nil {
+			resource.CustomProperties = []*models.NameAndValue{}
+		}
+		for name, value := range properties {
+			propName := constants.AnnotationCustomPropertyPrefix + name
+			propValue := value
+			if propValue == "" {
+				propValue = constants.LabelNullPlaceholder
+			}
+			existed := false
+			for _, prop := range resource.CustomProperties {
+				if *prop.Name == propName {
+					*prop.Value = propValue
+					existed = true
+
+					break
+				}
+			}
+			if !existed {
+				resource.CustomProperties = append(resource.CustomProperties, &models.NameAndValue{
+					Name:  &propName,
+					Value: &propValue,
+				})
+			}
+		}
+	}
+}
+
 // ResourceLabels implements types.ResourceBuilder
 func (b *Builder) ResourceLabels(properties map[string]string) types.ResourceOption {
 	return func(resource *models.Device) {
@@ -214,7 +248,7 @@ func (b *Builder) AddFuncWithDefaults(
 ) types.AddPreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
@@ -244,14 +278,14 @@ func (b *Builder) UpdateFuncWithDefaults(
 ) types.UpdatePreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
 			return
 		}
-		objectMeta := rt.ObjectMeta(newObj)
-		oldObjectMeta := rt.ObjectMeta(oldObj)
+		objectMeta, _ := rt.ObjectMeta(newObj)
+		oldObjectMeta, _ := rt.ObjectMeta(oldObj)
 
 		options := b.GetDefaultsResourceOptions(rt, objectMeta, conf)
 		oldObjOptions := b.GetDefaultsResourceOptions(rt, oldObjectMeta, conf)
@@ -267,13 +301,13 @@ func (b *Builder) DeleteFuncWithDefaults(
 ) types.DeletePreprocessFunc {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
 			return
 		}
-		objectMeta := rt.ObjectMeta(obj)
+		objectMeta, _ := rt.ObjectMeta(obj)
 		options := b.GetDefaultsResourceOptions(rt, objectMeta, conf)
 		additionalOptions := configurer.DeleteFuncOptions()(lctx, rt, obj)
 		options = append(options, additionalOptions...)
@@ -288,13 +322,13 @@ func (b *Builder) MarkDeleteFunc(
 ) func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err != nil {
 			log.Errorf("Failed to get config: %s", err)
 
 			return
 		}
-		objectMeta := rt.ObjectMeta(obj)
+		objectMeta, _ := rt.ObjectMeta(obj)
 		options := b.GetDefaultsResourceOptions(rt, objectMeta, conf)
 		additionalOptions := configurer.DeleteFuncOptions()(lctx, rt, obj)
 		options = append(options, additionalOptions...)
@@ -305,9 +339,13 @@ func (b *Builder) MarkDeleteFunc(
 
 // GetDefaultsResourceOptions returns default options for resource
 func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *metav1.PartialObjectMetadata, conf *config.Config) []types.ResourceOption {
+	if objectMeta == nil {
+		return []types.ResourceOption{}
+	}
 	options := []types.ResourceOption{
 		b.Name(rt.LMName(objectMeta)),
 		b.ResourceLabels(objectMeta.Labels),
+		b.ResourceAnnotations(objectMeta.Annotations),
 		b.DisplayName(util.GetDisplayName(rt, objectMeta, conf)),
 		b.SystemCategory(rt.GetCategory(), enums.Add),
 		b.Auto("name", objectMeta.Name),
@@ -338,7 +376,7 @@ func (b *Builder) GetMarkDeleteOptions(lctx *lmctx.LMContext, rt enums.ResourceT
 	if util.IsArgusPodObject(lctx, rt, meta) {
 		// defaults to 10 days
 		scheduledDeleteTime := "P10DT0H0M0S"
-		conf, err := config.GetConfig()
+		conf, err := config.GetConfig(lctx)
 		if err == nil {
 			scheduledDeleteTime = *conf.DeleteArgusPodAfter
 		}

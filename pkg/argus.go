@@ -1,6 +1,7 @@
 package argus
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
@@ -39,7 +40,7 @@ type Argus struct {
 
 func (a *Argus) Init() error {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"argus": "init"}))
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -49,10 +50,10 @@ func (a *Argus) Init() error {
 	} else {
 		resourceGroupTree, err = tree.GetResourceGroupTree(lctx, a.ResourceManager, a.LMRequester)
 	}
-	if err := a.CreateResourceGroupTree(lctx, resourceGroupTree, true); err != nil {
-		return err
-	}
 	if err != nil {
+		return fmt.Errorf("failed to build resource tree: %w", err)
+	}
+	if err := a.CreateResourceGroupTree(lctx, resourceGroupTree, true); err != nil {
 		return err
 	}
 
@@ -68,7 +69,8 @@ func (a *Argus) Init() error {
 	// periodically delete the non-exist resource resources through logicmonitor API based on specified time interval.
 	initSyncer.RunPeriodicSync()
 
-	err = discoverETCDNodes(a.ResourceManager)
+	lctx3 := lmlog.LMContextWithFields(lctx, logrus.Fields{"argus": "init", "discovery": "etcd"})
+	err = discoverETCDNodes(lctx3, a.ResourceManager)
 	if err != nil {
 		return err
 	}
@@ -86,8 +88,8 @@ func NewArgus(lmrequester *types.LMRequester, resourceManager types.ResourceMana
 	}, nil
 }
 
-func discoverETCDNodes(resourceManager types.ResourceManager) error {
-	conf, err := config.GetConfig()
+func discoverETCDNodes(lctx *lmctx.LMContext, resourceManager types.ResourceManager) error {
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -105,20 +107,16 @@ func discoverETCDNodes(resourceManager types.ResourceManager) error {
 
 func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
-	}
-	m := make(map[enums.ResourceType]*struct{})
-	for _, d := range conf.DisableResourceMonitoring {
-		m[d] = nil
 	}
 	for _, rt := range enums.ALLResourceTypes {
 		// These need special handling
 		if rt == enums.Namespaces || rt == enums.ETCD {
 			continue
 		}
-		if _, ok := m[rt]; ok {
+		if conf.IsMonitoringDisabled(rt) {
 			log.Warnf("Resource %s is being disabled for monitoring", rt.String())
 			continue
 		}
@@ -131,7 +129,7 @@ func (a *Argus) CreateWatchers(lctx *lmctx.LMContext) error {
 // Watch watches the API for events.
 func (a *Argus) Watch(lctx *lmctx.LMContext) error {
 	log := lmlog.Logger(lctx)
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return err
 	}
@@ -158,7 +156,7 @@ func (a *Argus) Watch(lctx *lmctx.LMContext) error {
 		go watchForFilterRuleChange(rt, clientState)
 		log.Debugf("Starting watcher of %s", rt)
 		stop := make(chan struct{})
-		stateHolder := types.NewControllerInitSyncStateHolder(controller)
+		stateHolder := types.NewControllerInitSyncStateHolder(rt, controller)
 		stateHolder.Run()
 		a.controllerStateHolders[rt] = &stateHolder
 		go controller.Run(stop)
@@ -248,7 +246,8 @@ func (a *Argus) createNewInformer(watchlist cache.ListerWatcher, rt enums.Resour
 }
 
 func (a *Argus) genericObjectFilterFunc() func(obj interface{}) bool {
-	if conf, err := config.GetConfig(); err == nil {
+	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"component": "generic_filter_registration"}))
+	if conf, err := config.GetConfig(lctx); err == nil {
 		if conf.RegisterGenericFilter {
 			return func(obj interface{}) bool {
 				if rt, ok := resourcewatcher.InferResourceType(obj); ok {

@@ -14,6 +14,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/filters"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
@@ -25,6 +26,7 @@ import (
 
 // WatcherConfigurer to provide custom options provider to put extra props on resource
 func WatcherConfigurer(resourceType enums.ResourceType) types.WatcherConfigurer {
+	// nolint: exhaustive
 	switch resourceType {
 	case enums.Pods:
 
@@ -35,9 +37,6 @@ func WatcherConfigurer(resourceType enums.ResourceType) types.WatcherConfigurer 
 	case enums.Nodes:
 
 		return &node.Watcher{}
-	case enums.Deployments, enums.ETCD, enums.Hpas, enums.Namespaces, enums.Unknown:
-
-		return &emptyWatcher{}
 	default:
 
 		return &emptyWatcher{}
@@ -66,7 +65,7 @@ func InferResourceType(newObj interface{}) (enums.ResourceType, bool) {
 }
 
 func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interface{}, event string) *lmctx.LMContext {
-	objectMeta := rt.ObjectMeta(newObj)
+	objectMeta, _ := rt.ObjectMeta(newObj)
 	fields := logrus.Fields{"name": rt.FQName(objectMeta.Name), "type": rt.Singular()}
 
 	if rt.IsNamespaceScopedResource() {
@@ -75,7 +74,7 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 	if event != "" {
 		fields["event"] = event
 	}
-	if conf, err := config.GetConfig(); err == nil {
+	if conf, err := config.GetConfig(lctx); err == nil {
 		fields["display_name"] = util.GetDisplayName(rt, objectMeta, conf)
 	}
 
@@ -87,10 +86,12 @@ func getRootContext(lctx *lmctx.LMContext, rt enums.ResourceType, newObj interfa
 // RecordDeleteEventLatency logs latency of receiving delete event to argus.
 func RecordDeleteEventLatency(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 	log := lmlog.Logger(lctx)
-	if meta := rt.ObjectMeta(obj); meta.DeletionTimestamp != nil {
+	if meta, _ := rt.ObjectMeta(obj); meta.DeletionTimestamp != nil {
+		metrics.DeleteEventLatencySummary.WithLabelValues(rt.String()).Observe(float64(time.Since(meta.DeletionTimestamp.Time).Nanoseconds()))
 		// TODO: PROM_METRIC stats: stats of delete event according to object type, time (max, min, average)
 		log.Infof("delete event latency %v", time.Since(meta.DeletionTimestamp.Time))
 	} else {
+		metrics.DeleteEventMissingTimestamp.WithLabelValues(rt.String()).Inc()
 		// TODO: PROM_METRIC counter: object without delete timestamp
 		log.Warnf("delete event context doesn't have deleteTimestamp on it")
 	}
@@ -125,13 +126,15 @@ func getEvalInput(lctx *lmctx.LMContext, meta *metav1.PartialObjectMetadata) gov
 	return evaluationParams
 }
 
-func sendToFacade(facade eventprocessor.RunnerFacade, lctx *lmctx.LMContext, function func()) {
+func sendToFacade(facade eventprocessor.RunnerFacade, lctx *lmctx.LMContext, rt enums.ResourceType, event string, function func()) {
 	log := lmlog.Logger(lctx)
+	defer metrics.ObserveTime(metrics.StartTimeObserver(metrics.ResourceHandlerProcessingTimeSummary.WithLabelValues(rt.String(), event)))
 	if err := facade.Send(lctx, &eventprocessor.RunnerCommand{
 		ExecFunc: function,
 		Lctx:     lctx,
 	}); err != nil {
 		log.Errorf("Failed to perform event processing: %s", err)
+
 		return
 	}
 	log.Debug("event processing completed")

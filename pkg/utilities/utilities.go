@@ -1,7 +1,10 @@
 package utilities
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"runtime"
@@ -86,6 +89,10 @@ func GetK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.I
 func GetHTTPStatusCodeFromLMSDKError(err error) int {
 	if err == nil {
 		return -2
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		// 408 client timeout error
+		return http.StatusRequestTimeout
 	}
 	errRegex := regexp.MustCompile(`(?P<api>\[.*\])\[(?P<code>\d+)\].*`)
 	matches := errRegex.FindStringSubmatch(err.Error())
@@ -205,11 +212,12 @@ func GetDisplayName(rt enums.ResourceType, meta *metav1.PartialObjectMetadata, c
 
 // GetClusterGroupID avoid call to Santaba and
 // returns from cache, cluster root grp is stagnant once created
+// nolint: cyclop
 func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) (int32, error) {
 	if clusterGroupID > 0 {
 		return clusterGroupID, nil
 	}
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return -2, fmt.Errorf("failed to get config: %w", err)
 	}
@@ -220,11 +228,21 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) (int32,
 
 	command := client.GetResourceGroupByIDCommand(clctx, params)
 	g, err := client.SendReceive(clctx, command)
-	if err != nil {
+	if err != nil && GetHTTPStatusCodeFromLMSDKError(err) != http.StatusNotFound {
 		return -3, fmt.Errorf("error while fetching cluster resource group %w", err)
 	}
+	if err != nil && GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
+		params = lm.NewGetDeviceGroupByIDParams()
+		params.SetID(1)
 
-	clusterGrpID := int32(-4)
+		command = client.GetResourceGroupByIDCommand(clctx, params)
+		g, err = client.SendReceive(clctx, command)
+	}
+	if err != nil {
+		return -4, fmt.Errorf("error while fetching root (1) resource group %w", err)
+	}
+
+	clusterGrpID := int32(-5)
 
 	for _, sg := range g.(*lm.GetDeviceGroupByIDOK).Payload.SubGroups {
 		if sg.Name == clusterGroupName {
@@ -234,7 +252,7 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) (int32,
 		}
 	}
 	if clusterGrpID <= 0 {
-		return -4, fmt.Errorf("no child resource group present of name [%s] under resource group [%d]", clusterGroupName, conf.ClusterGroupID)
+		return clusterGrpID, fmt.Errorf("no child resource group present of name [%s] under resource group [%d]", clusterGroupName, conf.ClusterGroupID)
 	}
 	clusterGroupID = clusterGrpID
 

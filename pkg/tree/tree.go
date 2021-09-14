@@ -1,6 +1,8 @@
 package tree
 
 import (
+	"net/http"
+
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -37,14 +39,14 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 			{
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(nodes.TitlePlural()),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.Nodes))),
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
 						Options: []types.ResourceGroupOption{
 							dgBuilder.GroupName(constants.AllNodeResourceGroupName),
-							dgBuilder.DisableAlerting(conf.DisableAlerting),
+							dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(nodes.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 						},
 					},
@@ -62,7 +64,7 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 				ChildGroups: nil,
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
 					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
 				},
@@ -71,12 +73,12 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 	}
 
 	for _, resource := range enums.ALLResourceTypes {
-		if resource != enums.Namespaces && resource.IsNamespaceScopedResource() {
+		if resource != enums.Namespaces && resource.IsNamespaceScopedResource() && !conf.IsMonitoringDisabled(resource) {
 			treeObj.ChildGroups = append(treeObj.ChildGroups,
 				&types.ResourceGroupTree{
 					Options: []types.ResourceGroupOption{
 						dgBuilder.GroupName(resource.TitlePlural()),
-						dgBuilder.DisableAlerting(true),
+						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
 						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
 					},
 					ChildGroups: []*types.ResourceGroupTree{
@@ -132,7 +134,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 			{
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
 					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
 				},
@@ -141,13 +143,13 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(nodes.TitlePlural()),
 					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.Nodes))),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
 						Options: []types.ResourceGroupOption{
 							dgBuilder.GroupName(constants.AllNodeResourceGroupName),
-							dgBuilder.DisableAlerting(conf.DisableAlerting),
+							dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(nodes)),
 							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(nodes.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 						},
 					},
@@ -164,7 +166,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 			{
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.NamespacesGroupName),
-					dgBuilder.DisableAlerting(conf.DisableAlerting),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(enums.Namespaces)),
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
@@ -182,7 +184,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 }
 
 func getConf(lctx *lmctx.LMContext, requester *types.LMRequester) (*config.Config, error) {
-	conf, err := config.GetConfig()
+	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}
@@ -202,12 +204,12 @@ func checkAndUpdateClusterGroup(lctx *lmctx.LMContext, config *config.Config, lm
 	}
 
 	rg, err := resourcegroup.GetByID(lctx, config.ClusterGroupID, lmClient)
-	if err != nil {
+	if err != nil && util.GetHTTPStatusCodeFromLMSDKError(err) != http.StatusNotFound {
 		log.Errorf("Failed to search cluster resource group [%d]: %s", config.ClusterGroupID, err)
 		return err
 	}
 	// if the group does not exist anymore, we will add the cluster to the root group
-	if rg == nil {
+	if rg == nil || util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
 		log.Warnf("The resource group (id=%v) does not exist, the cluster will be added to the root group", config.ClusterGroupID)
 		config.ClusterGroupID = constants.RootResourceGroupID
 	}
