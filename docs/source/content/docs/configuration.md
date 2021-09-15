@@ -1,15 +1,17 @@
 ---
-title: "Configuration"
-date: 2017-08-16T17:54:55-07:00
+title: Configuration
+date: '2017-08-17T00:54:55.000Z'
 draft: false
 menu:
   main:
     parent: Docs
-    identifier: "Configuration"
+    identifier: Configuration
     weight: 1
 ---
 
-# Configuring the Collectorset Controller via the Helm Chart
+# configuration
+
+## Configuring the Collectorset Controller via the Helm Chart
 
 The Collectorset controller Helm chart supports the following values:
 
@@ -35,7 +37,12 @@ Optional Values:
 - **priorityClassName (default: `""`):** The priority class name for Pod priority. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.
 - **tolerations (default: `[]`):** Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.
 
-# Configuring Argus via the Helm Chart
+* **imageTag:** The collectorset-controller \[image tag\] \([https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/](https://hub.docker.com/r/logicmonitor/collectorset-controller/tags/)\) to use.
+* **proxyURL \(default: `""`\):** The Http/s proxy url.
+* **proxyUser \(default: `""`\):** The Http/s proxy username.
+* **proxyPass \(default: `""`\):** The Http/s proxy password.
+
+## Configuring Argus via the Helm Chart
 
 The Argus Helm chart supports the fololowing values:
 
@@ -105,8 +112,7 @@ delete_devices: true
 disable_alerting: false
 ```
 
-To configure the sensitive information, export the following environment
-variables:
+To configure the sensitive information, export the following environment variables:
 
 ```bash
 ACCESS_ID
@@ -114,3 +120,4 @@ ACCESS_KEY
 ACCOUNT
 ETCD_DISCOVERY_TOKEN
 ```
+

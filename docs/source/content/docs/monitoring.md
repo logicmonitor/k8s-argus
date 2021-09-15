@@ -1,11 +1,11 @@
 ---
-title: "Monitoring"
-date: 2017-08-12T16:20:39-07:00
+title: Monitoring
+date: '2017-08-12T23:20:39.000Z'
 draft: false
 menu:
   main:
     parent: Docs
-    identifier: "Monitoring"
+    identifier: Monitoring
     weight: 1
 ---
 
@@ -17,8 +17,15 @@ apply to those resources are responsible for monitoring. LogicMonitor has a set
 
 If kubernetes cluster is configured with Istio then you can add “Istio kubernetes” logicmodules as well.
 
-Once you've imported the DataSources, you should see monitoring for the health
-and performance of your Kubernetes Cluster in LogicMonitor.
+* Kubernetes\_Nodes: PR4F33
+* Kubernetes\_Node: 267H63
+* Kubernetes\_Healthz: KZ463J
+* Kubernetes\_ControlPlane: N3GZNX
+* Kubernetes\_Service: HPJPRT
+* Kubernetes\_Scheduler: FCPJNH
+* Kubernetes\_Pod: P9TT2W
+* Kubernetes\_Container: 3AAJZX
+* Kubernetes\_PingK8s: 4N99FE
 
 Beyond the health and performance of your Kubernetes Cluster resources, you can
  use LogicMonitor DataSources to monitor your applications running in

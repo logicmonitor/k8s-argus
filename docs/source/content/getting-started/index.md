@@ -1,6 +1,6 @@
 ---
-title: "Getting Started"
-date: 2017-08-12T16:20:39-07:00
+title: Getting Started
+date: '2017-08-12T23:20:39.000Z'
 draft: false
 ---
 
@@ -70,6 +70,6 @@ See the [configuration page](https://logicmonitor.github.io/k8s-argus/docs/confi
 After installation is complete, you should make sure you have [DataSources](https://logicmonitor.github.io/k8s-argus/docs/monitoring/) in your account
 that will start monitoring the resources in your cluster.
 
-# Community
+  \([https://github.com/logicmonitor/k8s-argus/issues](https://github.com/logicmonitor/k8s-argus/issues)\).
 
 - To report bugs and/or submit feature requests, use [GitHub](https://github.com/logicmonitor/k8s-argus/issues).

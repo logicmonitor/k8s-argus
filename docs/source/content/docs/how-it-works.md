@@ -1,17 +1,21 @@
 ---
-title: "How It Works"
-date: 2017-08-17T16:31:45-07:00
+title: How It Works
+date: '2017-08-17T23:31:45.000Z'
 draft: false
 menu:
   main:
     parent: Docs
-    identifier: "How It Works"
+    identifier: How It Works
     weight: 3
 ---
 
+# how-it-works
+
+1.0.0
+
 In this section we will dig into the lower level implementation of Argus to understand how it works, and provide those interested in contributing an introduction to the fundamentals of its design. An understanding of Go interfaces is recommended.
 
-# Running Argus In-Cluster
+## Running Argus In-Cluster
 
 Argus depends on communicating with the Kubernetes API Server. There are two ways to communicate with the API Server. In-cluster, and out-of-cluster. The `kubectl` CLI would be an example of out-of-cluster communication. Argus takes the former approach.
 
@@ -19,15 +23,15 @@ Running Argus in-cluster has advantages over running it out-of-cluster. For star
 
 Finally, we need Argus on the same overlay network as the various Kubernetes resources. Since the collector comes with Argus, and the collector is on the overlay network, it can do its job without ever having to be Kubernetes aware.
 
-# Watching Kubernetes Events
+## Watching Kubernetes Events
 
 One of the basic functions of Argus is to represent the state of a Kubernetes cluster in LogicMonitor. To do that, it must be able to keep up with rapid changes of a constantly evolving cluster. Argus acheives this by registering event handlers for each resource we are instersted in representing in LogicMonitor. To understand how Argus can automate the management of various LogicMonitor resources, we need to understand what a `Controller` is. To quote the [documentation](https://kubernetes.io/docs/admin/kube-controller-manager/):
 
 > In Kubernetes, a controller is a control loop that watches the shared state of the cluster through the apiserver and makes changes attempting to move the current state towards the desired state. Examples of controllers that ship with Kubernetes today are the replication controller, endpoints controller, namespace controller, and serviceaccounts controller.
 
-The concept of a `Controller` is fundamental to Kubernetes and is at the core of its design. While Argus isn't a `Controller` in the sense that it _"makes changes [to the state of the cluster] attempting to move the current state towards the desired state"_, it _is_ a `Controller` in the sense that it moves a LogicMonitor account's state to match that of a cluster's state. Argus abstracts this into the notion of a `Watcher` that is responsible for watching Kubernetes events for a given resource and syncing the state to LogicMonitor.
+The concept of a `Controller` is fundamental to Kubernetes and is at the core of its design. While Argus isn't a `Controller` in the sense that it _"makes changes \[to the state of the cluster\] attempting to move the current state towards the desired state"_, it _is_ a `Controller` in the sense that it moves a LogicMonitor account's state to match that of a cluster's state. Argus abstracts this into the notion of a `Watcher` that is responsible for watching Kubernetes events for a given resource and syncing the state to LogicMonitor.
 
-# Implementing a Watcher
+## Implementing a Watcher
 
 Now that we know about this event stream, let's look at what it takes to map resources in Kubernetes to objects in LogicMonitor. We start by first implenting the `Watcher` interface and then embedding a `Manager` in the concrete type implementing said interface. A `Watcher` is a simple interface that makes a concrete type compatible with the `NewInformer` function:
 
@@ -66,7 +70,7 @@ type Watcher interface {
 
 With this simple function we can watch each Kubernetes resource we are interested in monitoring and provide custom logic for mapping it into LogicMonitor.
 
-## The Manager
+### The Manager
 
 Now that we can watch events for a given resource, we need to implement the logic behind the add, update, and delete events. This is where we introduce the concept of a `Manager`. There are two functions of a `Manager`. First, a `Manager` must provide a way to build a LogicMonitor object given a Kubernetes resource object. Second, a `Manager` must ensure that the built object gets created in LogicMonitor. These concepts are abstracted into two interfaces, a `Builder` and a `Mapper`.
 
@@ -84,3 +88,4 @@ type BarManager interface {
 ```
 
 Here we can see that the Kuberentes `Foo` resource is mapped into LogicMonitor via a `Watcher` that implements the `BarManager` interface.
+

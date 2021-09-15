@@ -25,8 +25,8 @@
 
 See the [documentation](https://logicmonitor.github.io/k8s-argus) to discover more about Argus.
 
-Developing Argus
-----------------
+## Developing Argus
+
 To build Argus, run:
 
 ```
@@ -46,3 +46,4 @@ $ make docs
 ### License
 
 [![license](https://img.shields.io/github/license/logicmonitor/k8s-argus.svg?style=flat-square)](https://github.com/logicmonitor/k8s-argus/blob/master/LICENSE)
+
