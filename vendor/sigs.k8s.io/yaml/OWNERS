@@ -1,5 +1,3 @@
-# See the OWNERS docs at https://go.k8s.io/owners
-
 approvers:
 - dims
 - lavalamp
@@ -17,13 +15,11 @@ reviewers:
 - deads2k
 - derekwaynecarr
 - caesarxuchao
-- cheftako
 - mikedanese
 - liggitt
 - gmarek
 - sttts
 - ncdc
-- logicalhan
 - tallclair
 labels:
 - sig/api-machinery

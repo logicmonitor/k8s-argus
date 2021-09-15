@@ -81,9 +81,6 @@ not grep 'func Test[^(]' test/*.go
 # - Do not import x/net/context.
 not git grep -l 'x/net/context' -- "*.go"
 
-# - Do not import x/net/context.
-(! git grep -l 'x/net/context' -- "*.go")
-
 # - Do not import math/rand for real library code.  Use internal/grpcrand for
 #   thread safety.
 git grep -l '"math/rand"' -- "*.go" 2>&1 | not grep -v '^examples\|^stress\|grpcrand\|^benchmark\|wrr_test'
