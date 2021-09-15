@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -64,7 +63,6 @@ func (m *authentication) Type() string {
 
 // SetType sets the type of this polymorphic type
 func (m *authentication) SetType(val string) {
-
 }
 
 // UserName gets the user name of this polymorphic type
@@ -146,7 +144,6 @@ func unmarshalAuthentication(data []byte, consumer runtime.Consumer) (Authentica
 
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
-
 }
 
 // Validate validates this authentication
@@ -168,7 +165,6 @@ func (m *authentication) Validate(formats strfmt.Registry) error {
 }
 
 func (m *authentication) validatePassword(formats strfmt.Registry) error {
-
 	if err := validate.Required("password", "body", m.Password()); err != nil {
 		return err
 	}
@@ -177,7 +173,6 @@ func (m *authentication) validatePassword(formats strfmt.Registry) error {
 }
 
 func (m *authentication) validateUserName(formats strfmt.Registry) error {
-
 	if err := validate.Required("userName", "body", m.UserName()); err != nil {
 		return err
 	}

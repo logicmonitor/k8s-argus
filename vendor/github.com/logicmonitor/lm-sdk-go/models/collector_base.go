@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -275,7 +274,6 @@ func (m *CollectorBase) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CollectorBase) validateAutomaticUpgradeInfo(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AutomaticUpgradeInfo) { // not required
 		return nil
 	}
@@ -293,7 +291,6 @@ func (m *CollectorBase) validateAutomaticUpgradeInfo(formats strfmt.Registry) er
 }
 
 func (m *CollectorBase) validateCustomProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.CustomProperties) { // not required
 		return nil
 	}
@@ -318,7 +315,6 @@ func (m *CollectorBase) validateCustomProperties(formats strfmt.Registry) error 
 }
 
 func (m *CollectorBase) validateNextUpgradeInfo(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.NextUpgradeInfo) { // not required
 		return nil
 	}
@@ -336,7 +332,6 @@ func (m *CollectorBase) validateNextUpgradeInfo(formats strfmt.Registry) error {
 }
 
 func (m *CollectorBase) validateOnetimeDowngradeInfo(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.OnetimeDowngradeInfo) { // not required
 		return nil
 	}
@@ -354,7 +349,6 @@ func (m *CollectorBase) validateOnetimeDowngradeInfo(formats strfmt.Registry) er
 }
 
 func (m *CollectorBase) validateOnetimeUpgradeInfo(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.OnetimeUpgradeInfo) { // not required
 		return nil
 	}

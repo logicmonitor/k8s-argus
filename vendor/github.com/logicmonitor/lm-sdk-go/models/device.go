@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -211,7 +210,6 @@ func (m *Device) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Device) validateAutoProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AutoProperties) { // not required
 		return nil
 	}
@@ -236,7 +234,6 @@ func (m *Device) validateAutoProperties(formats strfmt.Registry) error {
 }
 
 func (m *Device) validateCustomProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.CustomProperties) { // not required
 		return nil
 	}
@@ -261,7 +258,6 @@ func (m *Device) validateCustomProperties(formats strfmt.Registry) error {
 }
 
 func (m *Device) validateDisplayName(formats strfmt.Registry) error {
-
 	if err := validate.Required("displayName", "body", m.DisplayName); err != nil {
 		return err
 	}
@@ -270,7 +266,6 @@ func (m *Device) validateDisplayName(formats strfmt.Registry) error {
 }
 
 func (m *Device) validateHostGroupIds(formats strfmt.Registry) error {
-
 	if err := validate.Required("hostGroupIds", "body", m.HostGroupIds); err != nil {
 		return err
 	}
@@ -279,7 +274,6 @@ func (m *Device) validateHostGroupIds(formats strfmt.Registry) error {
 }
 
 func (m *Device) validateInheritedProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.InheritedProperties) { // not required
 		return nil
 	}
@@ -304,7 +298,6 @@ func (m *Device) validateInheritedProperties(formats strfmt.Registry) error {
 }
 
 func (m *Device) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -313,7 +306,6 @@ func (m *Device) validateName(formats strfmt.Registry) error {
 }
 
 func (m *Device) validatePreferredCollectorID(formats strfmt.Registry) error {
-
 	if err := validate.Required("preferredCollectorId", "body", m.PreferredCollectorID); err != nil {
 		return err
 	}
@@ -322,7 +314,6 @@ func (m *Device) validatePreferredCollectorID(formats strfmt.Registry) error {
 }
 
 func (m *Device) validateSystemProperties(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.SystemProperties) { // not required
 		return nil
 	}

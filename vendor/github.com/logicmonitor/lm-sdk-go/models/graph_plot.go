@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -149,7 +148,6 @@ func (m *GraphPlot) Type() string {
 
 // SetType sets the type of this subtype
 func (m *GraphPlot) SetType(val string) {
-
 }
 
 // Base gets the base of this subtype
@@ -625,7 +623,6 @@ func (m *GraphPlot) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GraphPlot) validateInstances(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Instances) { // not required
 		return nil
 	}
@@ -638,7 +635,6 @@ func (m *GraphPlot) validateInstances(formats strfmt.Registry) error {
 }
 
 func (m *GraphPlot) validateLines(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Lines) { // not required
 		return nil
 	}
@@ -663,7 +659,6 @@ func (m *GraphPlot) validateLines(formats strfmt.Registry) error {
 }
 
 func (m *GraphPlot) validateScopes(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Scopes) { // not required
 		return nil
 	}

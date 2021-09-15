@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -45,7 +44,6 @@ func (m *AccessLogPaginationResponse) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AccessLogPaginationResponse) validateItems(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Items) { // not required
 		return nil
 	}

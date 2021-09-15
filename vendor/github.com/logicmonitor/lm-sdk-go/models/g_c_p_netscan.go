@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -171,7 +170,6 @@ func (m *GCPNetscan) Method() string {
 
 // SetMethod sets the method of this subtype
 func (m *GCPNetscan) SetMethod(val string) {
-
 }
 
 // Name gets the name of this subtype
@@ -527,7 +525,6 @@ func (m *GCPNetscan) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateCollector(formats strfmt.Registry) error {
-
 	if err := validate.Required("collector", "body", m.Collector()); err != nil {
 		return err
 	}
@@ -536,7 +533,6 @@ func (m *GCPNetscan) validateCollector(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateDuplicate(formats strfmt.Registry) error {
-
 	if err := validate.Required("duplicate", "body", m.Duplicate()); err != nil {
 		return err
 	}
@@ -554,7 +550,6 @@ func (m *GCPNetscan) validateDuplicate(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -563,7 +558,6 @@ func (m *GCPNetscan) validateName(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateSchedule(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Schedule()) { // not required
 		return nil
 	}

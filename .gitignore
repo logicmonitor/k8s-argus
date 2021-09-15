@@ -3,3 +3,8 @@ coverage.txt
 coverage.html
 pkg/mocks
 **/gomock*
+.idea
+argus.rc
+localrun.logs
+scripts/ds/*_gen.xml
+venv

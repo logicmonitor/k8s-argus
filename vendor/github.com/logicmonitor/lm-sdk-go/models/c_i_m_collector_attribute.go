@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -47,7 +46,6 @@ func (m *CIMCollectorAttribute) Name() string {
 
 // SetName sets the name of this subtype
 func (m *CIMCollectorAttribute) SetName(val string) {
-
 }
 
 // Fields gets the fields of this subtype
@@ -201,7 +199,6 @@ func (m *CIMCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CIMCollectorAttribute) validateFields(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Fields) { // not required
 		return nil
 	}

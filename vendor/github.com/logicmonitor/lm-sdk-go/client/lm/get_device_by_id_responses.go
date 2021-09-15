@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -34,6 +32,19 @@ func (o *GetDeviceByIDReader) ReadResponse(response runtime.ClientResponse, cons
 
 	default:
 		result := NewGetDeviceByIDDefault(response.Code())
+		if result.Code() == 429 {
+			errResp := &models.ErrorResponse{
+				ErrorCode: 429,
+				ErrorDetail: map[string]interface{}{
+					"x-rate-limit-limit":     response.GetHeader("x-rate-limit-limit"),
+					"x-rate-limit-remaining": response.GetHeader("x-rate-limit-remaining"),
+					"x-rate-limit-window":    response.GetHeader("x-rate-limit-window"),
+				},
+				ErrorMessage: "Customized response from argus sdk",
+			}
+			result.Payload = errResp
+			return nil, result
+		}
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -62,7 +73,6 @@ func (o *GetDeviceByIDOK) Error() string {
 }
 
 func (o *GetDeviceByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.Device)
 
 	// response payload
@@ -100,7 +110,6 @@ func (o *GetDeviceByIDDefault) Error() string {
 }
 
 func (o *GetDeviceByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

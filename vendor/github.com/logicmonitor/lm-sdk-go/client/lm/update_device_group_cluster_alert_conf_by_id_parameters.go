@@ -9,16 +9,13 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/swag"
 	models "github.com/logicmonitor/lm-sdk-go/models"
+	"golang.org/x/net/context"
 )
 
 // NewUpdateDeviceGroupClusterAlertConfByIDParams creates a new UpdateDeviceGroupClusterAlertConfByIDParams object
@@ -145,7 +142,6 @@ func (o *UpdateDeviceGroupClusterAlertConfByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *UpdateDeviceGroupClusterAlertConfByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

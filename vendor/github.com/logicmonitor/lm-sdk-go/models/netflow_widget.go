@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -154,7 +153,6 @@ func (m *NetflowWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *NetflowWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -400,7 +398,6 @@ func (m *NetflowWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NetflowWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -409,7 +406,6 @@ func (m *NetflowWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *NetflowWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -418,7 +414,6 @@ func (m *NetflowWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *NetflowWidget) validateDeviceID(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceId", "body", m.DeviceID); err != nil {
 		return err
 	}
@@ -427,7 +422,6 @@ func (m *NetflowWidget) validateDeviceID(formats strfmt.Registry) error {
 }
 
 func (m *NetflowWidget) validateNetflowFilter(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.NetflowFilter) { // not required
 		return nil
 	}

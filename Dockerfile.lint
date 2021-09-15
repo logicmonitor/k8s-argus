@@ -1,0 +1,5 @@
+FROM golangci/golangci-lint:v1.40
+WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
+COPY ./ ./
+RUN go list
+RUN golangci-lint run -v

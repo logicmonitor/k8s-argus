@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -141,7 +140,6 @@ func (m *PieChartWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *PieChartWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -333,7 +331,6 @@ func (m *PieChartWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PieChartWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -342,7 +339,6 @@ func (m *PieChartWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *PieChartWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -351,7 +347,6 @@ func (m *PieChartWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *PieChartWidget) validatePieChartInfo(formats strfmt.Registry) error {
-
 	if err := validate.Required("pieChartInfo", "body", m.PieChartInfo); err != nil {
 		return err
 	}

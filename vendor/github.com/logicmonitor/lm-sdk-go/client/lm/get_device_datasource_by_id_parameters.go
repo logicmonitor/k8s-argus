@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewGetDeviceDatasourceByIDParams creates a new GetDeviceDatasourceByIDParams object
@@ -143,7 +141,6 @@ func (o *GetDeviceDatasourceByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDeviceDatasourceByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

@@ -11,10 +11,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
@@ -40,7 +39,6 @@ func (m *collectorAttribute) Name() string {
 
 // SetName sets the name of this polymorphic type
 func (m *collectorAttribute) SetName(val string) {
-
 }
 
 // UnmarshalCollectorAttributeSlice unmarshals polymorphic slices of CollectorAttribute
@@ -427,7 +425,6 @@ func unmarshalCollectorAttribute(data []byte, consumer runtime.Consumer) (Collec
 
 	}
 	return nil, errors.New(422, "invalid name value: %q", getType.Name)
-
 }
 
 // Validate validates this collector attribute

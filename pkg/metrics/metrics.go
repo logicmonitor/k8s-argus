@@ -11,6 +11,7 @@ var (
 	once sync.Once
 )
 
+// nolint: gochecknoinits
 func init() {
 	once.Do(func() {
 		m = expvar.NewMap("errors")

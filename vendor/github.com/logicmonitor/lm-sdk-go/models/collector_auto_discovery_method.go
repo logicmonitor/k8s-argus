@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -32,7 +31,6 @@ func (m *CollectorAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *CollectorAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // CollectorID gets the collector Id of this subtype
@@ -126,7 +124,6 @@ func (m *CollectorAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CollectorAutoDiscoveryMethod) validateCollectorID(formats strfmt.Registry) error {
-
 	if err := validate.Required("collectorId", "body", m.CollectorID); err != nil {
 		return err
 	}

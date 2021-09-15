@@ -1,28 +1,25 @@
 package cronjob
 
 import (
-	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
-	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
-	cron "github.com/robfig/cron/v3"
+	"fmt"
+
+	"github.com/robfig/cron/v3"
 )
 
-var (
-	cj *cron.Cron
-)
+var cj *cron.Cron
 
-func init() {
+func Init() {
 	cj = cron.New()
 	// Start the cron scheduler in its own goroutine, or no-op if already started.
 	cj.Start()
 }
 
 // RegisterFunc adds a func to the Cron to be run on the given schedule.
-func RegisterFunc(lctx *lmctx.LMContext, cronSpec string, handlerFunc func()) cron.EntryID {
-	log := lmlog.Logger(lctx)
+func RegisterFunc(cronSpec string, handlerFunc func()) (cron.EntryID, error) {
 	entryID, err := cj.AddFunc(cronSpec, handlerFunc)
 	if err != nil {
-		log.Errorf("Failed to add a func to the cron. Error: %v", err)
-		return 0
+		return 0, fmt.Errorf("failed to add cron job: %w", err)
 	}
-	return entryID
+
+	return entryID, nil
 }

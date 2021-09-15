@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -40,7 +39,6 @@ func (m *SDKScriptDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *SDKScriptDiscoveryMethod) SetName(val string) {
-
 }
 
 // GroovyScript gets the groovy script of this subtype
@@ -170,7 +168,6 @@ func (m *SDKScriptDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *SDKScriptDiscoveryMethod) validateGroovyScript(formats strfmt.Registry) error {
-
 	if err := validate.Required("groovyScript", "body", m.GroovyScript); err != nil {
 		return err
 	}
@@ -179,7 +176,6 @@ func (m *SDKScriptDiscoveryMethod) validateGroovyScript(formats strfmt.Registry)
 }
 
 func (m *SDKScriptDiscoveryMethod) validateSdkName(formats strfmt.Registry) error {
-
 	if err := validate.Required("sdkName", "body", m.SdkName); err != nil {
 		return err
 	}
@@ -188,7 +184,6 @@ func (m *SDKScriptDiscoveryMethod) validateSdkName(formats strfmt.Registry) erro
 }
 
 func (m *SDKScriptDiscoveryMethod) validateSdkVersion(formats strfmt.Registry) error {
-
 	if err := validate.Required("sdkVersion", "body", m.SdkVersion); err != nil {
 		return err
 	}

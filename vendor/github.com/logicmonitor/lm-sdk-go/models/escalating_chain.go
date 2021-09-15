@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -74,7 +73,6 @@ func (m *EscalatingChain) Validate(formats strfmt.Registry) error {
 }
 
 func (m *EscalatingChain) validateCcDestinations(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.CcDestinations) { // not required
 		return nil
 	}
@@ -99,7 +97,6 @@ func (m *EscalatingChain) validateCcDestinations(formats strfmt.Registry) error 
 }
 
 func (m *EscalatingChain) validateDestinations(formats strfmt.Registry) error {
-
 	if err := validate.Required("destinations", "body", m.Destinations); err != nil {
 		return err
 	}
@@ -124,7 +121,6 @@ func (m *EscalatingChain) validateDestinations(formats strfmt.Registry) error {
 }
 
 func (m *EscalatingChain) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}

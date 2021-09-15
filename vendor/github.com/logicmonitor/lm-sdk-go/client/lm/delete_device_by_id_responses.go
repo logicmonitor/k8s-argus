@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -35,18 +33,18 @@ func (o *DeleteDeviceByIDReader) ReadResponse(response runtime.ClientResponse, c
 	default:
 		result := NewDeleteDeviceByIDDefault(response.Code())
 		if result.Code() == 429 {
-                        errResp :=  &models.ErrorResponse{
-                                                ErrorCode: 429,
-                                                ErrorDetail: map[string]interface{}{
-                                                        "x-rate-limit-limit": response.GetHeader("x-rate-limit-limit"),
-                                                        "x-rate-limit-remaining": response.GetHeader("x-rate-limit-remaining"),
-                                                        "x-rate-limit-window": response.GetHeader("x-rate-limit-window"),
-                                                },
-                                                ErrorMessage: "Customized response from argus sdk",
-                                        }
+			errResp := &models.ErrorResponse{
+				ErrorCode: 429,
+				ErrorDetail: map[string]interface{}{
+					"x-rate-limit-limit":     response.GetHeader("x-rate-limit-limit"),
+					"x-rate-limit-remaining": response.GetHeader("x-rate-limit-remaining"),
+					"x-rate-limit-window":    response.GetHeader("x-rate-limit-window"),
+				},
+				ErrorMessage: "Customized response from argus sdk",
+			}
 			result.Payload = errResp
-                        return nil, result
-                }
+			return nil, result
+		}
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -75,7 +73,6 @@ func (o *DeleteDeviceByIDOK) Error() string {
 }
 
 func (o *DeleteDeviceByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
@@ -111,7 +108,6 @@ func (o *DeleteDeviceByIDDefault) Error() string {
 }
 
 func (o *DeleteDeviceByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

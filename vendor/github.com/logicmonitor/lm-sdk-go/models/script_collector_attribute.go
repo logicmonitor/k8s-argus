@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -45,7 +44,6 @@ func (m *ScriptCollectorAttribute) Name() string {
 
 // SetName sets the name of this subtype
 func (m *ScriptCollectorAttribute) SetName(val string) {
-
 }
 
 // GroovyScript gets the groovy script of this subtype

@@ -9,22 +9,18 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewDeleteDeviceByIDParams creates a new DeleteDeviceByIDParams object
 // with the default values initialized.
 func NewDeleteDeviceByIDParams() *DeleteDeviceByIDParams {
-	var (
-		deleteHardDefault = bool(true)
-	)
+	deleteHardDefault := bool(true)
 	return &DeleteDeviceByIDParams{
 		DeleteHard: &deleteHardDefault,
 
@@ -35,9 +31,7 @@ func NewDeleteDeviceByIDParams() *DeleteDeviceByIDParams {
 // NewDeleteDeviceByIDParamsWithTimeout creates a new DeleteDeviceByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewDeleteDeviceByIDParamsWithTimeout(timeout time.Duration) *DeleteDeviceByIDParams {
-	var (
-		deleteHardDefault = bool(true)
-	)
+	deleteHardDefault := bool(true)
 	return &DeleteDeviceByIDParams{
 		DeleteHard: &deleteHardDefault,
 
@@ -48,9 +42,7 @@ func NewDeleteDeviceByIDParamsWithTimeout(timeout time.Duration) *DeleteDeviceBy
 // NewDeleteDeviceByIDParamsWithContext creates a new DeleteDeviceByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewDeleteDeviceByIDParamsWithContext(ctx context.Context) *DeleteDeviceByIDParams {
-	var (
-		deleteHardDefault = bool(true)
-	)
+	deleteHardDefault := bool(true)
 	return &DeleteDeviceByIDParams{
 		DeleteHard: &deleteHardDefault,
 
@@ -61,9 +53,7 @@ func NewDeleteDeviceByIDParamsWithContext(ctx context.Context) *DeleteDeviceByID
 // NewDeleteDeviceByIDParamsWithHTTPClient creates a new DeleteDeviceByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewDeleteDeviceByIDParamsWithHTTPClient(client *http.Client) *DeleteDeviceByIDParams {
-	var (
-		deleteHardDefault = bool(true)
-	)
+	deleteHardDefault := bool(true)
 	return &DeleteDeviceByIDParams{
 		DeleteHard: &deleteHardDefault,
 		HTTPClient: client,
@@ -181,7 +171,6 @@ func (o *DeleteDeviceByIDParams) SetStart(start *int64) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteDeviceByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

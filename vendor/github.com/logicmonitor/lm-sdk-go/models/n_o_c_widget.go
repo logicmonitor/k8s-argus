@@ -11,10 +11,9 @@ import (
 	"io"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -163,7 +162,6 @@ func (m *NOCWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *NOCWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -448,7 +446,6 @@ func (m *NOCWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NOCWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -457,7 +454,6 @@ func (m *NOCWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *NOCWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -466,20 +462,17 @@ func (m *NOCWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *NOCWidget) validateItems(formats strfmt.Registry) error {
-
 	if err := validate.Required("items", "body", m.Items()); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.Items()); i++ {
-
 		if err := m.itemsField[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("items" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
-
 	}
 
 	return nil

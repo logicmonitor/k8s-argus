@@ -11,10 +11,9 @@ import (
 	"io"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -361,7 +360,6 @@ func (m *DataSource) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DataSource) validateAutoDiscoveryConfig(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AutoDiscoveryConfig) { // not required
 		return nil
 	}
@@ -379,7 +377,6 @@ func (m *DataSource) validateAutoDiscoveryConfig(formats strfmt.Registry) error 
 }
 
 func (m *DataSource) validateCollectInterval(formats strfmt.Registry) error {
-
 	if err := validate.Required("collectInterval", "body", m.CollectInterval); err != nil {
 		return err
 	}
@@ -388,7 +385,6 @@ func (m *DataSource) validateCollectInterval(formats strfmt.Registry) error {
 }
 
 func (m *DataSource) validateCollectMethod(formats strfmt.Registry) error {
-
 	if err := validate.Required("collectMethod", "body", m.CollectMethod); err != nil {
 		return err
 	}
@@ -397,7 +393,6 @@ func (m *DataSource) validateCollectMethod(formats strfmt.Registry) error {
 }
 
 func (m *DataSource) validateCollectorAttribute(formats strfmt.Registry) error {
-
 	if err := m.CollectorAttribute().Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("collectorAttribute")
@@ -409,7 +404,6 @@ func (m *DataSource) validateCollectorAttribute(formats strfmt.Registry) error {
 }
 
 func (m *DataSource) validateDataPoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.DataPoints) { // not required
 		return nil
 	}
@@ -434,7 +428,6 @@ func (m *DataSource) validateDataPoints(formats strfmt.Registry) error {
 }
 
 func (m *DataSource) validateEriDiscoveryConfig(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.EriDiscoveryConfig) { // not required
 		return nil
 	}
@@ -452,7 +445,6 @@ func (m *DataSource) validateEriDiscoveryConfig(formats strfmt.Registry) error {
 }
 
 func (m *DataSource) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}

@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -87,7 +86,6 @@ func (m *AutomaticUpgradeInfo) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AutomaticUpgradeInfo) validateDayOfWeek(formats strfmt.Registry) error {
-
 	if err := validate.Required("dayOfWeek", "body", m.DayOfWeek); err != nil {
 		return err
 	}
@@ -96,7 +94,6 @@ func (m *AutomaticUpgradeInfo) validateDayOfWeek(formats strfmt.Registry) error 
 }
 
 func (m *AutomaticUpgradeInfo) validateHour(formats strfmt.Registry) error {
-
 	if err := validate.Required("hour", "body", m.Hour); err != nil {
 		return err
 	}
@@ -105,7 +102,6 @@ func (m *AutomaticUpgradeInfo) validateHour(formats strfmt.Registry) error {
 }
 
 func (m *AutomaticUpgradeInfo) validateMinute(formats strfmt.Registry) error {
-
 	if err := validate.Required("minute", "body", m.Minute); err != nil {
 		return err
 	}
@@ -114,7 +110,6 @@ func (m *AutomaticUpgradeInfo) validateMinute(formats strfmt.Registry) error {
 }
 
 func (m *AutomaticUpgradeInfo) validateOccurrence(formats strfmt.Registry) error {
-
 	if err := validate.Required("occurrence", "body", m.Occurrence); err != nil {
 		return err
 	}
@@ -123,7 +118,6 @@ func (m *AutomaticUpgradeInfo) validateOccurrence(formats strfmt.Registry) error
 }
 
 func (m *AutomaticUpgradeInfo) validateVersion(formats strfmt.Registry) error {
-
 	if err := validate.Required("version", "body", m.Version); err != nil {
 		return err
 	}

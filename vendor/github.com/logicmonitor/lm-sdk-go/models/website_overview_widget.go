@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -152,7 +151,6 @@ func (m *WebsiteOverviewWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *WebsiteOverviewWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -384,7 +382,6 @@ func (m *WebsiteOverviewWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteOverviewWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -393,7 +390,6 @@ func (m *WebsiteOverviewWidget) validateDashboardID(formats strfmt.Registry) err
 }
 
 func (m *WebsiteOverviewWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -402,7 +398,6 @@ func (m *WebsiteOverviewWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteOverviewWidget) validateGraph(formats strfmt.Registry) error {
-
 	if err := validate.Required("graph", "body", m.Graph); err != nil {
 		return err
 	}

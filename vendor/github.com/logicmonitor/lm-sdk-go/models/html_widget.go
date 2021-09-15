@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -146,7 +145,6 @@ func (m *HTMLWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *HTMLWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -352,7 +350,6 @@ func (m *HTMLWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *HTMLWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -361,7 +358,6 @@ func (m *HTMLWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *HTMLWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -370,7 +366,6 @@ func (m *HTMLWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *HTMLWidget) validateResources(formats strfmt.Registry) error {
-
 	if err := validate.Required("resources", "body", m.Resources); err != nil {
 		return err
 	}

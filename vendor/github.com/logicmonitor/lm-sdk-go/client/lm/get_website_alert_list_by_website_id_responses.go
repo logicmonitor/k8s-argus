@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -62,7 +60,6 @@ func (o *GetWebsiteAlertListByWebsiteIDOK) Error() string {
 }
 
 func (o *GetWebsiteAlertListByWebsiteIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.AlertPaginationResponse)
 
 	// response payload
@@ -100,7 +97,6 @@ func (o *GetWebsiteAlertListByWebsiteIDDefault) Error() string {
 }
 
 func (o *GetWebsiteAlertListByWebsiteIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

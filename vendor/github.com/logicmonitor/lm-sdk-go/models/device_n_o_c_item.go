@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -55,7 +54,6 @@ func (m *DeviceNOCItem) Type() string {
 
 // SetType sets the type of this subtype
 func (m *DeviceNOCItem) SetType(val string) {
-
 }
 
 // DataPointName gets the data point name of this subtype
@@ -251,7 +249,6 @@ func (m *DeviceNOCItem) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceNOCItem) validateDataPointName(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataPointName", "body", m.DataPointName); err != nil {
 		return err
 	}
@@ -260,7 +257,6 @@ func (m *DeviceNOCItem) validateDataPointName(formats strfmt.Registry) error {
 }
 
 func (m *DeviceNOCItem) validateDataSourceDisplayName(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataSourceDisplayName", "body", m.DataSourceDisplayName); err != nil {
 		return err
 	}
@@ -269,7 +265,6 @@ func (m *DeviceNOCItem) validateDataSourceDisplayName(formats strfmt.Registry) e
 }
 
 func (m *DeviceNOCItem) validateDeviceDisplayName(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceDisplayName", "body", m.DeviceDisplayName); err != nil {
 		return err
 	}
@@ -278,7 +273,6 @@ func (m *DeviceNOCItem) validateDeviceDisplayName(formats strfmt.Registry) error
 }
 
 func (m *DeviceNOCItem) validateDeviceGroupFullPath(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceGroupFullPath", "body", m.DeviceGroupFullPath); err != nil {
 		return err
 	}
@@ -287,7 +281,6 @@ func (m *DeviceNOCItem) validateDeviceGroupFullPath(formats strfmt.Registry) err
 }
 
 func (m *DeviceNOCItem) validateInstanceName(formats strfmt.Registry) error {
-
 	if err := validate.Required("instanceName", "body", m.InstanceName); err != nil {
 		return err
 	}
@@ -296,7 +289,6 @@ func (m *DeviceNOCItem) validateInstanceName(formats strfmt.Registry) error {
 }
 
 func (m *DeviceNOCItem) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}

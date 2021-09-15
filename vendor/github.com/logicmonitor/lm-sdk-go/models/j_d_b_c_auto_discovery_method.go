@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -50,7 +49,6 @@ func (m *JDBCAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *JDBCAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // Ports gets the ports of this subtype
@@ -222,7 +220,6 @@ func (m *JDBCAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *JDBCAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
-
 	if err := validate.Required("ports", "body", m.Ports); err != nil {
 		return err
 	}
@@ -231,7 +228,6 @@ func (m *JDBCAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
 }
 
 func (m *JDBCAutoDiscoveryMethod) validateQuery(formats strfmt.Registry) error {
-
 	if err := validate.Required("query", "body", m.Query); err != nil {
 		return err
 	}
@@ -240,7 +236,6 @@ func (m *JDBCAutoDiscoveryMethod) validateQuery(formats strfmt.Registry) error {
 }
 
 func (m *JDBCAutoDiscoveryMethod) validateType(formats strfmt.Registry) error {
-
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}
@@ -249,7 +244,6 @@ func (m *JDBCAutoDiscoveryMethod) validateType(formats strfmt.Registry) error {
 }
 
 func (m *JDBCAutoDiscoveryMethod) validateURL(formats strfmt.Registry) error {
-
 	if err := validate.Required("url", "body", m.URL); err != nil {
 		return err
 	}

@@ -10,9 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
 	strfmt "github.com/go-openapi/strfmt"
-
 	models "github.com/logicmonitor/lm-sdk-go/models"
 )
 
@@ -75,7 +73,6 @@ func (o *UpdateDevicePropertyByNameOK) Error() string {
 }
 
 func (o *UpdateDevicePropertyByNameOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.EntityProperty)
 
 	// response payload
@@ -113,7 +110,6 @@ func (o *UpdateDevicePropertyByNameDefault) Error() string {
 }
 
 func (o *UpdateDevicePropertyByNameDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -56,7 +55,6 @@ func (m *SNMPAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *SNMPAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // ILP gets the i l p of this subtype
@@ -250,7 +248,6 @@ func (m *SNMPAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateILP(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ILP) { // not required
 		return nil
 	}
@@ -275,7 +272,6 @@ func (m *SNMPAutoDiscoveryMethod) validateILP(formats strfmt.Registry) error {
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateOID(formats strfmt.Registry) error {
-
 	if err := validate.Required("OID", "body", m.OID); err != nil {
 		return err
 	}
@@ -284,7 +280,6 @@ func (m *SNMPAutoDiscoveryMethod) validateOID(formats strfmt.Registry) error {
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateDiscoveryType(formats strfmt.Registry) error {
-
 	if err := validate.Required("discoveryType", "body", m.DiscoveryType); err != nil {
 		return err
 	}
@@ -293,7 +288,6 @@ func (m *SNMPAutoDiscoveryMethod) validateDiscoveryType(formats strfmt.Registry)
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateLookupOID(formats strfmt.Registry) error {
-
 	if err := validate.Required("lookupOID", "body", m.LookupOID); err != nil {
 		return err
 	}

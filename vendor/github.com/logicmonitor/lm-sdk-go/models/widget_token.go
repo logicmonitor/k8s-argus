@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -47,7 +46,6 @@ func (m *WidgetToken) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WidgetToken) validateInheritList(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.InheritList) { // not required
 		return nil
 	}

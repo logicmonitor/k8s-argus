@@ -9,22 +9,18 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewGetDatasourceByIDParams creates a new GetDatasourceByIDParams object
 // with the default values initialized.
 func NewGetDatasourceByIDParams() *GetDatasourceByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
 		Format: &formatDefault,
 
@@ -35,9 +31,7 @@ func NewGetDatasourceByIDParams() *GetDatasourceByIDParams {
 // NewGetDatasourceByIDParamsWithTimeout creates a new GetDatasourceByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewGetDatasourceByIDParamsWithTimeout(timeout time.Duration) *GetDatasourceByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
 		Format: &formatDefault,
 
@@ -48,9 +42,7 @@ func NewGetDatasourceByIDParamsWithTimeout(timeout time.Duration) *GetDatasource
 // NewGetDatasourceByIDParamsWithContext creates a new GetDatasourceByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewGetDatasourceByIDParamsWithContext(ctx context.Context) *GetDatasourceByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
 		Format: &formatDefault,
 
@@ -61,9 +53,7 @@ func NewGetDatasourceByIDParamsWithContext(ctx context.Context) *GetDatasourceBy
 // NewGetDatasourceByIDParamsWithHTTPClient creates a new GetDatasourceByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewGetDatasourceByIDParamsWithHTTPClient(client *http.Client) *GetDatasourceByIDParams {
-	var (
-		formatDefault = string("json")
-	)
+	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
 		Format:     &formatDefault,
 		HTTPClient: client,
@@ -155,7 +145,6 @@ func (o *GetDatasourceByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDatasourceByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

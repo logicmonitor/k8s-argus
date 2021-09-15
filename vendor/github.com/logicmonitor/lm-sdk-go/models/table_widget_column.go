@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -63,7 +62,6 @@ func (m *TableWidgetColumn) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetColumn) validateAlternateDataPoints(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AlternateDataPoints) { // not required
 		return nil
 	}
@@ -88,7 +86,6 @@ func (m *TableWidgetColumn) validateAlternateDataPoints(formats strfmt.Registry)
 }
 
 func (m *TableWidgetColumn) validateColumnName(formats strfmt.Registry) error {
-
 	if err := validate.Required("columnName", "body", m.ColumnName); err != nil {
 		return err
 	}
@@ -97,7 +94,6 @@ func (m *TableWidgetColumn) validateColumnName(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetColumn) validateDataPoint(formats strfmt.Registry) error {
-
 	if err := validate.Required("dataPoint", "body", m.DataPoint); err != nil {
 		return err
 	}

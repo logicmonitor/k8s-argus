@@ -9,22 +9,18 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/swag"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"golang.org/x/net/context"
 )
 
 // NewGetAlertByIDParams creates a new GetAlertByIDParams object
 // with the default values initialized.
 func NewGetAlertByIDParams() *GetAlertByIDParams {
-	var (
-		needMessageDefault = bool(false)
-	)
+	needMessageDefault := bool(false)
 	return &GetAlertByIDParams{
 		NeedMessage: &needMessageDefault,
 
@@ -35,9 +31,7 @@ func NewGetAlertByIDParams() *GetAlertByIDParams {
 // NewGetAlertByIDParamsWithTimeout creates a new GetAlertByIDParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewGetAlertByIDParamsWithTimeout(timeout time.Duration) *GetAlertByIDParams {
-	var (
-		needMessageDefault = bool(false)
-	)
+	needMessageDefault := bool(false)
 	return &GetAlertByIDParams{
 		NeedMessage: &needMessageDefault,
 
@@ -48,9 +42,7 @@ func NewGetAlertByIDParamsWithTimeout(timeout time.Duration) *GetAlertByIDParams
 // NewGetAlertByIDParamsWithContext creates a new GetAlertByIDParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewGetAlertByIDParamsWithContext(ctx context.Context) *GetAlertByIDParams {
-	var (
-		needMessageDefault = bool(false)
-	)
+	needMessageDefault := bool(false)
 	return &GetAlertByIDParams{
 		NeedMessage: &needMessageDefault,
 
@@ -61,9 +53,7 @@ func NewGetAlertByIDParamsWithContext(ctx context.Context) *GetAlertByIDParams {
 // NewGetAlertByIDParamsWithHTTPClient creates a new GetAlertByIDParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewGetAlertByIDParamsWithHTTPClient(client *http.Client) *GetAlertByIDParams {
-	var (
-		needMessageDefault = bool(false)
-	)
+	needMessageDefault := bool(false)
 	return &GetAlertByIDParams{
 		NeedMessage: &needMessageDefault,
 		HTTPClient:  client,
@@ -168,7 +158,6 @@ func (o *GetAlertByIDParams) SetNeedMessage(needMessage *bool) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetAlertByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

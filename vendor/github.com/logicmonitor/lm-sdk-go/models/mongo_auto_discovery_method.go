@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -36,7 +35,6 @@ func (m *MongoAutoDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *MongoAutoDiscoveryMethod) SetName(val string) {
-
 }
 
 // ListDB gets the list d b of this subtype
@@ -148,7 +146,6 @@ func (m *MongoAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *MongoAutoDiscoveryMethod) validateListDB(formats strfmt.Registry) error {
-
 	if err := validate.Required("listDB", "body", m.ListDB); err != nil {
 		return err
 	}
@@ -157,7 +154,6 @@ func (m *MongoAutoDiscoveryMethod) validateListDB(formats strfmt.Registry) error
 }
 
 func (m *MongoAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
-
 	if err := validate.Required("ports", "body", m.Ports); err != nil {
 		return err
 	}

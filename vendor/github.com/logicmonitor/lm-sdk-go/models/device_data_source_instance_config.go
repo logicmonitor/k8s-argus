@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -86,7 +85,6 @@ func (m *DeviceDataSourceInstanceConfig) Validate(formats strfmt.Registry) error
 }
 
 func (m *DeviceDataSourceInstanceConfig) validateAlerts(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Alerts) { // not required
 		return nil
 	}
@@ -111,7 +109,6 @@ func (m *DeviceDataSourceInstanceConfig) validateAlerts(formats strfmt.Registry)
 }
 
 func (m *DeviceDataSourceInstanceConfig) validateDeltaConfig(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.DeltaConfig) { // not required
 		return nil
 	}

@@ -9,13 +9,11 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
 	strfmt "github.com/go-openapi/strfmt"
+	"golang.org/x/net/context"
 )
 
 // NewDeleteSDTByIDParams creates a new DeleteSDTByIDParams object
@@ -116,7 +114,6 @@ func (o *DeleteSDTByIDParams) SetID(id string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteSDTByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
-
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}

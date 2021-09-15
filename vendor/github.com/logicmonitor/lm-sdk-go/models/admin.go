@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -144,7 +143,6 @@ func (m *Admin) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Admin) validateAPITokens(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.APITokens) { // not required
 		return nil
 	}
@@ -169,7 +167,6 @@ func (m *Admin) validateAPITokens(formats strfmt.Registry) error {
 }
 
 func (m *Admin) validateEmail(formats strfmt.Registry) error {
-
 	if err := validate.Required("email", "body", m.Email); err != nil {
 		return err
 	}
@@ -178,7 +175,6 @@ func (m *Admin) validateEmail(formats strfmt.Registry) error {
 }
 
 func (m *Admin) validatePassword(formats strfmt.Registry) error {
-
 	if err := validate.Required("password", "body", m.Password); err != nil {
 		return err
 	}
@@ -187,7 +183,6 @@ func (m *Admin) validatePassword(formats strfmt.Registry) error {
 }
 
 func (m *Admin) validateRoles(formats strfmt.Registry) error {
-
 	if err := validate.Required("roles", "body", m.Roles); err != nil {
 		return err
 	}
@@ -216,7 +211,6 @@ func (m *Admin) validateRoles(formats strfmt.Registry) error {
 }
 
 func (m *Admin) validateUsername(formats strfmt.Registry) error {
-
 	if err := validate.Required("username", "body", m.Username); err != nil {
 		return err
 	}

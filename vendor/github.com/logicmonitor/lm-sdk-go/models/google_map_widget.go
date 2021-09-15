@@ -10,9 +10,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -157,7 +156,6 @@ func (m *GoogleMapWidget) Type() string {
 
 // SetType sets the type of this subtype
 func (m *GoogleMapWidget) SetType(val string) {
-
 }
 
 // UserPermission gets the user permission of this subtype
@@ -409,7 +407,6 @@ func (m *GoogleMapWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GoogleMapWidget) validateDashboardID(formats strfmt.Registry) error {
-
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -418,7 +415,6 @@ func (m *GoogleMapWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *GoogleMapWidget) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -427,7 +423,6 @@ func (m *GoogleMapWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *GoogleMapWidget) validateMapPoints(formats strfmt.Registry) error {
-
 	if err := validate.Required("mapPoints", "body", m.MapPoints); err != nil {
 		return err
 	}

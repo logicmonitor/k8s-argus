@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -64,7 +63,6 @@ func (m *LinkedWmiClass) Validate(formats strfmt.Registry) error {
 }
 
 func (m *LinkedWmiClass) validateILP(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ILP) { // not required
 		return nil
 	}
@@ -89,7 +87,6 @@ func (m *LinkedWmiClass) validateILP(formats strfmt.Registry) error {
 }
 
 func (m *LinkedWmiClass) validateAnchorClassWMIproperty(formats strfmt.Registry) error {
-
 	if err := validate.Required("anchorClassWMIProperty", "body", m.AnchorClassWMIproperty); err != nil {
 		return err
 	}
@@ -98,7 +95,6 @@ func (m *LinkedWmiClass) validateAnchorClassWMIproperty(formats strfmt.Registry)
 }
 
 func (m *LinkedWmiClass) validateLinkedWmiClass(formats strfmt.Registry) error {
-
 	if err := validate.Required("linkedWmiClass", "body", m.LinkedWmiClass); err != nil {
 		return err
 	}
@@ -107,7 +103,6 @@ func (m *LinkedWmiClass) validateLinkedWmiClass(formats strfmt.Registry) error {
 }
 
 func (m *LinkedWmiClass) validateMatch(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Match) { // not required
 		return nil
 	}

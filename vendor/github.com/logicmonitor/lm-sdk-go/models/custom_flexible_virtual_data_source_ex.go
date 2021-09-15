@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -95,7 +94,6 @@ func (m *CustomFlexibleVirtualDataSourceEx) Validate(formats strfmt.Registry) er
 }
 
 func (m *CustomFlexibleVirtualDataSourceEx) validateDeviceDisplayName(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceDisplayName", "body", m.DeviceDisplayName); err != nil {
 		return err
 	}
@@ -113,7 +111,6 @@ func (m *CustomFlexibleVirtualDataSourceEx) validateDeviceDisplayName(formats st
 }
 
 func (m *CustomFlexibleVirtualDataSourceEx) validateDeviceGroupFullPath(formats strfmt.Registry) error {
-
 	if err := validate.Required("deviceGroupFullPath", "body", m.DeviceGroupFullPath); err != nil {
 		return err
 	}
@@ -131,7 +128,6 @@ func (m *CustomFlexibleVirtualDataSourceEx) validateDeviceGroupFullPath(formats 
 }
 
 func (m *CustomFlexibleVirtualDataSourceEx) validateDisplay(formats strfmt.Registry) error {
-
 	if err := validate.Required("display", "body", m.Display); err != nil {
 		return err
 	}
@@ -149,7 +145,6 @@ func (m *CustomFlexibleVirtualDataSourceEx) validateDisplay(formats strfmt.Regis
 }
 
 func (m *CustomFlexibleVirtualDataSourceEx) validateInstanceName(formats strfmt.Registry) error {
-
 	if err := validate.Required("instanceName", "body", m.InstanceName); err != nil {
 		return err
 	}
@@ -167,7 +162,6 @@ func (m *CustomFlexibleVirtualDataSourceEx) validateInstanceName(formats strfmt.
 }
 
 func (m *CustomFlexibleVirtualDataSourceEx) validateName(formats strfmt.Registry) error {
-
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}

@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -54,7 +53,6 @@ func (m *Chain) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Chain) validatePeriod(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Period) { // not required
 		return nil
 	}
@@ -72,13 +70,11 @@ func (m *Chain) validatePeriod(formats strfmt.Registry) error {
 }
 
 func (m *Chain) validateStages(formats strfmt.Registry) error {
-
 	if err := validate.Required("stages", "body", m.Stages); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.Stages); i++ {
-
 		for ii := 0; ii < len(m.Stages[i]); ii++ {
 			if swag.IsZero(m.Stages[i][ii]) { // not required
 				continue
@@ -94,14 +90,12 @@ func (m *Chain) validateStages(formats strfmt.Registry) error {
 			}
 
 		}
-
 	}
 
 	return nil
 }
 
 func (m *Chain) validateType(formats strfmt.Registry) error {
-
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}

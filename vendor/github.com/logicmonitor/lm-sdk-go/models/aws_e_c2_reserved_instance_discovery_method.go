@@ -9,9 +9,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -32,7 +31,6 @@ func (m *AwsEC2ReservedInstanceDiscoveryMethod) Name() string {
 
 // SetName sets the name of this subtype
 func (m *AwsEC2ReservedInstanceDiscoveryMethod) SetName(val string) {
-
 }
 
 // InstanceName gets the instance name of this subtype
@@ -126,7 +124,6 @@ func (m *AwsEC2ReservedInstanceDiscoveryMethod) Validate(formats strfmt.Registry
 }
 
 func (m *AwsEC2ReservedInstanceDiscoveryMethod) validateInstanceName(formats strfmt.Registry) error {
-
 	if err := validate.Required("instanceName", "body", m.InstanceName); err != nil {
 		return err
 	}
