@@ -169,7 +169,6 @@ func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.Res
 		}
 		log.Infof("No change in settings to change displayName")
 	}
-	return nil
 }
 
 func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, log *logrus.Entry, resourceName types.ResourceName, resourceMeta types.ResourceMeta) {
