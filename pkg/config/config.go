@@ -327,24 +327,6 @@ func validateIntervals(i *Intervals) {
 		*i.PeriodicSyncInterval = *i.PeriodicSyncMinInterval
 		logrus.Warnf("Please provide valid value for periodicSyncInterval. Continuing with default: %v", *i.PeriodicSyncInterval)
 	}
-	if i.PeriodicSyncInterval == nil {
-		i.PeriodicSyncInterval = i.PeriodicSyncMinInterval
-	} else if *i.PeriodicSyncInterval < *i.PeriodicSyncMinInterval {
-		*i.PeriodicSyncInterval = *i.PeriodicSyncMinInterval
-		logrus.Warnf("Please provide valid value for periodicSyncInterval. Continuing with default: %v", *i.PeriodicSyncInterval)
-	}
-
-	if i.PeriodicDeleteMinInterval == nil {
-		d := constants.DefaultPeriodicDeleteInterval
-		i.PeriodicDeleteMinInterval = &d
-	}
-	if i.PeriodicDeleteInterval == nil {
-		i.PeriodicDeleteInterval = i.PeriodicDeleteMinInterval
-	} else if *i.PeriodicDeleteInterval < *i.PeriodicDeleteMinInterval {
-		*i.PeriodicDeleteInterval = *i.PeriodicDeleteMinInterval
-		logrus.Warnf("Please provide valid value for periodicDeleteInterval. Continuing with default: %v", *i.PeriodicDeleteInterval)
-	}
-}
 
 	if i.PeriodicDeleteMinInterval == nil {
 		d := constants.DefaultPeriodicDeleteInterval
