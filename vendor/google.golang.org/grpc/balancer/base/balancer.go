@@ -238,6 +238,9 @@ func (b *baseBalancer) UpdateSubConnState(sc balancer.SubConn, state balancer.Su
 
 	b.state = b.csEvltr.RecordTransition(oldS, s)
 
+	// Set or clear the last connection error accordingly.
+	b.connErr = state.ConnectionError
+
 	// Regenerate picker when one of the following happens:
 	//  - this sc entered or left ready
 	//  - the aggregated state of balancer is TransientFailure

@@ -52,6 +52,12 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			fmt.Println("Failed to initialise Kubernetes client: %w", err) // nolint: forbidigo
 			os.Exit(constants.ConfigInitK8sClientExitCode)
 		}
+		// Monitor config for log level change
+		lmlog.MonitorConfig()
+
+		// Add hook to log pod id in log context
+		hook := &lmlog.DefaultFieldHook{}
+		log.AddHook(hook)
 
 		if err := config.InitConfig(); err != nil {
 			fmt.Println("failed to load application config from configmaps") // nolint: forbidigo

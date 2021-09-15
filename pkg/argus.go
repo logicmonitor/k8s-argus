@@ -160,6 +160,18 @@ func (a *Argus) Watch(lctx *lmctx.LMContext) error {
 		stateHolder.Run()
 		a.controllerStateHolders[rt] = &stateHolder
 		go controller.Run(stop)
+		//		c := w.GetConfig()
+		//		if c == nil {
+		//			continue
+		//		}
+		//		wc := worker.NewWorker(c)
+		//		b, err := a.Facade.RegisterWorker(w.Resource(), wc)
+		//		if err != nil {
+		//			log.Errorf("Failed to register worker for resource for: %s", w.Resource())
+		//		}
+		//		if b {
+		//			wc.StartWorker()
+		//		}
 	}
 	return nil
 }

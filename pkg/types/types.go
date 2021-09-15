@@ -12,6 +12,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/lm-sdk-go/client"
+	"github.com/logicmonitor/lm-sdk-go/client/lm"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -443,4 +444,172 @@ type (
 type LMRequester struct {
 	LMFacade
 	LMExecutor
+}
+
+// UpdateFilter is a boolean function to run predicate and return boolean value
+type UpdateFilter func() bool
+
+// ExecRequest funnction type to point to execute fubction
+type ExecRequest func() (interface{}, error)
+
+// ParseErrResp function signature to parse error response
+type ParseErrResp func(error) *models.ErrorResponse
+
+// LMExecutor All the
+type LMExecutor interface {
+	AddDevice(*lm.AddDeviceParams) ExecRequest
+	AddDeviceErrResp(error) *models.ErrorResponse
+
+	UpdateDevice(*lm.UpdateDeviceParams) ExecRequest
+	UpdateDeviceErrResp(error) *models.ErrorResponse
+
+	GetDeviceList(*lm.GetDeviceListParams) ExecRequest
+	GetDeviceListErrResp(error) *models.ErrorResponse
+
+	PatchDevice(*lm.PatchDeviceParams) ExecRequest
+	PatchDeviceErrResp(error) *models.ErrorResponse
+
+	DeleteDeviceByID(*lm.DeleteDeviceByIDParams) ExecRequest
+	DeleteDeviceByIDErrResp(error) *models.ErrorResponse
+
+	GetImmediateDeviceListByDeviceGroupID(*lm.GetImmediateDeviceListByDeviceGroupIDParams) ExecRequest
+	GetImmediateDeviceListByDeviceGroupIDErrResp(error) *models.ErrorResponse
+}
+
+// WorkerResponse wraps response and error
+type WorkerResponse struct {
+	Response interface{}
+	Error    error
+}
+
+//Worker worker interface to provide interface method
+type Worker interface {
+	Run()
+	GetConfig() *WConfig
+}
+
+// HTTPWorker specific worker to handle http requests
+type HTTPWorker interface {
+	Worker
+	// TODO: Headers need to intercept for rate limiting the requests and for backoff
+	// GetHeaders(interface{}) map[string]interface{}
+}
+
+// type GetHeaders func(response interface{}) (interface{}, error)
+
+// ICommand based command interface
+type ICommand interface {
+	Execute() (interface{}, error)
+	LMContext() *lmctx.LMContext
+}
+
+// Responder interface to indicate response can be sent back
+type Responder interface {
+	SetResponseChannel(chan *WorkerResponse)
+	GetResponseChannel() chan *WorkerResponse
+}
+
+// Command base command
+type Command struct {
+	LMCtx       *lmctx.LMContext
+	ExecFun     ExecRequest
+	RespChannel chan *WorkerResponse
+}
+
+// Execute command execute
+func (c *Command) Execute() (interface{}, error) {
+	return c.ExecFun()
+}
+
+// LMContext return LMContext object from command
+func (c *Command) LMContext() *lmctx.LMContext {
+	return c.LMCtx
+}
+
+// SetResponseChannel sets response channel  into command to send response back
+func (c *Command) SetResponseChannel(rch chan *WorkerResponse) {
+	c.RespChannel = rch
+}
+
+// GetResponseChannel returns response channel to send response
+func (c *Command) GetResponseChannel() chan *WorkerResponse {
+	return c.RespChannel
+}
+
+// IHTTPCommand Http command interface
+type IHTTPCommand interface {
+	// GetMethod Get Http method
+	GetMethod() string
+	// GetCategory Get rest api category
+	GetCategory() string
+}
+
+// LMHCErrParse function to parse error response
+type LMHCErrParse struct {
+	ParseErrResp ParseErrResp
+}
+
+// ParseErrResponse executes parse error response function
+func (lhp *LMHCErrParse) ParseErrResponse(err error) *models.ErrorResponse {
+	return lhp.ParseErrResp(err)
+}
+
+// HTTPCommand extended Command
+type HTTPCommand struct {
+	*Command
+	*LMHCErrParse
+	Method   string
+	Category string
+	// GetHeaderFun GetHeaders
+}
+
+// GetMethod Get Http method
+func (hc *HTTPCommand) GetMethod() string {
+	return hc.Method
+}
+
+// GetCategory Get rest api category
+func (hc *HTTPCommand) GetCategory() string {
+	return hc.Category
+}
+
+// LMHCErrParser methods specific to lm sdk
+type LMHCErrParser interface {
+	ParseErrResponse(err error) *models.ErrorResponse
+}
+
+// LMFacade public interface others to interact with
+type LMFacade interface {
+	// Async
+	//Send(command ICommand)
+	// sync
+	SendReceive(*lmctx.LMContext, string, ICommand) (interface{}, error)
+	RegisterWorker(string, Worker) (bool, error)
+}
+
+// RateLimitUpdateRequest struct to send new rate limits received from server to manager
+type RateLimitUpdateRequest struct {
+	Worker   string
+	Category string
+	Method   string
+	Limit    int64
+	Window   int
+}
+
+// WorkerRateLimitsUpdate struct to send new rate limits received from server to manager
+type WorkerRateLimitsUpdate struct {
+	Category string
+	Method   string
+	Limit    int64
+	Window   int
+}
+
+// RateLimitManager interface for rate limit manager
+type RateLimitManager interface {
+	// GetUpdateRequestChannel channel to send new limits to rate limit manager
+	GetUpdateRequestChannel() chan RateLimitUpdateRequest
+	// GetRateLimitConfig sends config for requested resource
+	GetRateLimitConfig(resource string) map[string]int
+	// RegisterWorkerNotifyChannel register channel to send updates to workers
+	RegisterWorkerNotifyChannel(resource string, ch chan WorkerRateLimitsUpdate) (bool, error)
 }
