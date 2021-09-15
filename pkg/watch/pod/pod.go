@@ -102,3 +102,17 @@ func getPodDNSName(pod *corev1.Pod) string {
 
 	return pod.Status.PodIP
 }
+
+// GetPodIPMap gets pods map info from k8s with IP address
+func GetPodIPMap(k8sClient kubernetes.Interface, namespace string, clusterName string) (map[string]string, error) {
+	podsIPMap := make(map[string]string)
+	podList, err := k8sClient.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	if err != nil || podList == nil {
+		return nil, err
+	}
+	for i := range podList.Items {
+		podsIPMap[fmtPodDisplayName(&podList.Items[i], clusterName)] = podList.Items[i].Status.PodIP
+	}
+
+	return podsIPMap, nil
+}
