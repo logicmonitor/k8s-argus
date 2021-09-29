@@ -193,7 +193,7 @@ func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, log *logrus.Entry, re
 			i.ResourceManager.GetResourceCache().Unset(lctx, resourceName, resourceMeta.Container)
 			log.Tracef("Deleted dangling resource %s with id: %v", resourceName.Name, resourceMeta.LMID)
 		}
-	} else {
+	} else if !resourceMeta.HasSysCategory(resourceName.Resource.GetDeletedCategory()) {
 		log.Info("Soft delete")
 		deleteOptions := i.ResourceManager.GetMarkDeleteOptions(lctx, resourceName.Resource, meta.AsPartialObjectMetadata(&metav1.ObjectMeta{}))
 
