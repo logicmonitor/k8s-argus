@@ -1,4 +1,4 @@
-FROM golang:1.14 as build
+FROM golang:1.17 as build
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
 ARG VERSION
 COPY ./ ./
@@ -11,7 +11,7 @@ RUN golangci-lint run -v
 # to copy file in last image, otherwise docker buildkit ignore this stage if no dependency
 RUN touch /marker
 
-FROM golang:1.14 as test
+FROM golang:1.17 as test
 WORKDIR $GOPATH/src/github.com/logicmonitor/k8s-argus
 RUN GO111MODULE=on go get github.com/golang/mock/mockgen@v1.6.0
 COPY --from=build $GOPATH/src/github.com/logicmonitor/k8s-argus ./
