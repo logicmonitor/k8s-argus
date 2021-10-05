@@ -155,10 +155,8 @@ func (rc *ResourceCache) ResourceGroupProcessor(lctx *lmctx.LMContext, inChan <-
 		if err != nil {
 			log.Warnf("fetch resources for %v failed with %v", grpID, err)
 		}
-		if resp != nil {
-			for _, resource := range resp {
-				outChan <- resource
-			}
+		for _, resource := range resp {
+			outChan <- resource
 		}
 	}
 }
