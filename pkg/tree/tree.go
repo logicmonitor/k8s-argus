@@ -15,13 +15,14 @@ import (
 )
 
 // GetResourceGroupTree creates the ResourceGroup tree that will represent the cluster in LogicMonitor.
+// nolint: cyclop
 func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager, requester *types.LMRequester) (*types.ResourceGroupTree, error) {
 	conf, err2 := getConf(lctx, requester)
 	if err2 != nil {
 		return nil, err2
 	}
 	nodes := enums.Nodes
-	etcd := enums.ETCD
+	// etcd := enums.ETCD
 	doNotCreateDeletedGroup := conf.DeleteResources
 	clusterProps, ok := conf.ResourceGroupProperties.Raw["cluster"]
 	if !ok {
@@ -60,16 +61,21 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 					},
 				},
 			},
-			{
-				ChildGroups: nil,
-				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
-					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
-				},
-			},
 		},
+	}
+	for _, resource := range enums.ALLResourceTypes {
+		if !resource.IsNamespaceScopedResource() && resource != nodes && !conf.IsMonitoringDisabled(resource) {
+			treeObj.ChildGroups = append(treeObj.ChildGroups,
+				&types.ResourceGroupTree{
+					Options: []types.ResourceGroupOption{
+						dgBuilder.GroupName(resource.TitlePlural()),
+						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
+						dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
+						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
+					},
+					ChildGroups: nil,
+				})
+		}
 	}
 
 	for _, resource := range enums.ALLResourceTypes {
@@ -104,7 +110,6 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 	if err2 != nil {
 		return nil, err2
 	}
-	etcd := enums.ETCD
 	nodes := enums.Nodes
 	doNotCreateDeletedGroup := conf.DeleteResources
 	deletedBuilder := dgbuilder.NewAppliesToBuilder().
@@ -122,6 +127,22 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 	if !ok {
 		clusterProps = []config.PropOpts{}
 	}
+
+	clusterscoped := []*types.ResourceGroupTree{}
+	for _, resource := range enums.ALLResourceTypes {
+		if !resource.IsNamespaceScopedResource() && resource != enums.Nodes {
+			clusterscoped = append(clusterscoped,
+				&types.ResourceGroupTree{
+					Options: []types.ResourceGroupOption{
+						dgBuilder.GroupName(resource.TitlePlural()),
+						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
+						dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
+						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
+					},
+					ChildGroups: nil,
+				})
+		}
+	}
 	return &types.ResourceGroupTree{
 		Options: []types.ResourceGroupOption{
 			dgBuilder.GroupName(util.ClusterGroupName(conf.ClusterName)),
@@ -133,11 +154,9 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 		ChildGroups: []*types.ResourceGroupTree{
 			{
 				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
-					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
+					dgBuilder.GroupName(constants.ClusterScopedGroupName),
 				},
+				ChildGroups: clusterscoped,
 			},
 			{
 				Options: []types.ResourceGroupOption{

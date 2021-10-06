@@ -120,8 +120,3 @@ func (resourceType *ResourceType) ObjectMeta(obj interface{}) (*metav1.PartialOb
 	}
 	return meta.AsPartialObjectMetadata(accessor), nil
 }
-
-// TitlePlural returns string name in proper case
-func (resourceType *ResourceType) TitlePlural() string {
-	return fmt.Sprintf("%ss", resourceType.Title())
-}
