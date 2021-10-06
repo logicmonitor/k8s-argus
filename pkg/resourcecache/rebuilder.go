@@ -2,7 +2,6 @@ package resourcecache
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 	"time"
 
@@ -100,21 +99,31 @@ func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) 
 	return tmpStore, nil
 }
 
-func (rc *ResourceCache) getDevices(lctx *lmctx.LMContext, grpID int32) (*lm.GetImmediateDeviceListByDeviceGroupIDOK, error) {
+func (rc *ResourceCache) getDevices(lctx *lmctx.LMContext, grpID int32) ([]*models.Device, error) {
 	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		return nil, err
 	}
 	clctx := lctx.LMContextWith(map[string]interface{}{constants.PartitionKey: conf.ClusterName})
-	params := lm.NewGetImmediateDeviceListByDeviceGroupIDParams()
-	params.SetID(grpID)
-	command := rc.LMRequester.GetImmediateResourceListByResourceGroupIDCommand(clctx, params)
-	resp, err := rc.LMRequester.SendReceive(clctx, command)
-	if err != nil {
-		return nil, err
+	var result []*models.Device
+	totalReceived := int32(0)
+	for {
+		params := lm.NewGetImmediateDeviceListByDeviceGroupIDParams()
+		params.SetID(grpID)
+		params.SetOffset(&totalReceived)
+		command := rc.LMRequester.GetImmediateResourceListByResourceGroupIDCommand(clctx, params)
+		resp, err := rc.LMRequester.SendReceive(clctx, command)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK).Payload.Items...)
+		totalReceived += int32(len(resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK).Payload.Items))
+		if totalReceived >= resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK).Payload.Total {
+			break
+		}
 	}
 
-	return resp.(*lm.GetImmediateDeviceListByDeviceGroupIDOK), nil
+	return result, nil
 }
 
 func (rc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, inChan <-chan int32, outChan chan<- *models.Device) {
@@ -146,10 +155,8 @@ func (rc *ResourceCache) ResourceGroupProcessor(lctx *lmctx.LMContext, inChan <-
 		if err != nil {
 			log.Warnf("fetch resources for %v failed with %v", grpID, err)
 		}
-		if resp != nil && util.GetHTTPStatusCodeFromLMSDKError(resp) == http.StatusOK {
-			for _, resource := range resp.Payload.Items {
-				outChan <- resource
-			}
+		for _, resource := range resp {
+			outChan <- resource
 		}
 	}
 }

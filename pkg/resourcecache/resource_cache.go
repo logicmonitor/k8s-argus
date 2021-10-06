@@ -303,7 +303,7 @@ func (rc *ResourceCache) SoftRefresh(lctx *lmctx.LMContext, container string) {
 			for _, meta := range list {
 				resp, err := rc.getDevices(lctx, meta.LMID)
 				if err != nil && resp != nil {
-					for _, resource := range resp.Payload.Items {
+					for _, resource := range resp {
 						rc.storeDevice(lctx, resource, conf.ClusterName, rc.store)
 					}
 				}
