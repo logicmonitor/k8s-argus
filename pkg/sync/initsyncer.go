@@ -73,6 +73,28 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	list := i.ResourceManager.GetResourceCache().List()
 	log.Tracef("Current cache: %v", list)
 
+	log.Infof("Deleting duplicate resources if any")
+	for _, entry := range list {
+		log.Tracef("Iterate resource cache entry : %v ", entry)
+		cacheResourceName := entry.K
+		cacheResourceMeta := entry.V
+
+		if ignoreSync[cacheResourceName.Resource] || cacheResourceName.Resource == enums.Namespaces {
+			continue
+		}
+
+		if strings.HasSuffix(cacheResourceMeta.Container, "-dupl") {
+			childLctx := lmlog.LMContextWithFields(lctx, logrus.Fields{
+				"name":  cacheResourceName.Resource.FQName(cacheResourceName.Name),
+				"type":  cacheResourceName.Resource.Singular(),
+				"ns":    cacheResourceMeta.Container,
+				"event": "sync",
+			})
+			childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
+			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
+		}
+	}
+
 	for _, entry := range list {
 		log.Tracef("Iterate resource cache entry : %v ", entry)
 		cacheResourceName := entry.K
@@ -101,9 +123,7 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		// Delete resource if no more exists or delete if UID does not match.
 		if !ok ||
 			clusterPresentMeta.UID != cacheResourceMeta.UID ||
-			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) ||
-			strings.HasSuffix(cacheResourceMeta.Container, "-dupl") {
-
+			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) {
 			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
 		} else if resolveConflicts {
 			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
