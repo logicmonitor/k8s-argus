@@ -180,6 +180,7 @@ func GetResourceMetaFromResource(resource *models.Device) (types.ResourceMeta, e
 		Labels:        labels,
 		SysCategories: categories,
 		UID:           k8stypes.UID(GetResourcePropertyValue(resource, constants.K8sResourceUIDPropertyKey)),
+		CreatedOn:     resource.CreatedOn,
 	}, nil
 }
 
