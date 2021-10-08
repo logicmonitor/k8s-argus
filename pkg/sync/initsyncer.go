@@ -73,6 +73,28 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	list := i.ResourceManager.GetResourceCache().List()
 	log.Tracef("Current cache: %v", list)
 
+	log.Infof("Deleting duplicate resources if any")
+	for _, entry := range list {
+		log.Tracef("Iterate resource cache entry : %v ", entry)
+		cacheResourceName := entry.K
+		cacheResourceMeta := entry.V
+
+		if ignoreSync[cacheResourceName.Resource] || cacheResourceName.Resource == enums.Namespaces {
+			continue
+		}
+
+		if strings.HasSuffix(cacheResourceMeta.Container, "-dupl") {
+			childLctx := lmlog.LMContextWithFields(lctx, logrus.Fields{
+				"name":  cacheResourceName.Resource.FQName(cacheResourceName.Name),
+				"type":  cacheResourceName.Resource.Singular(),
+				"ns":    cacheResourceMeta.Container,
+				"event": "sync",
+			})
+			childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
+			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
+		}
+	}
+
 	for _, entry := range list {
 		log.Tracef("Iterate resource cache entry : %v ", entry)
 		cacheResourceName := entry.K
@@ -102,10 +124,9 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		if !ok ||
 			clusterPresentMeta.UID != cacheResourceMeta.UID ||
 			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) {
-
-			i.deleteResource(childLctx, log, cacheResourceName, cacheResourceMeta)
+			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
 		} else if resolveConflicts {
-			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName, log)
+			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
 		}
 	}
 
@@ -140,7 +161,8 @@ func (i *InitSyncer) deleteNamespace(allK8SResourcesStore *resourcecache.Store, 
 }
 
 // nolint: gocognit
-func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.ResourceMeta, clusterResourceMeta types.ResourceMeta, cacheResourceName types.ResourceName, log *logrus.Entry) {
+func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.ResourceMeta, clusterResourceMeta types.ResourceMeta, cacheResourceName types.ResourceName) {
+	log := lmlog.Logger(lctx)
 	rt := cacheResourceName.Resource
 	if clusterResourceMeta.DisplayName != cacheMeta.DisplayName || cacheMeta.HasSysCategory(rt.GetConflictsCategory()) {
 		conf, err := config.GetConfig(lctx)
@@ -171,7 +193,8 @@ func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.Res
 	}
 }
 
-func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, log *logrus.Entry, resourceName types.ResourceName, resourceMeta types.ResourceMeta) {
+func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.ResourceName, resourceMeta types.ResourceMeta) {
+	log := lmlog.Logger(lctx)
 	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")

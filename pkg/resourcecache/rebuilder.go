@@ -180,6 +180,7 @@ func (rc *ResourceCache) accumulateDeviceCache(lctx *lmctx.LMContext, inChan <-c
 	log.Debugf("New cache map : %v", store)
 }
 
+// nolint: cyclop
 func (rc *ResourceCache) storeDevice(lctx *lmctx.LMContext, resourceObj *models.Device, clusterName string, store *Store) bool {
 	log := lmlog.Logger(lctx)
 	if resourceObj == nil ||
@@ -211,6 +212,15 @@ func (rc *ResourceCache) storeDevice(lctx *lmctx.LMContext, resourceObj *models.
 	// ignore deleted category resources
 	if meta.HasSysCategory(rt.GetDeletedCategory()) {
 		return false
+	}
+
+	if emeta, ok := store.Exists(lctx, key, meta.Container); ok && emeta.LMID != meta.LMID {
+		if emeta.CreatedOn > meta.CreatedOn {
+			emeta.Container += "-dupl"
+			store.Set(lctx, key, emeta)
+		} else {
+			meta.Container += "-dupl"
+		}
 	}
 
 	store.Set(lctx, key, meta)
