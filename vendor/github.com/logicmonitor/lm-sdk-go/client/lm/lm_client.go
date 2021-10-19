@@ -7,8 +7,10 @@ package lm
 
 import (
 	"io"
+	"reflect"
 
 	"github.com/go-openapi/runtime"
+
 	strfmt "github.com/go-openapi/strfmt"
 )
 
@@ -18,6 +20,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry, authInfo ru
 		transport: transport,
 		formats:   formats,
 		authInfo:  authInfo,
+		userAgent: nil,
 	}
 }
 
@@ -28,6 +31,7 @@ type Client struct {
 	transport runtime.ClientTransport
 	formats   strfmt.Registry
 	authInfo  runtime.ClientAuthInfoWriter
+	userAgent *string
 }
 
 /*
@@ -38,6 +42,7 @@ func (a *Client) AckAlertByID(params *AckAlertByIDParams) (*AckAlertByIDOK, erro
 	if params == nil {
 		params = NewAckAlertByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "ackAlertById",
@@ -56,6 +61,7 @@ func (a *Client) AckAlertByID(params *AckAlertByIDParams) (*AckAlertByIDOK, erro
 		return nil, err
 	}
 	return result.(*AckAlertByIDOK), nil
+
 }
 
 /*
@@ -66,6 +72,7 @@ func (a *Client) AckCollectorDownAlertByID(params *AckCollectorDownAlertByIDPara
 	if params == nil {
 		params = NewAckCollectorDownAlertByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "ackCollectorDownAlertById",
@@ -84,6 +91,7 @@ func (a *Client) AckCollectorDownAlertByID(params *AckCollectorDownAlertByIDPara
 		return nil, err
 	}
 	return result.(*AckCollectorDownAlertByIDOK), nil
+
 }
 
 /*
@@ -94,6 +102,7 @@ func (a *Client) AddAdmin(params *AddAdminParams) (*AddAdminOK, error) {
 	if params == nil {
 		params = NewAddAdminParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addAdmin",
@@ -112,6 +121,7 @@ func (a *Client) AddAdmin(params *AddAdminParams) (*AddAdminOK, error) {
 		return nil, err
 	}
 	return result.(*AddAdminOK), nil
+
 }
 
 /*
@@ -122,6 +132,7 @@ func (a *Client) AddAlertNoteByID(params *AddAlertNoteByIDParams) (*AddAlertNote
 	if params == nil {
 		params = NewAddAlertNoteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addAlertNoteById",
@@ -140,6 +151,7 @@ func (a *Client) AddAlertNoteByID(params *AddAlertNoteByIDParams) (*AddAlertNote
 		return nil, err
 	}
 	return result.(*AddAlertNoteByIDOK), nil
+
 }
 
 /*
@@ -150,6 +162,7 @@ func (a *Client) AddAlertRule(params *AddAlertRuleParams) (*AddAlertRuleOK, erro
 	if params == nil {
 		params = NewAddAlertRuleParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addAlertRule",
@@ -168,6 +181,7 @@ func (a *Client) AddAlertRule(params *AddAlertRuleParams) (*AddAlertRuleOK, erro
 		return nil, err
 	}
 	return result.(*AddAlertRuleOK), nil
+
 }
 
 /*
@@ -178,6 +192,7 @@ func (a *Client) AddAPITokenByAdminID(params *AddAPITokenByAdminIDParams) (*AddA
 	if params == nil {
 		params = NewAddAPITokenByAdminIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addApiTokenByAdminId",
@@ -196,6 +211,37 @@ func (a *Client) AddAPITokenByAdminID(params *AddAPITokenByAdminIDParams) (*AddA
 		return nil, err
 	}
 	return result.(*AddAPITokenByAdminIDOK), nil
+
+}
+
+/*
+AddAppliesToFunction adds applies to function
+*/
+func (a *Client) AddAppliesToFunction(params *AddAppliesToFunctionParams) (*AddAppliesToFunctionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAddAppliesToFunctionParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "addAppliesToFunction",
+		Method:             "POST",
+		PathPattern:        "/setting/functions",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AddAppliesToFunctionReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*AddAppliesToFunctionOK), nil
+
 }
 
 /*
@@ -206,6 +252,7 @@ func (a *Client) AddCollector(params *AddCollectorParams) (*AddCollectorOK, erro
 	if params == nil {
 		params = NewAddCollectorParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addCollector",
@@ -224,6 +271,7 @@ func (a *Client) AddCollector(params *AddCollectorParams) (*AddCollectorOK, erro
 		return nil, err
 	}
 	return result.(*AddCollectorOK), nil
+
 }
 
 /*
@@ -234,6 +282,7 @@ func (a *Client) AddCollectorGroup(params *AddCollectorGroupParams) (*AddCollect
 	if params == nil {
 		params = NewAddCollectorGroupParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addCollectorGroup",
@@ -252,6 +301,7 @@ func (a *Client) AddCollectorGroup(params *AddCollectorGroupParams) (*AddCollect
 		return nil, err
 	}
 	return result.(*AddCollectorGroupOK), nil
+
 }
 
 /*
@@ -262,6 +312,7 @@ func (a *Client) AddDashboard(params *AddDashboardParams) (*AddDashboardOK, erro
 	if params == nil {
 		params = NewAddDashboardParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDashboard",
@@ -280,6 +331,7 @@ func (a *Client) AddDashboard(params *AddDashboardParams) (*AddDashboardOK, erro
 		return nil, err
 	}
 	return result.(*AddDashboardOK), nil
+
 }
 
 /*
@@ -290,6 +342,7 @@ func (a *Client) AddDashboardGroup(params *AddDashboardGroupParams) (*AddDashboa
 	if params == nil {
 		params = NewAddDashboardGroupParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDashboardGroup",
@@ -308,6 +361,7 @@ func (a *Client) AddDashboardGroup(params *AddDashboardGroupParams) (*AddDashboa
 		return nil, err
 	}
 	return result.(*AddDashboardGroupOK), nil
+
 }
 
 /*
@@ -318,6 +372,7 @@ func (a *Client) AddDevice(params *AddDeviceParams) (*AddDeviceOK, error) {
 	if params == nil {
 		params = NewAddDeviceParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDevice",
@@ -336,6 +391,7 @@ func (a *Client) AddDevice(params *AddDeviceParams) (*AddDeviceOK, error) {
 		return nil, err
 	}
 	return result.(*AddDeviceOK), nil
+
 }
 
 /*
@@ -346,6 +402,7 @@ func (a *Client) AddDeviceDatasourceInstance(params *AddDeviceDatasourceInstance
 	if params == nil {
 		params = NewAddDeviceDatasourceInstanceParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDeviceDatasourceInstance",
@@ -364,6 +421,7 @@ func (a *Client) AddDeviceDatasourceInstance(params *AddDeviceDatasourceInstance
 		return nil, err
 	}
 	return result.(*AddDeviceDatasourceInstanceOK), nil
+
 }
 
 /*
@@ -374,6 +432,7 @@ func (a *Client) AddDeviceDatasourceInstanceGroup(params *AddDeviceDatasourceIns
 	if params == nil {
 		params = NewAddDeviceDatasourceInstanceGroupParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDeviceDatasourceInstanceGroup",
@@ -392,6 +451,7 @@ func (a *Client) AddDeviceDatasourceInstanceGroup(params *AddDeviceDatasourceIns
 		return nil, err
 	}
 	return result.(*AddDeviceDatasourceInstanceGroupOK), nil
+
 }
 
 /*
@@ -402,6 +462,7 @@ func (a *Client) AddDeviceGroup(params *AddDeviceGroupParams) (*AddDeviceGroupOK
 	if params == nil {
 		params = NewAddDeviceGroupParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDeviceGroup",
@@ -420,6 +481,7 @@ func (a *Client) AddDeviceGroup(params *AddDeviceGroupParams) (*AddDeviceGroupOK
 		return nil, err
 	}
 	return result.(*AddDeviceGroupOK), nil
+
 }
 
 /*
@@ -430,6 +492,7 @@ func (a *Client) AddDeviceGroupClusterAlertConf(params *AddDeviceGroupClusterAle
 	if params == nil {
 		params = NewAddDeviceGroupClusterAlertConfParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDeviceGroupClusterAlertConf",
@@ -448,6 +511,7 @@ func (a *Client) AddDeviceGroupClusterAlertConf(params *AddDeviceGroupClusterAle
 		return nil, err
 	}
 	return result.(*AddDeviceGroupClusterAlertConfOK), nil
+
 }
 
 /*
@@ -458,6 +522,7 @@ func (a *Client) AddDeviceGroupProperty(params *AddDeviceGroupPropertyParams) (*
 	if params == nil {
 		params = NewAddDeviceGroupPropertyParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDeviceGroupProperty",
@@ -476,6 +541,7 @@ func (a *Client) AddDeviceGroupProperty(params *AddDeviceGroupPropertyParams) (*
 		return nil, err
 	}
 	return result.(*AddDeviceGroupPropertyOK), nil
+
 }
 
 /*
@@ -486,6 +552,7 @@ func (a *Client) AddDeviceProperty(params *AddDevicePropertyParams) (*AddDeviceP
 	if params == nil {
 		params = NewAddDevicePropertyParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addDeviceProperty",
@@ -504,6 +571,7 @@ func (a *Client) AddDeviceProperty(params *AddDevicePropertyParams) (*AddDeviceP
 		return nil, err
 	}
 	return result.(*AddDevicePropertyOK), nil
+
 }
 
 /*
@@ -514,6 +582,7 @@ func (a *Client) AddEscalationChain(params *AddEscalationChainParams) (*AddEscal
 	if params == nil {
 		params = NewAddEscalationChainParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addEscalationChain",
@@ -532,6 +601,7 @@ func (a *Client) AddEscalationChain(params *AddEscalationChainParams) (*AddEscal
 		return nil, err
 	}
 	return result.(*AddEscalationChainOK), nil
+
 }
 
 /*
@@ -542,6 +612,7 @@ func (a *Client) AddNetscan(params *AddNetscanParams) (*AddNetscanOK, error) {
 	if params == nil {
 		params = NewAddNetscanParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addNetscan",
@@ -560,6 +631,7 @@ func (a *Client) AddNetscan(params *AddNetscanParams) (*AddNetscanOK, error) {
 		return nil, err
 	}
 	return result.(*AddNetscanOK), nil
+
 }
 
 /*
@@ -570,6 +642,7 @@ func (a *Client) AddOpsNote(params *AddOpsNoteParams) (*AddOpsNoteOK, error) {
 	if params == nil {
 		params = NewAddOpsNoteParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addOpsNote",
@@ -588,6 +661,7 @@ func (a *Client) AddOpsNote(params *AddOpsNoteParams) (*AddOpsNoteOK, error) {
 		return nil, err
 	}
 	return result.(*AddOpsNoteOK), nil
+
 }
 
 /*
@@ -598,6 +672,7 @@ func (a *Client) AddRecipientGroup(params *AddRecipientGroupParams) (*AddRecipie
 	if params == nil {
 		params = NewAddRecipientGroupParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addRecipientGroup",
@@ -616,6 +691,7 @@ func (a *Client) AddRecipientGroup(params *AddRecipientGroupParams) (*AddRecipie
 		return nil, err
 	}
 	return result.(*AddRecipientGroupOK), nil
+
 }
 
 /*
@@ -626,6 +702,7 @@ func (a *Client) AddReport(params *AddReportParams) (*AddReportOK, error) {
 	if params == nil {
 		params = NewAddReportParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addReport",
@@ -644,6 +721,7 @@ func (a *Client) AddReport(params *AddReportParams) (*AddReportOK, error) {
 		return nil, err
 	}
 	return result.(*AddReportOK), nil
+
 }
 
 /*
@@ -654,6 +732,7 @@ func (a *Client) AddReportGroup(params *AddReportGroupParams) (*AddReportGroupOK
 	if params == nil {
 		params = NewAddReportGroupParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addReportGroup",
@@ -672,6 +751,7 @@ func (a *Client) AddReportGroup(params *AddReportGroupParams) (*AddReportGroupOK
 		return nil, err
 	}
 	return result.(*AddReportGroupOK), nil
+
 }
 
 /*
@@ -682,6 +762,7 @@ func (a *Client) AddRole(params *AddRoleParams) (*AddRoleOK, error) {
 	if params == nil {
 		params = NewAddRoleParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addRole",
@@ -700,6 +781,7 @@ func (a *Client) AddRole(params *AddRoleParams) (*AddRoleOK, error) {
 		return nil, err
 	}
 	return result.(*AddRoleOK), nil
+
 }
 
 /*
@@ -710,6 +792,7 @@ func (a *Client) AddSDT(params *AddSDTParams) (*AddSDTOK, error) {
 	if params == nil {
 		params = NewAddSDTParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addSDT",
@@ -728,6 +811,7 @@ func (a *Client) AddSDT(params *AddSDTParams) (*AddSDTOK, error) {
 		return nil, err
 	}
 	return result.(*AddSDTOK), nil
+
 }
 
 /*
@@ -738,6 +822,7 @@ func (a *Client) AddWebsite(params *AddWebsiteParams) (*AddWebsiteOK, error) {
 	if params == nil {
 		params = NewAddWebsiteParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addWebsite",
@@ -756,6 +841,7 @@ func (a *Client) AddWebsite(params *AddWebsiteParams) (*AddWebsiteOK, error) {
 		return nil, err
 	}
 	return result.(*AddWebsiteOK), nil
+
 }
 
 /*
@@ -766,6 +852,7 @@ func (a *Client) AddWebsiteGroup(params *AddWebsiteGroupParams) (*AddWebsiteGrou
 	if params == nil {
 		params = NewAddWebsiteGroupParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addWebsiteGroup",
@@ -784,6 +871,7 @@ func (a *Client) AddWebsiteGroup(params *AddWebsiteGroupParams) (*AddWebsiteGrou
 		return nil, err
 	}
 	return result.(*AddWebsiteGroupOK), nil
+
 }
 
 /*
@@ -794,6 +882,7 @@ func (a *Client) AddWidget(params *AddWidgetParams) (*AddWidgetOK, error) {
 	if params == nil {
 		params = NewAddWidgetParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "addWidget",
@@ -812,6 +901,7 @@ func (a *Client) AddWidget(params *AddWidgetParams) (*AddWidgetOK, error) {
 		return nil, err
 	}
 	return result.(*AddWidgetOK), nil
+
 }
 
 /*
@@ -822,13 +912,14 @@ func (a *Client) CollectDeviceConfigSourceConfig(params *CollectDeviceConfigSour
 	if params == nil {
 		params = NewCollectDeviceConfigSourceConfigParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "collectDeviceConfigSourceConfig",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{instanceId}/config/collectNow",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &CollectDeviceConfigSourceConfigReader{formats: a.formats},
@@ -840,6 +931,7 @@ func (a *Client) CollectDeviceConfigSourceConfig(params *CollectDeviceConfigSour
 		return nil, err
 	}
 	return result.(*CollectDeviceConfigSourceConfigOK), nil
+
 }
 
 /*
@@ -850,13 +942,14 @@ func (a *Client) DeleteAdminByID(params *DeleteAdminByIDParams) (*DeleteAdminByI
 	if params == nil {
 		params = NewDeleteAdminByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteAdminById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/admins/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteAdminByIDReader{formats: a.formats},
@@ -868,6 +961,7 @@ func (a *Client) DeleteAdminByID(params *DeleteAdminByIDParams) (*DeleteAdminByI
 		return nil, err
 	}
 	return result.(*DeleteAdminByIDOK), nil
+
 }
 
 /*
@@ -878,13 +972,14 @@ func (a *Client) DeleteAlertRuleByID(params *DeleteAlertRuleByIDParams) (*Delete
 	if params == nil {
 		params = NewDeleteAlertRuleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteAlertRuleById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/alert/rules/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteAlertRuleByIDReader{formats: a.formats},
@@ -896,6 +991,7 @@ func (a *Client) DeleteAlertRuleByID(params *DeleteAlertRuleByIDParams) (*Delete
 		return nil, err
 	}
 	return result.(*DeleteAlertRuleByIDOK), nil
+
 }
 
 /*
@@ -906,13 +1002,14 @@ func (a *Client) DeleteAPITokenByID(params *DeleteAPITokenByIDParams) (*DeleteAP
 	if params == nil {
 		params = NewDeleteAPITokenByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteApiTokenById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/admins/{adminId}/apitokens/{apitokenId}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteAPITokenByIDReader{formats: a.formats},
@@ -924,6 +1021,37 @@ func (a *Client) DeleteAPITokenByID(params *DeleteAPITokenByIDParams) (*DeleteAP
 		return nil, err
 	}
 	return result.(*DeleteAPITokenByIDOK), nil
+
+}
+
+/*
+DeleteAppliesToFunctionByID deletes applies to function
+*/
+func (a *Client) DeleteAppliesToFunctionByID(params *DeleteAppliesToFunctionByIDParams) (*DeleteAppliesToFunctionByIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteAppliesToFunctionByIDParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "deleteAppliesToFunctionById",
+		Method:             "DELETE",
+		PathPattern:        "/setting/functions/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DeleteAppliesToFunctionByIDReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*DeleteAppliesToFunctionByIDOK), nil
+
 }
 
 /*
@@ -934,13 +1062,14 @@ func (a *Client) DeleteCollectorByID(params *DeleteCollectorByIDParams) (*Delete
 	if params == nil {
 		params = NewDeleteCollectorByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteCollectorById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/collector/collectors/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteCollectorByIDReader{formats: a.formats},
@@ -952,6 +1081,7 @@ func (a *Client) DeleteCollectorByID(params *DeleteCollectorByIDParams) (*Delete
 		return nil, err
 	}
 	return result.(*DeleteCollectorByIDOK), nil
+
 }
 
 /*
@@ -962,13 +1092,14 @@ func (a *Client) DeleteCollectorGroupByID(params *DeleteCollectorGroupByIDParams
 	if params == nil {
 		params = NewDeleteCollectorGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteCollectorGroupById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/collector/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteCollectorGroupByIDReader{formats: a.formats},
@@ -980,6 +1111,7 @@ func (a *Client) DeleteCollectorGroupByID(params *DeleteCollectorGroupByIDParams
 		return nil, err
 	}
 	return result.(*DeleteCollectorGroupByIDOK), nil
+
 }
 
 /*
@@ -990,13 +1122,14 @@ func (a *Client) DeleteDashboardByID(params *DeleteDashboardByIDParams) (*Delete
 	if params == nil {
 		params = NewDeleteDashboardByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDashboardById",
 		Method:             "DELETE",
 		PathPattern:        "/dashboard/dashboards/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDashboardByIDReader{formats: a.formats},
@@ -1008,6 +1141,7 @@ func (a *Client) DeleteDashboardByID(params *DeleteDashboardByIDParams) (*Delete
 		return nil, err
 	}
 	return result.(*DeleteDashboardByIDOK), nil
+
 }
 
 /*
@@ -1018,13 +1152,14 @@ func (a *Client) DeleteDashboardGroupByID(params *DeleteDashboardGroupByIDParams
 	if params == nil {
 		params = NewDeleteDashboardGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDashboardGroupById",
 		Method:             "DELETE",
 		PathPattern:        "/dashboard/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDashboardGroupByIDReader{formats: a.formats},
@@ -1036,6 +1171,7 @@ func (a *Client) DeleteDashboardGroupByID(params *DeleteDashboardGroupByIDParams
 		return nil, err
 	}
 	return result.(*DeleteDashboardGroupByIDOK), nil
+
 }
 
 /*
@@ -1046,13 +1182,14 @@ func (a *Client) DeleteDatasourceByID(params *DeleteDatasourceByIDParams) (*Dele
 	if params == nil {
 		params = NewDeleteDatasourceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDatasourceById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/datasources/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDatasourceByIDReader{formats: a.formats},
@@ -1064,6 +1201,7 @@ func (a *Client) DeleteDatasourceByID(params *DeleteDatasourceByIDParams) (*Dele
 		return nil, err
 	}
 	return result.(*DeleteDatasourceByIDOK), nil
+
 }
 
 /*
@@ -1074,13 +1212,14 @@ func (a *Client) DeleteDeviceByID(params *DeleteDeviceByIDParams) (*DeleteDevice
 	if params == nil {
 		params = NewDeleteDeviceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDeviceById",
 		Method:             "DELETE",
 		PathPattern:        "/device/devices/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDeviceByIDReader{formats: a.formats},
@@ -1092,6 +1231,7 @@ func (a *Client) DeleteDeviceByID(params *DeleteDeviceByIDParams) (*DeleteDevice
 		return nil, err
 	}
 	return result.(*DeleteDeviceByIDOK), nil
+
 }
 
 /*
@@ -1102,13 +1242,14 @@ func (a *Client) DeleteDeviceDatasourceInstanceByID(params *DeleteDeviceDatasour
 	if params == nil {
 		params = NewDeleteDeviceDatasourceInstanceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDeviceDatasourceInstanceById",
 		Method:             "DELETE",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDeviceDatasourceInstanceByIDReader{formats: a.formats},
@@ -1120,6 +1261,7 @@ func (a *Client) DeleteDeviceDatasourceInstanceByID(params *DeleteDeviceDatasour
 		return nil, err
 	}
 	return result.(*DeleteDeviceDatasourceInstanceByIDOK), nil
+
 }
 
 /*
@@ -1130,13 +1272,14 @@ func (a *Client) DeleteDeviceGroupByID(params *DeleteDeviceGroupByIDParams) (*De
 	if params == nil {
 		params = NewDeleteDeviceGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDeviceGroupById",
 		Method:             "DELETE",
 		PathPattern:        "/device/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDeviceGroupByIDReader{formats: a.formats},
@@ -1148,6 +1291,7 @@ func (a *Client) DeleteDeviceGroupByID(params *DeleteDeviceGroupByIDParams) (*De
 		return nil, err
 	}
 	return result.(*DeleteDeviceGroupByIDOK), nil
+
 }
 
 /*
@@ -1158,13 +1302,14 @@ func (a *Client) DeleteDeviceGroupClusterAlertConfByID(params *DeleteDeviceGroup
 	if params == nil {
 		params = NewDeleteDeviceGroupClusterAlertConfByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDeviceGroupClusterAlertConfById",
 		Method:             "DELETE",
 		PathPattern:        "/device/groups/{deviceGroupId}/clusterAlertConf/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDeviceGroupClusterAlertConfByIDReader{formats: a.formats},
@@ -1176,6 +1321,7 @@ func (a *Client) DeleteDeviceGroupClusterAlertConfByID(params *DeleteDeviceGroup
 		return nil, err
 	}
 	return result.(*DeleteDeviceGroupClusterAlertConfByIDOK), nil
+
 }
 
 /*
@@ -1186,13 +1332,14 @@ func (a *Client) DeleteDeviceGroupPropertyByName(params *DeleteDeviceGroupProper
 	if params == nil {
 		params = NewDeleteDeviceGroupPropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDeviceGroupPropertyByName",
 		Method:             "DELETE",
 		PathPattern:        "/device/groups/{gid}/properties/{name}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDeviceGroupPropertyByNameReader{formats: a.formats},
@@ -1204,6 +1351,7 @@ func (a *Client) DeleteDeviceGroupPropertyByName(params *DeleteDeviceGroupProper
 		return nil, err
 	}
 	return result.(*DeleteDeviceGroupPropertyByNameOK), nil
+
 }
 
 /*
@@ -1214,13 +1362,14 @@ func (a *Client) DeleteDevicePropertyByName(params *DeleteDevicePropertyByNamePa
 	if params == nil {
 		params = NewDeleteDevicePropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteDevicePropertyByName",
 		Method:             "DELETE",
 		PathPattern:        "/device/devices/{deviceId}/properties/{name}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteDevicePropertyByNameReader{formats: a.formats},
@@ -1232,6 +1381,7 @@ func (a *Client) DeleteDevicePropertyByName(params *DeleteDevicePropertyByNamePa
 		return nil, err
 	}
 	return result.(*DeleteDevicePropertyByNameOK), nil
+
 }
 
 /*
@@ -1242,13 +1392,14 @@ func (a *Client) DeleteEscalationChainByID(params *DeleteEscalationChainByIDPara
 	if params == nil {
 		params = NewDeleteEscalationChainByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteEscalationChainById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/alert/chains/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteEscalationChainByIDReader{formats: a.formats},
@@ -1260,6 +1411,7 @@ func (a *Client) DeleteEscalationChainByID(params *DeleteEscalationChainByIDPara
 		return nil, err
 	}
 	return result.(*DeleteEscalationChainByIDOK), nil
+
 }
 
 /*
@@ -1270,13 +1422,14 @@ func (a *Client) DeleteNetscanByID(params *DeleteNetscanByIDParams) (*DeleteNets
 	if params == nil {
 		params = NewDeleteNetscanByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteNetscanById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/netscans/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteNetscanByIDReader{formats: a.formats},
@@ -1288,6 +1441,7 @@ func (a *Client) DeleteNetscanByID(params *DeleteNetscanByIDParams) (*DeleteNets
 		return nil, err
 	}
 	return result.(*DeleteNetscanByIDOK), nil
+
 }
 
 /*
@@ -1298,13 +1452,14 @@ func (a *Client) DeleteOpsNoteByID(params *DeleteOpsNoteByIDParams) (*DeleteOpsN
 	if params == nil {
 		params = NewDeleteOpsNoteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteOpsNoteById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/opsnotes/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteOpsNoteByIDReader{formats: a.formats},
@@ -1316,6 +1471,7 @@ func (a *Client) DeleteOpsNoteByID(params *DeleteOpsNoteByIDParams) (*DeleteOpsN
 		return nil, err
 	}
 	return result.(*DeleteOpsNoteByIDOK), nil
+
 }
 
 /*
@@ -1326,13 +1482,14 @@ func (a *Client) DeleteRecipientGroupByID(params *DeleteRecipientGroupByIDParams
 	if params == nil {
 		params = NewDeleteRecipientGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteRecipientGroupById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/recipientgroups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteRecipientGroupByIDReader{formats: a.formats},
@@ -1344,6 +1501,7 @@ func (a *Client) DeleteRecipientGroupByID(params *DeleteRecipientGroupByIDParams
 		return nil, err
 	}
 	return result.(*DeleteRecipientGroupByIDOK), nil
+
 }
 
 /*
@@ -1354,13 +1512,14 @@ func (a *Client) DeleteReportByID(params *DeleteReportByIDParams) (*DeleteReport
 	if params == nil {
 		params = NewDeleteReportByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteReportById",
 		Method:             "DELETE",
 		PathPattern:        "/report/reports/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteReportByIDReader{formats: a.formats},
@@ -1372,6 +1531,7 @@ func (a *Client) DeleteReportByID(params *DeleteReportByIDParams) (*DeleteReport
 		return nil, err
 	}
 	return result.(*DeleteReportByIDOK), nil
+
 }
 
 /*
@@ -1382,13 +1542,14 @@ func (a *Client) DeleteReportGroupByID(params *DeleteReportGroupByIDParams) (*De
 	if params == nil {
 		params = NewDeleteReportGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteReportGroupById",
 		Method:             "DELETE",
 		PathPattern:        "/report/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteReportGroupByIDReader{formats: a.formats},
@@ -1400,6 +1561,7 @@ func (a *Client) DeleteReportGroupByID(params *DeleteReportGroupByIDParams) (*De
 		return nil, err
 	}
 	return result.(*DeleteReportGroupByIDOK), nil
+
 }
 
 /*
@@ -1410,13 +1572,14 @@ func (a *Client) DeleteRoleByID(params *DeleteRoleByIDParams) (*DeleteRoleByIDOK
 	if params == nil {
 		params = NewDeleteRoleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteRoleById",
 		Method:             "DELETE",
 		PathPattern:        "/setting/roles/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteRoleByIDReader{formats: a.formats},
@@ -1428,6 +1591,7 @@ func (a *Client) DeleteRoleByID(params *DeleteRoleByIDParams) (*DeleteRoleByIDOK
 		return nil, err
 	}
 	return result.(*DeleteRoleByIDOK), nil
+
 }
 
 /*
@@ -1438,13 +1602,14 @@ func (a *Client) DeleteSDTByID(params *DeleteSDTByIDParams) (*DeleteSDTByIDOK, e
 	if params == nil {
 		params = NewDeleteSDTByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteSDTById",
 		Method:             "DELETE",
 		PathPattern:        "/sdt/sdts/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteSDTByIDReader{formats: a.formats},
@@ -1456,6 +1621,7 @@ func (a *Client) DeleteSDTByID(params *DeleteSDTByIDParams) (*DeleteSDTByIDOK, e
 		return nil, err
 	}
 	return result.(*DeleteSDTByIDOK), nil
+
 }
 
 /*
@@ -1466,13 +1632,14 @@ func (a *Client) DeleteWebsiteByID(params *DeleteWebsiteByIDParams) (*DeleteWebs
 	if params == nil {
 		params = NewDeleteWebsiteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteWebsiteById",
 		Method:             "DELETE",
 		PathPattern:        "/website/websites/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteWebsiteByIDReader{formats: a.formats},
@@ -1484,6 +1651,7 @@ func (a *Client) DeleteWebsiteByID(params *DeleteWebsiteByIDParams) (*DeleteWebs
 		return nil, err
 	}
 	return result.(*DeleteWebsiteByIDOK), nil
+
 }
 
 /*
@@ -1494,6 +1662,7 @@ func (a *Client) DeleteWebsiteGroupByID(params *DeleteWebsiteGroupByIDParams) (*
 	if params == nil {
 		params = NewDeleteWebsiteGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteWebsiteGroupById",
@@ -1512,6 +1681,7 @@ func (a *Client) DeleteWebsiteGroupByID(params *DeleteWebsiteGroupByIDParams) (*
 		return nil, err
 	}
 	return result.(*DeleteWebsiteGroupByIDOK), nil
+
 }
 
 /*
@@ -1522,13 +1692,14 @@ func (a *Client) DeleteWidgetByID(params *DeleteWidgetByIDParams) (*DeleteWidget
 	if params == nil {
 		params = NewDeleteWidgetByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "deleteWidgetById",
 		Method:             "DELETE",
 		PathPattern:        "/dashboard/widgets/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &DeleteWidgetByIDReader{formats: a.formats},
@@ -1540,6 +1711,7 @@ func (a *Client) DeleteWidgetByID(params *DeleteWidgetByIDParams) (*DeleteWidget
 		return nil, err
 	}
 	return result.(*DeleteWidgetByIDOK), nil
+
 }
 
 /*
@@ -1550,6 +1722,7 @@ func (a *Client) ExecuteDebugCommand(params *ExecuteDebugCommandParams) (*Execut
 	if params == nil {
 		params = NewExecuteDebugCommandParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "executeDebugCommand",
@@ -1568,6 +1741,37 @@ func (a *Client) ExecuteDebugCommand(params *ExecuteDebugCommandParams) (*Execut
 		return nil, err
 	}
 	return result.(*ExecuteDebugCommandOK), nil
+
+}
+
+/*
+FetchDeviceInstancesData fetches device instances data
+*/
+func (a *Client) FetchDeviceInstancesData(params *FetchDeviceInstancesDataParams) (*FetchDeviceInstancesDataOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewFetchDeviceInstancesDataParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "fetchDeviceInstancesData",
+		Method:             "POST",
+		PathPattern:        "/device/instances/datafetch",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &FetchDeviceInstancesDataReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*FetchDeviceInstancesDataOK), nil
+
 }
 
 /*
@@ -1578,6 +1782,7 @@ func (a *Client) GenerateReportByID(params *GenerateReportByIDParams) (*Generate
 	if params == nil {
 		params = NewGenerateReportByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "generateReportById",
@@ -1596,6 +1801,7 @@ func (a *Client) GenerateReportByID(params *GenerateReportByIDParams) (*Generate
 		return nil, err
 	}
 	return result.(*GenerateReportByIDOK), nil
+
 }
 
 /*
@@ -1606,13 +1812,14 @@ func (a *Client) GetAdminByID(params *GetAdminByIDParams) (*GetAdminByIDOK, erro
 	if params == nil {
 		params = NewGetAdminByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAdminById",
 		Method:             "GET",
 		PathPattern:        "/setting/admins/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAdminByIDReader{formats: a.formats},
@@ -1624,6 +1831,7 @@ func (a *Client) GetAdminByID(params *GetAdminByIDParams) (*GetAdminByIDOK, erro
 		return nil, err
 	}
 	return result.(*GetAdminByIDOK), nil
+
 }
 
 /*
@@ -1634,13 +1842,14 @@ func (a *Client) GetAdminList(params *GetAdminListParams) (*GetAdminListOK, erro
 	if params == nil {
 		params = NewGetAdminListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAdminList",
 		Method:             "GET",
 		PathPattern:        "/setting/admins",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAdminListReader{formats: a.formats},
@@ -1652,6 +1861,7 @@ func (a *Client) GetAdminList(params *GetAdminListParams) (*GetAdminListOK, erro
 		return nil, err
 	}
 	return result.(*GetAdminListOK), nil
+
 }
 
 /*
@@ -1662,13 +1872,14 @@ func (a *Client) GetAlertByID(params *GetAlertByIDParams) (*GetAlertByIDOK, erro
 	if params == nil {
 		params = NewGetAlertByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAlertById",
 		Method:             "GET",
 		PathPattern:        "/alert/alerts/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAlertByIDReader{formats: a.formats},
@@ -1680,6 +1891,7 @@ func (a *Client) GetAlertByID(params *GetAlertByIDParams) (*GetAlertByIDOK, erro
 		return nil, err
 	}
 	return result.(*GetAlertByIDOK), nil
+
 }
 
 /*
@@ -1690,13 +1902,14 @@ func (a *Client) GetAlertList(params *GetAlertListParams) (*GetAlertListOK, erro
 	if params == nil {
 		params = NewGetAlertListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAlertList",
 		Method:             "GET",
 		PathPattern:        "/alert/alerts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAlertListReader{formats: a.formats},
@@ -1708,6 +1921,7 @@ func (a *Client) GetAlertList(params *GetAlertListParams) (*GetAlertListOK, erro
 		return nil, err
 	}
 	return result.(*GetAlertListOK), nil
+
 }
 
 /*
@@ -1718,13 +1932,14 @@ func (a *Client) GetAlertListByDeviceGroupID(params *GetAlertListByDeviceGroupID
 	if params == nil {
 		params = NewGetAlertListByDeviceGroupIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAlertListByDeviceGroupId",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{id}/alerts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAlertListByDeviceGroupIDReader{formats: a.formats},
@@ -1736,6 +1951,7 @@ func (a *Client) GetAlertListByDeviceGroupID(params *GetAlertListByDeviceGroupID
 		return nil, err
 	}
 	return result.(*GetAlertListByDeviceGroupIDOK), nil
+
 }
 
 /*
@@ -1746,13 +1962,14 @@ func (a *Client) GetAlertListByDeviceID(params *GetAlertListByDeviceIDParams) (*
 	if params == nil {
 		params = NewGetAlertListByDeviceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAlertListByDeviceId",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}/alerts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAlertListByDeviceIDReader{formats: a.formats},
@@ -1764,6 +1981,7 @@ func (a *Client) GetAlertListByDeviceID(params *GetAlertListByDeviceIDParams) (*
 		return nil, err
 	}
 	return result.(*GetAlertListByDeviceIDOK), nil
+
 }
 
 /*
@@ -1774,13 +1992,14 @@ func (a *Client) GetAlertRuleByID(params *GetAlertRuleByIDParams) (*GetAlertRule
 	if params == nil {
 		params = NewGetAlertRuleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAlertRuleById",
 		Method:             "GET",
 		PathPattern:        "/setting/alert/rules/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAlertRuleByIDReader{formats: a.formats},
@@ -1792,6 +2011,7 @@ func (a *Client) GetAlertRuleByID(params *GetAlertRuleByIDParams) (*GetAlertRule
 		return nil, err
 	}
 	return result.(*GetAlertRuleByIDOK), nil
+
 }
 
 /*
@@ -1802,13 +2022,14 @@ func (a *Client) GetAlertRuleList(params *GetAlertRuleListParams) (*GetAlertRule
 	if params == nil {
 		params = NewGetAlertRuleListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAlertRuleList",
 		Method:             "GET",
 		PathPattern:        "/setting/alert/rules",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAlertRuleListReader{formats: a.formats},
@@ -1820,23 +2041,25 @@ func (a *Client) GetAlertRuleList(params *GetAlertRuleListParams) (*GetAlertRule
 		return nil, err
 	}
 	return result.(*GetAlertRuleListOK), nil
+
 }
 
 /*
-GetAllSDTListByDeviceID gets sdts for a device
+GetAllSDTListByDeviceID gets s d ts for a device
 */
 func (a *Client) GetAllSDTListByDeviceID(params *GetAllSDTListByDeviceIDParams) (*GetAllSDTListByDeviceIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetAllSDTListByDeviceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAllSDTListByDeviceId",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}/sdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAllSDTListByDeviceIDReader{formats: a.formats},
@@ -1848,16 +2071,18 @@ func (a *Client) GetAllSDTListByDeviceID(params *GetAllSDTListByDeviceIDParams) 
 		return nil, err
 	}
 	return result.(*GetAllSDTListByDeviceIDOK), nil
+
 }
 
 /*
-GetAllSDTListByWebsiteGroupID gets a list of sdts for a website group
+GetAllSDTListByWebsiteGroupID gets a list of s d ts for a website group
 */
 func (a *Client) GetAllSDTListByWebsiteGroupID(params *GetAllSDTListByWebsiteGroupIDParams) (*GetAllSDTListByWebsiteGroupIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetAllSDTListByWebsiteGroupIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAllSDTListByWebsiteGroupId",
@@ -1876,6 +2101,7 @@ func (a *Client) GetAllSDTListByWebsiteGroupID(params *GetAllSDTListByWebsiteGro
 		return nil, err
 	}
 	return result.(*GetAllSDTListByWebsiteGroupIDOK), nil
+
 }
 
 /*
@@ -1886,13 +2112,14 @@ func (a *Client) GetAPITokenList(params *GetAPITokenListParams) (*GetAPITokenLis
 	if params == nil {
 		params = NewGetAPITokenListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getApiTokenList",
 		Method:             "GET",
 		PathPattern:        "/setting/admins/apitokens",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAPITokenListReader{formats: a.formats},
@@ -1904,6 +2131,7 @@ func (a *Client) GetAPITokenList(params *GetAPITokenListParams) (*GetAPITokenLis
 		return nil, err
 	}
 	return result.(*GetAPITokenListOK), nil
+
 }
 
 /*
@@ -1914,13 +2142,14 @@ func (a *Client) GetAPITokenListByAdminID(params *GetAPITokenListByAdminIDParams
 	if params == nil {
 		params = NewGetAPITokenListByAdminIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getApiTokenListByAdminId",
 		Method:             "GET",
 		PathPattern:        "/setting/admins/{adminId}/apitokens",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAPITokenListByAdminIDReader{formats: a.formats},
@@ -1932,6 +2161,67 @@ func (a *Client) GetAPITokenListByAdminID(params *GetAPITokenListByAdminIDParams
 		return nil, err
 	}
 	return result.(*GetAPITokenListByAdminIDOK), nil
+
+}
+
+/*
+GetAppliesToFunctionByID gets applies to function
+*/
+func (a *Client) GetAppliesToFunctionByID(params *GetAppliesToFunctionByIDParams) (*GetAppliesToFunctionByIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetAppliesToFunctionByIDParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getAppliesToFunctionById",
+		Method:             "GET",
+		PathPattern:        "/setting/functions/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetAppliesToFunctionByIDReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetAppliesToFunctionByIDOK), nil
+
+}
+
+/*
+GetAppliesToFunctionList gets applies to function list
+*/
+func (a *Client) GetAppliesToFunctionList(params *GetAppliesToFunctionListParams) (*GetAppliesToFunctionListOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetAppliesToFunctionListParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getAppliesToFunctionList",
+		Method:             "GET",
+		PathPattern:        "/setting/functions",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetAppliesToFunctionListReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetAppliesToFunctionListOK), nil
+
 }
 
 /*
@@ -1942,13 +2232,14 @@ func (a *Client) GetAssociatedDeviceListByDataSourceID(params *GetAssociatedDevi
 	if params == nil {
 		params = NewGetAssociatedDeviceListByDataSourceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAssociatedDeviceListByDataSourceId",
 		Method:             "GET",
 		PathPattern:        "/setting/datasources/{id}/devices",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAssociatedDeviceListByDataSourceIDReader{formats: a.formats},
@@ -1960,6 +2251,7 @@ func (a *Client) GetAssociatedDeviceListByDataSourceID(params *GetAssociatedDevi
 		return nil, err
 	}
 	return result.(*GetAssociatedDeviceListByDataSourceIDOK), nil
+
 }
 
 /*
@@ -1970,13 +2262,14 @@ func (a *Client) GetAuditLogByID(params *GetAuditLogByIDParams) (*GetAuditLogByI
 	if params == nil {
 		params = NewGetAuditLogByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAuditLogById",
 		Method:             "GET",
 		PathPattern:        "/setting/accesslogs/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAuditLogByIDReader{formats: a.formats},
@@ -1988,6 +2281,7 @@ func (a *Client) GetAuditLogByID(params *GetAuditLogByIDParams) (*GetAuditLogByI
 		return nil, err
 	}
 	return result.(*GetAuditLogByIDOK), nil
+
 }
 
 /*
@@ -1998,13 +2292,14 @@ func (a *Client) GetAuditLogList(params *GetAuditLogListParams) (*GetAuditLogLis
 	if params == nil {
 		params = NewGetAuditLogListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAuditLogList",
 		Method:             "GET",
 		PathPattern:        "/setting/accesslogs",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAuditLogListReader{formats: a.formats},
@@ -2016,6 +2311,7 @@ func (a *Client) GetAuditLogList(params *GetAuditLogListParams) (*GetAuditLogLis
 		return nil, err
 	}
 	return result.(*GetAuditLogListOK), nil
+
 }
 
 /*
@@ -2026,13 +2322,14 @@ func (a *Client) GetAwsExternalID(params *GetAwsExternalIDParams) (*GetAwsExtern
 	if params == nil {
 		params = NewGetAwsExternalIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getAwsExternalId",
 		Method:             "GET",
 		PathPattern:        "/aws/externalId",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetAwsExternalIDReader{formats: a.formats},
@@ -2044,6 +2341,7 @@ func (a *Client) GetAwsExternalID(params *GetAwsExternalIDParams) (*GetAwsExtern
 		return nil, err
 	}
 	return result.(*GetAwsExternalIDOK), nil
+
 }
 
 /*
@@ -2054,13 +2352,14 @@ func (a *Client) GetCollectorByID(params *GetCollectorByIDParams) (*GetCollector
 	if params == nil {
 		params = NewGetCollectorByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getCollectorById",
 		Method:             "GET",
 		PathPattern:        "/setting/collector/collectors/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetCollectorByIDReader{formats: a.formats},
@@ -2072,6 +2371,7 @@ func (a *Client) GetCollectorByID(params *GetCollectorByIDParams) (*GetCollector
 		return nil, err
 	}
 	return result.(*GetCollectorByIDOK), nil
+
 }
 
 /*
@@ -2082,13 +2382,14 @@ func (a *Client) GetCollectorGroupByID(params *GetCollectorGroupByIDParams) (*Ge
 	if params == nil {
 		params = NewGetCollectorGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getCollectorGroupById",
 		Method:             "GET",
 		PathPattern:        "/setting/collector/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetCollectorGroupByIDReader{formats: a.formats},
@@ -2100,6 +2401,7 @@ func (a *Client) GetCollectorGroupByID(params *GetCollectorGroupByIDParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetCollectorGroupByIDOK), nil
+
 }
 
 /*
@@ -2110,13 +2412,14 @@ func (a *Client) GetCollectorGroupList(params *GetCollectorGroupListParams) (*Ge
 	if params == nil {
 		params = NewGetCollectorGroupListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getCollectorGroupList",
 		Method:             "GET",
 		PathPattern:        "/setting/collector/groups",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetCollectorGroupListReader{formats: a.formats},
@@ -2128,6 +2431,7 @@ func (a *Client) GetCollectorGroupList(params *GetCollectorGroupListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetCollectorGroupListOK), nil
+
 }
 
 /*
@@ -2138,13 +2442,14 @@ func (a *Client) GetCollectorInstaller(params *GetCollectorInstallerParams, writ
 	if params == nil {
 		params = NewGetCollectorInstallerParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getCollectorInstaller",
 		Method:             "GET",
 		PathPattern:        "/setting/collector/collectors/{collectorId}/installers/{osAndArch}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetCollectorInstallerReader{formats: a.formats, writer: writer},
@@ -2156,6 +2461,7 @@ func (a *Client) GetCollectorInstaller(params *GetCollectorInstallerParams, writ
 		return nil, err
 	}
 	return result.(*GetCollectorInstallerOK), nil
+
 }
 
 /*
@@ -2166,13 +2472,14 @@ func (a *Client) GetCollectorList(params *GetCollectorListParams) (*GetCollector
 	if params == nil {
 		params = NewGetCollectorListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getCollectorList",
 		Method:             "GET",
 		PathPattern:        "/setting/collector/collectors",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetCollectorListReader{formats: a.formats},
@@ -2184,6 +2491,37 @@ func (a *Client) GetCollectorList(params *GetCollectorListParams) (*GetCollector
 		return nil, err
 	}
 	return result.(*GetCollectorListOK), nil
+
+}
+
+/*
+GetCollectorVersionList gets collector version list
+*/
+func (a *Client) GetCollectorVersionList(params *GetCollectorVersionListParams) (*GetCollectorVersionListOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetCollectorVersionListParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getCollectorVersionList",
+		Method:             "GET",
+		PathPattern:        "/setting/collector/collectors/versions",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetCollectorVersionListReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetCollectorVersionListOK), nil
+
 }
 
 /*
@@ -2194,13 +2532,14 @@ func (a *Client) GetDashboardByID(params *GetDashboardByIDParams) (*GetDashboard
 	if params == nil {
 		params = NewGetDashboardByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDashboardById",
 		Method:             "GET",
 		PathPattern:        "/dashboard/dashboards/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDashboardByIDReader{formats: a.formats},
@@ -2212,6 +2551,7 @@ func (a *Client) GetDashboardByID(params *GetDashboardByIDParams) (*GetDashboard
 		return nil, err
 	}
 	return result.(*GetDashboardByIDOK), nil
+
 }
 
 /*
@@ -2222,13 +2562,14 @@ func (a *Client) GetDashboardGroupByID(params *GetDashboardGroupByIDParams) (*Ge
 	if params == nil {
 		params = NewGetDashboardGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDashboardGroupById",
 		Method:             "GET",
 		PathPattern:        "/dashboard/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDashboardGroupByIDReader{formats: a.formats},
@@ -2240,6 +2581,7 @@ func (a *Client) GetDashboardGroupByID(params *GetDashboardGroupByIDParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDashboardGroupByIDOK), nil
+
 }
 
 /*
@@ -2250,13 +2592,14 @@ func (a *Client) GetDashboardGroupList(params *GetDashboardGroupListParams) (*Ge
 	if params == nil {
 		params = NewGetDashboardGroupListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDashboardGroupList",
 		Method:             "GET",
 		PathPattern:        "/dashboard/groups",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDashboardGroupListReader{formats: a.formats},
@@ -2268,6 +2611,7 @@ func (a *Client) GetDashboardGroupList(params *GetDashboardGroupListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDashboardGroupListOK), nil
+
 }
 
 /*
@@ -2278,13 +2622,14 @@ func (a *Client) GetDashboardList(params *GetDashboardListParams) (*GetDashboard
 	if params == nil {
 		params = NewGetDashboardListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDashboardList",
 		Method:             "GET",
 		PathPattern:        "/dashboard/dashboards",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDashboardListReader{formats: a.formats},
@@ -2296,6 +2641,7 @@ func (a *Client) GetDashboardList(params *GetDashboardListParams) (*GetDashboard
 		return nil, err
 	}
 	return result.(*GetDashboardListOK), nil
+
 }
 
 /*
@@ -2306,13 +2652,14 @@ func (a *Client) GetDataSourceOverviewGraphByID(params *GetDataSourceOverviewGra
 	if params == nil {
 		params = NewGetDataSourceOverviewGraphByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDataSourceOverviewGraphById",
 		Method:             "GET",
 		PathPattern:        "/setting/datasources/{dsId}/ographs/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDataSourceOverviewGraphByIDReader{formats: a.formats},
@@ -2324,6 +2671,7 @@ func (a *Client) GetDataSourceOverviewGraphByID(params *GetDataSourceOverviewGra
 		return nil, err
 	}
 	return result.(*GetDataSourceOverviewGraphByIDOK), nil
+
 }
 
 /*
@@ -2334,13 +2682,14 @@ func (a *Client) GetDataSourceOverviewGraphList(params *GetDataSourceOverviewGra
 	if params == nil {
 		params = NewGetDataSourceOverviewGraphListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDataSourceOverviewGraphList",
 		Method:             "GET",
 		PathPattern:        "/setting/datasources/{dsId}/ographs",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDataSourceOverviewGraphListReader{formats: a.formats},
@@ -2352,6 +2701,7 @@ func (a *Client) GetDataSourceOverviewGraphList(params *GetDataSourceOverviewGra
 		return nil, err
 	}
 	return result.(*GetDataSourceOverviewGraphListOK), nil
+
 }
 
 /*
@@ -2362,13 +2712,14 @@ func (a *Client) GetDatasourceByID(params *GetDatasourceByIDParams) (*GetDatasou
 	if params == nil {
 		params = NewGetDatasourceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDatasourceById",
 		Method:             "GET",
 		PathPattern:        "/setting/datasources/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDatasourceByIDReader{formats: a.formats},
@@ -2380,6 +2731,7 @@ func (a *Client) GetDatasourceByID(params *GetDatasourceByIDParams) (*GetDatasou
 		return nil, err
 	}
 	return result.(*GetDatasourceByIDOK), nil
+
 }
 
 /*
@@ -2390,13 +2742,14 @@ func (a *Client) GetDatasourceList(params *GetDatasourceListParams) (*GetDatasou
 	if params == nil {
 		params = NewGetDatasourceListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDatasourceList",
 		Method:             "GET",
 		PathPattern:        "/setting/datasources",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDatasourceListReader{formats: a.formats},
@@ -2408,6 +2761,7 @@ func (a *Client) GetDatasourceList(params *GetDatasourceListParams) (*GetDatasou
 		return nil, err
 	}
 	return result.(*GetDatasourceListOK), nil
+
 }
 
 /*
@@ -2418,13 +2772,14 @@ func (a *Client) GetDebugCommandResult(params *GetDebugCommandResultParams) (*Ge
 	if params == nil {
 		params = NewGetDebugCommandResultParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDebugCommandResult",
 		Method:             "GET",
 		PathPattern:        "/debug/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDebugCommandResultReader{formats: a.formats},
@@ -2436,6 +2791,7 @@ func (a *Client) GetDebugCommandResult(params *GetDebugCommandResultParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDebugCommandResultOK), nil
+
 }
 
 /*
@@ -2446,13 +2802,14 @@ func (a *Client) GetDeviceByID(params *GetDeviceByIDParams) (*GetDeviceByIDOK, e
 	if params == nil {
 		params = NewGetDeviceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceById",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceByIDReader{formats: a.formats},
@@ -2464,6 +2821,7 @@ func (a *Client) GetDeviceByID(params *GetDeviceByIDParams) (*GetDeviceByIDOK, e
 		return nil, err
 	}
 	return result.(*GetDeviceByIDOK), nil
+
 }
 
 /*
@@ -2474,13 +2832,14 @@ func (a *Client) GetDeviceConfigSourceConfigByID(params *GetDeviceConfigSourceCo
 	if params == nil {
 		params = NewGetDeviceConfigSourceConfigByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceConfigSourceConfigById",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{instanceId}/config/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceConfigSourceConfigByIDReader{formats: a.formats},
@@ -2492,23 +2851,25 @@ func (a *Client) GetDeviceConfigSourceConfigByID(params *GetDeviceConfigSourceCo
 		return nil, err
 	}
 	return result.(*GetDeviceConfigSourceConfigByIDOK), nil
+
 }
 
 /*
-GetDeviceConfigSourceConfigList gets config instances for a configsource
+GetDeviceConfigSourceConfigList gets detailed config information for the instance
 */
 func (a *Client) GetDeviceConfigSourceConfigList(params *GetDeviceConfigSourceConfigListParams) (*GetDeviceConfigSourceConfigListOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetDeviceConfigSourceConfigListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceConfigSourceConfigList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{instanceId}/config",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceConfigSourceConfigListReader{formats: a.formats},
@@ -2520,6 +2881,7 @@ func (a *Client) GetDeviceConfigSourceConfigList(params *GetDeviceConfigSourceCo
 		return nil, err
 	}
 	return result.(*GetDeviceConfigSourceConfigListOK), nil
+
 }
 
 /*
@@ -2530,13 +2892,14 @@ func (a *Client) GetDeviceDatasourceByID(params *GetDeviceDatasourceByIDParams) 
 	if params == nil {
 		params = NewGetDeviceDatasourceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceById",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceByIDReader{formats: a.formats},
@@ -2548,6 +2911,7 @@ func (a *Client) GetDeviceDatasourceByID(params *GetDeviceDatasourceByIDParams) 
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceByIDOK), nil
+
 }
 
 /*
@@ -2558,13 +2922,14 @@ func (a *Client) GetDeviceDatasourceDataByID(params *GetDeviceDatasourceDataByID
 	if params == nil {
 		params = NewGetDeviceDatasourceDataByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceDataById",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{id}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceDataByIDReader{formats: a.formats},
@@ -2576,6 +2941,7 @@ func (a *Client) GetDeviceDatasourceDataByID(params *GetDeviceDatasourceDataByID
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceDataByIDOK), nil
+
 }
 
 /*
@@ -2586,13 +2952,14 @@ func (a *Client) GetDeviceDatasourceInstanceAlertSettingByID(params *GetDeviceDa
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceAlertSettingByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceAlertSettingById",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{instanceId}/alertsettings/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceAlertSettingByIDReader{formats: a.formats},
@@ -2604,26 +2971,28 @@ func (a *Client) GetDeviceDatasourceInstanceAlertSettingByID(params *GetDeviceDa
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceAlertSettingByIDOK), nil
+
 }
 
 /*
-GetDeviceDatasourceInstanceAlertSettingList gets a list of alert settings for a device
+GetDeviceDatasourceInstanceAlertSettingListOfDSI gets a list of alert settings for a device datasource instance
 */
-func (a *Client) GetDeviceDatasourceInstanceAlertSettingList(params *GetDeviceDatasourceInstanceAlertSettingListParams) (*GetDeviceDatasourceInstanceAlertSettingListOK, error) {
+func (a *Client) GetDeviceDatasourceInstanceAlertSettingListOfDSI(params *GetDeviceDatasourceInstanceAlertSettingListOfDSIParams) (*GetDeviceDatasourceInstanceAlertSettingListOfDSIOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetDeviceDatasourceInstanceAlertSettingListParams()
+		params = NewGetDeviceDatasourceInstanceAlertSettingListOfDSIParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "getDeviceDatasourceInstanceAlertSettingList",
+		ID:                 "getDeviceDatasourceInstanceAlertSettingListOfDSI",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{instanceId}/alertsettings",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
-		Reader:             &GetDeviceDatasourceInstanceAlertSettingListReader{formats: a.formats},
+		Reader:             &GetDeviceDatasourceInstanceAlertSettingListOfDSIReader{formats: a.formats},
 		AuthInfo:           a.authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -2631,7 +3000,38 @@ func (a *Client) GetDeviceDatasourceInstanceAlertSettingList(params *GetDeviceDa
 	if err != nil {
 		return nil, err
 	}
-	return result.(*GetDeviceDatasourceInstanceAlertSettingListOK), nil
+	return result.(*GetDeviceDatasourceInstanceAlertSettingListOfDSIOK), nil
+
+}
+
+/*
+GetDeviceDatasourceInstanceAlertSettingListOfDevice gets a list of alert settings for a device
+*/
+func (a *Client) GetDeviceDatasourceInstanceAlertSettingListOfDevice(params *GetDeviceDatasourceInstanceAlertSettingListOfDeviceParams) (*GetDeviceDatasourceInstanceAlertSettingListOfDeviceOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetDeviceDatasourceInstanceAlertSettingListOfDeviceParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getDeviceDatasourceInstanceAlertSettingListOfDevice",
+		Method:             "GET",
+		PathPattern:        "/device/devices/{deviceId}/alertsettings",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetDeviceDatasourceInstanceAlertSettingListOfDeviceReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetDeviceDatasourceInstanceAlertSettingListOfDeviceOK), nil
+
 }
 
 /*
@@ -2642,13 +3042,14 @@ func (a *Client) GetDeviceDatasourceInstanceByID(params *GetDeviceDatasourceInst
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceById",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceByIDReader{formats: a.formats},
@@ -2660,6 +3061,7 @@ func (a *Client) GetDeviceDatasourceInstanceByID(params *GetDeviceDatasourceInst
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceByIDOK), nil
+
 }
 
 /*
@@ -2670,13 +3072,14 @@ func (a *Client) GetDeviceDatasourceInstanceData(params *GetDeviceDatasourceInst
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceDataParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceData",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceDataReader{formats: a.formats},
@@ -2688,6 +3091,7 @@ func (a *Client) GetDeviceDatasourceInstanceData(params *GetDeviceDatasourceInst
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceDataOK), nil
+
 }
 
 /*
@@ -2698,13 +3102,14 @@ func (a *Client) GetDeviceDatasourceInstanceGraphData(params *GetDeviceDatasourc
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceGraphDataParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceGraphData",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}/graphs/{graphId}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceGraphDataReader{formats: a.formats},
@@ -2716,6 +3121,7 @@ func (a *Client) GetDeviceDatasourceInstanceGraphData(params *GetDeviceDatasourc
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGraphDataOK), nil
+
 }
 
 /*
@@ -2726,13 +3132,14 @@ func (a *Client) GetDeviceDatasourceInstanceGroupByID(params *GetDeviceDatasourc
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceGroupById",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{deviceDsId}/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceGroupByIDReader{formats: a.formats},
@@ -2744,6 +3151,7 @@ func (a *Client) GetDeviceDatasourceInstanceGroupByID(params *GetDeviceDatasourc
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGroupByIDOK), nil
+
 }
 
 /*
@@ -2754,13 +3162,14 @@ func (a *Client) GetDeviceDatasourceInstanceGroupList(params *GetDeviceDatasourc
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceGroupListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceGroupList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{deviceDsId}/groups",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceGroupListReader{formats: a.formats},
@@ -2772,6 +3181,7 @@ func (a *Client) GetDeviceDatasourceInstanceGroupList(params *GetDeviceDatasourc
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGroupListOK), nil
+
 }
 
 /*
@@ -2782,13 +3192,14 @@ func (a *Client) GetDeviceDatasourceInstanceGroupOverviewGraphData(params *GetDe
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceGroupOverviewGraphDataParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceGroupOverviewGraphData",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{deviceDsId}/groups/{dsigId}/graphs/{ographId}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceGroupOverviewGraphDataReader{formats: a.formats},
@@ -2800,6 +3211,7 @@ func (a *Client) GetDeviceDatasourceInstanceGroupOverviewGraphData(params *GetDe
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceGroupOverviewGraphDataOK), nil
+
 }
 
 /*
@@ -2810,13 +3222,14 @@ func (a *Client) GetDeviceDatasourceInstanceList(params *GetDeviceDatasourceInst
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceListReader{formats: a.formats},
@@ -2828,6 +3241,7 @@ func (a *Client) GetDeviceDatasourceInstanceList(params *GetDeviceDatasourceInst
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceListOK), nil
+
 }
 
 /*
@@ -2838,13 +3252,14 @@ func (a *Client) GetDeviceDatasourceInstanceSDTHistory(params *GetDeviceDatasour
 	if params == nil {
 		params = NewGetDeviceDatasourceInstanceSDTHistoryParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceInstanceSDTHistory",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}/historysdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceInstanceSDTHistoryReader{formats: a.formats},
@@ -2856,6 +3271,7 @@ func (a *Client) GetDeviceDatasourceInstanceSDTHistory(params *GetDeviceDatasour
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceInstanceSDTHistoryOK), nil
+
 }
 
 /*
@@ -2866,13 +3282,14 @@ func (a *Client) GetDeviceDatasourceList(params *GetDeviceDatasourceListParams) 
 	if params == nil {
 		params = NewGetDeviceDatasourceListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceDatasourceList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceDatasourceListReader{formats: a.formats},
@@ -2884,6 +3301,7 @@ func (a *Client) GetDeviceDatasourceList(params *GetDeviceDatasourceListParams) 
 		return nil, err
 	}
 	return result.(*GetDeviceDatasourceListOK), nil
+
 }
 
 /*
@@ -2894,13 +3312,14 @@ func (a *Client) GetDeviceGroupByID(params *GetDeviceGroupByIDParams) (*GetDevic
 	if params == nil {
 		params = NewGetDeviceGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupById",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupByIDReader{formats: a.formats},
@@ -2912,6 +3331,7 @@ func (a *Client) GetDeviceGroupByID(params *GetDeviceGroupByIDParams) (*GetDevic
 		return nil, err
 	}
 	return result.(*GetDeviceGroupByIDOK), nil
+
 }
 
 /*
@@ -2922,13 +3342,14 @@ func (a *Client) GetDeviceGroupClusterAlertConfByID(params *GetDeviceGroupCluste
 	if params == nil {
 		params = NewGetDeviceGroupClusterAlertConfByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupClusterAlertConfById",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{deviceGroupId}/clusterAlertConf/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupClusterAlertConfByIDReader{formats: a.formats},
@@ -2940,6 +3361,7 @@ func (a *Client) GetDeviceGroupClusterAlertConfByID(params *GetDeviceGroupCluste
 		return nil, err
 	}
 	return result.(*GetDeviceGroupClusterAlertConfByIDOK), nil
+
 }
 
 /*
@@ -2950,13 +3372,14 @@ func (a *Client) GetDeviceGroupClusterAlertConfList(params *GetDeviceGroupCluste
 	if params == nil {
 		params = NewGetDeviceGroupClusterAlertConfListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupClusterAlertConfList",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{deviceGroupId}/clusterAlertConf",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupClusterAlertConfListReader{formats: a.formats},
@@ -2968,6 +3391,7 @@ func (a *Client) GetDeviceGroupClusterAlertConfList(params *GetDeviceGroupCluste
 		return nil, err
 	}
 	return result.(*GetDeviceGroupClusterAlertConfListOK), nil
+
 }
 
 /*
@@ -2978,13 +3402,14 @@ func (a *Client) GetDeviceGroupDatasourceAlertSetting(params *GetDeviceGroupData
 	if params == nil {
 		params = NewGetDeviceGroupDatasourceAlertSettingParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupDatasourceAlertSetting",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{deviceGroupId}/datasources/{dsId}/alertsettings",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupDatasourceAlertSettingReader{formats: a.formats},
@@ -2996,6 +3421,7 @@ func (a *Client) GetDeviceGroupDatasourceAlertSetting(params *GetDeviceGroupData
 		return nil, err
 	}
 	return result.(*GetDeviceGroupDatasourceAlertSettingOK), nil
+
 }
 
 /*
@@ -3006,13 +3432,14 @@ func (a *Client) GetDeviceGroupDatasourceByID(params *GetDeviceGroupDatasourceBy
 	if params == nil {
 		params = NewGetDeviceGroupDatasourceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupDatasourceById",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{deviceGroupId}/datasources/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupDatasourceByIDReader{formats: a.formats},
@@ -3024,6 +3451,7 @@ func (a *Client) GetDeviceGroupDatasourceByID(params *GetDeviceGroupDatasourceBy
 		return nil, err
 	}
 	return result.(*GetDeviceGroupDatasourceByIDOK), nil
+
 }
 
 /*
@@ -3034,13 +3462,14 @@ func (a *Client) GetDeviceGroupDatasourceList(params *GetDeviceGroupDatasourceLi
 	if params == nil {
 		params = NewGetDeviceGroupDatasourceListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupDatasourceList",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{deviceGroupId}/datasources",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupDatasourceListReader{formats: a.formats},
@@ -3052,6 +3481,7 @@ func (a *Client) GetDeviceGroupDatasourceList(params *GetDeviceGroupDatasourceLi
 		return nil, err
 	}
 	return result.(*GetDeviceGroupDatasourceListOK), nil
+
 }
 
 /*
@@ -3062,13 +3492,14 @@ func (a *Client) GetDeviceGroupList(params *GetDeviceGroupListParams) (*GetDevic
 	if params == nil {
 		params = NewGetDeviceGroupListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupList",
 		Method:             "GET",
 		PathPattern:        "/device/groups",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupListReader{formats: a.formats},
@@ -3080,6 +3511,7 @@ func (a *Client) GetDeviceGroupList(params *GetDeviceGroupListParams) (*GetDevic
 		return nil, err
 	}
 	return result.(*GetDeviceGroupListOK), nil
+
 }
 
 /*
@@ -3090,13 +3522,14 @@ func (a *Client) GetDeviceGroupPropertyByName(params *GetDeviceGroupPropertyByNa
 	if params == nil {
 		params = NewGetDeviceGroupPropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupPropertyByName",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{gid}/properties/{name}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupPropertyByNameReader{formats: a.formats},
@@ -3108,6 +3541,7 @@ func (a *Client) GetDeviceGroupPropertyByName(params *GetDeviceGroupPropertyByNa
 		return nil, err
 	}
 	return result.(*GetDeviceGroupPropertyByNameOK), nil
+
 }
 
 /*
@@ -3118,13 +3552,14 @@ func (a *Client) GetDeviceGroupPropertyList(params *GetDeviceGroupPropertyListPa
 	if params == nil {
 		params = NewGetDeviceGroupPropertyListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupPropertyList",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{gid}/properties",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupPropertyListReader{formats: a.formats},
@@ -3136,23 +3571,25 @@ func (a *Client) GetDeviceGroupPropertyList(params *GetDeviceGroupPropertyListPa
 		return nil, err
 	}
 	return result.(*GetDeviceGroupPropertyListOK), nil
+
 }
 
 /*
-GetDeviceGroupSDTList gets device group sdts
+GetDeviceGroupSDTList gets device group s d ts
 */
 func (a *Client) GetDeviceGroupSDTList(params *GetDeviceGroupSDTListParams) (*GetDeviceGroupSDTListOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetDeviceGroupSDTListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceGroupSDTList",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{id}/sdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceGroupSDTListReader{formats: a.formats},
@@ -3164,6 +3601,7 @@ func (a *Client) GetDeviceGroupSDTList(params *GetDeviceGroupSDTListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDeviceGroupSDTListOK), nil
+
 }
 
 /*
@@ -3174,13 +3612,14 @@ func (a *Client) GetDeviceInstanceGraphDataOnlyByInstanceID(params *GetDeviceIns
 	if params == nil {
 		params = NewGetDeviceInstanceGraphDataOnlyByInstanceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceInstanceGraphDataOnlyByInstanceId",
 		Method:             "GET",
 		PathPattern:        "/device/devicedatasourceinstances/{instanceId}/graphs/{graphId}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceInstanceGraphDataOnlyByInstanceIDReader{formats: a.formats},
@@ -3192,6 +3631,37 @@ func (a *Client) GetDeviceInstanceGraphDataOnlyByInstanceID(params *GetDeviceIns
 		return nil, err
 	}
 	return result.(*GetDeviceInstanceGraphDataOnlyByInstanceIDOK), nil
+
+}
+
+/*
+GetDeviceInstanceList gets device instance list
+*/
+func (a *Client) GetDeviceInstanceList(params *GetDeviceInstanceListParams) (*GetDeviceInstanceListOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetDeviceInstanceListParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getDeviceInstanceList",
+		Method:             "GET",
+		PathPattern:        "/device/devices/{id}/instances",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetDeviceInstanceListReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetDeviceInstanceListOK), nil
+
 }
 
 /*
@@ -3202,13 +3672,14 @@ func (a *Client) GetDeviceList(params *GetDeviceListParams) (*GetDeviceListOK, e
 	if params == nil {
 		params = NewGetDeviceListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDeviceList",
 		Method:             "GET",
 		PathPattern:        "/device/devices",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDeviceListReader{formats: a.formats},
@@ -3220,6 +3691,7 @@ func (a *Client) GetDeviceList(params *GetDeviceListParams) (*GetDeviceListOK, e
 		return nil, err
 	}
 	return result.(*GetDeviceListOK), nil
+
 }
 
 /*
@@ -3230,13 +3702,14 @@ func (a *Client) GetDevicePropertyByName(params *GetDevicePropertyByNameParams) 
 	if params == nil {
 		params = NewGetDevicePropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDevicePropertyByName",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/properties/{name}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDevicePropertyByNameReader{formats: a.formats},
@@ -3248,6 +3721,7 @@ func (a *Client) GetDevicePropertyByName(params *GetDevicePropertyByNameParams) 
 		return nil, err
 	}
 	return result.(*GetDevicePropertyByNameOK), nil
+
 }
 
 /*
@@ -3258,13 +3732,14 @@ func (a *Client) GetDevicePropertyList(params *GetDevicePropertyListParams) (*Ge
 	if params == nil {
 		params = NewGetDevicePropertyListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getDevicePropertyList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/properties",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetDevicePropertyListReader{formats: a.formats},
@@ -3276,6 +3751,7 @@ func (a *Client) GetDevicePropertyList(params *GetDevicePropertyListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetDevicePropertyListOK), nil
+
 }
 
 /*
@@ -3286,13 +3762,14 @@ func (a *Client) GetEscalationChainByID(params *GetEscalationChainByIDParams) (*
 	if params == nil {
 		params = NewGetEscalationChainByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getEscalationChainById",
 		Method:             "GET",
 		PathPattern:        "/setting/alert/chains/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetEscalationChainByIDReader{formats: a.formats},
@@ -3304,6 +3781,7 @@ func (a *Client) GetEscalationChainByID(params *GetEscalationChainByIDParams) (*
 		return nil, err
 	}
 	return result.(*GetEscalationChainByIDOK), nil
+
 }
 
 /*
@@ -3314,13 +3792,14 @@ func (a *Client) GetEscalationChainList(params *GetEscalationChainListParams) (*
 	if params == nil {
 		params = NewGetEscalationChainListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getEscalationChainList",
 		Method:             "GET",
 		PathPattern:        "/setting/alert/chains",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetEscalationChainListReader{formats: a.formats},
@@ -3332,6 +3811,67 @@ func (a *Client) GetEscalationChainList(params *GetEscalationChainListParams) (*
 		return nil, err
 	}
 	return result.(*GetEscalationChainListOK), nil
+
+}
+
+/*
+GetEventSourceList gets event source list
+*/
+func (a *Client) GetEventSourceList(params *GetEventSourceListParams) (*GetEventSourceListOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetEventSourceListParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getEventSourceList",
+		Method:             "GET",
+		PathPattern:        "/setting/eventsources",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetEventSourceListReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetEventSourceListOK), nil
+
+}
+
+/*
+GetExternalAPIStats gets external api stats info
+*/
+func (a *Client) GetExternalAPIStats(params *GetExternalAPIStatsParams) (*GetExternalAPIStatsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetExternalAPIStatsParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getExternalApiStats",
+		Method:             "GET",
+		PathPattern:        "/apiStats/externalApis",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetExternalAPIStatsReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetExternalAPIStatsOK), nil
+
 }
 
 /*
@@ -3342,13 +3882,14 @@ func (a *Client) GetImmediateDeviceListByDeviceGroupID(params *GetImmediateDevic
 	if params == nil {
 		params = NewGetImmediateDeviceListByDeviceGroupIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getImmediateDeviceListByDeviceGroupId",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{id}/devices",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetImmediateDeviceListByDeviceGroupIDReader{formats: a.formats},
@@ -3360,6 +3901,7 @@ func (a *Client) GetImmediateDeviceListByDeviceGroupID(params *GetImmediateDevic
 		return nil, err
 	}
 	return result.(*GetImmediateDeviceListByDeviceGroupIDOK), nil
+
 }
 
 /*
@@ -3370,6 +3912,7 @@ func (a *Client) GetImmediateWebsiteListByWebsiteGroupID(params *GetImmediateWeb
 	if params == nil {
 		params = NewGetImmediateWebsiteListByWebsiteGroupIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getImmediateWebsiteListByWebsiteGroupId",
@@ -3388,6 +3931,37 @@ func (a *Client) GetImmediateWebsiteListByWebsiteGroupID(params *GetImmediateWeb
 		return nil, err
 	}
 	return result.(*GetImmediateWebsiteListByWebsiteGroupIDOK), nil
+
+}
+
+/*
+GetMetricsUsage gets metrics usage
+*/
+func (a *Client) GetMetricsUsage(params *GetMetricsUsageParams) (*GetMetricsUsageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetMetricsUsageParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "getMetricsUsage",
+		Method:             "GET",
+		PathPattern:        "/metrics/usage",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetMetricsUsageReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetMetricsUsageOK), nil
+
 }
 
 /*
@@ -3398,13 +3972,14 @@ func (a *Client) GetNetflowEndpointList(params *GetNetflowEndpointListParams) (*
 	if params == nil {
 		params = NewGetNetflowEndpointListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getNetflowEndpointList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}/endpoints",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetNetflowEndpointListReader{formats: a.formats},
@@ -3416,6 +3991,7 @@ func (a *Client) GetNetflowEndpointList(params *GetNetflowEndpointListParams) (*
 		return nil, err
 	}
 	return result.(*GetNetflowEndpointListOK), nil
+
 }
 
 /*
@@ -3426,13 +4002,14 @@ func (a *Client) GetNetflowFlowList(params *GetNetflowFlowListParams) (*GetNetfl
 	if params == nil {
 		params = NewGetNetflowFlowListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getNetflowFlowList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}/flows",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetNetflowFlowListReader{formats: a.formats},
@@ -3444,6 +4021,7 @@ func (a *Client) GetNetflowFlowList(params *GetNetflowFlowListParams) (*GetNetfl
 		return nil, err
 	}
 	return result.(*GetNetflowFlowListOK), nil
+
 }
 
 /*
@@ -3454,13 +4032,14 @@ func (a *Client) GetNetflowPortList(params *GetNetflowPortListParams) (*GetNetfl
 	if params == nil {
 		params = NewGetNetflowPortListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getNetflowPortList",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}/ports",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetNetflowPortListReader{formats: a.formats},
@@ -3472,6 +4051,7 @@ func (a *Client) GetNetflowPortList(params *GetNetflowPortListParams) (*GetNetfl
 		return nil, err
 	}
 	return result.(*GetNetflowPortListOK), nil
+
 }
 
 /*
@@ -3482,13 +4062,14 @@ func (a *Client) GetNetscanByID(params *GetNetscanByIDParams) (*GetNetscanByIDOK
 	if params == nil {
 		params = NewGetNetscanByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getNetscanById",
 		Method:             "GET",
 		PathPattern:        "/setting/netscans/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetNetscanByIDReader{formats: a.formats},
@@ -3500,6 +4081,7 @@ func (a *Client) GetNetscanByID(params *GetNetscanByIDParams) (*GetNetscanByIDOK
 		return nil, err
 	}
 	return result.(*GetNetscanByIDOK), nil
+
 }
 
 /*
@@ -3510,13 +4092,14 @@ func (a *Client) GetNetscanList(params *GetNetscanListParams) (*GetNetscanListOK
 	if params == nil {
 		params = NewGetNetscanListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getNetscanList",
 		Method:             "GET",
 		PathPattern:        "/setting/netscans",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetNetscanListReader{formats: a.formats},
@@ -3528,6 +4111,7 @@ func (a *Client) GetNetscanList(params *GetNetscanListParams) (*GetNetscanListOK
 		return nil, err
 	}
 	return result.(*GetNetscanListOK), nil
+
 }
 
 /*
@@ -3538,13 +4122,14 @@ func (a *Client) GetOpsNoteByID(params *GetOpsNoteByIDParams) (*GetOpsNoteByIDOK
 	if params == nil {
 		params = NewGetOpsNoteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getOpsNoteById",
 		Method:             "GET",
 		PathPattern:        "/setting/opsnotes/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetOpsNoteByIDReader{formats: a.formats},
@@ -3556,6 +4141,7 @@ func (a *Client) GetOpsNoteByID(params *GetOpsNoteByIDParams) (*GetOpsNoteByIDOK
 		return nil, err
 	}
 	return result.(*GetOpsNoteByIDOK), nil
+
 }
 
 /*
@@ -3566,13 +4152,14 @@ func (a *Client) GetOpsNoteList(params *GetOpsNoteListParams) (*GetOpsNoteListOK
 	if params == nil {
 		params = NewGetOpsNoteListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getOpsNoteList",
 		Method:             "GET",
 		PathPattern:        "/setting/opsnotes",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetOpsNoteListReader{formats: a.formats},
@@ -3584,6 +4171,7 @@ func (a *Client) GetOpsNoteList(params *GetOpsNoteListParams) (*GetOpsNoteListOK
 		return nil, err
 	}
 	return result.(*GetOpsNoteListOK), nil
+
 }
 
 /*
@@ -3594,13 +4182,14 @@ func (a *Client) GetRecipientGroupByID(params *GetRecipientGroupByIDParams) (*Ge
 	if params == nil {
 		params = NewGetRecipientGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getRecipientGroupById",
 		Method:             "GET",
 		PathPattern:        "/setting/recipientgroups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetRecipientGroupByIDReader{formats: a.formats},
@@ -3612,6 +4201,7 @@ func (a *Client) GetRecipientGroupByID(params *GetRecipientGroupByIDParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetRecipientGroupByIDOK), nil
+
 }
 
 /*
@@ -3622,13 +4212,14 @@ func (a *Client) GetRecipientGroupList(params *GetRecipientGroupListParams) (*Ge
 	if params == nil {
 		params = NewGetRecipientGroupListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getRecipientGroupList",
 		Method:             "GET",
 		PathPattern:        "/setting/recipientgroups",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetRecipientGroupListReader{formats: a.formats},
@@ -3640,6 +4231,7 @@ func (a *Client) GetRecipientGroupList(params *GetRecipientGroupListParams) (*Ge
 		return nil, err
 	}
 	return result.(*GetRecipientGroupListOK), nil
+
 }
 
 /*
@@ -3650,13 +4242,14 @@ func (a *Client) GetReportByID(params *GetReportByIDParams) (*GetReportByIDOK, e
 	if params == nil {
 		params = NewGetReportByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getReportById",
 		Method:             "GET",
 		PathPattern:        "/report/reports/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetReportByIDReader{formats: a.formats},
@@ -3668,6 +4261,7 @@ func (a *Client) GetReportByID(params *GetReportByIDParams) (*GetReportByIDOK, e
 		return nil, err
 	}
 	return result.(*GetReportByIDOK), nil
+
 }
 
 /*
@@ -3678,13 +4272,14 @@ func (a *Client) GetReportGroupByID(params *GetReportGroupByIDParams) (*GetRepor
 	if params == nil {
 		params = NewGetReportGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getReportGroupById",
 		Method:             "GET",
 		PathPattern:        "/report/groups/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetReportGroupByIDReader{formats: a.formats},
@@ -3696,6 +4291,7 @@ func (a *Client) GetReportGroupByID(params *GetReportGroupByIDParams) (*GetRepor
 		return nil, err
 	}
 	return result.(*GetReportGroupByIDOK), nil
+
 }
 
 /*
@@ -3706,13 +4302,14 @@ func (a *Client) GetReportGroupList(params *GetReportGroupListParams) (*GetRepor
 	if params == nil {
 		params = NewGetReportGroupListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getReportGroupList",
 		Method:             "GET",
 		PathPattern:        "/report/groups",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetReportGroupListReader{formats: a.formats},
@@ -3724,6 +4321,7 @@ func (a *Client) GetReportGroupList(params *GetReportGroupListParams) (*GetRepor
 		return nil, err
 	}
 	return result.(*GetReportGroupListOK), nil
+
 }
 
 /*
@@ -3734,13 +4332,14 @@ func (a *Client) GetReportList(params *GetReportListParams) (*GetReportListOK, e
 	if params == nil {
 		params = NewGetReportListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getReportList",
 		Method:             "GET",
 		PathPattern:        "/report/reports",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetReportListReader{formats: a.formats},
@@ -3752,6 +4351,7 @@ func (a *Client) GetReportList(params *GetReportListParams) (*GetReportListOK, e
 		return nil, err
 	}
 	return result.(*GetReportListOK), nil
+
 }
 
 /*
@@ -3762,13 +4362,14 @@ func (a *Client) GetRoleByID(params *GetRoleByIDParams) (*GetRoleByIDOK, error) 
 	if params == nil {
 		params = NewGetRoleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getRoleById",
 		Method:             "GET",
 		PathPattern:        "/setting/roles/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetRoleByIDReader{formats: a.formats},
@@ -3780,6 +4381,7 @@ func (a *Client) GetRoleByID(params *GetRoleByIDParams) (*GetRoleByIDOK, error) 
 		return nil, err
 	}
 	return result.(*GetRoleByIDOK), nil
+
 }
 
 /*
@@ -3790,13 +4392,14 @@ func (a *Client) GetRoleList(params *GetRoleListParams) (*GetRoleListOK, error) 
 	if params == nil {
 		params = NewGetRoleListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getRoleList",
 		Method:             "GET",
 		PathPattern:        "/setting/roles",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetRoleListReader{formats: a.formats},
@@ -3808,6 +4411,7 @@ func (a *Client) GetRoleList(params *GetRoleListParams) (*GetRoleListOK, error) 
 		return nil, err
 	}
 	return result.(*GetRoleListOK), nil
+
 }
 
 /*
@@ -3818,13 +4422,14 @@ func (a *Client) GetSDTByID(params *GetSDTByIDParams) (*GetSDTByIDOK, error) {
 	if params == nil {
 		params = NewGetSDTByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSDTById",
 		Method:             "GET",
 		PathPattern:        "/sdt/sdts/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetSDTByIDReader{formats: a.formats},
@@ -3836,6 +4441,7 @@ func (a *Client) GetSDTByID(params *GetSDTByIDParams) (*GetSDTByIDOK, error) {
 		return nil, err
 	}
 	return result.(*GetSDTByIDOK), nil
+
 }
 
 /*
@@ -3846,13 +4452,14 @@ func (a *Client) GetSDTHistoryByDeviceDataSourceID(params *GetSDTHistoryByDevice
 	if params == nil {
 		params = NewGetSDTHistoryByDeviceDataSourceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSDTHistoryByDeviceDataSourceId",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{deviceId}/devicedatasources/{id}/historysdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetSDTHistoryByDeviceDataSourceIDReader{formats: a.formats},
@@ -3864,6 +4471,7 @@ func (a *Client) GetSDTHistoryByDeviceDataSourceID(params *GetSDTHistoryByDevice
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByDeviceDataSourceIDOK), nil
+
 }
 
 /*
@@ -3874,13 +4482,14 @@ func (a *Client) GetSDTHistoryByDeviceGroupID(params *GetSDTHistoryByDeviceGroup
 	if params == nil {
 		params = NewGetSDTHistoryByDeviceGroupIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSDTHistoryByDeviceGroupId",
 		Method:             "GET",
 		PathPattern:        "/device/groups/{id}/historysdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetSDTHistoryByDeviceGroupIDReader{formats: a.formats},
@@ -3892,6 +4501,7 @@ func (a *Client) GetSDTHistoryByDeviceGroupID(params *GetSDTHistoryByDeviceGroup
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByDeviceGroupIDOK), nil
+
 }
 
 /*
@@ -3902,13 +4512,14 @@ func (a *Client) GetSDTHistoryByDeviceID(params *GetSDTHistoryByDeviceIDParams) 
 	if params == nil {
 		params = NewGetSDTHistoryByDeviceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSDTHistoryByDeviceId",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}/historysdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetSDTHistoryByDeviceIDReader{formats: a.formats},
@@ -3920,6 +4531,7 @@ func (a *Client) GetSDTHistoryByDeviceID(params *GetSDTHistoryByDeviceIDParams) 
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByDeviceIDOK), nil
+
 }
 
 /*
@@ -3930,6 +4542,7 @@ func (a *Client) GetSDTHistoryByWebsiteGroupID(params *GetSDTHistoryByWebsiteGro
 	if params == nil {
 		params = NewGetSDTHistoryByWebsiteGroupIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSDTHistoryByWebsiteGroupId",
@@ -3948,6 +4561,7 @@ func (a *Client) GetSDTHistoryByWebsiteGroupID(params *GetSDTHistoryByWebsiteGro
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByWebsiteGroupIDOK), nil
+
 }
 
 /*
@@ -3958,13 +4572,14 @@ func (a *Client) GetSDTHistoryByWebsiteID(params *GetSDTHistoryByWebsiteIDParams
 	if params == nil {
 		params = NewGetSDTHistoryByWebsiteIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSDTHistoryByWebsiteId",
 		Method:             "GET",
 		PathPattern:        "/website/websites/{id}/historysdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetSDTHistoryByWebsiteIDReader{formats: a.formats},
@@ -3976,6 +4591,7 @@ func (a *Client) GetSDTHistoryByWebsiteID(params *GetSDTHistoryByWebsiteIDParams
 		return nil, err
 	}
 	return result.(*GetSDTHistoryByWebsiteIDOK), nil
+
 }
 
 /*
@@ -3986,13 +4602,14 @@ func (a *Client) GetSDTList(params *GetSDTListParams) (*GetSDTListOK, error) {
 	if params == nil {
 		params = NewGetSDTListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSDTList",
 		Method:             "GET",
 		PathPattern:        "/sdt/sdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetSDTListReader{formats: a.formats},
@@ -4004,6 +4621,7 @@ func (a *Client) GetSDTList(params *GetSDTListParams) (*GetSDTListOK, error) {
 		return nil, err
 	}
 	return result.(*GetSDTListOK), nil
+
 }
 
 /*
@@ -4014,13 +4632,14 @@ func (a *Client) GetSiteMonitorCheckPointList(params *GetSiteMonitorCheckPointLi
 	if params == nil {
 		params = NewGetSiteMonitorCheckPointListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getSiteMonitorCheckPointList",
 		Method:             "GET",
 		PathPattern:        "/website/smcheckpoints",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetSiteMonitorCheckPointListReader{formats: a.formats},
@@ -4032,6 +4651,7 @@ func (a *Client) GetSiteMonitorCheckPointList(params *GetSiteMonitorCheckPointLi
 		return nil, err
 	}
 	return result.(*GetSiteMonitorCheckPointListOK), nil
+
 }
 
 /*
@@ -4042,13 +4662,14 @@ func (a *Client) GetTopTalkersGraph(params *GetTopTalkersGraphParams) (*GetTopTa
 	if params == nil {
 		params = NewGetTopTalkersGraphParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getTopTalkersGraph",
 		Method:             "GET",
 		PathPattern:        "/device/devices/{id}/topTalkersGraph",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetTopTalkersGraphReader{formats: a.formats},
@@ -4060,6 +4681,7 @@ func (a *Client) GetTopTalkersGraph(params *GetTopTalkersGraphParams) (*GetTopTa
 		return nil, err
 	}
 	return result.(*GetTopTalkersGraphOK), nil
+
 }
 
 /*
@@ -4070,13 +4692,14 @@ func (a *Client) GetUnmonitoredDeviceList(params *GetUnmonitoredDeviceListParams
 	if params == nil {
 		params = NewGetUnmonitoredDeviceListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getUnmonitoredDeviceList",
 		Method:             "GET",
 		PathPattern:        "/device/unmonitoreddevices",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetUnmonitoredDeviceListReader{formats: a.formats},
@@ -4088,6 +4711,7 @@ func (a *Client) GetUnmonitoredDeviceList(params *GetUnmonitoredDeviceListParams
 		return nil, err
 	}
 	return result.(*GetUnmonitoredDeviceListOK), nil
+
 }
 
 /*
@@ -4098,13 +4722,14 @@ func (a *Client) GetUpdateReasonListByDataSourceID(params *GetUpdateReasonListBy
 	if params == nil {
 		params = NewGetUpdateReasonListByDataSourceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getUpdateReasonListByDataSourceId",
 		Method:             "GET",
 		PathPattern:        "/setting/datasources/{id}/updatereasons",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetUpdateReasonListByDataSourceIDReader{formats: a.formats},
@@ -4116,6 +4741,7 @@ func (a *Client) GetUpdateReasonListByDataSourceID(params *GetUpdateReasonListBy
 		return nil, err
 	}
 	return result.(*GetUpdateReasonListByDataSourceIDOK), nil
+
 }
 
 /*
@@ -4126,13 +4752,14 @@ func (a *Client) GetWebsiteAlertListByWebsiteID(params *GetWebsiteAlertListByWeb
 	if params == nil {
 		params = NewGetWebsiteAlertListByWebsiteIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteAlertListByWebsiteId",
 		Method:             "GET",
 		PathPattern:        "/website/websites/{id}/alerts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWebsiteAlertListByWebsiteIDReader{formats: a.formats},
@@ -4144,6 +4771,7 @@ func (a *Client) GetWebsiteAlertListByWebsiteID(params *GetWebsiteAlertListByWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteAlertListByWebsiteIDOK), nil
+
 }
 
 /*
@@ -4154,6 +4782,7 @@ func (a *Client) GetWebsiteByID(params *GetWebsiteByIDParams) (*GetWebsiteByIDOK
 	if params == nil {
 		params = NewGetWebsiteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteById",
@@ -4172,6 +4801,7 @@ func (a *Client) GetWebsiteByID(params *GetWebsiteByIDParams) (*GetWebsiteByIDOK
 		return nil, err
 	}
 	return result.(*GetWebsiteByIDOK), nil
+
 }
 
 /*
@@ -4182,13 +4812,14 @@ func (a *Client) GetWebsiteCheckpointDataByID(params *GetWebsiteCheckpointDataBy
 	if params == nil {
 		params = NewGetWebsiteCheckpointDataByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteCheckpointDataById",
 		Method:             "GET",
 		PathPattern:        "/website/websites/{srvId}/checkpoints/{checkId}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWebsiteCheckpointDataByIDReader{formats: a.formats},
@@ -4200,6 +4831,7 @@ func (a *Client) GetWebsiteCheckpointDataByID(params *GetWebsiteCheckpointDataBy
 		return nil, err
 	}
 	return result.(*GetWebsiteCheckpointDataByIDOK), nil
+
 }
 
 /*
@@ -4210,13 +4842,14 @@ func (a *Client) GetWebsiteDataByGraphName(params *GetWebsiteDataByGraphNamePara
 	if params == nil {
 		params = NewGetWebsiteDataByGraphNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteDataByGraphName",
 		Method:             "GET",
 		PathPattern:        "/website/websites/{id}/graphs/{graphName}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWebsiteDataByGraphNameReader{formats: a.formats},
@@ -4228,6 +4861,7 @@ func (a *Client) GetWebsiteDataByGraphName(params *GetWebsiteDataByGraphNamePara
 		return nil, err
 	}
 	return result.(*GetWebsiteDataByGraphNameOK), nil
+
 }
 
 /*
@@ -4238,13 +4872,14 @@ func (a *Client) GetWebsiteGraphData(params *GetWebsiteGraphDataParams) (*GetWeb
 	if params == nil {
 		params = NewGetWebsiteGraphDataParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteGraphData",
 		Method:             "GET",
 		PathPattern:        "/website/websites/{websiteId}/checkpoints/{checkpointId}/graphs/{graphName}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWebsiteGraphDataReader{formats: a.formats},
@@ -4256,6 +4891,7 @@ func (a *Client) GetWebsiteGraphData(params *GetWebsiteGraphDataParams) (*GetWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteGraphDataOK), nil
+
 }
 
 /*
@@ -4266,6 +4902,7 @@ func (a *Client) GetWebsiteGroupByID(params *GetWebsiteGroupByIDParams) (*GetWeb
 	if params == nil {
 		params = NewGetWebsiteGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteGroupById",
@@ -4284,6 +4921,7 @@ func (a *Client) GetWebsiteGroupByID(params *GetWebsiteGroupByIDParams) (*GetWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteGroupByIDOK), nil
+
 }
 
 /*
@@ -4294,6 +4932,7 @@ func (a *Client) GetWebsiteGroupList(params *GetWebsiteGroupListParams) (*GetWeb
 	if params == nil {
 		params = NewGetWebsiteGroupListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteGroupList",
@@ -4312,6 +4951,7 @@ func (a *Client) GetWebsiteGroupList(params *GetWebsiteGroupListParams) (*GetWeb
 		return nil, err
 	}
 	return result.(*GetWebsiteGroupListOK), nil
+
 }
 
 /*
@@ -4322,6 +4962,7 @@ func (a *Client) GetWebsiteList(params *GetWebsiteListParams) (*GetWebsiteListOK
 	if params == nil {
 		params = NewGetWebsiteListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteList",
@@ -4340,6 +4981,7 @@ func (a *Client) GetWebsiteList(params *GetWebsiteListParams) (*GetWebsiteListOK
 		return nil, err
 	}
 	return result.(*GetWebsiteListOK), nil
+
 }
 
 /*
@@ -4350,13 +4992,14 @@ func (a *Client) GetWebsitePropertyListByWebsiteID(params *GetWebsitePropertyLis
 	if params == nil {
 		params = NewGetWebsitePropertyListByWebsiteIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsitePropertyListByWebsiteId",
 		Method:             "GET",
 		PathPattern:        "/website/websites/{id}/properties",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWebsitePropertyListByWebsiteIDReader{formats: a.formats},
@@ -4368,23 +5011,25 @@ func (a *Client) GetWebsitePropertyListByWebsiteID(params *GetWebsitePropertyLis
 		return nil, err
 	}
 	return result.(*GetWebsitePropertyListByWebsiteIDOK), nil
+
 }
 
 /*
-GetWebsiteSDTListByWebsiteID gets a list of sdts for a website
+GetWebsiteSDTListByWebsiteID gets a list of s d ts for a website
 */
 func (a *Client) GetWebsiteSDTListByWebsiteID(params *GetWebsiteSDTListByWebsiteIDParams) (*GetWebsiteSDTListByWebsiteIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetWebsiteSDTListByWebsiteIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWebsiteSDTListByWebsiteId",
 		Method:             "GET",
 		PathPattern:        "/website/websites/{id}/sdts",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWebsiteSDTListByWebsiteIDReader{formats: a.formats},
@@ -4396,6 +5041,7 @@ func (a *Client) GetWebsiteSDTListByWebsiteID(params *GetWebsiteSDTListByWebsite
 		return nil, err
 	}
 	return result.(*GetWebsiteSDTListByWebsiteIDOK), nil
+
 }
 
 /*
@@ -4406,13 +5052,14 @@ func (a *Client) GetWidgetByID(params *GetWidgetByIDParams) (*GetWidgetByIDOK, e
 	if params == nil {
 		params = NewGetWidgetByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWidgetById",
 		Method:             "GET",
 		PathPattern:        "/dashboard/widgets/{id}",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWidgetByIDReader{formats: a.formats},
@@ -4424,6 +5071,7 @@ func (a *Client) GetWidgetByID(params *GetWidgetByIDParams) (*GetWidgetByIDOK, e
 		return nil, err
 	}
 	return result.(*GetWidgetByIDOK), nil
+
 }
 
 /*
@@ -4434,13 +5082,14 @@ func (a *Client) GetWidgetDataByID(params *GetWidgetDataByIDParams) (*GetWidgetD
 	if params == nil {
 		params = NewGetWidgetDataByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWidgetDataById",
 		Method:             "GET",
 		PathPattern:        "/dashboard/widgets/{id}/data",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWidgetDataByIDReader{formats: a.formats},
@@ -4452,6 +5101,7 @@ func (a *Client) GetWidgetDataByID(params *GetWidgetDataByIDParams) (*GetWidgetD
 		return nil, err
 	}
 	return result.(*GetWidgetDataByIDOK), nil
+
 }
 
 /*
@@ -4462,13 +5112,14 @@ func (a *Client) GetWidgetList(params *GetWidgetListParams) (*GetWidgetListOK, e
 	if params == nil {
 		params = NewGetWidgetListParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWidgetList",
 		Method:             "GET",
 		PathPattern:        "/dashboard/widgets",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWidgetListReader{formats: a.formats},
@@ -4480,6 +5131,7 @@ func (a *Client) GetWidgetList(params *GetWidgetListParams) (*GetWidgetListOK, e
 		return nil, err
 	}
 	return result.(*GetWidgetListOK), nil
+
 }
 
 /*
@@ -4490,13 +5142,14 @@ func (a *Client) GetWidgetListByDashboardID(params *GetWidgetListByDashboardIDPa
 	if params == nil {
 		params = NewGetWidgetListByDashboardIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "getWidgetListByDashboardId",
 		Method:             "GET",
 		PathPattern:        "/dashboard/dashboards/{id}/widgets",
 		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{""},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetWidgetListByDashboardIDReader{formats: a.formats},
@@ -4508,6 +5161,7 @@ func (a *Client) GetWidgetListByDashboardID(params *GetWidgetListByDashboardIDPa
 		return nil, err
 	}
 	return result.(*GetWidgetListByDashboardIDOK), nil
+
 }
 
 /*
@@ -4518,6 +5172,7 @@ func (a *Client) ImportBatchJob(params *ImportBatchJobParams) (*ImportBatchJobOK
 	if params == nil {
 		params = NewImportBatchJobParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "importBatchJob",
@@ -4536,6 +5191,7 @@ func (a *Client) ImportBatchJob(params *ImportBatchJobParams) (*ImportBatchJobOK
 		return nil, err
 	}
 	return result.(*ImportBatchJobOK), nil
+
 }
 
 /*
@@ -4546,6 +5202,7 @@ func (a *Client) ImportConfigSource(params *ImportConfigSourceParams) (*ImportCo
 	if params == nil {
 		params = NewImportConfigSourceParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "importConfigSource",
@@ -4564,6 +5221,37 @@ func (a *Client) ImportConfigSource(params *ImportConfigSourceParams) (*ImportCo
 		return nil, err
 	}
 	return result.(*ImportConfigSourceOK), nil
+
+}
+
+/*
+ImportDNSMapping imports DNS mapping via c s v
+*/
+func (a *Client) ImportDNSMapping(params *ImportDNSMappingParams) (*ImportDNSMappingOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewImportDNSMappingParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "importDNSMapping",
+		Method:             "POST",
+		PathPattern:        "/setting/dnsmappings",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"multipart/form-data"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ImportDNSMappingReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ImportDNSMappingOK), nil
+
 }
 
 /*
@@ -4574,6 +5262,7 @@ func (a *Client) ImportDataSource(params *ImportDataSourceParams) (*ImportDataSo
 	if params == nil {
 		params = NewImportDataSourceParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "importDataSource",
@@ -4592,6 +5281,7 @@ func (a *Client) ImportDataSource(params *ImportDataSourceParams) (*ImportDataSo
 		return nil, err
 	}
 	return result.(*ImportDataSourceOK), nil
+
 }
 
 /*
@@ -4602,6 +5292,7 @@ func (a *Client) ImportEventSource(params *ImportEventSourceParams) (*ImportEven
 	if params == nil {
 		params = NewImportEventSourceParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "importEventSource",
@@ -4620,6 +5311,7 @@ func (a *Client) ImportEventSource(params *ImportEventSourceParams) (*ImportEven
 		return nil, err
 	}
 	return result.(*ImportEventSourceOK), nil
+
 }
 
 /*
@@ -4630,6 +5322,7 @@ func (a *Client) PatchAdminByID(params *PatchAdminByIDParams) (*PatchAdminByIDOK
 	if params == nil {
 		params = NewPatchAdminByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchAdminById",
@@ -4648,6 +5341,7 @@ func (a *Client) PatchAdminByID(params *PatchAdminByIDParams) (*PatchAdminByIDOK
 		return nil, err
 	}
 	return result.(*PatchAdminByIDOK), nil
+
 }
 
 /*
@@ -4658,6 +5352,7 @@ func (a *Client) PatchAlertRuleByID(params *PatchAlertRuleByIDParams) (*PatchAle
 	if params == nil {
 		params = NewPatchAlertRuleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchAlertRuleById",
@@ -4676,6 +5371,7 @@ func (a *Client) PatchAlertRuleByID(params *PatchAlertRuleByIDParams) (*PatchAle
 		return nil, err
 	}
 	return result.(*PatchAlertRuleByIDOK), nil
+
 }
 
 /*
@@ -4686,6 +5382,7 @@ func (a *Client) PatchAPITokenByAdminID(params *PatchAPITokenByAdminIDParams) (*
 	if params == nil {
 		params = NewPatchAPITokenByAdminIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchApiTokenByAdminId",
@@ -4704,6 +5401,37 @@ func (a *Client) PatchAPITokenByAdminID(params *PatchAPITokenByAdminIDParams) (*
 		return nil, err
 	}
 	return result.(*PatchAPITokenByAdminIDOK), nil
+
+}
+
+/*
+PatchAppliesToFunction updates applies to function
+*/
+func (a *Client) PatchAppliesToFunction(params *PatchAppliesToFunctionParams) (*PatchAppliesToFunctionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPatchAppliesToFunctionParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "patchAppliesToFunction",
+		Method:             "PATCH",
+		PathPattern:        "/setting/functions/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PatchAppliesToFunctionReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PatchAppliesToFunctionOK), nil
+
 }
 
 /*
@@ -4714,6 +5442,7 @@ func (a *Client) PatchCollectorByID(params *PatchCollectorByIDParams) (*PatchCol
 	if params == nil {
 		params = NewPatchCollectorByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchCollectorById",
@@ -4732,6 +5461,7 @@ func (a *Client) PatchCollectorByID(params *PatchCollectorByIDParams) (*PatchCol
 		return nil, err
 	}
 	return result.(*PatchCollectorByIDOK), nil
+
 }
 
 /*
@@ -4742,6 +5472,7 @@ func (a *Client) PatchCollectorGroupByID(params *PatchCollectorGroupByIDParams) 
 	if params == nil {
 		params = NewPatchCollectorGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchCollectorGroupById",
@@ -4760,16 +5491,20 @@ func (a *Client) PatchCollectorGroupByID(params *PatchCollectorGroupByIDParams) 
 		return nil, err
 	}
 	return result.(*PatchCollectorGroupByIDOK), nil
+
 }
 
 /*
 PatchDashboardByID updates dashboard
+
+The template field works only for the POST API
 */
 func (a *Client) PatchDashboardByID(params *PatchDashboardByIDParams) (*PatchDashboardByIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPatchDashboardByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDashboardById",
@@ -4788,16 +5523,20 @@ func (a *Client) PatchDashboardByID(params *PatchDashboardByIDParams) (*PatchDas
 		return nil, err
 	}
 	return result.(*PatchDashboardByIDOK), nil
+
 }
 
 /*
 PatchDashboardGroupByID updates dashboard group
+
+The template field works only for the POST API
 */
 func (a *Client) PatchDashboardGroupByID(params *PatchDashboardGroupByIDParams) (*PatchDashboardGroupByIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPatchDashboardGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDashboardGroupById",
@@ -4816,6 +5555,7 @@ func (a *Client) PatchDashboardGroupByID(params *PatchDashboardGroupByIDParams) 
 		return nil, err
 	}
 	return result.(*PatchDashboardGroupByIDOK), nil
+
 }
 
 /*
@@ -4826,6 +5566,7 @@ func (a *Client) PatchDevice(params *PatchDeviceParams) (*PatchDeviceOK, error) 
 	if params == nil {
 		params = NewPatchDeviceParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDevice",
@@ -4844,6 +5585,7 @@ func (a *Client) PatchDevice(params *PatchDeviceParams) (*PatchDeviceOK, error) 
 		return nil, err
 	}
 	return result.(*PatchDeviceOK), nil
+
 }
 
 /*
@@ -4854,6 +5596,7 @@ func (a *Client) PatchDeviceDatasourceInstanceAlertSettingByID(params *PatchDevi
 	if params == nil {
 		params = NewPatchDeviceDatasourceInstanceAlertSettingByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDeviceDatasourceInstanceAlertSettingById",
@@ -4872,6 +5615,7 @@ func (a *Client) PatchDeviceDatasourceInstanceAlertSettingByID(params *PatchDevi
 		return nil, err
 	}
 	return result.(*PatchDeviceDatasourceInstanceAlertSettingByIDOK), nil
+
 }
 
 /*
@@ -4882,6 +5626,7 @@ func (a *Client) PatchDeviceDatasourceInstanceByID(params *PatchDeviceDatasource
 	if params == nil {
 		params = NewPatchDeviceDatasourceInstanceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDeviceDatasourceInstanceById",
@@ -4900,6 +5645,7 @@ func (a *Client) PatchDeviceDatasourceInstanceByID(params *PatchDeviceDatasource
 		return nil, err
 	}
 	return result.(*PatchDeviceDatasourceInstanceByIDOK), nil
+
 }
 
 /*
@@ -4910,6 +5656,7 @@ func (a *Client) PatchDeviceDatasourceInstanceGroupByID(params *PatchDeviceDatas
 	if params == nil {
 		params = NewPatchDeviceDatasourceInstanceGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDeviceDatasourceInstanceGroupById",
@@ -4928,6 +5675,7 @@ func (a *Client) PatchDeviceDatasourceInstanceGroupByID(params *PatchDeviceDatas
 		return nil, err
 	}
 	return result.(*PatchDeviceDatasourceInstanceGroupByIDOK), nil
+
 }
 
 /*
@@ -4938,6 +5686,7 @@ func (a *Client) PatchDeviceGroupByID(params *PatchDeviceGroupByIDParams) (*Patc
 	if params == nil {
 		params = NewPatchDeviceGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDeviceGroupById",
@@ -4956,6 +5705,7 @@ func (a *Client) PatchDeviceGroupByID(params *PatchDeviceGroupByIDParams) (*Patc
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupByIDOK), nil
+
 }
 
 /*
@@ -4966,6 +5716,7 @@ func (a *Client) PatchDeviceGroupClusterAlertConfByID(params *PatchDeviceGroupCl
 	if params == nil {
 		params = NewPatchDeviceGroupClusterAlertConfByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDeviceGroupClusterAlertConfById",
@@ -4984,6 +5735,7 @@ func (a *Client) PatchDeviceGroupClusterAlertConfByID(params *PatchDeviceGroupCl
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupClusterAlertConfByIDOK), nil
+
 }
 
 /*
@@ -4994,6 +5746,7 @@ func (a *Client) PatchDeviceGroupDatasourceAlertSetting(params *PatchDeviceGroup
 	if params == nil {
 		params = NewPatchDeviceGroupDatasourceAlertSettingParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDeviceGroupDatasourceAlertSetting",
@@ -5012,6 +5765,37 @@ func (a *Client) PatchDeviceGroupDatasourceAlertSetting(params *PatchDeviceGroup
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupDatasourceAlertSettingOK), nil
+
+}
+
+/*
+PatchDeviceGroupDatasourceByID updates device group datasource
+*/
+func (a *Client) PatchDeviceGroupDatasourceByID(params *PatchDeviceGroupDatasourceByIDParams) (*PatchDeviceGroupDatasourceByIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPatchDeviceGroupDatasourceByIDParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "patchDeviceGroupDatasourceById",
+		Method:             "PATCH",
+		PathPattern:        "/device/groups/{deviceGroupId}/datasources/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &PatchDeviceGroupDatasourceByIDReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*PatchDeviceGroupDatasourceByIDOK), nil
+
 }
 
 /*
@@ -5022,6 +5806,7 @@ func (a *Client) PatchDeviceGroupPropertyByName(params *PatchDeviceGroupProperty
 	if params == nil {
 		params = NewPatchDeviceGroupPropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDeviceGroupPropertyByName",
@@ -5040,6 +5825,7 @@ func (a *Client) PatchDeviceGroupPropertyByName(params *PatchDeviceGroupProperty
 		return nil, err
 	}
 	return result.(*PatchDeviceGroupPropertyByNameOK), nil
+
 }
 
 /*
@@ -5050,6 +5836,7 @@ func (a *Client) PatchDevicePropertyByName(params *PatchDevicePropertyByNamePara
 	if params == nil {
 		params = NewPatchDevicePropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchDevicePropertyByName",
@@ -5068,6 +5855,7 @@ func (a *Client) PatchDevicePropertyByName(params *PatchDevicePropertyByNamePara
 		return nil, err
 	}
 	return result.(*PatchDevicePropertyByNameOK), nil
+
 }
 
 /*
@@ -5078,6 +5866,7 @@ func (a *Client) PatchEscalationChainByID(params *PatchEscalationChainByIDParams
 	if params == nil {
 		params = NewPatchEscalationChainByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchEscalationChainById",
@@ -5096,6 +5885,7 @@ func (a *Client) PatchEscalationChainByID(params *PatchEscalationChainByIDParams
 		return nil, err
 	}
 	return result.(*PatchEscalationChainByIDOK), nil
+
 }
 
 /*
@@ -5106,6 +5896,7 @@ func (a *Client) PatchNetscan(params *PatchNetscanParams) (*PatchNetscanOK, erro
 	if params == nil {
 		params = NewPatchNetscanParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchNetscan",
@@ -5124,6 +5915,7 @@ func (a *Client) PatchNetscan(params *PatchNetscanParams) (*PatchNetscanOK, erro
 		return nil, err
 	}
 	return result.(*PatchNetscanOK), nil
+
 }
 
 /*
@@ -5134,6 +5926,7 @@ func (a *Client) PatchOpsNoteByID(params *PatchOpsNoteByIDParams) (*PatchOpsNote
 	if params == nil {
 		params = NewPatchOpsNoteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchOpsNoteById",
@@ -5152,6 +5945,7 @@ func (a *Client) PatchOpsNoteByID(params *PatchOpsNoteByIDParams) (*PatchOpsNote
 		return nil, err
 	}
 	return result.(*PatchOpsNoteByIDOK), nil
+
 }
 
 /*
@@ -5162,6 +5956,7 @@ func (a *Client) PatchRecipientGroupByID(params *PatchRecipientGroupByIDParams) 
 	if params == nil {
 		params = NewPatchRecipientGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchRecipientGroupById",
@@ -5180,6 +5975,7 @@ func (a *Client) PatchRecipientGroupByID(params *PatchRecipientGroupByIDParams) 
 		return nil, err
 	}
 	return result.(*PatchRecipientGroupByIDOK), nil
+
 }
 
 /*
@@ -5190,6 +5986,7 @@ func (a *Client) PatchReportByID(params *PatchReportByIDParams) (*PatchReportByI
 	if params == nil {
 		params = NewPatchReportByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchReportById",
@@ -5208,6 +6005,7 @@ func (a *Client) PatchReportByID(params *PatchReportByIDParams) (*PatchReportByI
 		return nil, err
 	}
 	return result.(*PatchReportByIDOK), nil
+
 }
 
 /*
@@ -5218,6 +6016,7 @@ func (a *Client) PatchReportGroupByID(params *PatchReportGroupByIDParams) (*Patc
 	if params == nil {
 		params = NewPatchReportGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchReportGroupById",
@@ -5236,6 +6035,7 @@ func (a *Client) PatchReportGroupByID(params *PatchReportGroupByIDParams) (*Patc
 		return nil, err
 	}
 	return result.(*PatchReportGroupByIDOK), nil
+
 }
 
 /*
@@ -5246,6 +6046,7 @@ func (a *Client) PatchRoleByID(params *PatchRoleByIDParams) (*PatchRoleByIDOK, e
 	if params == nil {
 		params = NewPatchRoleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchRoleById",
@@ -5264,6 +6065,7 @@ func (a *Client) PatchRoleByID(params *PatchRoleByIDParams) (*PatchRoleByIDOK, e
 		return nil, err
 	}
 	return result.(*PatchRoleByIDOK), nil
+
 }
 
 /*
@@ -5274,6 +6076,7 @@ func (a *Client) PatchSDTByID(params *PatchSDTByIDParams) (*PatchSDTByIDOK, erro
 	if params == nil {
 		params = NewPatchSDTByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchSDTById",
@@ -5292,6 +6095,7 @@ func (a *Client) PatchSDTByID(params *PatchSDTByIDParams) (*PatchSDTByIDOK, erro
 		return nil, err
 	}
 	return result.(*PatchSDTByIDOK), nil
+
 }
 
 /*
@@ -5302,6 +6106,7 @@ func (a *Client) PatchWebsiteByID(params *PatchWebsiteByIDParams) (*PatchWebsite
 	if params == nil {
 		params = NewPatchWebsiteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchWebsiteById",
@@ -5320,6 +6125,7 @@ func (a *Client) PatchWebsiteByID(params *PatchWebsiteByIDParams) (*PatchWebsite
 		return nil, err
 	}
 	return result.(*PatchWebsiteByIDOK), nil
+
 }
 
 /*
@@ -5330,6 +6136,7 @@ func (a *Client) PatchWebsiteGroupByID(params *PatchWebsiteGroupByIDParams) (*Pa
 	if params == nil {
 		params = NewPatchWebsiteGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchWebsiteGroupById",
@@ -5348,6 +6155,7 @@ func (a *Client) PatchWebsiteGroupByID(params *PatchWebsiteGroupByIDParams) (*Pa
 		return nil, err
 	}
 	return result.(*PatchWebsiteGroupByIDOK), nil
+
 }
 
 /*
@@ -5358,6 +6166,7 @@ func (a *Client) PatchWidgetByID(params *PatchWidgetByIDParams) (*PatchWidgetByI
 	if params == nil {
 		params = NewPatchWidgetByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "patchWidgetById",
@@ -5376,6 +6185,7 @@ func (a *Client) PatchWidgetByID(params *PatchWidgetByIDParams) (*PatchWidgetByI
 		return nil, err
 	}
 	return result.(*PatchWidgetByIDOK), nil
+
 }
 
 /*
@@ -5386,6 +6196,7 @@ func (a *Client) ScheduleAutoDiscoveryByDeviceID(params *ScheduleAutoDiscoveryBy
 	if params == nil {
 		params = NewScheduleAutoDiscoveryByDeviceIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "scheduleAutoDiscoveryByDeviceId",
@@ -5404,6 +6215,7 @@ func (a *Client) ScheduleAutoDiscoveryByDeviceID(params *ScheduleAutoDiscoveryBy
 		return nil, err
 	}
 	return result.(*ScheduleAutoDiscoveryByDeviceIDOK), nil
+
 }
 
 /*
@@ -5414,6 +6226,7 @@ func (a *Client) UpdateAdminByID(params *UpdateAdminByIDParams) (*UpdateAdminByI
 	if params == nil {
 		params = NewUpdateAdminByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateAdminById",
@@ -5432,6 +6245,7 @@ func (a *Client) UpdateAdminByID(params *UpdateAdminByIDParams) (*UpdateAdminByI
 		return nil, err
 	}
 	return result.(*UpdateAdminByIDOK), nil
+
 }
 
 /*
@@ -5442,6 +6256,7 @@ func (a *Client) UpdateAlertRuleByID(params *UpdateAlertRuleByIDParams) (*Update
 	if params == nil {
 		params = NewUpdateAlertRuleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateAlertRuleById",
@@ -5460,6 +6275,7 @@ func (a *Client) UpdateAlertRuleByID(params *UpdateAlertRuleByIDParams) (*Update
 		return nil, err
 	}
 	return result.(*UpdateAlertRuleByIDOK), nil
+
 }
 
 /*
@@ -5470,6 +6286,7 @@ func (a *Client) UpdateAPITokenByAdminID(params *UpdateAPITokenByAdminIDParams) 
 	if params == nil {
 		params = NewUpdateAPITokenByAdminIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateApiTokenByAdminId",
@@ -5488,6 +6305,37 @@ func (a *Client) UpdateAPITokenByAdminID(params *UpdateAPITokenByAdminIDParams) 
 		return nil, err
 	}
 	return result.(*UpdateAPITokenByAdminIDOK), nil
+
+}
+
+/*
+UpdateAppliesToFunction updates applies to function
+*/
+func (a *Client) UpdateAppliesToFunction(params *UpdateAppliesToFunctionParams) (*UpdateAppliesToFunctionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdateAppliesToFunctionParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "updateAppliesToFunction",
+		Method:             "PUT",
+		PathPattern:        "/setting/functions/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UpdateAppliesToFunctionReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*UpdateAppliesToFunctionOK), nil
+
 }
 
 /*
@@ -5498,6 +6346,7 @@ func (a *Client) UpdateCollectorByID(params *UpdateCollectorByIDParams) (*Update
 	if params == nil {
 		params = NewUpdateCollectorByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateCollectorById",
@@ -5516,6 +6365,7 @@ func (a *Client) UpdateCollectorByID(params *UpdateCollectorByIDParams) (*Update
 		return nil, err
 	}
 	return result.(*UpdateCollectorByIDOK), nil
+
 }
 
 /*
@@ -5526,6 +6376,7 @@ func (a *Client) UpdateCollectorGroupByID(params *UpdateCollectorGroupByIDParams
 	if params == nil {
 		params = NewUpdateCollectorGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateCollectorGroupById",
@@ -5544,16 +6395,20 @@ func (a *Client) UpdateCollectorGroupByID(params *UpdateCollectorGroupByIDParams
 		return nil, err
 	}
 	return result.(*UpdateCollectorGroupByIDOK), nil
+
 }
 
 /*
 UpdateDashboardByID updates dashboard
+
+The template field works only for the POST API
 */
 func (a *Client) UpdateDashboardByID(params *UpdateDashboardByIDParams) (*UpdateDashboardByIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateDashboardByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDashboardById",
@@ -5572,16 +6427,20 @@ func (a *Client) UpdateDashboardByID(params *UpdateDashboardByIDParams) (*Update
 		return nil, err
 	}
 	return result.(*UpdateDashboardByIDOK), nil
+
 }
 
 /*
 UpdateDashboardGroupByID updates dashboard group
+
+The template field works only for the POST API
 */
 func (a *Client) UpdateDashboardGroupByID(params *UpdateDashboardGroupByIDParams) (*UpdateDashboardGroupByIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewUpdateDashboardGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDashboardGroupById",
@@ -5600,6 +6459,7 @@ func (a *Client) UpdateDashboardGroupByID(params *UpdateDashboardGroupByIDParams
 		return nil, err
 	}
 	return result.(*UpdateDashboardGroupByIDOK), nil
+
 }
 
 /*
@@ -5610,6 +6470,7 @@ func (a *Client) UpdateDevice(params *UpdateDeviceParams) (*UpdateDeviceOK, erro
 	if params == nil {
 		params = NewUpdateDeviceParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDevice",
@@ -5628,6 +6489,7 @@ func (a *Client) UpdateDevice(params *UpdateDeviceParams) (*UpdateDeviceOK, erro
 		return nil, err
 	}
 	return result.(*UpdateDeviceOK), nil
+
 }
 
 /*
@@ -5638,6 +6500,7 @@ func (a *Client) UpdateDeviceDatasourceInstanceAlertSettingByID(params *UpdateDe
 	if params == nil {
 		params = NewUpdateDeviceDatasourceInstanceAlertSettingByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDeviceDatasourceInstanceAlertSettingById",
@@ -5656,6 +6519,7 @@ func (a *Client) UpdateDeviceDatasourceInstanceAlertSettingByID(params *UpdateDe
 		return nil, err
 	}
 	return result.(*UpdateDeviceDatasourceInstanceAlertSettingByIDOK), nil
+
 }
 
 /*
@@ -5666,6 +6530,7 @@ func (a *Client) UpdateDeviceDatasourceInstanceByID(params *UpdateDeviceDatasour
 	if params == nil {
 		params = NewUpdateDeviceDatasourceInstanceByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDeviceDatasourceInstanceById",
@@ -5684,6 +6549,7 @@ func (a *Client) UpdateDeviceDatasourceInstanceByID(params *UpdateDeviceDatasour
 		return nil, err
 	}
 	return result.(*UpdateDeviceDatasourceInstanceByIDOK), nil
+
 }
 
 /*
@@ -5694,6 +6560,7 @@ func (a *Client) UpdateDeviceDatasourceInstanceGroupByID(params *UpdateDeviceDat
 	if params == nil {
 		params = NewUpdateDeviceDatasourceInstanceGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDeviceDatasourceInstanceGroupById",
@@ -5712,6 +6579,7 @@ func (a *Client) UpdateDeviceDatasourceInstanceGroupByID(params *UpdateDeviceDat
 		return nil, err
 	}
 	return result.(*UpdateDeviceDatasourceInstanceGroupByIDOK), nil
+
 }
 
 /*
@@ -5722,6 +6590,7 @@ func (a *Client) UpdateDeviceGroupByID(params *UpdateDeviceGroupByIDParams) (*Up
 	if params == nil {
 		params = NewUpdateDeviceGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDeviceGroupById",
@@ -5740,6 +6609,7 @@ func (a *Client) UpdateDeviceGroupByID(params *UpdateDeviceGroupByIDParams) (*Up
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupByIDOK), nil
+
 }
 
 /*
@@ -5750,6 +6620,7 @@ func (a *Client) UpdateDeviceGroupClusterAlertConfByID(params *UpdateDeviceGroup
 	if params == nil {
 		params = NewUpdateDeviceGroupClusterAlertConfByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDeviceGroupClusterAlertConfById",
@@ -5768,6 +6639,7 @@ func (a *Client) UpdateDeviceGroupClusterAlertConfByID(params *UpdateDeviceGroup
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupClusterAlertConfByIDOK), nil
+
 }
 
 /*
@@ -5778,6 +6650,7 @@ func (a *Client) UpdateDeviceGroupDatasourceAlertSetting(params *UpdateDeviceGro
 	if params == nil {
 		params = NewUpdateDeviceGroupDatasourceAlertSettingParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDeviceGroupDatasourceAlertSetting",
@@ -5796,6 +6669,37 @@ func (a *Client) UpdateDeviceGroupDatasourceAlertSetting(params *UpdateDeviceGro
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupDatasourceAlertSettingOK), nil
+
+}
+
+/*
+UpdateDeviceGroupDatasourceByID updates device group datasource
+*/
+func (a *Client) UpdateDeviceGroupDatasourceByID(params *UpdateDeviceGroupDatasourceByIDParams) (*UpdateDeviceGroupDatasourceByIDOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdateDeviceGroupDatasourceByIDParams()
+	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "updateDeviceGroupDatasourceById",
+		Method:             "PUT",
+		PathPattern:        "/device/groups/{deviceGroupId}/datasources/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &UpdateDeviceGroupDatasourceByIDReader{formats: a.formats},
+		AuthInfo:           a.authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*UpdateDeviceGroupDatasourceByIDOK), nil
+
 }
 
 /*
@@ -5806,6 +6710,7 @@ func (a *Client) UpdateDeviceGroupPropertyByName(params *UpdateDeviceGroupProper
 	if params == nil {
 		params = NewUpdateDeviceGroupPropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDeviceGroupPropertyByName",
@@ -5824,6 +6729,7 @@ func (a *Client) UpdateDeviceGroupPropertyByName(params *UpdateDeviceGroupProper
 		return nil, err
 	}
 	return result.(*UpdateDeviceGroupPropertyByNameOK), nil
+
 }
 
 /*
@@ -5834,6 +6740,7 @@ func (a *Client) UpdateDevicePropertyByName(params *UpdateDevicePropertyByNamePa
 	if params == nil {
 		params = NewUpdateDevicePropertyByNameParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateDevicePropertyByName",
@@ -5852,6 +6759,7 @@ func (a *Client) UpdateDevicePropertyByName(params *UpdateDevicePropertyByNamePa
 		return nil, err
 	}
 	return result.(*UpdateDevicePropertyByNameOK), nil
+
 }
 
 /*
@@ -5862,6 +6770,7 @@ func (a *Client) UpdateEscalationChainByID(params *UpdateEscalationChainByIDPara
 	if params == nil {
 		params = NewUpdateEscalationChainByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateEscalationChainById",
@@ -5880,6 +6789,7 @@ func (a *Client) UpdateEscalationChainByID(params *UpdateEscalationChainByIDPara
 		return nil, err
 	}
 	return result.(*UpdateEscalationChainByIDOK), nil
+
 }
 
 /*
@@ -5890,6 +6800,7 @@ func (a *Client) UpdateNetscan(params *UpdateNetscanParams) (*UpdateNetscanOK, e
 	if params == nil {
 		params = NewUpdateNetscanParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateNetscan",
@@ -5908,6 +6819,7 @@ func (a *Client) UpdateNetscan(params *UpdateNetscanParams) (*UpdateNetscanOK, e
 		return nil, err
 	}
 	return result.(*UpdateNetscanOK), nil
+
 }
 
 /*
@@ -5918,6 +6830,7 @@ func (a *Client) UpdateOpsNoteByID(params *UpdateOpsNoteByIDParams) (*UpdateOpsN
 	if params == nil {
 		params = NewUpdateOpsNoteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateOpsNoteById",
@@ -5936,6 +6849,7 @@ func (a *Client) UpdateOpsNoteByID(params *UpdateOpsNoteByIDParams) (*UpdateOpsN
 		return nil, err
 	}
 	return result.(*UpdateOpsNoteByIDOK), nil
+
 }
 
 /*
@@ -5946,6 +6860,7 @@ func (a *Client) UpdateRecipientGroupByID(params *UpdateRecipientGroupByIDParams
 	if params == nil {
 		params = NewUpdateRecipientGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateRecipientGroupById",
@@ -5964,6 +6879,7 @@ func (a *Client) UpdateRecipientGroupByID(params *UpdateRecipientGroupByIDParams
 		return nil, err
 	}
 	return result.(*UpdateRecipientGroupByIDOK), nil
+
 }
 
 /*
@@ -5974,6 +6890,7 @@ func (a *Client) UpdateReportByID(params *UpdateReportByIDParams) (*UpdateReport
 	if params == nil {
 		params = NewUpdateReportByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateReportById",
@@ -5992,6 +6909,7 @@ func (a *Client) UpdateReportByID(params *UpdateReportByIDParams) (*UpdateReport
 		return nil, err
 	}
 	return result.(*UpdateReportByIDOK), nil
+
 }
 
 /*
@@ -6002,6 +6920,7 @@ func (a *Client) UpdateReportGroupByID(params *UpdateReportGroupByIDParams) (*Up
 	if params == nil {
 		params = NewUpdateReportGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateReportGroupById",
@@ -6020,6 +6939,7 @@ func (a *Client) UpdateReportGroupByID(params *UpdateReportGroupByIDParams) (*Up
 		return nil, err
 	}
 	return result.(*UpdateReportGroupByIDOK), nil
+
 }
 
 /*
@@ -6030,6 +6950,7 @@ func (a *Client) UpdateRoleByID(params *UpdateRoleByIDParams) (*UpdateRoleByIDOK
 	if params == nil {
 		params = NewUpdateRoleByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateRoleById",
@@ -6048,6 +6969,7 @@ func (a *Client) UpdateRoleByID(params *UpdateRoleByIDParams) (*UpdateRoleByIDOK
 		return nil, err
 	}
 	return result.(*UpdateRoleByIDOK), nil
+
 }
 
 /*
@@ -6058,6 +6980,7 @@ func (a *Client) UpdateSDTByID(params *UpdateSDTByIDParams) (*UpdateSDTByIDOK, e
 	if params == nil {
 		params = NewUpdateSDTByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateSDTById",
@@ -6076,6 +6999,7 @@ func (a *Client) UpdateSDTByID(params *UpdateSDTByIDParams) (*UpdateSDTByIDOK, e
 		return nil, err
 	}
 	return result.(*UpdateSDTByIDOK), nil
+
 }
 
 /*
@@ -6086,6 +7010,7 @@ func (a *Client) UpdateWebsiteByID(params *UpdateWebsiteByIDParams) (*UpdateWebs
 	if params == nil {
 		params = NewUpdateWebsiteByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateWebsiteById",
@@ -6104,6 +7029,7 @@ func (a *Client) UpdateWebsiteByID(params *UpdateWebsiteByIDParams) (*UpdateWebs
 		return nil, err
 	}
 	return result.(*UpdateWebsiteByIDOK), nil
+
 }
 
 /*
@@ -6114,6 +7040,7 @@ func (a *Client) UpdateWebsiteGroupByID(params *UpdateWebsiteGroupByIDParams) (*
 	if params == nil {
 		params = NewUpdateWebsiteGroupByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateWebsiteGroupById",
@@ -6132,6 +7059,7 @@ func (a *Client) UpdateWebsiteGroupByID(params *UpdateWebsiteGroupByIDParams) (*
 		return nil, err
 	}
 	return result.(*UpdateWebsiteGroupByIDOK), nil
+
 }
 
 /*
@@ -6142,6 +7070,7 @@ func (a *Client) UpdateWidgetByID(params *UpdateWidgetByIDParams) (*UpdateWidget
 	if params == nil {
 		params = NewUpdateWidgetByIDParams()
 	}
+	reflect.ValueOf(params).MethodByName("SetUserAgent").Call([]reflect.Value{reflect.ValueOf(a.userAgent)})
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "updateWidgetById",
@@ -6160,9 +7089,15 @@ func (a *Client) UpdateWidgetByID(params *UpdateWidgetByIDParams) (*UpdateWidget
 		return nil, err
 	}
 	return result.(*UpdateWidgetByIDOK), nil
+
 }
 
 // SetTransport changes the transport on the client
 func (a *Client) SetTransport(transport runtime.ClientTransport) {
 	a.transport = transport
+}
+
+// SetUserAgent changes the userAgent on the client
+func (a *Client) SetUserAgent(userAgent *string) {
+	a.userAgent = userAgent
 }

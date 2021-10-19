@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DataSourceAttribute data source attribute
+//
 // swagger:model DataSourceAttribute
 type DataSourceAttribute struct {
 
@@ -47,6 +50,7 @@ func (m *DataSourceAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DataSourceAttribute) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -55,10 +59,16 @@ func (m *DataSourceAttribute) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DataSourceAttribute) validateValue(formats strfmt.Registry) error {
+
 	if err := validate.Required("value", "body", m.Value); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this data source attribute based on context it is used
+func (m *DataSourceAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -7,17 +7,20 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetscanPaginationResponse netscan pagination response
+//
 // swagger:model NetscanPaginationResponse
 type NetscanPaginationResponse struct {
 	itemsField []Netscan
@@ -96,8 +99,7 @@ func (m NetscanPaginationResponse) MarshalJSON() ([]byte, error) {
 		SearchID: m.SearchID,
 
 		Total: m.Total,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -106,8 +108,7 @@ func (m NetscanPaginationResponse) MarshalJSON() ([]byte, error) {
 	}{
 
 		Items: m.itemsField,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +136,70 @@ func (m *NetscanPaginationResponse) validateItems(formats strfmt.Registry) error
 	}
 
 	for i := 0; i < len(m.Items()); i++ {
+
 		if err := m.itemsField[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("items" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this netscan pagination response based on the context it is used
+func (m *NetscanPaginationResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateItems(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSearchID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetscanPaginationResponse) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Items()); i++ {
+
+		if err := m.itemsField[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("items" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *NetscanPaginationResponse) contextValidateSearchID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "searchId", "body", string(m.SearchID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetscanPaginationResponse) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total", "body", int32(m.Total)); err != nil {
+		return err
 	}
 
 	return nil

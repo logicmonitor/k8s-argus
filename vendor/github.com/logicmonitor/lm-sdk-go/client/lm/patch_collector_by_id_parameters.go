@@ -6,94 +6,113 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewPatchCollectorByIDParams creates a new PatchCollectorByIDParams object
-// with the default values initialized.
+// NewPatchCollectorByIDParams creates a new PatchCollectorByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPatchCollectorByIDParams() *PatchCollectorByIDParams {
-	var (
-		collectorLoadBalancedDefault        = bool(false)
-		forceUpdateFailedOverDevicesDefault = bool(false)
-	)
 	return &PatchCollectorByIDParams{
-		CollectorLoadBalanced:        &collectorLoadBalancedDefault,
-		ForceUpdateFailedOverDevices: &forceUpdateFailedOverDevicesDefault,
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPatchCollectorByIDParamsWithTimeout creates a new PatchCollectorByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPatchCollectorByIDParamsWithTimeout(timeout time.Duration) *PatchCollectorByIDParams {
-	var (
-		collectorLoadBalancedDefault        = bool(false)
-		forceUpdateFailedOverDevicesDefault = bool(false)
-	)
 	return &PatchCollectorByIDParams{
-		CollectorLoadBalanced:        &collectorLoadBalancedDefault,
-		ForceUpdateFailedOverDevices: &forceUpdateFailedOverDevicesDefault,
-
 		timeout: timeout,
 	}
 }
 
 // NewPatchCollectorByIDParamsWithContext creates a new PatchCollectorByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPatchCollectorByIDParamsWithContext(ctx context.Context) *PatchCollectorByIDParams {
-	var (
-		collectorLoadBalancedDefault        = bool(false)
-		forceUpdateFailedOverDevicesDefault = bool(false)
-	)
 	return &PatchCollectorByIDParams{
-		CollectorLoadBalanced:        &collectorLoadBalancedDefault,
-		ForceUpdateFailedOverDevices: &forceUpdateFailedOverDevicesDefault,
-
 		Context: ctx,
 	}
 }
 
 // NewPatchCollectorByIDParamsWithHTTPClient creates a new PatchCollectorByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPatchCollectorByIDParamsWithHTTPClient(client *http.Client) *PatchCollectorByIDParams {
-	var (
-		collectorLoadBalancedDefault        = bool(false)
-		forceUpdateFailedOverDevicesDefault = bool(false)
-	)
 	return &PatchCollectorByIDParams{
-		CollectorLoadBalanced:        &collectorLoadBalancedDefault,
-		ForceUpdateFailedOverDevices: &forceUpdateFailedOverDevicesDefault,
-		HTTPClient:                   client,
+		HTTPClient: client,
 	}
 }
 
-/*PatchCollectorByIDParams contains all the parameters to send to the API endpoint
-for the patch collector by Id operation typically these are written to a http.Request
+/* PatchCollectorByIDParams contains all the parameters to send to the API endpoint
+   for the patch collector by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type PatchCollectorByIDParams struct {
 
-	/*Body*/
+	// PatchFields.
+	PatchFields *string
+
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.Collector
-	/*CollectorLoadBalanced*/
-	CollectorLoadBalanced *bool
-	/*ForceUpdateFailedOverDevices*/
+
+	// ForceUpdateFailedOverDevices.
 	ForceUpdateFailedOverDevices *bool
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the patch collector by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchCollectorByIDParams) WithDefaults() *PatchCollectorByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the patch collector by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchCollectorByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+
+		forceUpdateFailedOverDevicesDefault = bool(false)
+	)
+
+	val := PatchCollectorByIDParams{
+		UserAgent:                    &userAgentDefault,
+		ForceUpdateFailedOverDevices: &forceUpdateFailedOverDevicesDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the patch collector by Id params
@@ -129,6 +148,28 @@ func (o *PatchCollectorByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithPatchFields adds the patchFields to the patch collector by Id params
+func (o *PatchCollectorByIDParams) WithPatchFields(patchFields *string) *PatchCollectorByIDParams {
+	o.SetPatchFields(patchFields)
+	return o
+}
+
+// SetPatchFields adds the patchFields to the patch collector by Id params
+func (o *PatchCollectorByIDParams) SetPatchFields(patchFields *string) {
+	o.PatchFields = patchFields
+}
+
+// WithUserAgent adds the userAgent to the patch collector by Id params
+func (o *PatchCollectorByIDParams) WithUserAgent(userAgent *string) *PatchCollectorByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the patch collector by Id params
+func (o *PatchCollectorByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithBody adds the body to the patch collector by Id params
 func (o *PatchCollectorByIDParams) WithBody(body *models.Collector) *PatchCollectorByIDParams {
 	o.SetBody(body)
@@ -138,17 +179,6 @@ func (o *PatchCollectorByIDParams) WithBody(body *models.Collector) *PatchCollec
 // SetBody adds the body to the patch collector by Id params
 func (o *PatchCollectorByIDParams) SetBody(body *models.Collector) {
 	o.Body = body
-}
-
-// WithCollectorLoadBalanced adds the collectorLoadBalanced to the patch collector by Id params
-func (o *PatchCollectorByIDParams) WithCollectorLoadBalanced(collectorLoadBalanced *bool) *PatchCollectorByIDParams {
-	o.SetCollectorLoadBalanced(collectorLoadBalanced)
-	return o
-}
-
-// SetCollectorLoadBalanced adds the collectorLoadBalanced to the patch collector by Id params
-func (o *PatchCollectorByIDParams) SetCollectorLoadBalanced(collectorLoadBalanced *bool) {
-	o.CollectorLoadBalanced = collectorLoadBalanced
 }
 
 // WithForceUpdateFailedOverDevices adds the forceUpdateFailedOverDevices to the patch collector by Id params
@@ -175,47 +205,57 @@ func (o *PatchCollectorByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchCollectorByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.PatchFields != nil {
+
+		// query param PatchFields
+		var qrPatchFields string
+
+		if o.PatchFields != nil {
+			qrPatchFields = *o.PatchFields
+		}
+		qPatchFields := qrPatchFields
+		if qPatchFields != "" {
+
+			if err := r.SetQueryParam("PatchFields", qPatchFields); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
 		}
 	}
 
-	if o.CollectorLoadBalanced != nil {
-
-		// query param collectorLoadBalanced
-		var qrCollectorLoadBalanced bool
-		if o.CollectorLoadBalanced != nil {
-			qrCollectorLoadBalanced = *o.CollectorLoadBalanced
-		}
-		qCollectorLoadBalanced := swag.FormatBool(qrCollectorLoadBalanced)
-		if qCollectorLoadBalanced != "" {
-			if err := r.SetQueryParam("collectorLoadBalanced", qCollectorLoadBalanced); err != nil {
-				return err
-			}
-		}
-
-	}
-
 	if o.ForceUpdateFailedOverDevices != nil {
 
 		// query param forceUpdateFailedOverDevices
 		var qrForceUpdateFailedOverDevices bool
+
 		if o.ForceUpdateFailedOverDevices != nil {
 			qrForceUpdateFailedOverDevices = *o.ForceUpdateFailedOverDevices
 		}
 		qForceUpdateFailedOverDevices := swag.FormatBool(qrForceUpdateFailedOverDevices)
 		if qForceUpdateFailedOverDevices != "" {
+
 			if err := r.SetQueryParam("forceUpdateFailedOverDevices", qForceUpdateFailedOverDevices); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param id

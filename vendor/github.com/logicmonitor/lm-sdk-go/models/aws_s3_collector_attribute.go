@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsS3CollectorAttribute aws s3 collector attribute
+//
 // swagger:model AwsS3CollectorAttribute
 type AwsS3CollectorAttribute struct {
 	AwsS3CollectorAttributeAllOf1
@@ -61,7 +63,6 @@ func (m *AwsS3CollectorAttribute) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AwsS3CollectorAttributeAllOf1 = data.AwsS3CollectorAttributeAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AwsS3CollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		AwsS3CollectorAttributeAllOf1: m.AwsS3CollectorAttributeAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AwsS3CollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AwsS3CollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this aws s3 collector attribute
 func (m *AwsS3CollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AwsS3CollectorAttributeAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws s3 collector attribute based on the context it is used
+func (m *AwsS3CollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AwsS3CollectorAttributeAllOf1
@@ -128,5 +139,6 @@ func (m *AwsS3CollectorAttribute) UnmarshalBinary(b []byte) error {
 }
 
 // AwsS3CollectorAttributeAllOf1 aws s3 collector attribute all of1
+//
 // swagger:model AwsS3CollectorAttributeAllOf1
 type AwsS3CollectorAttributeAllOf1 interface{}

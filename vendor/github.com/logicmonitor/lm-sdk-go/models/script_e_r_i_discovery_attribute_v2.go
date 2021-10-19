@@ -6,15 +6,18 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
-// ScriptERIdiscoveryAttributeV2 script e r idiscovery attribute v2
+// ScriptERIDiscoveryAttributeV2 script e r i discovery attribute v2
+//
 // swagger:model ScriptERIDiscoveryAttributeV2
-type ScriptERIdiscoveryAttributeV2 struct {
+type ScriptERIDiscoveryAttributeV2 struct {
 
 	// groovy script
 	GroovyScript string `json:"groovyScript,omitempty"`
@@ -39,8 +42,8 @@ type ScriptERIdiscoveryAttributeV2 struct {
 	WinScript string `json:"winScript,omitempty"`
 }
 
-// Validate validates this script e r idiscovery attribute v2
-func (m *ScriptERIdiscoveryAttributeV2) Validate(formats strfmt.Registry) error {
+// Validate validates this script e r i discovery attribute v2
+func (m *ScriptERIDiscoveryAttributeV2) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
@@ -53,7 +56,8 @@ func (m *ScriptERIdiscoveryAttributeV2) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *ScriptERIdiscoveryAttributeV2) validateName(formats strfmt.Registry) error {
+func (m *ScriptERIDiscoveryAttributeV2) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -61,8 +65,13 @@ func (m *ScriptERIdiscoveryAttributeV2) validateName(formats strfmt.Registry) er
 	return nil
 }
 
+// ContextValidate validates this script e r i discovery attribute v2 based on context it is used
+func (m *ScriptERIDiscoveryAttributeV2) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
 // MarshalBinary interface implementation
-func (m *ScriptERIdiscoveryAttributeV2) MarshalBinary() ([]byte, error) {
+func (m *ScriptERIDiscoveryAttributeV2) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -70,8 +79,8 @@ func (m *ScriptERIdiscoveryAttributeV2) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ScriptERIdiscoveryAttributeV2) UnmarshalBinary(b []byte) error {
-	var res ScriptERIdiscoveryAttributeV2
+func (m *ScriptERIDiscoveryAttributeV2) UnmarshalBinary(b []byte) error {
+	var res ScriptERIDiscoveryAttributeV2
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -6,21 +6,26 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // NameAndValue name and value
+//
 // swagger:model NameAndValue
 type NameAndValue struct {
 
 	// The name of a property
+	// Example: addr
 	// Required: true
 	Name *string `json:"name"`
 
 	// The value of a property
+	// Example: 127.0.0.1
 	// Required: true
 	Value *string `json:"value"`
 }
@@ -44,6 +49,7 @@ func (m *NameAndValue) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NameAndValue) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -52,10 +58,16 @@ func (m *NameAndValue) validateName(formats strfmt.Registry) error {
 }
 
 func (m *NameAndValue) validateValue(formats strfmt.Registry) error {
+
 	if err := validate.Required("value", "body", m.Value); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this name and value based on context it is used
+func (m *NameAndValue) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // AuditLog audit log
+//
 // swagger:model AuditLog
 type AuditLog struct {
 
@@ -34,10 +39,6 @@ type AuditLog struct {
 	// Read Only: true
 	IP string `json:"ip,omitempty"`
 
-	// The Id of the session during which the action was performed
-	// Read Only: true
-	SessionID string `json:"sessionId,omitempty"`
-
 	// The username associated with the user that performed the action recorded in the access log entry
 	// Read Only: true
 	Username string `json:"username,omitempty"`
@@ -45,6 +46,94 @@ type AuditLog struct {
 
 // Validate validates this audit log
 func (m *AuditLog) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this audit log based on the context it is used
+func (m *AuditLog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHappenedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHappenedOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsername(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AuditLog) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLog) contextValidateHappenedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "happenedOn", "body", int64(m.HappenedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLog) contextValidateHappenedOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "happenedOnLocal", "body", string(m.HappenedOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLog) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLog) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ip", "body", string(m.IP)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLog) contextValidateUsername(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "username", "body", string(m.Username)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

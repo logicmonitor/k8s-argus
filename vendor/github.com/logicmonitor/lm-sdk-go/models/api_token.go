@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // APIToken API token
+//
 // swagger:model APIToken
 type APIToken struct {
 
@@ -49,6 +52,7 @@ type APIToken struct {
 	LastUsedOn int64 `json:"lastUsedOn,omitempty"`
 
 	// The note associated with the API Tokens
+	// Example: John Doe's API Token
 	Note string `json:"note,omitempty"`
 
 	// The roles assigned to the user that is associated with the API Tokens
@@ -57,6 +61,7 @@ type APIToken struct {
 	Roles []string `json:"roles,omitempty"`
 
 	// 1 | 2 - Whether or not the API Tokens are enabled, where 2 = enabled
+	// Example: 2
 	Status int32 `json:"status,omitempty"`
 }
 
@@ -80,6 +85,133 @@ func (m *APIToken) validateRoles(formats strfmt.Registry) error {
 	}
 
 	if err := validate.UniqueItems("roles", "body", m.Roles); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this API token based on the context it is used
+func (m *APIToken) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAccessID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAccessKey(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAdminID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAdminName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCreatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCreatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUsedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRoles(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *APIToken) contextValidateAccessID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "accessId", "body", string(m.AccessID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateAccessKey(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "accessKey", "body", string(m.AccessKey)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateAdminID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "adminId", "body", int32(m.AdminID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateAdminName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "adminName", "body", string(m.AdminName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateCreatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdBy", "body", string(m.CreatedBy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateCreatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdOn", "body", int64(m.CreatedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateLastUsedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUsedOn", "body", int64(m.LastUsedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *APIToken) contextValidateRoles(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "roles", "body", []string(m.Roles)); err != nil {
 		return err
 	}
 

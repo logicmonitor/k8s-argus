@@ -6,15 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DeviceDataSourceInstance device data source instance
+//
 // swagger:model DeviceDataSourceInstance
 type DeviceDataSourceInstance struct {
 
@@ -33,6 +35,7 @@ type DeviceDataSourceInstance struct {
 	DataSourceType string `json:"dataSourceType,omitempty"`
 
 	// The description of the datasource instance
+	// Example: Ping Test
 	Description string `json:"description,omitempty"`
 
 	// The id of the unique device-datasource the instance is associated with
@@ -48,13 +51,16 @@ type DeviceDataSourceInstance struct {
 	DeviceID int32 `json:"deviceId,omitempty"`
 
 	// Whether or not alerting is disabled for the instance
+	// Example: true
 	DisableAlerting bool `json:"disableAlerting,omitempty"`
 
 	// The instance alias. This is the descriptive name of the instance, and should be unique for the device/datasource combination
+	// Example: Ping
 	// Required: true
 	DisplayName *string `json:"displayName"`
 
 	// The id of the instance group associated with the datasource instance
+	// Example: 211
 	GroupID int32 `json:"groupId,omitempty"`
 
 	// The name of the instance group associated with the datasource instance
@@ -66,6 +72,7 @@ type DeviceDataSourceInstance struct {
 	ID int32 `json:"id,omitempty"`
 
 	// Whether or not Active Discovery is enabled, and thus whether or not the instance description is editable
+	// Example: true
 	LockDescription bool `json:"lockDescription,omitempty"`
 
 	// The name of the datasource instance, in the format of: datasourceName-instanceAlias
@@ -73,16 +80,19 @@ type DeviceDataSourceInstance struct {
 	Name string `json:"name,omitempty"`
 
 	// Whether or not monitoring is disabled for the instance
+	// Example: true
 	StopMonitoring bool `json:"stopMonitoring,omitempty"`
 
 	// Any instance level system properties assigned to the instance
 	SystemProperties []*NameAndValue `json:"systemProperties,omitempty"`
 
 	// The variable part of the instance, used to query data from a device. For example, variable part of the SNMP OID tree. This value must be unique for the device/datasource combination, unless two-dimensional active discovery is used
+	// Example: 1
 	// Required: true
 	WildValue *string `json:"wildValue"`
 
 	// Only used for two dimensional active discovery. When used, during Active Discovery runs, the token ##WILDVALUE## is replaces with the value of ALIAS and the token ##WILDVALUE2## is replaced with the value of the second part alias. This value must be unique for the device/datasource/WILDVALUE combination
+	// Example: 1
 	WildValue2 string `json:"wildValue2,omitempty"`
 }
 
@@ -165,6 +175,7 @@ func (m *DeviceDataSourceInstance) validateCustomProperties(formats strfmt.Regis
 }
 
 func (m *DeviceDataSourceInstance) validateDisplayName(formats strfmt.Registry) error {
+
 	if err := validate.Required("displayName", "body", m.DisplayName); err != nil {
 		return err
 	}
@@ -197,8 +208,189 @@ func (m *DeviceDataSourceInstance) validateSystemProperties(formats strfmt.Regis
 }
 
 func (m *DeviceDataSourceInstance) validateWildValue(formats strfmt.Registry) error {
+
 	if err := validate.Required("wildValue", "body", m.WildValue); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device data source instance based on the context it is used
+func (m *DeviceDataSourceInstance) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAutoProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceDataSourceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSystemProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateAutoProperties(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AutoProperties); i++ {
+
+		if m.AutoProperties[i] != nil {
+			if err := m.AutoProperties[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("autoProperties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateCustomProperties(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CustomProperties); i++ {
+
+		if m.CustomProperties[i] != nil {
+			if err := m.CustomProperties[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("customProperties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateDataSourceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceId", "body", int32(m.DataSourceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateDataSourceType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceType", "body", string(m.DataSourceType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateDeviceDataSourceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDataSourceId", "body", int32(m.DeviceDataSourceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateDeviceDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDisplayName", "body", string(m.DeviceDisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateDeviceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceId", "body", int32(m.DeviceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateGroupName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupName", "body", string(m.GroupName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstance) contextValidateSystemProperties(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SystemProperties); i++ {
+
+		if m.SystemProperties[i] != nil {
+			if err := m.SystemProperties[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("systemProperties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

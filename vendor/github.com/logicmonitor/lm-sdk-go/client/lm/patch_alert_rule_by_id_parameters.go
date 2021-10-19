@@ -6,70 +6,107 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewPatchAlertRuleByIDParams creates a new PatchAlertRuleByIDParams object
-// with the default values initialized.
+// NewPatchAlertRuleByIDParams creates a new PatchAlertRuleByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPatchAlertRuleByIDParams() *PatchAlertRuleByIDParams {
-	var ()
 	return &PatchAlertRuleByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPatchAlertRuleByIDParamsWithTimeout creates a new PatchAlertRuleByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPatchAlertRuleByIDParamsWithTimeout(timeout time.Duration) *PatchAlertRuleByIDParams {
-	var ()
 	return &PatchAlertRuleByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPatchAlertRuleByIDParamsWithContext creates a new PatchAlertRuleByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPatchAlertRuleByIDParamsWithContext(ctx context.Context) *PatchAlertRuleByIDParams {
-	var ()
 	return &PatchAlertRuleByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPatchAlertRuleByIDParamsWithHTTPClient creates a new PatchAlertRuleByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPatchAlertRuleByIDParamsWithHTTPClient(client *http.Client) *PatchAlertRuleByIDParams {
-	var ()
 	return &PatchAlertRuleByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*PatchAlertRuleByIDParams contains all the parameters to send to the API endpoint
-for the patch alert rule by Id operation typically these are written to a http.Request
+/* PatchAlertRuleByIDParams contains all the parameters to send to the API endpoint
+   for the patch alert rule by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type PatchAlertRuleByIDParams struct {
 
-	/*Body*/
+	// PatchFields.
+	PatchFields *string
+
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.AlertRule
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the patch alert rule by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchAlertRuleByIDParams) WithDefaults() *PatchAlertRuleByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the patch alert rule by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchAlertRuleByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := PatchAlertRuleByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the patch alert rule by Id params
@@ -105,6 +142,28 @@ func (o *PatchAlertRuleByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithPatchFields adds the patchFields to the patch alert rule by Id params
+func (o *PatchAlertRuleByIDParams) WithPatchFields(patchFields *string) *PatchAlertRuleByIDParams {
+	o.SetPatchFields(patchFields)
+	return o
+}
+
+// SetPatchFields adds the patchFields to the patch alert rule by Id params
+func (o *PatchAlertRuleByIDParams) SetPatchFields(patchFields *string) {
+	o.PatchFields = patchFields
+}
+
+// WithUserAgent adds the userAgent to the patch alert rule by Id params
+func (o *PatchAlertRuleByIDParams) WithUserAgent(userAgent *string) *PatchAlertRuleByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the patch alert rule by Id params
+func (o *PatchAlertRuleByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithBody adds the body to the patch alert rule by Id params
 func (o *PatchAlertRuleByIDParams) WithBody(body *models.AlertRule) *PatchAlertRuleByIDParams {
 	o.SetBody(body)
@@ -129,11 +188,36 @@ func (o *PatchAlertRuleByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchAlertRuleByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.PatchFields != nil {
+
+		// query param PatchFields
+		var qrPatchFields string
+
+		if o.PatchFields != nil {
+			qrPatchFields = *o.PatchFields
+		}
+		qPatchFields := qrPatchFields
+		if qPatchFields != "" {
+
+			if err := r.SetQueryParam("PatchFields", qPatchFields); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

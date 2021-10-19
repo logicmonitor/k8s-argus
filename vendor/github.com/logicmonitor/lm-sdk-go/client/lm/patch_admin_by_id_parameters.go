@@ -6,76 +6,113 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewPatchAdminByIDParams creates a new PatchAdminByIDParams object
-// with the default values initialized.
+// NewPatchAdminByIDParams creates a new PatchAdminByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPatchAdminByIDParams() *PatchAdminByIDParams {
-	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
-		ChangePassword: &changePasswordDefault,
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPatchAdminByIDParamsWithTimeout creates a new PatchAdminByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPatchAdminByIDParamsWithTimeout(timeout time.Duration) *PatchAdminByIDParams {
-	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
-		ChangePassword: &changePasswordDefault,
-
 		timeout: timeout,
 	}
 }
 
 // NewPatchAdminByIDParamsWithContext creates a new PatchAdminByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPatchAdminByIDParamsWithContext(ctx context.Context) *PatchAdminByIDParams {
-	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
-		ChangePassword: &changePasswordDefault,
-
 		Context: ctx,
 	}
 }
 
 // NewPatchAdminByIDParamsWithHTTPClient creates a new PatchAdminByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPatchAdminByIDParamsWithHTTPClient(client *http.Client) *PatchAdminByIDParams {
-	changePasswordDefault := bool(false)
 	return &PatchAdminByIDParams{
-		ChangePassword: &changePasswordDefault,
-		HTTPClient:     client,
+		HTTPClient: client,
 	}
 }
 
-/*PatchAdminByIDParams contains all the parameters to send to the API endpoint
-for the patch admin by Id operation typically these are written to a http.Request
+/* PatchAdminByIDParams contains all the parameters to send to the API endpoint
+   for the patch admin by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type PatchAdminByIDParams struct {
 
-	/*Body*/
+	// PatchFields.
+	PatchFields *string
+
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.Admin
-	/*ChangePassword*/
+
+	// ChangePassword.
 	ChangePassword *bool
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the patch admin by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchAdminByIDParams) WithDefaults() *PatchAdminByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the patch admin by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchAdminByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+
+		changePasswordDefault = bool(false)
+	)
+
+	val := PatchAdminByIDParams{
+		UserAgent:      &userAgentDefault,
+		ChangePassword: &changePasswordDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the patch admin by Id params
@@ -109,6 +146,28 @@ func (o *PatchAdminByIDParams) WithHTTPClient(client *http.Client) *PatchAdminBy
 // SetHTTPClient adds the HTTPClient to the patch admin by Id params
 func (o *PatchAdminByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithPatchFields adds the patchFields to the patch admin by Id params
+func (o *PatchAdminByIDParams) WithPatchFields(patchFields *string) *PatchAdminByIDParams {
+	o.SetPatchFields(patchFields)
+	return o
+}
+
+// SetPatchFields adds the patchFields to the patch admin by Id params
+func (o *PatchAdminByIDParams) SetPatchFields(patchFields *string) {
+	o.PatchFields = patchFields
+}
+
+// WithUserAgent adds the userAgent to the patch admin by Id params
+func (o *PatchAdminByIDParams) WithUserAgent(userAgent *string) *PatchAdminByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the patch admin by Id params
+func (o *PatchAdminByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithBody adds the body to the patch admin by Id params
@@ -146,11 +205,36 @@ func (o *PatchAdminByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchAdminByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.PatchFields != nil {
+
+		// query param PatchFields
+		var qrPatchFields string
+
+		if o.PatchFields != nil {
+			qrPatchFields = *o.PatchFields
+		}
+		qPatchFields := qrPatchFields
+		if qPatchFields != "" {
+
+			if err := r.SetQueryParam("PatchFields", qPatchFields); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
@@ -161,16 +245,17 @@ func (o *PatchAdminByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 
 		// query param changePassword
 		var qrChangePassword bool
+
 		if o.ChangePassword != nil {
 			qrChangePassword = *o.ChangePassword
 		}
 		qChangePassword := swag.FormatBool(qrChangePassword)
 		if qChangePassword != "" {
+
 			if err := r.SetQueryParam("changePassword", qChangePassword); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param id

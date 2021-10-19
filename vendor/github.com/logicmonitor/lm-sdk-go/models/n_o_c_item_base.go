@@ -7,25 +7,31 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // NOCItemBase n o c item base
+//
 // swagger:discriminator NOCItemBase type
 type NOCItemBase interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// type
 	// Required: true
 	Type() string
 	SetType(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type nOCItemBase struct {
@@ -93,26 +99,28 @@ func unmarshalNOCItemBase(data []byte, consumer runtime.Consumer) (NOCItemBase, 
 			return nil, err
 		}
 		return &result, nil
-
 	case "device":
 		var result DeviceNOCItem
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "website":
 		var result WebsiteNOCItem
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
 }
 
 // Validate validates this n o c item base
 func (m *nOCItemBase) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this n o c item base based on context it is used
+func (m *nOCItemBase) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }

@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // GetDeviceInstanceGraphDataOnlyByInstanceIDReader is a Reader for the GetDeviceInstanceGraphDataOnlyByInstanceID structure.
@@ -22,14 +25,18 @@ type GetDeviceInstanceGraphDataOnlyByInstanceIDReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetDeviceInstanceGraphDataOnlyByInstanceIDOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
+	case 429:
+		result := NewGetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		result := NewGetDeviceInstanceGraphDataOnlyByInstanceIDDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -47,7 +54,7 @@ func NewGetDeviceInstanceGraphDataOnlyByInstanceIDOK() *GetDeviceInstanceGraphDa
 	return &GetDeviceInstanceGraphDataOnlyByInstanceIDOK{}
 }
 
-/*GetDeviceInstanceGraphDataOnlyByInstanceIDOK handles this case with default header values.
+/* GetDeviceInstanceGraphDataOnlyByInstanceIDOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -58,13 +65,83 @@ type GetDeviceInstanceGraphDataOnlyByInstanceIDOK struct {
 func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDOK) Error() string {
 	return fmt.Sprintf("[GET /device/devicedatasourceinstances/{instanceId}/graphs/{graphId}/data][%d] getDeviceInstanceGraphDataOnlyByInstanceIdOK  %+v", 200, o.Payload)
 }
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDOK) GetPayload() *models.GraphPlot {
+	return o.Payload
+}
 
 func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.GraphPlot)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
+	}
+
+	return nil
+}
+
+// NewGetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests creates a GetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests with default headers values
+func NewGetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests() *GetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests {
+	return &GetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests{}
+}
+
+/* GetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests describes a response with status code 429, with default header values.
+
+Too Many Requests
+*/
+type GetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests struct {
+
+	/* Request limit per X-Rate-Limit-Window
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests left for the time window
+	 */
+	XRateLimitRemaining int64
+
+	/* The rolling time window length with the unit of second
+	 */
+	XRateLimitWindow int64
+}
+
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests) Error() string {
+	return fmt.Sprintf("[GET /device/devicedatasourceinstances/{instanceId}/graphs/{graphId}/data][%d] getDeviceInstanceGraphDataOnlyByInstanceIdTooManyRequests ", 429)
+}
+
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header x-rate-limit-limit
+	hdrXRateLimitLimit := response.GetHeader("x-rate-limit-limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header x-rate-limit-remaining
+	hdrXRateLimitRemaining := response.GetHeader("x-rate-limit-remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	// hydrates response header x-rate-limit-window
+	hdrXRateLimitWindow := response.GetHeader("x-rate-limit-window")
+
+	if hdrXRateLimitWindow != "" {
+		valxRateLimitWindow, err := swag.ConvertInt64(hdrXRateLimitWindow)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-window", "header", "int64", hdrXRateLimitWindow)
+		}
+		o.XRateLimitWindow = valxRateLimitWindow
 	}
 
 	return nil
@@ -77,7 +154,7 @@ func NewGetDeviceInstanceGraphDataOnlyByInstanceIDDefault(code int) *GetDeviceIn
 	}
 }
 
-/*GetDeviceInstanceGraphDataOnlyByInstanceIDDefault handles this case with default header values.
+/* GetDeviceInstanceGraphDataOnlyByInstanceIDDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +172,12 @@ func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDDefault) Code() int {
 func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDDefault) Error() string {
 	return fmt.Sprintf("[GET /device/devicedatasourceinstances/{instanceId}/graphs/{graphId}/data][%d] getDeviceInstanceGraphDataOnlyByInstanceId default  %+v", o._statusCode, o.Payload)
 }
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
 
 func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

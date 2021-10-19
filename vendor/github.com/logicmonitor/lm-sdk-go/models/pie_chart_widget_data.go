@@ -7,15 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // PieChartWidgetData pie chart widget data
+//
 // swagger:model PieChartWidgetData
 type PieChartWidgetData struct {
 	titleField string
@@ -54,14 +57,6 @@ func (m *PieChartWidgetData) Type() string {
 // SetType sets the type of this subtype
 func (m *PieChartWidgetData) SetType(val string) {
 }
-
-// Data gets the data of this subtype
-
-// GroupRemainingAsOthers gets the group remaining as others of this subtype
-
-// HideZeroPercentSlices gets the hide zero percent slices of this subtype
-
-// MaxSlicesCanBeShown gets the max slices can be shown of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *PieChartWidgetData) UnmarshalJSON(raw []byte) error {
@@ -115,11 +110,8 @@ func (m *PieChartWidgetData) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Data = data.Data
-
 	result.GroupRemainingAsOthers = data.GroupRemainingAsOthers
-
 	result.HideZeroPercentSlices = data.HideZeroPercentSlices
-
 	result.MaxSlicesCanBeShown = data.MaxSlicesCanBeShown
 
 	*m = result
@@ -156,8 +148,7 @@ func (m PieChartWidgetData) MarshalJSON() ([]byte, error) {
 		HideZeroPercentSlices: m.HideZeroPercentSlices,
 
 		MaxSlicesCanBeShown: m.MaxSlicesCanBeShown,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -170,8 +161,7 @@ func (m PieChartWidgetData) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -194,6 +184,7 @@ func (m *PieChartWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PieChartWidgetData) validateData(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Data) { // not required
 		return nil
 	}
@@ -212,6 +203,77 @@ func (m *PieChartWidgetData) validateData(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this pie chart widget data based on the context it is used
+func (m *PieChartWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupRemainingAsOthers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMaxSlicesCanBeShown(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PieChartWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PieChartWidgetData) contextValidateData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "data", "body", []*PieChartData(m.Data)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Data); i++ {
+
+		if m.Data[i] != nil {
+			if err := m.Data[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("data" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *PieChartWidgetData) contextValidateGroupRemainingAsOthers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupRemainingAsOthers", "body", m.GroupRemainingAsOthers); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PieChartWidgetData) contextValidateMaxSlicesCanBeShown(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "maxSlicesCanBeShown", "body", int32(m.MaxSlicesCanBeShown)); err != nil {
+		return err
 	}
 
 	return nil

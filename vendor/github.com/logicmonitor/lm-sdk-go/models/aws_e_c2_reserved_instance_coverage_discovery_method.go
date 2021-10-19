@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsEC2ReservedInstanceCoverageDiscoveryMethod aws e c2 reserved instance coverage discovery method
+//
 // swagger:model AwsEC2ReservedInstanceCoverageDiscoveryMethod
 type AwsEC2ReservedInstanceCoverageDiscoveryMethod struct {
 	AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *AwsEC2ReservedInstanceCoverageDiscoveryMethod) UnmarshalJSON(raw []byte
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1 = data.AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AwsEC2ReservedInstanceCoverageDiscoveryMethod) MarshalJSON() ([]byte, er
 	}{
 
 		AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1: m.AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AwsEC2ReservedInstanceCoverageDiscoveryMethod) MarshalJSON() ([]byte, er
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AwsEC2ReservedInstanceCoverageDiscoveryMethod) MarshalJSON() ([]byte, er
 
 // Validate validates this aws e c2 reserved instance coverage discovery method
 func (m *AwsEC2ReservedInstanceCoverageDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws e c2 reserved instance coverage discovery method based on the context it is used
+func (m *AwsEC2ReservedInstanceCoverageDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *AwsEC2ReservedInstanceCoverageDiscoveryMethod) UnmarshalBinary(b []byte
 }
 
 // AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1 aws e c2 reserved instance coverage discovery method all of1
+//
 // swagger:model AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1
 type AwsEC2ReservedInstanceCoverageDiscoveryMethodAllOf1 interface{}

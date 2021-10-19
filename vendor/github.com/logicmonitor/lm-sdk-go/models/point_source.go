@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // PointSource point source
+//
 // swagger:model PointSource
 type PointSource struct {
 
@@ -46,7 +49,31 @@ func (m *PointSource) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PointSource) validateDeviceGroupFullPath(formats strfmt.Registry) error {
+
 	if err := validate.Required("deviceGroupFullPath", "body", m.DeviceGroupFullPath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this point source based on the context it is used
+func (m *PointSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateHasLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PointSource) contextValidateHasLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "hasLocation", "body", m.HasLocation); err != nil {
 		return err
 	}
 

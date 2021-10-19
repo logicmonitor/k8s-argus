@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // GCPNetscan g c p netscan
+//
 // swagger:model GCPNetscan
 type GCPNetscan struct {
 	collectorField *int32
@@ -36,6 +38,8 @@ type GCPNetscan struct {
 
 	idField int32
 
+	ignoreSystemIPsDuplicatesField bool
+
 	nameField *string
 
 	nextStartField string
@@ -44,7 +48,7 @@ type GCPNetscan struct {
 
 	nsgIdField int32
 
-	scheduleField *NetScanSchedule
+	scheduleField *RestSchedule
 
 	versionField int32
 
@@ -163,6 +167,16 @@ func (m *GCPNetscan) SetID(val int32) {
 	m.idField = val
 }
 
+// IgnoreSystemIPsDuplicates gets the ignore system i ps duplicates of this subtype
+func (m *GCPNetscan) IgnoreSystemIPsDuplicates() bool {
+	return m.ignoreSystemIPsDuplicatesField
+}
+
+// SetIgnoreSystemIPsDuplicates sets the ignore system i ps duplicates of this subtype
+func (m *GCPNetscan) SetIgnoreSystemIPsDuplicates(val bool) {
+	m.ignoreSystemIPsDuplicatesField = val
+}
+
 // Method gets the method of this subtype
 func (m *GCPNetscan) Method() string {
 	return "gcp"
@@ -213,12 +227,12 @@ func (m *GCPNetscan) SetNsgID(val int32) {
 }
 
 // Schedule gets the schedule of this subtype
-func (m *GCPNetscan) Schedule() *NetScanSchedule {
+func (m *GCPNetscan) Schedule() *RestSchedule {
 	return m.scheduleField
 }
 
 // SetSchedule sets the schedule of this subtype
-func (m *GCPNetscan) SetSchedule(val *NetScanSchedule) {
+func (m *GCPNetscan) SetSchedule(val *RestSchedule) {
 	m.scheduleField = val
 }
 
@@ -231,18 +245,6 @@ func (m *GCPNetscan) Version() int32 {
 func (m *GCPNetscan) SetVersion(val int32) {
 	m.versionField = val
 }
-
-// GcpRegion gets the gcp region of this subtype
-
-// GcpService gets the gcp service of this subtype
-
-// GroupID gets the group Id of this subtype
-
-// ProjectID gets the project Id of this subtype
-
-// RootName gets the root name of this subtype
-
-// ServiceAccountKey gets the service account key of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *GCPNetscan) UnmarshalJSON(raw []byte) error {
@@ -301,6 +303,8 @@ func (m *GCPNetscan) UnmarshalJSON(raw []byte) error {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -311,7 +315,7 @@ func (m *GCPNetscan) UnmarshalJSON(raw []byte) error {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}
@@ -343,11 +347,12 @@ func (m *GCPNetscan) UnmarshalJSON(raw []byte) error {
 
 	result.idField = base.ID
 
+	result.ignoreSystemIPsDuplicatesField = base.IgnoreSystemIPsDuplicates
+
 	if base.Method != result.Method() {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid method value: %q", base.Method)
 	}
-
 	result.nameField = base.Name
 
 	result.nextStartField = base.NextStart
@@ -361,15 +366,10 @@ func (m *GCPNetscan) UnmarshalJSON(raw []byte) error {
 	result.versionField = base.Version
 
 	result.GcpRegion = data.GcpRegion
-
 	result.GcpService = data.GcpService
-
 	result.GroupID = data.GroupID
-
 	result.ProjectID = data.ProjectID
-
 	result.RootName = data.RootName
-
 	result.ServiceAccountKey = data.ServiceAccountKey
 
 	*m = result
@@ -419,8 +419,7 @@ func (m GCPNetscan) MarshalJSON() ([]byte, error) {
 		RootName: m.RootName,
 
 		ServiceAccountKey: m.ServiceAccountKey,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -443,6 +442,8 @@ func (m GCPNetscan) MarshalJSON() ([]byte, error) {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -453,7 +454,7 @@ func (m GCPNetscan) MarshalJSON() ([]byte, error) {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}{
@@ -476,6 +477,8 @@ func (m GCPNetscan) MarshalJSON() ([]byte, error) {
 
 		ID: m.ID(),
 
+		IgnoreSystemIPsDuplicates: m.IgnoreSystemIPsDuplicates(),
+
 		Method: m.Method(),
 
 		Name: m.Name(),
@@ -489,8 +492,7 @@ func (m GCPNetscan) MarshalJSON() ([]byte, error) {
 		Schedule: m.Schedule(),
 
 		Version: m.Version(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -525,6 +527,7 @@ func (m *GCPNetscan) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateCollector(formats strfmt.Registry) error {
+
 	if err := validate.Required("collector", "body", m.Collector()); err != nil {
 		return err
 	}
@@ -533,6 +536,7 @@ func (m *GCPNetscan) validateCollector(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateDuplicate(formats strfmt.Registry) error {
+
 	if err := validate.Required("duplicate", "body", m.Duplicate()); err != nil {
 		return err
 	}
@@ -550,6 +554,7 @@ func (m *GCPNetscan) validateDuplicate(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -558,6 +563,7 @@ func (m *GCPNetscan) validateName(formats strfmt.Registry) error {
 }
 
 func (m *GCPNetscan) validateSchedule(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Schedule()) { // not required
 		return nil
 	}
@@ -569,6 +575,130 @@ func (m *GCPNetscan) validateSchedule(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this g c p netscan based on the context it is used
+func (m *GCPNetscan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDuplicate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSchedule(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGcpRegion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGcpService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProjectID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRootName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateServiceAccountKey(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateDuplicate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Duplicate() != nil {
+		if err := m.Duplicate().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("duplicate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Schedule() != nil {
+		if err := m.Schedule().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateGcpRegion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "gcpRegion", "body", string(m.GcpRegion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateGcpService(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "gcpService", "body", string(m.GcpService)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupId", "body", int32(m.GroupID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateProjectID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "projectId", "body", string(m.ProjectID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateRootName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rootName", "body", string(m.RootName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GCPNetscan) contextValidateServiceAccountKey(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "serviceAccountKey", "body", string(m.ServiceAccountKey)); err != nil {
+		return err
 	}
 
 	return nil

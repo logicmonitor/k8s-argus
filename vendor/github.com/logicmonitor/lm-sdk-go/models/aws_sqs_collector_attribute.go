@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsSqsCollectorAttribute aws sqs collector attribute
+//
 // swagger:model AwsSqsCollectorAttribute
 type AwsSqsCollectorAttribute struct {
 
@@ -33,10 +35,6 @@ func (m *AwsSqsCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *AwsSqsCollectorAttribute) SetName(val string) {
 }
-
-// AwsSqsMessageNum gets the aws sqs message num of this subtype
-
-// AwsSqsMessageSize gets the aws sqs message size of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AwsSqsCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -77,7 +75,6 @@ func (m *AwsSqsCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.AwsSqsMessageNum = data.AwsSqsMessageNum
-
 	result.AwsSqsMessageSize = data.AwsSqsMessageSize
 
 	*m = result
@@ -101,8 +98,7 @@ func (m AwsSqsCollectorAttribute) MarshalJSON() ([]byte, error) {
 		AwsSqsMessageNum: m.AwsSqsMessageNum,
 
 		AwsSqsMessageSize: m.AwsSqsMessageSize,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +107,7 @@ func (m AwsSqsCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +117,16 @@ func (m AwsSqsCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this aws sqs collector attribute
 func (m *AwsSqsCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws sqs collector attribute based on the context it is used
+func (m *AwsSqsCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

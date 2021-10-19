@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // WebsiteSLAWidgetData website SLA widget data
+//
 // swagger:model WebsiteSLAWidgetData
 type WebsiteSLAWidgetData struct {
 	titleField string
@@ -46,10 +49,6 @@ func (m *WebsiteSLAWidgetData) Type() string {
 // SetType sets the type of this subtype
 func (m *WebsiteSLAWidgetData) SetType(val string) {
 }
-
-// Availability gets the availability of this subtype
-
-// ColorLevel gets the color level of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *WebsiteSLAWidgetData) UnmarshalJSON(raw []byte) error {
@@ -96,7 +95,6 @@ func (m *WebsiteSLAWidgetData) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Availability = data.Availability
-
 	result.ColorLevel = data.ColorLevel
 
 	*m = result
@@ -122,8 +120,7 @@ func (m WebsiteSLAWidgetData) MarshalJSON() ([]byte, error) {
 		Availability: m.Availability,
 
 		ColorLevel: m.ColorLevel,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +133,7 @@ func (m WebsiteSLAWidgetData) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +148,51 @@ func (m *WebsiteSLAWidgetData) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this website SLA widget data based on the context it is used
+func (m *WebsiteSLAWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvailability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColorLevel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebsiteSLAWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteSLAWidgetData) contextValidateAvailability(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "availability", "body", float64(m.Availability)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteSLAWidgetData) contextValidateColorLevel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "colorLevel", "body", int32(m.ColorLevel)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

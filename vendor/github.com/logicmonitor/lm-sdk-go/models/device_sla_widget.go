@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DeviceSLAWidget device SLA widget
+//
 // swagger:model DeviceSLAWidget
 type DeviceSLAWidget struct {
 	dashboardIdField *int32
@@ -177,24 +179,6 @@ func (m *DeviceSLAWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// BottomLabel gets the bottom label of this subtype
-
-// ColorThresholds gets the color thresholds of this subtype
-
-// DaysInWeek gets the days in week of this subtype
-
-// DisplayType gets the display type of this subtype
-
-// Metrics gets the metrics of this subtype
-
-// PeriodInOneDay gets the period in one day of this subtype
-
-// Timezone gets the timezone of this subtype
-
-// TopX gets the top x of this subtype
-
-// UnmonitoredTimeType gets the unmonitored time type of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *DeviceSLAWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -292,25 +276,16 @@ func (m *DeviceSLAWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.BottomLabel = data.BottomLabel
-
 	result.ColorThresholds = data.ColorThresholds
-
 	result.DaysInWeek = data.DaysInWeek
-
 	result.DisplayType = data.DisplayType
-
 	result.Metrics = data.Metrics
-
 	result.PeriodInOneDay = data.PeriodInOneDay
-
 	result.Timezone = data.Timezone
-
 	result.TopX = data.TopX
-
 	result.UnmonitoredTimeType = data.UnmonitoredTimeType
 
 	*m = result
@@ -370,8 +345,7 @@ func (m DeviceSLAWidget) MarshalJSON() ([]byte, error) {
 		TopX: m.TopX,
 
 		UnmonitoredTimeType: m.UnmonitoredTimeType,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -420,8 +394,7 @@ func (m DeviceSLAWidget) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -456,6 +429,7 @@ func (m *DeviceSLAWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceSLAWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -464,6 +438,7 @@ func (m *DeviceSLAWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *DeviceSLAWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -472,6 +447,7 @@ func (m *DeviceSLAWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DeviceSLAWidget) validateColorThresholds(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.ColorThresholds) { // not required
 		return nil
 	}
@@ -496,6 +472,7 @@ func (m *DeviceSLAWidget) validateColorThresholds(formats strfmt.Registry) error
 }
 
 func (m *DeviceSLAWidget) validateMetrics(formats strfmt.Registry) error {
+
 	if err := validate.Required("metrics", "body", m.Metrics); err != nil {
 		return err
 	}
@@ -507,6 +484,99 @@ func (m *DeviceSLAWidget) validateMetrics(formats strfmt.Registry) error {
 
 		if m.Metrics[i] != nil {
 			if err := m.Metrics[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("metrics" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device SLA widget based on the context it is used
+func (m *DeviceSLAWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColorThresholds(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetrics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceSLAWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceSLAWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceSLAWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceSLAWidget) contextValidateColorThresholds(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ColorThresholds); i++ {
+
+		if m.ColorThresholds[i] != nil {
+			if err := m.ColorThresholds[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("colorThresholds" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceSLAWidget) contextValidateMetrics(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Metrics); i++ {
+
+		if m.Metrics[i] != nil {
+			if err := m.Metrics[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("metrics" + "." + strconv.Itoa(i))
 				}

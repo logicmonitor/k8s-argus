@@ -6,24 +6,31 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Assignment assignment
+//
 // swagger:model Assignment
 type Assignment struct {
 
 	// Whether or not specified devices should be included or excluded
+	// Example: Include
 	Action string `json:"action,omitempty"`
 
 	// Whether or not alerting should be disabled for discovered devices
+	// Example: false
 	DisableAlerting bool `json:"disableAlerting,omitempty"`
 
 	// The ID of the group that discovered devices should be added into
+	// Example: 1
 	Group int32 `json:"group,omitempty"`
 
 	// The name of the group that discovered devices should be added into
+	// Example: qapr
 	GroupName string `json:"groupName,omitempty"`
 
 	// tag key
@@ -35,6 +42,11 @@ type Assignment struct {
 
 // Validate validates this assignment
 func (m *Assignment) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this assignment based on context it is used
+func (m *Assignment) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

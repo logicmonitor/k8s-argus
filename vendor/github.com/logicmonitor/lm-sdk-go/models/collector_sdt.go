@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // CollectorSDT collector SDT
+//
 // swagger:model CollectorSDT
 type CollectorSDT struct {
 	adminField string
@@ -252,10 +254,6 @@ func (m *CollectorSDT) SetWeekOfMonth(val string) {
 	m.weekOfMonthField = val
 }
 
-// CollectorDescription gets the collector description of this subtype
-
-// CollectorID gets the collector Id of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *CollectorSDT) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -363,13 +361,11 @@ func (m *CollectorSDT) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.weekDayField = base.WeekDay
 
 	result.weekOfMonthField = base.WeekOfMonth
 
 	result.CollectorDescription = data.CollectorDescription
-
 	result.CollectorID = data.CollectorID
 
 	*m = result
@@ -395,8 +391,7 @@ func (m CollectorSDT) MarshalJSON() ([]byte, error) {
 		CollectorDescription: m.CollectorDescription,
 
 		CollectorID: m.CollectorID,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -477,8 +472,7 @@ func (m CollectorSDT) MarshalJSON() ([]byte, error) {
 		WeekDay: m.WeekDay(),
 
 		WeekOfMonth: m.WeekOfMonth(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -501,7 +495,96 @@ func (m *CollectorSDT) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CollectorSDT) validateCollectorID(formats strfmt.Registry) error {
+
 	if err := validate.Required("collectorId", "body", m.CollectorID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this collector SDT based on the context it is used
+func (m *CollectorSDT) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsEffective(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectorDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CollectorSDT) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", string(m.Admin())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CollectorSDT) contextValidateEndDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endDateTimeOnLocal", "body", string(m.EndDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CollectorSDT) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CollectorSDT) contextValidateIsEffective(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isEffective", "body", m.IsEffective()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CollectorSDT) contextValidateStartDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startDateTimeOnLocal", "body", string(m.StartDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CollectorSDT) contextValidateCollectorDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectorDescription", "body", string(m.CollectorDescription)); err != nil {
 		return err
 	}
 

@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DynamicTableWidget dynamic table widget
+//
 // swagger:model DynamicTableWidget
 type DynamicTableWidget struct {
 	dashboardIdField *int32
@@ -174,20 +176,6 @@ func (m *DynamicTableWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// Columns gets the columns of this subtype
-
-// DataSourceFullName gets the data source full name of this subtype
-
-// DataSourceID gets the data source Id of this subtype
-
-// Forecast gets the forecast of this subtype
-
-// Rows gets the rows of this subtype
-
-// SortOrder gets the sort order of this subtype
-
-// TopX gets the top x of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *DynamicTableWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -282,21 +270,14 @@ func (m *DynamicTableWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.Columns = data.Columns
-
 	result.DataSourceFullName = data.DataSourceFullName
-
 	result.DataSourceID = data.DataSourceID
-
 	result.Forecast = data.Forecast
-
 	result.Rows = data.Rows
-
 	result.SortOrder = data.SortOrder
-
 	result.TopX = data.TopX
 
 	*m = result
@@ -349,8 +330,7 @@ func (m DynamicTableWidget) MarshalJSON() ([]byte, error) {
 		SortOrder: m.SortOrder,
 
 		TopX: m.TopX,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -399,8 +379,7 @@ func (m DynamicTableWidget) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -443,6 +422,7 @@ func (m *DynamicTableWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -451,6 +431,7 @@ func (m *DynamicTableWidget) validateDashboardID(formats strfmt.Registry) error 
 }
 
 func (m *DynamicTableWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -459,6 +440,7 @@ func (m *DynamicTableWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateColumns(formats strfmt.Registry) error {
+
 	if err := validate.Required("columns", "body", m.Columns); err != nil {
 		return err
 	}
@@ -483,6 +465,7 @@ func (m *DynamicTableWidget) validateColumns(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateDataSourceID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dataSourceId", "body", m.DataSourceID); err != nil {
 		return err
 	}
@@ -491,6 +474,7 @@ func (m *DynamicTableWidget) validateDataSourceID(formats strfmt.Registry) error
 }
 
 func (m *DynamicTableWidget) validateForecast(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Forecast) { // not required
 		return nil
 	}
@@ -508,6 +492,7 @@ func (m *DynamicTableWidget) validateForecast(formats strfmt.Registry) error {
 }
 
 func (m *DynamicTableWidget) validateRows(formats strfmt.Registry) error {
+
 	if err := validate.Required("rows", "body", m.Rows); err != nil {
 		return err
 	}
@@ -519,6 +504,130 @@ func (m *DynamicTableWidget) validateRows(formats strfmt.Registry) error {
 
 		if m.Rows[i] != nil {
 			if err := m.Rows[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("rows" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dynamic table widget based on the context it is used
+func (m *DynamicTableWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColumns(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceFullName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateForecast(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRows(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DynamicTableWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidget) contextValidateColumns(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Columns); i++ {
+
+		if m.Columns[i] != nil {
+			if err := m.Columns[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidget) contextValidateDataSourceFullName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceFullName", "body", string(m.DataSourceFullName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidget) contextValidateForecast(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Forecast != nil {
+		if err := m.Forecast.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("forecast")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidget) contextValidateRows(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Rows); i++ {
+
+		if m.Rows[i] != nil {
+			if err := m.Rows[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("rows" + "." + strconv.Itoa(i))
 				}

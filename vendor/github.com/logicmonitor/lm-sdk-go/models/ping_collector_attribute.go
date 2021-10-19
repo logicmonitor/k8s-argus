@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // PingCollectorAttribute ping collector attribute
+//
 // swagger:model PingCollectorAttribute
 type PingCollectorAttribute struct {
 
@@ -33,10 +35,6 @@ func (m *PingCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *PingCollectorAttribute) SetName(val string) {
 }
-
-// IP gets the ip of this subtype
-
-// SendPkts gets the send pkts of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *PingCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -77,7 +75,6 @@ func (m *PingCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.IP = data.IP
-
 	result.SendPkts = data.SendPkts
 
 	*m = result
@@ -101,8 +98,7 @@ func (m PingCollectorAttribute) MarshalJSON() ([]byte, error) {
 		IP: m.IP,
 
 		SendPkts: m.SendPkts,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +107,7 @@ func (m PingCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +117,16 @@ func (m PingCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this ping collector attribute
 func (m *PingCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this ping collector attribute based on the context it is used
+func (m *PingCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

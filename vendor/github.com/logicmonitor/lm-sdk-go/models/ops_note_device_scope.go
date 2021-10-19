@@ -7,18 +7,21 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // OpsNoteDeviceScope ops note device scope
+//
 // swagger:model OpsNoteDeviceScope
 type OpsNoteDeviceScope struct {
 
 	// device Id
+	// Example: 56
 	DeviceID int32 `json:"deviceId,omitempty"`
 
 	// device name
@@ -40,19 +43,12 @@ func (m *OpsNoteDeviceScope) Type() string {
 func (m *OpsNoteDeviceScope) SetType(val string) {
 }
 
-// DeviceID gets the device Id of this subtype
-
-// DeviceName gets the device name of this subtype
-
-// FullPath gets the full path of this subtype
-
-// GroupID gets the group Id of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *OpsNoteDeviceScope) UnmarshalJSON(raw []byte) error {
 	var data struct {
 
 		// device Id
+		// Example: 56
 		DeviceID int32 `json:"deviceId,omitempty"`
 
 		// device name
@@ -93,11 +89,8 @@ func (m *OpsNoteDeviceScope) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.DeviceID = data.DeviceID
-
 	result.DeviceName = data.DeviceName
-
 	result.FullPath = data.FullPath
-
 	result.GroupID = data.GroupID
 
 	*m = result
@@ -112,6 +105,7 @@ func (m OpsNoteDeviceScope) MarshalJSON() ([]byte, error) {
 	b1, err = json.Marshal(struct {
 
 		// device Id
+		// Example: 56
 		DeviceID int32 `json:"deviceId,omitempty"`
 
 		// device name
@@ -131,8 +125,7 @@ func (m OpsNoteDeviceScope) MarshalJSON() ([]byte, error) {
 		FullPath: m.FullPath,
 
 		GroupID: m.GroupID,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +134,7 @@ func (m OpsNoteDeviceScope) MarshalJSON() ([]byte, error) {
 	}{
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +144,16 @@ func (m OpsNoteDeviceScope) MarshalJSON() ([]byte, error) {
 
 // Validate validates this ops note device scope
 func (m *OpsNoteDeviceScope) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this ops note device scope based on the context it is used
+func (m *OpsNoteDeviceScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

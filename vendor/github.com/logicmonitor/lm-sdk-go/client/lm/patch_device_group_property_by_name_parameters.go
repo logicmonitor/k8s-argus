@@ -6,75 +6,113 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewPatchDeviceGroupPropertyByNameParams creates a new PatchDeviceGroupPropertyByNameParams object
-// with the default values initialized.
+// NewPatchDeviceGroupPropertyByNameParams creates a new PatchDeviceGroupPropertyByNameParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPatchDeviceGroupPropertyByNameParams() *PatchDeviceGroupPropertyByNameParams {
-	var ()
 	return &PatchDeviceGroupPropertyByNameParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPatchDeviceGroupPropertyByNameParamsWithTimeout creates a new PatchDeviceGroupPropertyByNameParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPatchDeviceGroupPropertyByNameParamsWithTimeout(timeout time.Duration) *PatchDeviceGroupPropertyByNameParams {
-	var ()
 	return &PatchDeviceGroupPropertyByNameParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPatchDeviceGroupPropertyByNameParamsWithContext creates a new PatchDeviceGroupPropertyByNameParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPatchDeviceGroupPropertyByNameParamsWithContext(ctx context.Context) *PatchDeviceGroupPropertyByNameParams {
-	var ()
 	return &PatchDeviceGroupPropertyByNameParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPatchDeviceGroupPropertyByNameParamsWithHTTPClient creates a new PatchDeviceGroupPropertyByNameParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPatchDeviceGroupPropertyByNameParamsWithHTTPClient(client *http.Client) *PatchDeviceGroupPropertyByNameParams {
-	var ()
 	return &PatchDeviceGroupPropertyByNameParams{
 		HTTPClient: client,
 	}
 }
 
-/*PatchDeviceGroupPropertyByNameParams contains all the parameters to send to the API endpoint
-for the patch device group property by name operation typically these are written to a http.Request
+/* PatchDeviceGroupPropertyByNameParams contains all the parameters to send to the API endpoint
+   for the patch device group property by name operation.
+
+   Typically these are written to a http.Request.
 */
 type PatchDeviceGroupPropertyByNameParams struct {
 
-	/*Body*/
-	Body *models.EntityProperty
-	/*Gid
-	  group ID
+	// PatchFields.
+	PatchFields *string
 
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
+	Body *models.EntityProperty
+
+	/* Gid.
+
+	   group ID
+
+	   Format: int32
 	*/
 	Gid int32
-	/*Name*/
+
+	// Name.
 	Name string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the patch device group property by name params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchDeviceGroupPropertyByNameParams) WithDefaults() *PatchDeviceGroupPropertyByNameParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the patch device group property by name params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchDeviceGroupPropertyByNameParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := PatchDeviceGroupPropertyByNameParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the patch device group property by name params
@@ -108,6 +146,28 @@ func (o *PatchDeviceGroupPropertyByNameParams) WithHTTPClient(client *http.Clien
 // SetHTTPClient adds the HTTPClient to the patch device group property by name params
 func (o *PatchDeviceGroupPropertyByNameParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithPatchFields adds the patchFields to the patch device group property by name params
+func (o *PatchDeviceGroupPropertyByNameParams) WithPatchFields(patchFields *string) *PatchDeviceGroupPropertyByNameParams {
+	o.SetPatchFields(patchFields)
+	return o
+}
+
+// SetPatchFields adds the patchFields to the patch device group property by name params
+func (o *PatchDeviceGroupPropertyByNameParams) SetPatchFields(patchFields *string) {
+	o.PatchFields = patchFields
+}
+
+// WithUserAgent adds the userAgent to the patch device group property by name params
+func (o *PatchDeviceGroupPropertyByNameParams) WithUserAgent(userAgent *string) *PatchDeviceGroupPropertyByNameParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the patch device group property by name params
+func (o *PatchDeviceGroupPropertyByNameParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithBody adds the body to the patch device group property by name params
@@ -145,11 +205,36 @@ func (o *PatchDeviceGroupPropertyByNameParams) SetName(name string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchDeviceGroupPropertyByNameParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.PatchFields != nil {
+
+		// query param PatchFields
+		var qrPatchFields string
+
+		if o.PatchFields != nil {
+			qrPatchFields = *o.PatchFields
+		}
+		qPatchFields := qrPatchFields
+		if qPatchFields != "" {
+
+			if err := r.SetQueryParam("PatchFields", qPatchFields); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

@@ -6,69 +6,104 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewGetDataSourceOverviewGraphByIDParams creates a new GetDataSourceOverviewGraphByIDParams object
-// with the default values initialized.
+// NewGetDataSourceOverviewGraphByIDParams creates a new GetDataSourceOverviewGraphByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetDataSourceOverviewGraphByIDParams() *GetDataSourceOverviewGraphByIDParams {
-	var ()
 	return &GetDataSourceOverviewGraphByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetDataSourceOverviewGraphByIDParamsWithTimeout creates a new GetDataSourceOverviewGraphByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetDataSourceOverviewGraphByIDParamsWithTimeout(timeout time.Duration) *GetDataSourceOverviewGraphByIDParams {
-	var ()
 	return &GetDataSourceOverviewGraphByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetDataSourceOverviewGraphByIDParamsWithContext creates a new GetDataSourceOverviewGraphByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetDataSourceOverviewGraphByIDParamsWithContext(ctx context.Context) *GetDataSourceOverviewGraphByIDParams {
-	var ()
 	return &GetDataSourceOverviewGraphByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetDataSourceOverviewGraphByIDParamsWithHTTPClient creates a new GetDataSourceOverviewGraphByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetDataSourceOverviewGraphByIDParamsWithHTTPClient(client *http.Client) *GetDataSourceOverviewGraphByIDParams {
-	var ()
 	return &GetDataSourceOverviewGraphByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetDataSourceOverviewGraphByIDParams contains all the parameters to send to the API endpoint
-for the get data source overview graph by Id operation typically these are written to a http.Request
+/* GetDataSourceOverviewGraphByIDParams contains all the parameters to send to the API endpoint
+   for the get data source overview graph by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type GetDataSourceOverviewGraphByIDParams struct {
 
-	/*DsID*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// DsID.
+	//
+	// Format: int32
 	DsID int32
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get data source overview graph by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDataSourceOverviewGraphByIDParams) WithDefaults() *GetDataSourceOverviewGraphByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get data source overview graph by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDataSourceOverviewGraphByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := GetDataSourceOverviewGraphByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the get data source overview graph by Id params
@@ -104,6 +139,17 @@ func (o *GetDataSourceOverviewGraphByIDParams) SetHTTPClient(client *http.Client
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the get data source overview graph by Id params
+func (o *GetDataSourceOverviewGraphByIDParams) WithUserAgent(userAgent *string) *GetDataSourceOverviewGraphByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the get data source overview graph by Id params
+func (o *GetDataSourceOverviewGraphByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithDsID adds the dsID to the get data source overview graph by Id params
 func (o *GetDataSourceOverviewGraphByIDParams) WithDsID(dsID int32) *GetDataSourceOverviewGraphByIDParams {
 	o.SetDsID(dsID)
@@ -128,10 +174,19 @@ func (o *GetDataSourceOverviewGraphByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDataSourceOverviewGraphByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 
 	// path param dsId
 	if err := r.SetPathParam("dsId", swag.FormatInt32(o.DsID)); err != nil {

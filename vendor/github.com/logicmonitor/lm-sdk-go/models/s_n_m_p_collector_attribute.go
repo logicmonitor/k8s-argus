@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // SNMPCollectorAttribute s n m p collector attribute
+//
 // swagger:model SNMPCollectorAttribute
 type SNMPCollectorAttribute struct {
 
@@ -31,8 +34,6 @@ func (m *SNMPCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *SNMPCollectorAttribute) SetName(val string) {
 }
-
-// IP gets the ip of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *SNMPCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -89,8 +90,7 @@ func (m SNMPCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		IP: m.IP,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +99,7 @@ func (m SNMPCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +114,29 @@ func (m *SNMPCollectorAttribute) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this s n m p collector attribute based on the context it is used
+func (m *SNMPCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SNMPCollectorAttribute) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ip", "body", string(m.IP)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // UpdateDeviceDatasourceInstanceByIDReader is a Reader for the UpdateDeviceDatasourceInstanceByID structure.
@@ -22,14 +25,18 @@ type UpdateDeviceDatasourceInstanceByIDReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdateDeviceDatasourceInstanceByIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewUpdateDeviceDatasourceInstanceByIDOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
+	case 429:
+		result := NewUpdateDeviceDatasourceInstanceByIDTooManyRequests()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		result := NewUpdateDeviceDatasourceInstanceByIDDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -47,7 +54,7 @@ func NewUpdateDeviceDatasourceInstanceByIDOK() *UpdateDeviceDatasourceInstanceBy
 	return &UpdateDeviceDatasourceInstanceByIDOK{}
 }
 
-/*UpdateDeviceDatasourceInstanceByIDOK handles this case with default header values.
+/* UpdateDeviceDatasourceInstanceByIDOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -58,13 +65,83 @@ type UpdateDeviceDatasourceInstanceByIDOK struct {
 func (o *UpdateDeviceDatasourceInstanceByIDOK) Error() string {
 	return fmt.Sprintf("[PUT /device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}][%d] updateDeviceDatasourceInstanceByIdOK  %+v", 200, o.Payload)
 }
+func (o *UpdateDeviceDatasourceInstanceByIDOK) GetPayload() *models.DeviceDataSourceInstance {
+	return o.Payload
+}
 
 func (o *UpdateDeviceDatasourceInstanceByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.DeviceDataSourceInstance)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
+	}
+
+	return nil
+}
+
+// NewUpdateDeviceDatasourceInstanceByIDTooManyRequests creates a UpdateDeviceDatasourceInstanceByIDTooManyRequests with default headers values
+func NewUpdateDeviceDatasourceInstanceByIDTooManyRequests() *UpdateDeviceDatasourceInstanceByIDTooManyRequests {
+	return &UpdateDeviceDatasourceInstanceByIDTooManyRequests{}
+}
+
+/* UpdateDeviceDatasourceInstanceByIDTooManyRequests describes a response with status code 429, with default header values.
+
+Too Many Requests
+*/
+type UpdateDeviceDatasourceInstanceByIDTooManyRequests struct {
+
+	/* Request limit per X-Rate-Limit-Window
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests left for the time window
+	 */
+	XRateLimitRemaining int64
+
+	/* The rolling time window length with the unit of second
+	 */
+	XRateLimitWindow int64
+}
+
+func (o *UpdateDeviceDatasourceInstanceByIDTooManyRequests) Error() string {
+	return fmt.Sprintf("[PUT /device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}][%d] updateDeviceDatasourceInstanceByIdTooManyRequests ", 429)
+}
+
+func (o *UpdateDeviceDatasourceInstanceByIDTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header x-rate-limit-limit
+	hdrXRateLimitLimit := response.GetHeader("x-rate-limit-limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header x-rate-limit-remaining
+	hdrXRateLimitRemaining := response.GetHeader("x-rate-limit-remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	// hydrates response header x-rate-limit-window
+	hdrXRateLimitWindow := response.GetHeader("x-rate-limit-window")
+
+	if hdrXRateLimitWindow != "" {
+		valxRateLimitWindow, err := swag.ConvertInt64(hdrXRateLimitWindow)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-window", "header", "int64", hdrXRateLimitWindow)
+		}
+		o.XRateLimitWindow = valxRateLimitWindow
 	}
 
 	return nil
@@ -77,7 +154,7 @@ func NewUpdateDeviceDatasourceInstanceByIDDefault(code int) *UpdateDeviceDatasou
 	}
 }
 
-/*UpdateDeviceDatasourceInstanceByIDDefault handles this case with default header values.
+/* UpdateDeviceDatasourceInstanceByIDDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +172,12 @@ func (o *UpdateDeviceDatasourceInstanceByIDDefault) Code() int {
 func (o *UpdateDeviceDatasourceInstanceByIDDefault) Error() string {
 	return fmt.Sprintf("[PUT /device/devices/{deviceId}/devicedatasources/{hdsId}/instances/{id}][%d] updateDeviceDatasourceInstanceById default  %+v", o._statusCode, o.Payload)
 }
+func (o *UpdateDeviceDatasourceInstanceByIDDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
 
 func (o *UpdateDeviceDatasourceInstanceByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

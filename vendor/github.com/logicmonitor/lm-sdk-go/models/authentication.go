@@ -7,20 +7,23 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // Authentication authentication
+//
 // swagger:discriminator Authentication type
 type Authentication interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// password
 	// Required: true
@@ -28,6 +31,7 @@ type Authentication interface {
 	SetPassword(*string)
 
 	// type
+	// Example: basic
 	// Required: true
 	Type() string
 	SetType(string)
@@ -36,6 +40,9 @@ type Authentication interface {
 	// Required: true
 	UserName() *string
 	SetUserName(*string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type authentication struct {
@@ -127,21 +134,18 @@ func unmarshalAuthentication(data []byte, consumer runtime.Consumer) (Authentica
 			return nil, err
 		}
 		return &result, nil
-
 	case "basic":
 		var result BasicAuthentication
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ntlm":
 		var result NTLMAuthentication
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
 }
@@ -165,6 +169,7 @@ func (m *authentication) Validate(formats strfmt.Registry) error {
 }
 
 func (m *authentication) validatePassword(formats strfmt.Registry) error {
+
 	if err := validate.Required("password", "body", m.Password()); err != nil {
 		return err
 	}
@@ -173,9 +178,15 @@ func (m *authentication) validatePassword(formats strfmt.Registry) error {
 }
 
 func (m *authentication) validateUserName(formats strfmt.Registry) error {
+
 	if err := validate.Required("userName", "body", m.UserName()); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this authentication based on context it is used
+func (m *authentication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }

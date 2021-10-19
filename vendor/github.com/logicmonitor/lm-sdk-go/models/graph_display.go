@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // GraphDisplay graph display
+//
 // swagger:model GraphDisplay
 type GraphDisplay struct {
 
@@ -29,6 +32,11 @@ type GraphDisplay struct {
 
 // Validate validates this graph display
 func (m *GraphDisplay) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this graph display based on context it is used
+func (m *GraphDisplay) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

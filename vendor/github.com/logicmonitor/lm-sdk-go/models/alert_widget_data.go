@@ -7,15 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // AlertWidgetData alert widget data
+//
 // swagger:model AlertWidgetData
 type AlertWidgetData struct {
 	titleField string
@@ -51,12 +54,6 @@ func (m *AlertWidgetData) Type() string {
 // SetType sets the type of this subtype
 func (m *AlertWidgetData) SetType(val string) {
 }
-
-// Items gets the items of this subtype
-
-// SearchID gets the search Id of this subtype
-
-// Total gets the total of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AlertWidgetData) UnmarshalJSON(raw []byte) error {
@@ -107,9 +104,7 @@ func (m *AlertWidgetData) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Items = data.Items
-
 	result.SearchID = data.SearchID
-
 	result.Total = data.Total
 
 	*m = result
@@ -141,8 +136,7 @@ func (m AlertWidgetData) MarshalJSON() ([]byte, error) {
 		SearchID: m.SearchID,
 
 		Total: m.Total,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -155,8 +149,7 @@ func (m AlertWidgetData) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +172,7 @@ func (m *AlertWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidgetData) validateItems(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Items) { // not required
 		return nil
 	}
@@ -197,6 +191,77 @@ func (m *AlertWidgetData) validateItems(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this alert widget data based on the context it is used
+func (m *AlertWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateItems(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSearchID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AlertWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertWidgetData) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "items", "body", []*Alert(m.Items)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Items); i++ {
+
+		if m.Items[i] != nil {
+			if err := m.Items[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("items" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AlertWidgetData) contextValidateSearchID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "searchId", "body", string(m.SearchID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertWidgetData) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total", "body", int32(m.Total)); err != nil {
+		return err
 	}
 
 	return nil

@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AlertForecastingReport alert forecasting report
+//
 // swagger:model AlertForecastingReport
 type AlertForecastingReport struct {
 	customReportTypeIdField int32
@@ -289,24 +291,6 @@ func (m *AlertForecastingReport) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// Algorithm gets the algorithm of this subtype
-
-// Columns gets the columns of this subtype
-
-// ConfidenceLevel gets the confidence level of this subtype
-
-// DateRange gets the date range of this subtype
-
-// HostsVal gets the hosts val of this subtype
-
-// HostsValType gets the hosts val type of this subtype
-
-// Metrics gets the metrics of this subtype
-
-// SortedBy gets the sorted by of this subtype
-
-// Top10Only gets the top10 only of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AlertForecastingReport) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -444,25 +428,16 @@ func (m *AlertForecastingReport) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.Algorithm = data.Algorithm
-
 	result.Columns = data.Columns
-
 	result.ConfidenceLevel = data.ConfidenceLevel
-
 	result.DateRange = data.DateRange
-
 	result.HostsVal = data.HostsVal
-
 	result.HostsValType = data.HostsValType
-
 	result.Metrics = data.Metrics
-
 	result.SortedBy = data.SortedBy
-
 	result.Top10Only = data.Top10Only
 
 	*m = result
@@ -526,8 +501,7 @@ func (m AlertForecastingReport) MarshalJSON() ([]byte, error) {
 		SortedBy: m.SortedBy,
 
 		Top10Only: m.Top10Only,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -612,8 +586,7 @@ func (m AlertForecastingReport) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -656,6 +629,7 @@ func (m *AlertForecastingReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertForecastingReport) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -664,6 +638,7 @@ func (m *AlertForecastingReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AlertForecastingReport) validateRecipients(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -688,6 +663,7 @@ func (m *AlertForecastingReport) validateRecipients(formats strfmt.Registry) err
 }
 
 func (m *AlertForecastingReport) validateColumns(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Columns) { // not required
 		return nil
 	}
@@ -712,6 +688,7 @@ func (m *AlertForecastingReport) validateColumns(formats strfmt.Registry) error 
 }
 
 func (m *AlertForecastingReport) validateConfidenceLevel(formats strfmt.Registry) error {
+
 	if err := validate.Required("confidenceLevel", "body", m.ConfidenceLevel); err != nil {
 		return err
 	}
@@ -720,6 +697,7 @@ func (m *AlertForecastingReport) validateConfidenceLevel(formats strfmt.Registry
 }
 
 func (m *AlertForecastingReport) validateHostsValType(formats strfmt.Registry) error {
+
 	if err := validate.Required("hostsValType", "body", m.HostsValType); err != nil {
 		return err
 	}
@@ -728,6 +706,7 @@ func (m *AlertForecastingReport) validateHostsValType(formats strfmt.Registry) e
 }
 
 func (m *AlertForecastingReport) validateMetrics(formats strfmt.Registry) error {
+
 	if err := validate.Required("metrics", "body", m.Metrics); err != nil {
 		return err
 	}
@@ -739,6 +718,225 @@ func (m *AlertForecastingReport) validateMetrics(formats strfmt.Registry) error 
 
 		if m.Metrics[i] != nil {
 			if err := m.Metrics[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("metrics" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this alert forecasting report based on the context it is used
+func (m *AlertForecastingReport) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomReportTypeID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomReportTypeName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnableViewAsOtherUser(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGeneratePages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecipients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportLinkNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColumns(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetrics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateCustomReportTypeID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeId", "body", int32(m.CustomReportTypeID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateCustomReportTypeName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeName", "body", string(m.CustomReportTypeName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateEnableViewAsOtherUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enableViewAsOtherUser", "body", m.EnableViewAsOtherUser()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateLastGenerateOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateOn", "body", int64(m.LastGenerateOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateLastGeneratePages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGeneratePages", "body", int32(m.LastGeneratePages())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateLastGenerateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateSize", "body", int64(m.LastGenerateSize())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateLastmodifyUserID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserId", "body", int32(m.LastmodifyUserID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateLastmodifyUserName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserName", "body", string(m.LastmodifyUserName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateRecipients(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Recipients()); i++ {
+
+		if m.recipientsField[i] != nil {
+			if err := m.recipientsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateReportLinkNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportLinkNum", "body", int32(m.ReportLinkNum())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateColumns(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Columns); i++ {
+
+		if m.Columns[i] != nil {
+			if err := m.Columns[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AlertForecastingReport) contextValidateMetrics(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Metrics); i++ {
+
+		if m.Metrics[i] != nil {
+			if err := m.Metrics[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("metrics" + "." + strconv.Itoa(i))
 				}

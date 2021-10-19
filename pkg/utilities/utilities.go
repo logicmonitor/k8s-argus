@@ -282,7 +282,7 @@ func BuildResource(lctx *lmctx.LMContext, c *config.Config, d *models.Device, op
 				},
 			},
 			DisableAlerting: c.DisableAlerting,
-			HostGroupIds:    &hostGroupIds,
+			HostGroupIds:    hostGroupIds,
 			DeviceType:      constants.K8sResourceType,
 		}
 

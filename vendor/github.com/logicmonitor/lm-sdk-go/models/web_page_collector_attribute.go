@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // WebPageCollectorAttribute web page collector attribute
+//
 // swagger:model WebPageCollectorAttribute
 type WebPageCollectorAttribute struct {
 
@@ -48,20 +50,6 @@ func (m *WebPageCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *WebPageCollectorAttribute) SetName(val string) {
 }
-
-// ConnectTimeout gets the connect timeout of this subtype
-
-// FollowRedirect gets the follow redirect of this subtype
-
-// IP gets the ip of this subtype
-
-// Port gets the port of this subtype
-
-// ReadTimeout gets the read timeout of this subtype
-
-// Request gets the request of this subtype
-
-// UseSSL gets the use s s l of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *WebPageCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -117,17 +105,11 @@ func (m *WebPageCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.ConnectTimeout = data.ConnectTimeout
-
 	result.FollowRedirect = data.FollowRedirect
-
 	result.IP = data.IP
-
 	result.Port = data.Port
-
 	result.ReadTimeout = data.ReadTimeout
-
 	result.Request = data.Request
-
 	result.UseSSL = data.UseSSL
 
 	*m = result
@@ -176,8 +158,7 @@ func (m WebPageCollectorAttribute) MarshalJSON() ([]byte, error) {
 		Request: m.Request,
 
 		UseSSL: m.UseSSL,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -186,8 +167,7 @@ func (m WebPageCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +177,16 @@ func (m WebPageCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this web page collector attribute
 func (m *WebPageCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this web page collector attribute based on the context it is used
+func (m *WebPageCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

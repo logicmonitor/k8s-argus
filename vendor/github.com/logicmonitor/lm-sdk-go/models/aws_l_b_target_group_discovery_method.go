@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsLBTargetGroupDiscoveryMethod aws l b target group discovery method
+//
 // swagger:model AwsLBTargetGroupDiscoveryMethod
 type AwsLBTargetGroupDiscoveryMethod struct {
 	AwsLBTargetGroupDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *AwsLBTargetGroupDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AwsLBTargetGroupDiscoveryMethodAllOf1 = data.AwsLBTargetGroupDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AwsLBTargetGroupDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		AwsLBTargetGroupDiscoveryMethodAllOf1: m.AwsLBTargetGroupDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AwsLBTargetGroupDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AwsLBTargetGroupDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this aws l b target group discovery method
 func (m *AwsLBTargetGroupDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AwsLBTargetGroupDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws l b target group discovery method based on the context it is used
+func (m *AwsLBTargetGroupDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AwsLBTargetGroupDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *AwsLBTargetGroupDiscoveryMethod) UnmarshalBinary(b []byte) error {
 }
 
 // AwsLBTargetGroupDiscoveryMethodAllOf1 aws l b target group discovery method all of1
+//
 // swagger:model AwsLBTargetGroupDiscoveryMethodAllOf1
 type AwsLBTargetGroupDiscoveryMethodAllOf1 interface{}

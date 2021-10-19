@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // GcpBillingDiscoveryMethod gcp billing discovery method
+//
 // swagger:model GcpBillingDiscoveryMethod
 type GcpBillingDiscoveryMethod struct {
 
@@ -32,8 +34,6 @@ func (m *GcpBillingDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *GcpBillingDiscoveryMethod) SetName(val string) {
 }
-
-// GcpBillingType gets the gcp billing type of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *GcpBillingDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -90,8 +90,7 @@ func (m GcpBillingDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		GcpBillingType: m.GcpBillingType,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +99,7 @@ func (m GcpBillingDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +122,21 @@ func (m *GcpBillingDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GcpBillingDiscoveryMethod) validateGcpBillingType(formats strfmt.Registry) error {
+
 	if err := validate.Required("gcpBillingType", "body", m.GcpBillingType); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this gcp billing discovery method based on the context it is used
+func (m *GcpBillingDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

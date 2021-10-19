@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // PDHAutoDiscoveryMethod p d h auto discovery method
+//
 // swagger:model PDHAutoDiscoveryMethod
 type PDHAutoDiscoveryMethod struct {
 
@@ -36,10 +38,6 @@ func (m *PDHAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *PDHAutoDiscoveryMethod) SetName(val string) {
 }
-
-// Category gets the category of this subtype
-
-// ObjRegex gets the obj regex of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *PDHAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -82,7 +80,6 @@ func (m *PDHAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Category = data.Category
-
 	result.ObjRegex = data.ObjRegex
 
 	*m = result
@@ -108,8 +105,7 @@ func (m PDHAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		Category: m.Category,
 
 		ObjRegex: m.ObjRegex,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +114,7 @@ func (m PDHAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +141,7 @@ func (m *PDHAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PDHAutoDiscoveryMethod) validateCategory(formats strfmt.Registry) error {
+
 	if err := validate.Required("category", "body", m.Category); err != nil {
 		return err
 	}
@@ -154,10 +150,21 @@ func (m *PDHAutoDiscoveryMethod) validateCategory(formats strfmt.Registry) error
 }
 
 func (m *PDHAutoDiscoveryMethod) validateObjRegex(formats strfmt.Registry) error {
+
 	if err := validate.Required("objRegex", "body", m.ObjRegex); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this p d h auto discovery method based on the context it is used
+func (m *PDHAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

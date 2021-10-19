@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // OpsNoteTagBase ops note tag base
+//
 // swagger:model OpsNoteTagBase
 type OpsNoteTagBase struct {
 
@@ -48,7 +51,57 @@ func (m *OpsNoteTagBase) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OpsNoteTagBase) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ops note tag base based on the context it is used
+func (m *OpsNoteTagBase) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCreatedOnInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpdateOnInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OpsNoteTagBase) contextValidateCreatedOnInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdOnInSec", "body", int64(m.CreatedOnInSec)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OpsNoteTagBase) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OpsNoteTagBase) contextValidateUpdateOnInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "updateOnInSec", "body", int64(m.UpdateOnInSec)); err != nil {
 		return err
 	}
 

@@ -6,67 +6,99 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewDeleteWebsiteByIDParams creates a new DeleteWebsiteByIDParams object
-// with the default values initialized.
+// NewDeleteWebsiteByIDParams creates a new DeleteWebsiteByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewDeleteWebsiteByIDParams() *DeleteWebsiteByIDParams {
-	var ()
 	return &DeleteWebsiteByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewDeleteWebsiteByIDParamsWithTimeout creates a new DeleteWebsiteByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewDeleteWebsiteByIDParamsWithTimeout(timeout time.Duration) *DeleteWebsiteByIDParams {
-	var ()
 	return &DeleteWebsiteByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewDeleteWebsiteByIDParamsWithContext creates a new DeleteWebsiteByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewDeleteWebsiteByIDParamsWithContext(ctx context.Context) *DeleteWebsiteByIDParams {
-	var ()
 	return &DeleteWebsiteByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewDeleteWebsiteByIDParamsWithHTTPClient creates a new DeleteWebsiteByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewDeleteWebsiteByIDParamsWithHTTPClient(client *http.Client) *DeleteWebsiteByIDParams {
-	var ()
 	return &DeleteWebsiteByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*DeleteWebsiteByIDParams contains all the parameters to send to the API endpoint
-for the delete website by Id operation typically these are written to a http.Request
+/* DeleteWebsiteByIDParams contains all the parameters to send to the API endpoint
+   for the delete website by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type DeleteWebsiteByIDParams struct {
 
-	/*ID*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the delete website by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteWebsiteByIDParams) WithDefaults() *DeleteWebsiteByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the delete website by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteWebsiteByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := DeleteWebsiteByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the delete website by Id params
@@ -102,6 +134,17 @@ func (o *DeleteWebsiteByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the delete website by Id params
+func (o *DeleteWebsiteByIDParams) WithUserAgent(userAgent *string) *DeleteWebsiteByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the delete website by Id params
+func (o *DeleteWebsiteByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithID adds the id to the delete website by Id params
 func (o *DeleteWebsiteByIDParams) WithID(id int32) *DeleteWebsiteByIDParams {
 	o.SetID(id)
@@ -115,10 +158,19 @@ func (o *DeleteWebsiteByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteWebsiteByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 
 	// path param id
 	if err := r.SetPathParam("id", swag.FormatInt32(o.ID)); err != nil {

@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AzureNetscan azure netscan
+//
 // swagger:model AzureNetscan
 type AzureNetscan struct {
 	collectorField *int32
@@ -36,6 +38,8 @@ type AzureNetscan struct {
 
 	idField int32
 
+	ignoreSystemIPsDuplicatesField bool
+
 	nameField *string
 
 	nextStartField string
@@ -44,7 +48,7 @@ type AzureNetscan struct {
 
 	nsgIdField int32
 
-	scheduleField *NetScanSchedule
+	scheduleField *RestSchedule
 
 	versionField int32
 
@@ -171,6 +175,16 @@ func (m *AzureNetscan) SetID(val int32) {
 	m.idField = val
 }
 
+// IgnoreSystemIPsDuplicates gets the ignore system i ps duplicates of this subtype
+func (m *AzureNetscan) IgnoreSystemIPsDuplicates() bool {
+	return m.ignoreSystemIPsDuplicatesField
+}
+
+// SetIgnoreSystemIPsDuplicates sets the ignore system i ps duplicates of this subtype
+func (m *AzureNetscan) SetIgnoreSystemIPsDuplicates(val bool) {
+	m.ignoreSystemIPsDuplicatesField = val
+}
+
 // Method gets the method of this subtype
 func (m *AzureNetscan) Method() string {
 	return "azure"
@@ -221,12 +235,12 @@ func (m *AzureNetscan) SetNsgID(val int32) {
 }
 
 // Schedule gets the schedule of this subtype
-func (m *AzureNetscan) Schedule() *NetScanSchedule {
+func (m *AzureNetscan) Schedule() *RestSchedule {
 	return m.scheduleField
 }
 
 // SetSchedule sets the schedule of this subtype
-func (m *AzureNetscan) SetSchedule(val *NetScanSchedule) {
+func (m *AzureNetscan) SetSchedule(val *RestSchedule) {
 	m.scheduleField = val
 }
 
@@ -239,22 +253,6 @@ func (m *AzureNetscan) Version() int32 {
 func (m *AzureNetscan) SetVersion(val int32) {
 	m.versionField = val
 }
-
-// AzureAZ gets the azure a z of this subtype
-
-// AzureService gets the azure service of this subtype
-
-// ClientID gets the client Id of this subtype
-
-// GroupID gets the group Id of this subtype
-
-// RootName gets the root name of this subtype
-
-// SecretKey gets the secret key of this subtype
-
-// SubscriptionIds gets the subscription ids of this subtype
-
-// TenantID gets the tenant Id of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AzureNetscan) UnmarshalJSON(raw []byte) error {
@@ -321,6 +319,8 @@ func (m *AzureNetscan) UnmarshalJSON(raw []byte) error {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -331,7 +331,7 @@ func (m *AzureNetscan) UnmarshalJSON(raw []byte) error {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}
@@ -363,11 +363,12 @@ func (m *AzureNetscan) UnmarshalJSON(raw []byte) error {
 
 	result.idField = base.ID
 
+	result.ignoreSystemIPsDuplicatesField = base.IgnoreSystemIPsDuplicates
+
 	if base.Method != result.Method() {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid method value: %q", base.Method)
 	}
-
 	result.nameField = base.Name
 
 	result.nextStartField = base.NextStart
@@ -381,19 +382,12 @@ func (m *AzureNetscan) UnmarshalJSON(raw []byte) error {
 	result.versionField = base.Version
 
 	result.AzureAZ = data.AzureAZ
-
 	result.AzureService = data.AzureService
-
 	result.ClientID = data.ClientID
-
 	result.GroupID = data.GroupID
-
 	result.RootName = data.RootName
-
 	result.SecretKey = data.SecretKey
-
 	result.SubscriptionIds = data.SubscriptionIds
-
 	result.TenantID = data.TenantID
 
 	*m = result
@@ -455,8 +449,7 @@ func (m AzureNetscan) MarshalJSON() ([]byte, error) {
 		SubscriptionIds: m.SubscriptionIds,
 
 		TenantID: m.TenantID,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -479,6 +472,8 @@ func (m AzureNetscan) MarshalJSON() ([]byte, error) {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -489,7 +484,7 @@ func (m AzureNetscan) MarshalJSON() ([]byte, error) {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}{
@@ -512,6 +507,8 @@ func (m AzureNetscan) MarshalJSON() ([]byte, error) {
 
 		ID: m.ID(),
 
+		IgnoreSystemIPsDuplicates: m.IgnoreSystemIPsDuplicates(),
+
 		Method: m.Method(),
 
 		Name: m.Name(),
@@ -525,8 +522,7 @@ func (m AzureNetscan) MarshalJSON() ([]byte, error) {
 		Schedule: m.Schedule(),
 
 		Version: m.Version(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -561,6 +557,7 @@ func (m *AzureNetscan) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AzureNetscan) validateCollector(formats strfmt.Registry) error {
+
 	if err := validate.Required("collector", "body", m.Collector()); err != nil {
 		return err
 	}
@@ -569,6 +566,7 @@ func (m *AzureNetscan) validateCollector(formats strfmt.Registry) error {
 }
 
 func (m *AzureNetscan) validateDuplicate(formats strfmt.Registry) error {
+
 	if err := validate.Required("duplicate", "body", m.Duplicate()); err != nil {
 		return err
 	}
@@ -586,6 +584,7 @@ func (m *AzureNetscan) validateDuplicate(formats strfmt.Registry) error {
 }
 
 func (m *AzureNetscan) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -594,6 +593,7 @@ func (m *AzureNetscan) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AzureNetscan) validateSchedule(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Schedule()) { // not required
 		return nil
 	}
@@ -605,6 +605,156 @@ func (m *AzureNetscan) validateSchedule(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this azure netscan based on the context it is used
+func (m *AzureNetscan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDuplicate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSchedule(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAzureAZ(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAzureService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateClientID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRootName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSecretKey(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubscriptionIds(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTenantID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateDuplicate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Duplicate() != nil {
+		if err := m.Duplicate().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("duplicate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Schedule() != nil {
+		if err := m.Schedule().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateAzureAZ(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "azureAZ", "body", string(m.AzureAZ)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateAzureService(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "azureService", "body", string(m.AzureService)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateClientID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clientId", "body", string(m.ClientID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupId", "body", int32(m.GroupID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateRootName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rootName", "body", string(m.RootName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateSecretKey(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "secretKey", "body", string(m.SecretKey)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateSubscriptionIds(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subscriptionIds", "body", string(m.SubscriptionIds)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AzureNetscan) contextValidateTenantID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "tenantId", "body", string(m.TenantID)); err != nil {
+		return err
 	}
 
 	return nil

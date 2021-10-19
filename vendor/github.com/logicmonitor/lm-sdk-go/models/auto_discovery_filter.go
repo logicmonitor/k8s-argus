@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AutoDiscoveryFilter auto discovery filter
+//
 // swagger:model AutoDiscoveryFilter
 type AutoDiscoveryFilter struct {
 
@@ -50,6 +53,7 @@ func (m *AutoDiscoveryFilter) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AutoDiscoveryFilter) validateAttribute(formats strfmt.Registry) error {
+
 	if err := validate.Required("attribute", "body", m.Attribute); err != nil {
 		return err
 	}
@@ -58,10 +62,16 @@ func (m *AutoDiscoveryFilter) validateAttribute(formats strfmt.Registry) error {
 }
 
 func (m *AutoDiscoveryFilter) validateOperation(formats strfmt.Registry) error {
+
 	if err := validate.Required("operation", "body", m.Operation); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this auto discovery filter based on context it is used
+func (m *AutoDiscoveryFilter) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // HTTPAutoDiscoveryMethod Http auto discovery method
+//
 // swagger:model HttpAutoDiscoveryMethod
 type HTTPAutoDiscoveryMethod struct {
 
@@ -52,18 +54,6 @@ func (m *HTTPAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *HTTPAutoDiscoveryMethod) SetName(val string) {
 }
-
-// CaseSensitive gets the case sensitive of this subtype
-
-// FollowRedirect gets the follow redirect of this subtype
-
-// Ports gets the ports of this subtype
-
-// Regex gets the regex of this subtype
-
-// URI gets the uri of this subtype
-
-// UseSSL gets the use s s l of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *HTTPAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -122,15 +112,10 @@ func (m *HTTPAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.CaseSensitive = data.CaseSensitive
-
 	result.FollowRedirect = data.FollowRedirect
-
 	result.Ports = data.Ports
-
 	result.Regex = data.Regex
-
 	result.URI = data.URI
-
 	result.UseSSL = data.UseSSL
 
 	*m = result
@@ -180,8 +165,7 @@ func (m HTTPAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		URI: m.URI,
 
 		UseSSL: m.UseSSL,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -190,8 +174,7 @@ func (m HTTPAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -234,6 +217,7 @@ func (m *HTTPAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateCaseSensitive(formats strfmt.Registry) error {
+
 	if err := validate.Required("caseSensitive", "body", m.CaseSensitive); err != nil {
 		return err
 	}
@@ -242,6 +226,7 @@ func (m *HTTPAutoDiscoveryMethod) validateCaseSensitive(formats strfmt.Registry)
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateFollowRedirect(formats strfmt.Registry) error {
+
 	if err := validate.Required("followRedirect", "body", m.FollowRedirect); err != nil {
 		return err
 	}
@@ -250,6 +235,7 @@ func (m *HTTPAutoDiscoveryMethod) validateFollowRedirect(formats strfmt.Registry
 }
 
 func (m *HTTPAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
+
 	if err := validate.Required("ports", "body", m.Ports); err != nil {
 		return err
 	}
@@ -258,6 +244,7 @@ func (m *HTTPAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateRegex(formats strfmt.Registry) error {
+
 	if err := validate.Required("regex", "body", m.Regex); err != nil {
 		return err
 	}
@@ -266,6 +253,7 @@ func (m *HTTPAutoDiscoveryMethod) validateRegex(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateURI(formats strfmt.Registry) error {
+
 	if err := validate.Required("uri", "body", m.URI); err != nil {
 		return err
 	}
@@ -274,10 +262,21 @@ func (m *HTTPAutoDiscoveryMethod) validateURI(formats strfmt.Registry) error {
 }
 
 func (m *HTTPAutoDiscoveryMethod) validateUseSSL(formats strfmt.Registry) error {
+
 	if err := validate.Required("useSSL", "body", m.UseSSL); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this Http auto discovery method based on the context it is used
+func (m *HTTPAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

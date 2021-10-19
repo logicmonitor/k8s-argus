@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ColumnHeader column header
+//
 // swagger:model ColumnHeader
 type ColumnHeader struct {
 
@@ -25,10 +30,76 @@ type ColumnHeader struct {
 	// need forecast
 	// Read Only: true
 	NeedForecast *bool `json:"needForecast,omitempty"`
+
+	// unit label
+	// Read Only: true
+	UnitLabel string `json:"unitLabel,omitempty"`
 }
 
 // Validate validates this column header
 func (m *ColumnHeader) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this column header based on the context it is used
+func (m *ColumnHeader) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDisplayType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNeedForecast(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUnitLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ColumnHeader) contextValidateDisplayType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "displayType", "body", string(m.DisplayType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ColumnHeader) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ColumnHeader) contextValidateNeedForecast(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "needForecast", "body", m.NeedForecast); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ColumnHeader) contextValidateUnitLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "unitLabel", "body", string(m.UnitLabel)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

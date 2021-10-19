@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // WMICollectorAttribute w m i collector attribute
+//
 // swagger:model WMICollectorAttribute
 type WMICollectorAttribute struct {
 
@@ -55,24 +58,6 @@ func (m *WMICollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *WMICollectorAttribute) SetName(val string) {
 }
-
-// IP gets the ip of this subtype
-
-// MethodInputs gets the method inputs of this subtype
-
-// MethodName gets the method name of this subtype
-
-// Namespace gets the namespace of this subtype
-
-// QueryClass gets the query class of this subtype
-
-// QueryIndex gets the query index of this subtype
-
-// QueryValue gets the query value of this subtype
-
-// TargetPath gets the target path of this subtype
-
-// Type gets the type of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *WMICollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -135,21 +120,13 @@ func (m *WMICollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.IP = data.IP
-
 	result.MethodInputs = data.MethodInputs
-
 	result.MethodName = data.MethodName
-
 	result.Namespace = data.Namespace
-
 	result.QueryClass = data.QueryClass
-
 	result.QueryIndex = data.QueryIndex
-
 	result.QueryValue = data.QueryValue
-
 	result.TargetPath = data.TargetPath
-
 	result.Type = data.Type
 
 	*m = result
@@ -209,8 +186,7 @@ func (m WMICollectorAttribute) MarshalJSON() ([]byte, error) {
 		TargetPath: m.TargetPath,
 
 		Type: m.Type,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -219,8 +195,7 @@ func (m WMICollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -235,6 +210,29 @@ func (m *WMICollectorAttribute) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this w m i collector attribute based on the context it is used
+func (m *WMICollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WMICollectorAttribute) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ip", "body", string(m.IP)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

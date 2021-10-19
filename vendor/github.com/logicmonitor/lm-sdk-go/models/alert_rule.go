@@ -6,27 +6,34 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AlertRule alert rule
+//
 // swagger:model AlertRule
 type AlertRule struct {
 
 	// The datapoint the alert rule is configured to match
+	// Example: *
 	Datapoint string `json:"datapoint,omitempty"`
 
 	// The datasource the alert rule is configured to match
+	// Example: Port-
 	Datasource string `json:"datasource,omitempty"`
 
 	// The device groups and service groups the alert rule is configured to match
+	// Example: [ \"Devices by Type\"]
 	// Unique: true
 	DeviceGroups []string `json:"deviceGroups,omitempty"`
 
 	// The device names and service names the alert rule is configured to match
+	// Example: [\"Cisco Router\"]
 	// Unique: true
 	Devices []string `json:"devices,omitempty"`
 
@@ -35,10 +42,12 @@ type AlertRule struct {
 	EscalatingChain interface{} `json:"escalatingChain,omitempty"`
 
 	// The id of the escalation chain associated with the alert rule
+	// Example: 12
 	// Required: true
 	EscalatingChainID *int32 `json:"escalatingChainId"`
 
 	// The escalation interval associated with the alert rule, in minutes
+	// Example: 15
 	EscalationInterval int32 `json:"escalationInterval,omitempty"`
 
 	// The Id of the alert rule
@@ -46,23 +55,29 @@ type AlertRule struct {
 	ID int32 `json:"id,omitempty"`
 
 	// The instance the alert rule is configured to match
+	// Example: *
 	Instance string `json:"instance,omitempty"`
 
 	// The alert severity levels the alert rule is configured to match. Acceptable values are: All, Warn, Error, Critical
+	// Example: Warn
 	LevelStr string `json:"levelStr,omitempty"`
 
 	// The name of the alert rule
+	// Example: Warning
 	// Required: true
 	Name *string `json:"name"`
 
 	// The priority associated with the alert rule
+	// Example: 100
 	// Required: true
 	Priority *int32 `json:"priority"`
 
 	// Whether or not status notifications for acknowledgements and SDTs should be sent to the alert rule
+	// Example: true
 	SuppressAlertAckSDT bool `json:"suppressAlertAckSdt,omitempty"`
 
 	// Whether or not alert clear notifications should be sent to the alert rule
+	// Example: true
 	SuppressAlertClear bool `json:"suppressAlertClear,omitempty"`
 }
 
@@ -121,6 +136,7 @@ func (m *AlertRule) validateDevices(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validateEscalatingChainID(formats strfmt.Registry) error {
+
 	if err := validate.Required("escalatingChainId", "body", m.EscalatingChainID); err != nil {
 		return err
 	}
@@ -129,6 +145,7 @@ func (m *AlertRule) validateEscalatingChainID(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -137,7 +154,31 @@ func (m *AlertRule) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AlertRule) validatePriority(formats strfmt.Registry) error {
+
 	if err := validate.Required("priority", "body", m.Priority); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this alert rule based on the context it is used
+func (m *AlertRule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AlertRule) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
 		return err
 	}
 

@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // GetDeviceGroupDatasourceByIDReader is a Reader for the GetDeviceGroupDatasourceByID structure.
@@ -22,14 +25,18 @@ type GetDeviceGroupDatasourceByIDReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetDeviceGroupDatasourceByIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetDeviceGroupDatasourceByIDOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
+	case 429:
+		result := NewGetDeviceGroupDatasourceByIDTooManyRequests()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		result := NewGetDeviceGroupDatasourceByIDDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -47,7 +54,7 @@ func NewGetDeviceGroupDatasourceByIDOK() *GetDeviceGroupDatasourceByIDOK {
 	return &GetDeviceGroupDatasourceByIDOK{}
 }
 
-/*GetDeviceGroupDatasourceByIDOK handles this case with default header values.
+/* GetDeviceGroupDatasourceByIDOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -58,13 +65,83 @@ type GetDeviceGroupDatasourceByIDOK struct {
 func (o *GetDeviceGroupDatasourceByIDOK) Error() string {
 	return fmt.Sprintf("[GET /device/groups/{deviceGroupId}/datasources/{id}][%d] getDeviceGroupDatasourceByIdOK  %+v", 200, o.Payload)
 }
+func (o *GetDeviceGroupDatasourceByIDOK) GetPayload() *models.DeviceGroupDataSource {
+	return o.Payload
+}
 
 func (o *GetDeviceGroupDatasourceByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.DeviceGroupDataSource)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
+	}
+
+	return nil
+}
+
+// NewGetDeviceGroupDatasourceByIDTooManyRequests creates a GetDeviceGroupDatasourceByIDTooManyRequests with default headers values
+func NewGetDeviceGroupDatasourceByIDTooManyRequests() *GetDeviceGroupDatasourceByIDTooManyRequests {
+	return &GetDeviceGroupDatasourceByIDTooManyRequests{}
+}
+
+/* GetDeviceGroupDatasourceByIDTooManyRequests describes a response with status code 429, with default header values.
+
+Too Many Requests
+*/
+type GetDeviceGroupDatasourceByIDTooManyRequests struct {
+
+	/* Request limit per X-Rate-Limit-Window
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests left for the time window
+	 */
+	XRateLimitRemaining int64
+
+	/* The rolling time window length with the unit of second
+	 */
+	XRateLimitWindow int64
+}
+
+func (o *GetDeviceGroupDatasourceByIDTooManyRequests) Error() string {
+	return fmt.Sprintf("[GET /device/groups/{deviceGroupId}/datasources/{id}][%d] getDeviceGroupDatasourceByIdTooManyRequests ", 429)
+}
+
+func (o *GetDeviceGroupDatasourceByIDTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header x-rate-limit-limit
+	hdrXRateLimitLimit := response.GetHeader("x-rate-limit-limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header x-rate-limit-remaining
+	hdrXRateLimitRemaining := response.GetHeader("x-rate-limit-remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	// hydrates response header x-rate-limit-window
+	hdrXRateLimitWindow := response.GetHeader("x-rate-limit-window")
+
+	if hdrXRateLimitWindow != "" {
+		valxRateLimitWindow, err := swag.ConvertInt64(hdrXRateLimitWindow)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-window", "header", "int64", hdrXRateLimitWindow)
+		}
+		o.XRateLimitWindow = valxRateLimitWindow
 	}
 
 	return nil
@@ -77,7 +154,7 @@ func NewGetDeviceGroupDatasourceByIDDefault(code int) *GetDeviceGroupDatasourceB
 	}
 }
 
-/*GetDeviceGroupDatasourceByIDDefault handles this case with default header values.
+/* GetDeviceGroupDatasourceByIDDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +172,12 @@ func (o *GetDeviceGroupDatasourceByIDDefault) Code() int {
 func (o *GetDeviceGroupDatasourceByIDDefault) Error() string {
 	return fmt.Sprintf("[GET /device/groups/{deviceGroupId}/datasources/{id}][%d] getDeviceGroupDatasourceById default  %+v", o._statusCode, o.Payload)
 }
+func (o *GetDeviceGroupDatasourceByIDDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
 
 func (o *GetDeviceGroupDatasourceByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

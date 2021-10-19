@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DeviceClusterAlertDefSDT device cluster alert def SDT
+//
 // swagger:model DeviceClusterAlertDefSDT
 type DeviceClusterAlertDefSDT struct {
 	adminField string
@@ -260,14 +262,6 @@ func (m *DeviceClusterAlertDefSDT) SetWeekOfMonth(val string) {
 	m.weekOfMonthField = val
 }
 
-// DataSourceName gets the data source name of this subtype
-
-// DeviceClusterAlertDefID gets the device cluster alert def Id of this subtype
-
-// DeviceGroupFullPath gets the device group full path of this subtype
-
-// DeviceGroupID gets the device group Id of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *DeviceClusterAlertDefSDT) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -383,17 +377,13 @@ func (m *DeviceClusterAlertDefSDT) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.weekDayField = base.WeekDay
 
 	result.weekOfMonthField = base.WeekOfMonth
 
 	result.DataSourceName = data.DataSourceName
-
 	result.DeviceClusterAlertDefID = data.DeviceClusterAlertDefID
-
 	result.DeviceGroupFullPath = data.DeviceGroupFullPath
-
 	result.DeviceGroupID = data.DeviceGroupID
 
 	*m = result
@@ -431,8 +421,7 @@ func (m DeviceClusterAlertDefSDT) MarshalJSON() ([]byte, error) {
 		DeviceGroupFullPath: m.DeviceGroupFullPath,
 
 		DeviceGroupID: m.DeviceGroupID,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -513,8 +502,7 @@ func (m DeviceClusterAlertDefSDT) MarshalJSON() ([]byte, error) {
 		WeekDay: m.WeekDay(),
 
 		WeekOfMonth: m.WeekOfMonth(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -537,7 +525,122 @@ func (m *DeviceClusterAlertDefSDT) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DeviceClusterAlertDefSDT) validateDeviceClusterAlertDefID(formats strfmt.Registry) error {
+
 	if err := validate.Required("deviceClusterAlertDefId", "body", m.DeviceClusterAlertDefID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device cluster alert def SDT based on the context it is used
+func (m *DeviceClusterAlertDefSDT) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsEffective(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceGroupFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", string(m.Admin())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateEndDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endDateTimeOnLocal", "body", string(m.EndDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateIsEffective(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isEffective", "body", m.IsEffective()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateStartDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startDateTimeOnLocal", "body", string(m.StartDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateDataSourceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceName", "body", string(m.DataSourceName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateDeviceGroupFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceGroupFullPath", "body", string(m.DeviceGroupFullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertDefSDT) contextValidateDeviceGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceGroupId", "body", int32(m.DeviceGroupID)); err != nil {
 		return err
 	}
 

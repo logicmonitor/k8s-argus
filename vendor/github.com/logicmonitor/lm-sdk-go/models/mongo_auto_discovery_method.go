@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // MongoAutoDiscoveryMethod mongo auto discovery method
+//
 // swagger:model MongoAutoDiscoveryMethod
 type MongoAutoDiscoveryMethod struct {
 
@@ -36,10 +38,6 @@ func (m *MongoAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *MongoAutoDiscoveryMethod) SetName(val string) {
 }
-
-// ListDB gets the list d b of this subtype
-
-// Ports gets the ports of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *MongoAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -82,7 +80,6 @@ func (m *MongoAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.ListDB = data.ListDB
-
 	result.Ports = data.Ports
 
 	*m = result
@@ -108,8 +105,7 @@ func (m MongoAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		ListDB: m.ListDB,
 
 		Ports: m.Ports,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +114,7 @@ func (m MongoAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +141,7 @@ func (m *MongoAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *MongoAutoDiscoveryMethod) validateListDB(formats strfmt.Registry) error {
+
 	if err := validate.Required("listDB", "body", m.ListDB); err != nil {
 		return err
 	}
@@ -154,10 +150,21 @@ func (m *MongoAutoDiscoveryMethod) validateListDB(formats strfmt.Registry) error
 }
 
 func (m *MongoAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
+
 	if err := validate.Required("ports", "body", m.Ports); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this mongo auto discovery method based on the context it is used
+func (m *MongoAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

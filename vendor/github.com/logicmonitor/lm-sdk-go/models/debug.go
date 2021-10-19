@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Debug debug
+//
 // swagger:model Debug
 type Debug struct {
 
@@ -31,6 +36,42 @@ type Debug struct {
 
 // Validate validates this debug
 func (m *Debug) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this debug based on the context it is used
+func (m *Debug) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateOutput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSessionID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Debug) contextValidateOutput(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "output", "body", string(m.Output)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Debug) contextValidateSessionID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sessionId", "body", string(m.SessionID)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

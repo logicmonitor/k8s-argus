@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AlertReport alert report
+//
 // swagger:model AlertReport
 type AlertReport struct {
 	customReportTypeIdField int32
@@ -93,7 +95,8 @@ type AlertReport struct {
 
 	// true: alerts that started prior to the specified dateRange but that meet all other criteria will be displayed in the report
 	// false: only alerts that started during the specified dateRange will be displayed in the report
-	IncludePreexist bool `json:"includePreexist,omitempty"`
+	// the default value is true
+	IncludePreexist interface{} `json:"includePreexist,omitempty"`
 
 	// all | error | critical
 	// all: alerts of all severity levels will be displayed if they match the filter criteria
@@ -320,40 +323,6 @@ func (m *AlertReport) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// AckFilter gets the ack filter of this subtype
-
-// ActiveOnly gets the active only of this subtype
-
-// Chain gets the chain of this subtype
-
-// Columns gets the columns of this subtype
-
-// DataPoint gets the data point of this subtype
-
-// DataSource gets the data source of this subtype
-
-// DataSourceInstanceName gets the data source instance name of this subtype
-
-// DateRange gets the date range of this subtype
-
-// DeviceDisplayName gets the device display name of this subtype
-
-// GroupFullPath gets the group full path of this subtype
-
-// IncludePreexist gets the include preexist of this subtype
-
-// Level gets the level of this subtype
-
-// Rule gets the rule of this subtype
-
-// SDTFilter gets the sdt filter of this subtype
-
-// SortedBy gets the sorted by of this subtype
-
-// SummaryOnly gets the summary only of this subtype
-
-// Timing gets the timing of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AlertReport) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -394,7 +363,8 @@ func (m *AlertReport) UnmarshalJSON(raw []byte) error {
 
 		// true: alerts that started prior to the specified dateRange but that meet all other criteria will be displayed in the report
 		// false: only alerts that started during the specified dateRange will be displayed in the report
-		IncludePreexist bool `json:"includePreexist,omitempty"`
+		// the default value is true
+		IncludePreexist interface{} `json:"includePreexist,omitempty"`
 
 		// all | error | critical
 		// all: alerts of all severity levels will be displayed if they match the filter criteria
@@ -522,41 +492,24 @@ func (m *AlertReport) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.AckFilter = data.AckFilter
-
 	result.ActiveOnly = data.ActiveOnly
-
 	result.Chain = data.Chain
-
 	result.Columns = data.Columns
-
 	result.DataPoint = data.DataPoint
-
 	result.DataSource = data.DataSource
-
 	result.DataSourceInstanceName = data.DataSourceInstanceName
-
 	result.DateRange = data.DateRange
-
 	result.DeviceDisplayName = data.DeviceDisplayName
-
 	result.GroupFullPath = data.GroupFullPath
-
 	result.IncludePreexist = data.IncludePreexist
-
 	result.Level = data.Level
-
 	result.Rule = data.Rule
-
 	result.SDTFilter = data.SDTFilter
-
 	result.SortedBy = data.SortedBy
-
 	result.SummaryOnly = data.SummaryOnly
-
 	result.Timing = data.Timing
 
 	*m = result
@@ -606,7 +559,8 @@ func (m AlertReport) MarshalJSON() ([]byte, error) {
 
 		// true: alerts that started prior to the specified dateRange but that meet all other criteria will be displayed in the report
 		// false: only alerts that started during the specified dateRange will be displayed in the report
-		IncludePreexist bool `json:"includePreexist,omitempty"`
+		// the default value is true
+		IncludePreexist interface{} `json:"includePreexist,omitempty"`
 
 		// all | error | critical
 		// all: alerts of all severity levels will be displayed if they match the filter criteria
@@ -667,8 +621,7 @@ func (m AlertReport) MarshalJSON() ([]byte, error) {
 		SummaryOnly: m.SummaryOnly,
 
 		Timing: m.Timing,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -753,8 +706,7 @@ func (m AlertReport) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -785,6 +737,7 @@ func (m *AlertReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertReport) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -793,6 +746,7 @@ func (m *AlertReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AlertReport) validateRecipients(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -817,6 +771,7 @@ func (m *AlertReport) validateRecipients(formats strfmt.Registry) error {
 }
 
 func (m *AlertReport) validateColumns(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Columns) { // not required
 		return nil
 	}
@@ -828,6 +783,203 @@ func (m *AlertReport) validateColumns(formats strfmt.Registry) error {
 
 		if m.Columns[i] != nil {
 			if err := m.Columns[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this alert report based on the context it is used
+func (m *AlertReport) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomReportTypeID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomReportTypeName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnableViewAsOtherUser(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGeneratePages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecipients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportLinkNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColumns(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AlertReport) contextValidateCustomReportTypeID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeId", "body", int32(m.CustomReportTypeID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateCustomReportTypeName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeName", "body", string(m.CustomReportTypeName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateEnableViewAsOtherUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enableViewAsOtherUser", "body", m.EnableViewAsOtherUser()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateLastGenerateOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateOn", "body", int64(m.LastGenerateOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateLastGeneratePages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGeneratePages", "body", int32(m.LastGeneratePages())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateLastGenerateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateSize", "body", int64(m.LastGenerateSize())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateLastmodifyUserID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserId", "body", int32(m.LastmodifyUserID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateLastmodifyUserName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserName", "body", string(m.LastmodifyUserName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateRecipients(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Recipients()); i++ {
+
+		if m.recipientsField[i] != nil {
+			if err := m.recipientsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateReportLinkNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportLinkNum", "body", int32(m.ReportLinkNum())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertReport) contextValidateColumns(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Columns); i++ {
+
+		if m.Columns[i] != nil {
+			if err := m.Columns[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
 				}

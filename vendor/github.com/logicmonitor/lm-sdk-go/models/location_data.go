@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // LocationData location data
+//
 // swagger:model LocationData
 type LocationData struct {
 
@@ -27,6 +32,29 @@ type LocationData struct {
 
 // Validate validates this location data
 func (m *LocationData) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this location data based on the context it is used
+func (m *LocationData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateGeoInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LocationData) contextValidateGeoInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "geoInfo", "body", string(m.GeoInfo)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

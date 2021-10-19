@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetAppCollectorAttribute net app collector attribute
+//
 // swagger:model NetAppCollectorAttribute
 type NetAppCollectorAttribute struct {
 
@@ -70,34 +73,6 @@ func (m *NetAppCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *NetAppCollectorAttribute) SetName(val string) {
 }
-
-// IP gets the ip of this subtype
-
-// NetAppAPI gets the net app API of this subtype
-
-// NetAppAggregate gets the net app aggregate of this subtype
-
-// NetAppIndex gets the net app index of this subtype
-
-// NetAppInstance gets the net app instance of this subtype
-
-// NetAppObject gets the net app object of this subtype
-
-// NetAppType gets the net app type of this subtype
-
-// NetAppXML gets the net app XML of this subtype
-
-// NetAppXMLBulk gets the net app XML bulk of this subtype
-
-// NetAppXMLBulkLocator gets the net app XML bulk locator of this subtype
-
-// NetAppXMLIndex gets the net app XML index of this subtype
-
-// NetAppXMLInstance gets the net app XML instance of this subtype
-
-// NetAppXMLLocator gets the net app XML locator of this subtype
-
-// Params gets the params of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NetAppCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -175,31 +150,18 @@ func (m *NetAppCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.IP = data.IP
-
 	result.NetAppAPI = data.NetAppAPI
-
 	result.NetAppAggregate = data.NetAppAggregate
-
 	result.NetAppIndex = data.NetAppIndex
-
 	result.NetAppInstance = data.NetAppInstance
-
 	result.NetAppObject = data.NetAppObject
-
 	result.NetAppType = data.NetAppType
-
 	result.NetAppXML = data.NetAppXML
-
 	result.NetAppXMLBulk = data.NetAppXMLBulk
-
 	result.NetAppXMLBulkLocator = data.NetAppXMLBulkLocator
-
 	result.NetAppXMLIndex = data.NetAppXMLIndex
-
 	result.NetAppXMLInstance = data.NetAppXMLInstance
-
 	result.NetAppXMLLocator = data.NetAppXMLLocator
-
 	result.Params = data.Params
 
 	*m = result
@@ -284,8 +246,7 @@ func (m NetAppCollectorAttribute) MarshalJSON() ([]byte, error) {
 		NetAppXMLLocator: m.NetAppXMLLocator,
 
 		Params: m.Params,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -294,8 +255,7 @@ func (m NetAppCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -310,6 +270,29 @@ func (m *NetAppCollectorAttribute) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this net app collector attribute based on the context it is used
+func (m *NetAppCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetAppCollectorAttribute) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ip", "body", string(m.IP)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

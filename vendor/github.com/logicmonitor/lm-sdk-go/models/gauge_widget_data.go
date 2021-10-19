@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // GaugeWidgetData gauge widget data
+//
 // swagger:model GaugeWidgetData
 type GaugeWidgetData struct {
 	titleField string
@@ -88,32 +91,6 @@ func (m *GaugeWidgetData) Type() string {
 // SetType sets the type of this subtype
 func (m *GaugeWidgetData) SetType(val string) {
 }
-
-// ColorLevel gets the color level of this subtype
-
-// CurrentValue gets the current value of this subtype
-
-// DisplayType gets the display type of this subtype
-
-// DisplayUnit gets the display unit of this subtype
-
-// HistoryTimestamps gets the history timestamps of this subtype
-
-// HistoryValues gets the history values of this subtype
-
-// Legend gets the legend of this subtype
-
-// MaxValue gets the max value of this subtype
-
-// MinValue gets the min value of this subtype
-
-// PeakTime gets the peak time of this subtype
-
-// PeakTimeOnLocal gets the peak time on local of this subtype
-
-// PeakValue gets the peak value of this subtype
-
-// ShowPeak gets the show peak of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *GaugeWidgetData) UnmarshalJSON(raw []byte) error {
@@ -202,29 +179,17 @@ func (m *GaugeWidgetData) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.ColorLevel = data.ColorLevel
-
 	result.CurrentValue = data.CurrentValue
-
 	result.DisplayType = data.DisplayType
-
 	result.DisplayUnit = data.DisplayUnit
-
 	result.HistoryTimestamps = data.HistoryTimestamps
-
 	result.HistoryValues = data.HistoryValues
-
 	result.Legend = data.Legend
-
 	result.MaxValue = data.MaxValue
-
 	result.MinValue = data.MinValue
-
 	result.PeakTime = data.PeakTime
-
 	result.PeakTimeOnLocal = data.PeakTimeOnLocal
-
 	result.PeakValue = data.PeakValue
-
 	result.ShowPeak = data.ShowPeak
 
 	*m = result
@@ -314,8 +279,7 @@ func (m GaugeWidgetData) MarshalJSON() ([]byte, error) {
 		PeakValue: m.PeakValue,
 
 		ShowPeak: m.ShowPeak,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -328,8 +292,7 @@ func (m GaugeWidgetData) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -344,6 +307,155 @@ func (m *GaugeWidgetData) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this gauge widget data based on the context it is used
+func (m *GaugeWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateColorLevel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCurrentValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHistoryTimestamps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLegend(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMaxValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMinValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePeakTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePeakTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePeakValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateShowPeak(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateColorLevel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "colorLevel", "body", int32(m.ColorLevel)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateCurrentValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "currentValue", "body", float64(m.CurrentValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateHistoryTimestamps(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "historyTimestamps", "body", []int64(m.HistoryTimestamps)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateLegend(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "legend", "body", string(m.Legend)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateMaxValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "maxValue", "body", float64(m.MaxValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateMinValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "minValue", "body", float64(m.MinValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidatePeakTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "peakTime", "body", int64(m.PeakTime)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidatePeakTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "peakTimeOnLocal", "body", string(m.PeakTimeOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidatePeakValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "peakValue", "body", float64(m.PeakValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidgetData) contextValidateShowPeak(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "showPeak", "body", m.ShowPeak); err != nil {
+		return err
+	}
+
 	return nil
 }
 

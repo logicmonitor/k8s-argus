@@ -6,15 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Role role
+//
 // swagger:model Role
 type Role struct {
 
@@ -27,12 +29,15 @@ type Role struct {
 	AssociatedUserCount int32 `json:"associatedUserCount,omitempty"`
 
 	// The label for the custom help URL as it will appear in the Help & Support dropdown menu
+	// Example: Internal Support Resources
 	CustomHelpLabel string `json:"customHelpLabel,omitempty"`
 
 	// The URL that should be added to the Help & Support dropdown menu
+	// Example: https://logicmonitor.com/support
 	CustomHelpURL string `json:"customHelpURL,omitempty"`
 
 	// The description of the role
+	// Example: Administrator can do everything, including security-sensitive actions
 	Description string `json:"description,omitempty"`
 
 	// Whether Remote Session should be enabled at the account level
@@ -44,6 +49,7 @@ type Role struct {
 	ID int32 `json:"id,omitempty"`
 
 	// The name of the role
+	// Example: administrator
 	// Required: true
 	Name *string `json:"name"`
 
@@ -52,9 +58,11 @@ type Role struct {
 	Privileges []*Privilege `json:"privileges"`
 
 	// Whether or not users assigned this role should be required to acknowledge the EULA (end user license agreement)
+	// Example: true
 	RequireEULA bool `json:"requireEULA,omitempty"`
 
 	// Whether Two-Factor Authentication should be required for this role
+	// Example: true
 	TwoFARequired bool `json:"twoFARequired,omitempty"`
 }
 
@@ -77,6 +85,7 @@ func (m *Role) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Role) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -85,6 +94,7 @@ func (m *Role) validateName(formats strfmt.Registry) error {
 }
 
 func (m *Role) validatePrivileges(formats strfmt.Registry) error {
+
 	if err := validate.Required("privileges", "body", m.Privileges); err != nil {
 		return err
 	}
@@ -96,6 +106,90 @@ func (m *Role) validatePrivileges(formats strfmt.Registry) error {
 
 		if m.Privileges[i] != nil {
 			if err := m.Privileges[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("privileges" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this role based on the context it is used
+func (m *Role) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAcctRequireTwoFA(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAssociatedUserCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnableRemoteSessionInCompanyLevel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePrivileges(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Role) contextValidateAcctRequireTwoFA(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "acctRequireTwoFA", "body", m.AcctRequireTwoFA); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Role) contextValidateAssociatedUserCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "associatedUserCount", "body", int32(m.AssociatedUserCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Role) contextValidateEnableRemoteSessionInCompanyLevel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enableRemoteSessionInCompanyLevel", "body", m.EnableRemoteSessionInCompanyLevel); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Role) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Role) contextValidatePrivileges(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Privileges); i++ {
+
+		if m.Privileges[i] != nil {
+			if err := m.Privileges[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("privileges" + "." + strconv.Itoa(i))
 				}

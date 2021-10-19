@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"strconv"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -12,7 +11,6 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
-	m "github.com/logicmonitor/lm-sdk-go/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -181,48 +179,29 @@ here struct is api specific class like AddDeviceDefault, UpdateDeviceDefault.
 
 If struct child variable hierarchy changes, then code needs modification.
 */
-func parseAndGetErrorResponseObject(err error) *m.ErrorResponse {
-	var e *m.ErrorResponse
-
-	t := reflect.ValueOf(err).Elem()
-	for i := 0; i < t.NumField(); i++ {
-		if t.Field(i).Type() == reflect.TypeOf(e) { // if t.Field(i).Type().String() == "*models.ErrorResponse" {
-			mv := t.Field(i)
-			v := reflect.New(mv.Elem().Type())
-			v.Elem().Set(mv.Elem())
-			e = v.Interface().(*m.ErrorResponse)
-
-			return e
-		}
-	}
-
-	return nil
-}
 
 func (w *Worker) getRLLimit(lctx *lmctx.LMContext, err error) *types.RateLimits {
 	if err == nil {
 		return nil
 	}
 	log := lmlog.Logger(lctx)
-	errResp := parseAndGetErrorResponseObject(err)
-	if errResp == nil {
-		log.Warnf("ErrorResponse not found in error")
-		return nil
-	}
 	code := util.GetHTTPStatusCodeFromLMSDKError(err)
 	if code == http.StatusTooManyRequests {
-		headers := errResp.ErrorDetail.(map[string]interface{}) // nolint: forcetypeassert
-		limit, lerr := strconv.Atoi(headers["x-rate-limit-limit"].(string))
-		if lerr != nil {
+		XRateLimitLimit := "XRateLimitLimit"
+		limit := reflect.ValueOf(err).Elem().FieldByName(XRateLimitLimit)
+		if !limit.IsValid() {
+			log.Warnf("Field not found:%s", XRateLimitLimit)
 			return nil
 		}
-		window, werr := strconv.Atoi(headers["x-rate-limit-window"].(string))
-		if werr != nil {
+		XRateLimitWindow := "XRateLimitWindow"
+		window := reflect.ValueOf(err).Elem().FieldByName(XRateLimitWindow)
+		if !window.IsValid() {
+			log.Warnf("Field not found:%s", XRateLimitWindow)
 			return nil
 		}
 		req := &types.RateLimits{
-			Limit:  int64(limit),
-			Window: window,
+			Limit:  limit.Int(),
+			Window: window.Int(),
 		}
 
 		return req

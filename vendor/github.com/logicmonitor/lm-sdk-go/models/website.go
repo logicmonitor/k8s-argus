@@ -7,6 +7,7 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -14,15 +15,17 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Website website
+//
 // swagger:discriminator Website type
 type Website interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// The checkpoints from the which the website is monitored. This object should reference each location specified in testLocation in addition to an 'Overall' checkpoint
 	Checkpoints() []*WebsiteCheckPoint
@@ -34,6 +37,7 @@ type Website interface {
 	SetCollectors([]*WebsiteCollectorInfo)
 
 	// The description of the website
+	// Example: Monitor Ebay site response times
 	Description() string
 	SetDescription(string)
 
@@ -48,10 +52,12 @@ type Website interface {
 	// 1 : half
 	// 2 : more than one
 	// 3 : any
+	// Example: 0
 	GlobalSmAlertCond() int32
 	SetGlobalSmAlertCond(int32)
 
 	// The id of the group the website is in
+	// Example: 1
 	// Read Only: true
 	GroupID() int32
 	SetGroupID(int32)
@@ -63,30 +69,41 @@ type Website interface {
 
 	// warn | error | critical
 	// The level of alert to trigger if the website fails a check from an individual test location
+	// Example: warn
 	IndividualAlertLevel() string
 	SetIndividualAlertLevel(string)
 
 	// true: an alert will be triggered if a check fails from an individual test location
 	// false: an alert will not be triggered if a check fails from an individual test location
+	// Example: false
 	IndividualSmAlertEnable() bool
 	SetIndividualSmAlertEnable(bool)
 
 	// Whether or not the website is internal
+	// Example: false
 	IsInternal() bool
 	SetIsInternal(bool)
 
+	// The time (in epoch format) that the website was updated
+	// Read Only: true
+	LastUpdated() int64
+	SetLastUpdated(int64)
+
 	// The name of the website
+	// Example: Ebay
 	// Required: true
 	Name() *string
 	SetName(*string)
 
 	// warn | error | critical
 	// The level of alert to trigger if the website fails the number of checks specified by transition from the test locations specified by globalSmAlertCond
+	// Example: warn
 	OverallAlertLevel() string
 	SetOverallAlertLevel(string)
 
 	// 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 	// The polling interval for the website, in units of minutes. This value indicates how often the website is checked. The minimum is 1 minute, and the maximum is 10 minutes
+	// Example: 5
 	PollingInterval() int32
 	SetPollingInterval(int32)
 
@@ -132,27 +149,34 @@ type Website interface {
 
 	// 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 30 | 60
 	// The number of checks that must fail before an alert is triggered
+	// Example: 1
 	Transition() int32
 	SetTransition(int32)
 
 	// The type of the website. Acceptable values are: pingcheck, webcheck
+	// Example: webcheck
 	// Required: true
 	Type() string
 	SetType(string)
 
 	// true: The alert settings configured in the website Default Settings will be used
 	// false: Service Default Settings will not be used, and you will need to specify individualSMAlertEnable, individualAlertLevel, globalSmAlertConf, overallAlertLevel and pollingInterval
+	// Example: true
 	UseDefaultAlertSetting() bool
 	SetUseDefaultAlertSetting(bool)
 
 	// true: The checkpoint locations configured in the website Default Settings will be used
 	// false: The checkpoint locations specified in the testLocation will be used
+	// Example: false
 	UseDefaultLocationSetting() bool
 	SetUseDefaultLocationSetting(bool)
 
 	// write | read | ack. The permission level of the user that made the API request
 	UserPermission() string
 	SetUserPermission(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type website struct {
@@ -175,6 +199,8 @@ type website struct {
 	individualSmAlertEnableField bool
 
 	isInternalField bool
+
+	lastUpdatedField int64
 
 	nameField *string
 
@@ -303,6 +329,16 @@ func (m *website) IsInternal() bool {
 // SetIsInternal sets the is internal of this polymorphic type
 func (m *website) SetIsInternal(val bool) {
 	m.isInternalField = val
+}
+
+// LastUpdated gets the last updated of this polymorphic type
+func (m *website) LastUpdated() int64 {
+	return m.lastUpdatedField
+}
+
+// SetLastUpdated sets the last updated of this polymorphic type
+func (m *website) SetLastUpdated(val int64) {
+	m.lastUpdatedField = val
 }
 
 // Name gets the name of this polymorphic type
@@ -496,21 +532,18 @@ func unmarshalWebsite(data []byte, consumer runtime.Consumer) (Website, error) {
 			return nil, err
 		}
 		return &result, nil
-
 	case "pingcheck":
 		var result PingCheck
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "webcheck":
 		var result WebCheck
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
 }
@@ -594,6 +627,7 @@ func (m *website) validateCollectors(formats strfmt.Registry) error {
 }
 
 func (m *website) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -626,12 +660,180 @@ func (m *website) validateProperties(formats strfmt.Registry) error {
 }
 
 func (m *website) validateTestLocation(formats strfmt.Registry) error {
+
 	if err := validate.Required("testLocation", "body", m.TestLocation()); err != nil {
 		return err
 	}
 
 	if m.TestLocation() != nil {
 		if err := m.TestLocation().Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("testLocation")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this website based on the context it is used
+func (m *website) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCheckpoints(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStopMonitoringByFolder(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTestLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *website) contextValidateCheckpoints(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Checkpoints()); i++ {
+
+		if m.checkpointsField[i] != nil {
+			if err := m.checkpointsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("checkpoints" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateCollectors(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectors", "body", []*WebsiteCollectorInfo(m.Collectors())); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Collectors()); i++ {
+
+		if m.collectorsField[i] != nil {
+			if err := m.collectorsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("collectors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupId", "body", int32(m.GroupID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateLastUpdated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdated", "body", int64(m.LastUpdated())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateProperties(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "properties", "body", []*NameAndValue(m.Properties())); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Properties()); i++ {
+
+		if m.propertiesField[i] != nil {
+			if err := m.propertiesField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("properties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateStopMonitoringByFolder(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stopMonitoringByFolder", "body", m.StopMonitoringByFolder()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *website) contextValidateTestLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TestLocation() != nil {
+		if err := m.TestLocation().ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("testLocation")
 			}

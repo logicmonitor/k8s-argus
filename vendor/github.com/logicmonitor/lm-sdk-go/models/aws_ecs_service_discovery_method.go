@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsEcsServiceDiscoveryMethod aws ecs service discovery method
+//
 // swagger:model AwsEcsServiceDiscoveryMethod
 type AwsEcsServiceDiscoveryMethod struct {
 	AwsEcsServiceDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *AwsEcsServiceDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AwsEcsServiceDiscoveryMethodAllOf1 = data.AwsEcsServiceDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AwsEcsServiceDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		AwsEcsServiceDiscoveryMethodAllOf1: m.AwsEcsServiceDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AwsEcsServiceDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AwsEcsServiceDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this aws ecs service discovery method
 func (m *AwsEcsServiceDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AwsEcsServiceDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws ecs service discovery method based on the context it is used
+func (m *AwsEcsServiceDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AwsEcsServiceDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *AwsEcsServiceDiscoveryMethod) UnmarshalBinary(b []byte) error {
 }
 
 // AwsEcsServiceDiscoveryMethodAllOf1 aws ecs service discovery method all of1
+//
 // swagger:model AwsEcsServiceDiscoveryMethodAllOf1
 type AwsEcsServiceDiscoveryMethodAllOf1 interface{}

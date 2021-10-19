@@ -6,72 +6,109 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewUpdateDeviceGroupDatasourceAlertSettingParams creates a new UpdateDeviceGroupDatasourceAlertSettingParams object
-// with the default values initialized.
+// NewUpdateDeviceGroupDatasourceAlertSettingParams creates a new UpdateDeviceGroupDatasourceAlertSettingParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewUpdateDeviceGroupDatasourceAlertSettingParams() *UpdateDeviceGroupDatasourceAlertSettingParams {
-	var ()
 	return &UpdateDeviceGroupDatasourceAlertSettingParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewUpdateDeviceGroupDatasourceAlertSettingParamsWithTimeout creates a new UpdateDeviceGroupDatasourceAlertSettingParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewUpdateDeviceGroupDatasourceAlertSettingParamsWithTimeout(timeout time.Duration) *UpdateDeviceGroupDatasourceAlertSettingParams {
-	var ()
 	return &UpdateDeviceGroupDatasourceAlertSettingParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewUpdateDeviceGroupDatasourceAlertSettingParamsWithContext creates a new UpdateDeviceGroupDatasourceAlertSettingParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewUpdateDeviceGroupDatasourceAlertSettingParamsWithContext(ctx context.Context) *UpdateDeviceGroupDatasourceAlertSettingParams {
-	var ()
 	return &UpdateDeviceGroupDatasourceAlertSettingParams{
-
 		Context: ctx,
 	}
 }
 
 // NewUpdateDeviceGroupDatasourceAlertSettingParamsWithHTTPClient creates a new UpdateDeviceGroupDatasourceAlertSettingParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewUpdateDeviceGroupDatasourceAlertSettingParamsWithHTTPClient(client *http.Client) *UpdateDeviceGroupDatasourceAlertSettingParams {
-	var ()
 	return &UpdateDeviceGroupDatasourceAlertSettingParams{
 		HTTPClient: client,
 	}
 }
 
-/*UpdateDeviceGroupDatasourceAlertSettingParams contains all the parameters to send to the API endpoint
-for the update device group datasource alert setting operation typically these are written to a http.Request
+/* UpdateDeviceGroupDatasourceAlertSettingParams contains all the parameters to send to the API endpoint
+   for the update device group datasource alert setting operation.
+
+   Typically these are written to a http.Request.
 */
 type UpdateDeviceGroupDatasourceAlertSettingParams struct {
 
-	/*Body*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.DeviceGroupDataSourceAlertConfig
-	/*DeviceGroupID*/
+
+	// DeviceGroupID.
+	//
+	// Format: int32
 	DeviceGroupID int32
-	/*DsID*/
+
+	// DsID.
+	//
+	// Format: int32
 	DsID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the update device group datasource alert setting params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateDeviceGroupDatasourceAlertSettingParams) WithDefaults() *UpdateDeviceGroupDatasourceAlertSettingParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the update device group datasource alert setting params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateDeviceGroupDatasourceAlertSettingParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := UpdateDeviceGroupDatasourceAlertSettingParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the update device group datasource alert setting params
@@ -105,6 +142,17 @@ func (o *UpdateDeviceGroupDatasourceAlertSettingParams) WithHTTPClient(client *h
 // SetHTTPClient adds the HTTPClient to the update device group datasource alert setting params
 func (o *UpdateDeviceGroupDatasourceAlertSettingParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the update device group datasource alert setting params
+func (o *UpdateDeviceGroupDatasourceAlertSettingParams) WithUserAgent(userAgent *string) *UpdateDeviceGroupDatasourceAlertSettingParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the update device group datasource alert setting params
+func (o *UpdateDeviceGroupDatasourceAlertSettingParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithBody adds the body to the update device group datasource alert setting params
@@ -142,11 +190,19 @@ func (o *UpdateDeviceGroupDatasourceAlertSettingParams) SetDsID(dsID int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *UpdateDeviceGroupDatasourceAlertSettingParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

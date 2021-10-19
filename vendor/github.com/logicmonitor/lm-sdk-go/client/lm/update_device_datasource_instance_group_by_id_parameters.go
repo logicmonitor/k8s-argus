@@ -6,77 +6,117 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewUpdateDeviceDatasourceInstanceGroupByIDParams creates a new UpdateDeviceDatasourceInstanceGroupByIDParams object
-// with the default values initialized.
+// NewUpdateDeviceDatasourceInstanceGroupByIDParams creates a new UpdateDeviceDatasourceInstanceGroupByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewUpdateDeviceDatasourceInstanceGroupByIDParams() *UpdateDeviceDatasourceInstanceGroupByIDParams {
-	var ()
 	return &UpdateDeviceDatasourceInstanceGroupByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewUpdateDeviceDatasourceInstanceGroupByIDParamsWithTimeout creates a new UpdateDeviceDatasourceInstanceGroupByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewUpdateDeviceDatasourceInstanceGroupByIDParamsWithTimeout(timeout time.Duration) *UpdateDeviceDatasourceInstanceGroupByIDParams {
-	var ()
 	return &UpdateDeviceDatasourceInstanceGroupByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewUpdateDeviceDatasourceInstanceGroupByIDParamsWithContext creates a new UpdateDeviceDatasourceInstanceGroupByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewUpdateDeviceDatasourceInstanceGroupByIDParamsWithContext(ctx context.Context) *UpdateDeviceDatasourceInstanceGroupByIDParams {
-	var ()
 	return &UpdateDeviceDatasourceInstanceGroupByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewUpdateDeviceDatasourceInstanceGroupByIDParamsWithHTTPClient creates a new UpdateDeviceDatasourceInstanceGroupByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewUpdateDeviceDatasourceInstanceGroupByIDParamsWithHTTPClient(client *http.Client) *UpdateDeviceDatasourceInstanceGroupByIDParams {
-	var ()
 	return &UpdateDeviceDatasourceInstanceGroupByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*UpdateDeviceDatasourceInstanceGroupByIDParams contains all the parameters to send to the API endpoint
-for the update device datasource instance group by Id operation typically these are written to a http.Request
+/* UpdateDeviceDatasourceInstanceGroupByIDParams contains all the parameters to send to the API endpoint
+   for the update device datasource instance group by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type UpdateDeviceDatasourceInstanceGroupByIDParams struct {
 
-	/*Body*/
-	Body *models.DeviceDataSourceInstanceGroup
-	/*DeviceDsID
-	  The device-datasource ID you'd like to add an instance group for
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
 
+	// Body.
+	Body *models.DeviceDataSourceInstanceGroup
+
+	/* DeviceDsID.
+
+	   The device-datasource ID you'd like to add an instance group for
+
+	   Format: int32
 	*/
 	DeviceDsID int32
-	/*DeviceID*/
+
+	// DeviceID.
+	//
+	// Format: int32
 	DeviceID int32
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the update device datasource instance group by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) WithDefaults() *UpdateDeviceDatasourceInstanceGroupByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the update device datasource instance group by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := UpdateDeviceDatasourceInstanceGroupByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the update device datasource instance group by Id params
@@ -110,6 +150,17 @@ func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) WithHTTPClient(client *h
 // SetHTTPClient adds the HTTPClient to the update device datasource instance group by Id params
 func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the update device datasource instance group by Id params
+func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) WithUserAgent(userAgent *string) *UpdateDeviceDatasourceInstanceGroupByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the update device datasource instance group by Id params
+func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithBody adds the body to the update device datasource instance group by Id params
@@ -158,11 +209,19 @@ func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *UpdateDeviceDatasourceInstanceGroupByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

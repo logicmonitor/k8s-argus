@@ -18,7 +18,9 @@ import (
 
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
+
 	strfmt "github.com/go-openapi/strfmt"
+
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
 )
 
@@ -131,6 +133,7 @@ func (c *LMSdkGo) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 
 	c.LM.SetTransport(transport)
+
 }
 
 func LMv1Auth(accessId, accessKey string) runtime.ClientAuthInfoWriter {

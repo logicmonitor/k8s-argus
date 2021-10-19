@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AzureBillingDiscoveryMethod azure billing discovery method
+//
 // swagger:model AzureBillingDiscoveryMethod
 type AzureBillingDiscoveryMethod struct {
 
@@ -32,8 +34,6 @@ func (m *AzureBillingDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *AzureBillingDiscoveryMethod) SetName(val string) {
 }
-
-// AzureBillingType gets the azure billing type of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AzureBillingDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -90,8 +90,7 @@ func (m AzureBillingDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		AzureBillingType: m.AzureBillingType,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +99,7 @@ func (m AzureBillingDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +122,21 @@ func (m *AzureBillingDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AzureBillingDiscoveryMethod) validateAzureBillingType(formats strfmt.Registry) error {
+
 	if err := validate.Required("azureBillingType", "body", m.AzureBillingType); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this azure billing discovery method based on the context it is used
+func (m *AzureBillingDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsBillingReportCollectorAttribute aws billing report collector attribute
+//
 // swagger:model AwsBillingReportCollectorAttribute
 type AwsBillingReportCollectorAttribute struct {
 	AwsBillingReportCollectorAttributeAllOf1
@@ -61,7 +63,6 @@ func (m *AwsBillingReportCollectorAttribute) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AwsBillingReportCollectorAttributeAllOf1 = data.AwsBillingReportCollectorAttributeAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AwsBillingReportCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		AwsBillingReportCollectorAttributeAllOf1: m.AwsBillingReportCollectorAttributeAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AwsBillingReportCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AwsBillingReportCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this aws billing report collector attribute
 func (m *AwsBillingReportCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AwsBillingReportCollectorAttributeAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws billing report collector attribute based on the context it is used
+func (m *AwsBillingReportCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AwsBillingReportCollectorAttributeAllOf1
@@ -128,5 +139,6 @@ func (m *AwsBillingReportCollectorAttribute) UnmarshalBinary(b []byte) error {
 }
 
 // AwsBillingReportCollectorAttributeAllOf1 aws billing report collector attribute all of1
+//
 // swagger:model AwsBillingReportCollectorAttributeAllOf1
 type AwsBillingReportCollectorAttributeAllOf1 interface{}

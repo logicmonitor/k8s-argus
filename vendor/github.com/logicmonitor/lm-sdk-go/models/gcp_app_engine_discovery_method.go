@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // GcpAppEngineDiscoveryMethod gcp app engine discovery method
+//
 // swagger:model GcpAppEngineDiscoveryMethod
 type GcpAppEngineDiscoveryMethod struct {
 	GcpAppEngineDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *GcpAppEngineDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.GcpAppEngineDiscoveryMethodAllOf1 = data.GcpAppEngineDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m GcpAppEngineDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		GcpAppEngineDiscoveryMethodAllOf1: m.GcpAppEngineDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m GcpAppEngineDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m GcpAppEngineDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this gcp app engine discovery method
 func (m *GcpAppEngineDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with GcpAppEngineDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this gcp app engine discovery method based on the context it is used
+func (m *GcpAppEngineDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with GcpAppEngineDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *GcpAppEngineDiscoveryMethod) UnmarshalBinary(b []byte) error {
 }
 
 // GcpAppEngineDiscoveryMethodAllOf1 gcp app engine discovery method all of1
+//
 // swagger:model GcpAppEngineDiscoveryMethodAllOf1
 type GcpAppEngineDiscoveryMethodAllOf1 interface{}

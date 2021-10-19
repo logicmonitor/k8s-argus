@@ -7,25 +7,32 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // OpsNoteScope ops note scope
+//
 // swagger:discriminator OpsNoteScope type
 type OpsNoteScope interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// type
+	// Example: device
 	// Required: true
 	Type() string
 	SetType(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type opsNoteScope struct {
@@ -93,47 +100,46 @@ func unmarshalOpsNoteScope(data []byte, consumer runtime.Consumer) (OpsNoteScope
 			return nil, err
 		}
 		return &result, nil
-
 	case "device":
 		var result OpsNoteDeviceScope
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "deviceGroup":
 		var result OpsNoteDeviceGroupScope
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "groupAll":
 		var result OpsNoteGroupAllScope
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "website":
 		var result OpsNoteWebsiteScope
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "websiteGroup":
 		var result OpsNoteWebsiteGroupScope
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
 }
 
 // Validate validates this ops note scope
 func (m *opsNoteScope) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this ops note scope based on context it is used
+func (m *opsNoteScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }

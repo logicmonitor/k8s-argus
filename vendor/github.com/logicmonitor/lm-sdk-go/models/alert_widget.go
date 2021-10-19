@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AlertWidget alert widget
+//
 // swagger:model AlertWidget
 type AlertWidget struct {
 	dashboardIdField *int32
@@ -154,10 +156,6 @@ func (m *AlertWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// Filters gets the filters of this subtype
-
-// ParsedFilters gets the parsed filters of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AlertWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -233,11 +231,9 @@ func (m *AlertWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.Filters = data.Filters
-
 	result.ParsedFilters = data.ParsedFilters
 
 	*m = result
@@ -261,8 +257,7 @@ func (m AlertWidget) MarshalJSON() ([]byte, error) {
 		Filters: m.Filters,
 
 		ParsedFilters: m.ParsedFilters,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -311,8 +306,7 @@ func (m AlertWidget) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -347,6 +341,7 @@ func (m *AlertWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -355,6 +350,7 @@ func (m *AlertWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -363,6 +359,7 @@ func (m *AlertWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateFilters(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Filters) { // not required
 		return nil
 	}
@@ -380,12 +377,98 @@ func (m *AlertWidget) validateFilters(formats strfmt.Registry) error {
 }
 
 func (m *AlertWidget) validateParsedFilters(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.ParsedFilters) { // not required
 		return nil
 	}
 
 	if m.ParsedFilters != nil {
 		if err := m.ParsedFilters.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("parsedFilters")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this alert widget based on the context it is used
+func (m *AlertWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFilters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateParsedFilters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AlertWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertWidget) contextValidateFilters(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Filters != nil {
+		if err := m.Filters.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("filters")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AlertWidget) contextValidateParsedFilters(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ParsedFilters != nil {
+		if err := m.ParsedFilters.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("parsedFilters")
 			}

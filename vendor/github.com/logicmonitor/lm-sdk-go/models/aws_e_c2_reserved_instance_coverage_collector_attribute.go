@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsEC2ReservedInstanceCoverageCollectorAttribute aws e c2 reserved instance coverage collector attribute
+//
 // swagger:model AwsEC2ReservedInstanceCoverageCollectorAttribute
 type AwsEC2ReservedInstanceCoverageCollectorAttribute struct {
 
@@ -30,8 +32,6 @@ func (m *AwsEC2ReservedInstanceCoverageCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *AwsEC2ReservedInstanceCoverageCollectorAttribute) SetName(val string) {
 }
-
-// Period gets the period of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AwsEC2ReservedInstanceCoverageCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -86,8 +86,7 @@ func (m AwsEC2ReservedInstanceCoverageCollectorAttribute) MarshalJSON() ([]byte,
 	}{
 
 		Period: m.Period,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,7 @@ func (m AwsEC2ReservedInstanceCoverageCollectorAttribute) MarshalJSON() ([]byte,
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +105,16 @@ func (m AwsEC2ReservedInstanceCoverageCollectorAttribute) MarshalJSON() ([]byte,
 
 // Validate validates this aws e c2 reserved instance coverage collector attribute
 func (m *AwsEC2ReservedInstanceCoverageCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws e c2 reserved instance coverage collector attribute based on the context it is used
+func (m *AwsEC2ReservedInstanceCoverageCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

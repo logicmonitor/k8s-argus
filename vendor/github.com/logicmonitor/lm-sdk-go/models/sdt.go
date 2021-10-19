@@ -7,20 +7,23 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // SDT SDT
+//
 // swagger:discriminator SDT type
 type SDT interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// The name of the user that created the SDT
 	// Read Only: true
@@ -28,14 +31,17 @@ type SDT interface {
 	SetAdmin(string)
 
 	// The notes associated with the SDT
+	// Example: Emergency prod deployment
 	Comment() string
 	SetComment(string)
 
 	// The duration of the SDT in minutes
+	// Example: 138
 	Duration() int32
 	SetDuration(int32)
 
 	// The epoch time, in milliseconds, that the SDT will end
+	// Example: 1534554000000
 	EndDateTime() int64
 	SetEndDateTime(int64)
 
@@ -45,14 +51,17 @@ type SDT interface {
 	SetEndDateTimeOnLocal(string)
 
 	// 1 | 2....| 24 The hour that the SDT ends for a repeating SDT
+	// Example: 5
 	EndHour() int32
 	SetEndHour(int32)
 
 	// 1 | 2....| 60 The minute of the hour that the SDT ends for a repeating SDT
+	// Example: 18
 	EndMinute() int32
 	SetEndMinute(int32)
 
 	// 1 | 2....| 24 The hour that the SDT will start for a repeating SDT (daily, weekly, or monthly)
+	// Example: 3
 	Hour() int32
 	SetHour(int32)
 
@@ -68,18 +77,22 @@ type SDT interface {
 	SetIsEffective(*bool)
 
 	// 1 | 2....| 60 The minute of the hour that the SDT should begin for a repeating SDT
+	// Example: 6
 	Minute() int32
 	SetMinute(int32)
 
 	// 1 | 2....| 31 The day of the month that the SDT will be active for a monthly SDT
+	// Example: 7
 	MonthDay() int32
 	SetMonthDay(int32)
 
 	// sdt type
+	// Example: oneTime
 	SDTType() string
 	SetSDTType(string)
 
 	// The epoch time, in milliseconds, that the SDT will start
+	// Example: 1534460400000
 	StartDateTime() int64
 	SetStartDateTime(int64)
 
@@ -89,21 +102,28 @@ type SDT interface {
 	SetStartDateTimeOnLocal(string)
 
 	// The specific timezone for SDT
+	// Example: America/Los_Angeles
 	Timezone() string
 	SetTimezone(string)
 
 	// The type resource that this SDT is for: ServiceSDT | CollectorSDT | DeviceDataSourceInstanceSDT | DeviceBatchJobSDT | DeviceClusterAlertDefSDT | DeviceDataSourceInstanceGroupSDT | DeviceDataSourceSDT | DeviceEventSourceSDT | DeviceGroupSDT | DeviceSDT | WebsiteCheckpointSDT | WebsiteGroupSDT | WebsiteSDT
+	// Example: DeviceGroupSDT
 	// Required: true
 	Type() string
 	SetType(string)
 
 	// week day
+	// Example: Sunday
 	WeekDay() string
 	SetWeekDay(string)
 
 	// The weel of the month that the SDT will be active for a monthly SDT
+	// Example: 1
 	WeekOfMonth() string
 	SetWeekOfMonth(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type sdt struct {
@@ -387,103 +407,164 @@ func unmarshalSDT(data []byte, consumer runtime.Consumer) (SDT, error) {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceBatchJobSDT":
 		var result DeviceBatchJobSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceClusterAlertDefSDT":
 		var result DeviceClusterAlertDefSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceDataSourceInstanceGroupSDT":
 		var result DeviceDataSourceInstanceGroupSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceDataSourceInstanceSDT":
 		var result DeviceDataSourceInstanceSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceDataSourceSDT":
 		var result DeviceDataSourceSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceEventSourceSDT":
 		var result DeviceEventSourceSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceGroupSDT":
 		var result DeviceGroupSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "DeviceSDT":
 		var result DeviceSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "SDT":
 		var result sdt
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ServiceSDT":
 		var result ServiceSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "WebsiteCheckpointSDT":
 		var result WebsiteCheckpointSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "WebsiteGroupSDT":
 		var result WebsiteGroupSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "WebsiteSDT":
 		var result WebsiteSDT
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
 }
 
 // Validate validates this SDT
 func (m *sdt) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this SDT based on the context it is used
+func (m *sdt) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsEffective(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *sdt) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", string(m.Admin())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *sdt) contextValidateEndDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endDateTimeOnLocal", "body", string(m.EndDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *sdt) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *sdt) contextValidateIsEffective(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isEffective", "body", m.IsEffective()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *sdt) contextValidateStartDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startDateTimeOnLocal", "body", string(m.StartDateTimeOnLocal())); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // GraphPlot graph plot
+//
 // swagger:model GraphPlot
 type GraphPlot struct {
 	titleField string
@@ -149,60 +151,6 @@ func (m *GraphPlot) Type() string {
 // SetType sets the type of this subtype
 func (m *GraphPlot) SetType(val string) {
 }
-
-// Base gets the base of this subtype
-
-// Base1024 gets the base1024 of this subtype
-
-// DisplayPrio gets the display prio of this subtype
-
-// DsName gets the ds name of this subtype
-
-// EndTZOffset gets the end t z offset of this subtype
-
-// EndTime gets the end time of this subtype
-
-// ExportFileName gets the export file name of this subtype
-
-// Height gets the height of this subtype
-
-// ID gets the id of this subtype
-
-// Instances gets the instances of this subtype
-
-// Lines gets the lines of this subtype
-
-// MaxValue gets the max value of this subtype
-
-// MinValue gets the min value of this subtype
-
-// Missinglines gets the missinglines of this subtype
-
-// Name gets the name of this subtype
-
-// Rigid gets the rigid of this subtype
-
-// Scopes gets the scopes of this subtype
-
-// StartTZOffset gets the start t z offset of this subtype
-
-// StartTime gets the start time of this subtype
-
-// Step gets the step of this subtype
-
-// TimeScale gets the time scale of this subtype
-
-// TimeZone gets the time zone of this subtype
-
-// TimeZoneID gets the time zone Id of this subtype
-
-// Timestamps gets the timestamps of this subtype
-
-// VerticalLabel gets the vertical label of this subtype
-
-// Width gets the width of this subtype
-
-// XAxisName gets the x axis name of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *GraphPlot) UnmarshalJSON(raw []byte) error {
@@ -350,57 +298,31 @@ func (m *GraphPlot) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Base = data.Base
-
 	result.Base1024 = data.Base1024
-
 	result.DisplayPrio = data.DisplayPrio
-
 	result.DsName = data.DsName
-
 	result.EndTZOffset = data.EndTZOffset
-
 	result.EndTime = data.EndTime
-
 	result.ExportFileName = data.ExportFileName
-
 	result.Height = data.Height
-
 	result.ID = data.ID
-
 	result.Instances = data.Instances
-
 	result.Lines = data.Lines
-
 	result.MaxValue = data.MaxValue
-
 	result.MinValue = data.MinValue
-
 	result.Missinglines = data.Missinglines
-
 	result.Name = data.Name
-
 	result.Rigid = data.Rigid
-
 	result.Scopes = data.Scopes
-
 	result.StartTZOffset = data.StartTZOffset
-
 	result.StartTime = data.StartTime
-
 	result.Step = data.Step
-
 	result.TimeScale = data.TimeScale
-
 	result.TimeZone = data.TimeZone
-
 	result.TimeZoneID = data.TimeZoneID
-
 	result.Timestamps = data.Timestamps
-
 	result.VerticalLabel = data.VerticalLabel
-
 	result.Width = data.Width
-
 	result.XAxisName = data.XAxisName
 
 	*m = result
@@ -577,8 +499,7 @@ func (m GraphPlot) MarshalJSON() ([]byte, error) {
 		Width: m.Width,
 
 		XAxisName: m.XAxisName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -591,8 +512,7 @@ func (m GraphPlot) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -623,6 +543,7 @@ func (m *GraphPlot) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GraphPlot) validateInstances(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Instances) { // not required
 		return nil
 	}
@@ -635,6 +556,7 @@ func (m *GraphPlot) validateInstances(formats strfmt.Registry) error {
 }
 
 func (m *GraphPlot) validateLines(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Lines) { // not required
 		return nil
 	}
@@ -659,6 +581,7 @@ func (m *GraphPlot) validateLines(formats strfmt.Registry) error {
 }
 
 func (m *GraphPlot) validateScopes(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Scopes) { // not required
 		return nil
 	}
@@ -677,6 +600,376 @@ func (m *GraphPlot) validateScopes(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this graph plot based on the context it is used
+func (m *GraphPlot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBase(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBase1024(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDisplayPrio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDsName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndTZOffset(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExportFileName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHeight(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstances(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLines(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMissinglines(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRigid(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScopes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartTZOffset(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStep(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimeScale(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimeZone(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimeZoneID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamps(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVerticalLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWidth(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateXAxisName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GraphPlot) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateBase(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "base", "body", int64(m.Base)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateBase1024(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "base1024", "body", m.Base1024); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateDisplayPrio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "displayPrio", "body", int32(m.DisplayPrio)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateDsName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dsName", "body", string(m.DsName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateEndTZOffset(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endTZOffset", "body", int32(m.EndTZOffset)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateEndTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endTime", "body", int64(m.EndTime)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateExportFileName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "exportFileName", "body", string(m.ExportFileName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateHeight(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "height", "body", int32(m.Height)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateInstances(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instances", "body", []int32(m.Instances)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateLines(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lines", "body", []*GraphPlotLine(m.Lines)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Lines); i++ {
+
+		if m.Lines[i] != nil {
+			if err := m.Lines[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("lines" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateMissinglines(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "missinglines", "body", []string(m.Missinglines)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateRigid(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rigid", "body", m.Rigid); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateScopes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "scopes", "body", []*GraphOpsNoteScope(m.Scopes)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Scopes); i++ {
+
+		if m.Scopes[i] != nil {
+			if err := m.Scopes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("scopes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateStartTZOffset(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startTZOffset", "body", int32(m.StartTZOffset)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateStartTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startTime", "body", int64(m.StartTime)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateStep(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "step", "body", int64(m.Step)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateTimeScale(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "timeScale", "body", string(m.TimeScale)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateTimeZone(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "timeZone", "body", string(m.TimeZone)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateTimeZoneID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "timeZoneId", "body", string(m.TimeZoneID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateTimestamps(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "timestamps", "body", []int64(m.Timestamps)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateVerticalLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "verticalLabel", "body", string(m.VerticalLabel)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateWidth(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "width", "body", int32(m.Width)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlot) contextValidateXAxisName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "xAxisName", "body", string(m.XAxisName)); err != nil {
+		return err
 	}
 
 	return nil

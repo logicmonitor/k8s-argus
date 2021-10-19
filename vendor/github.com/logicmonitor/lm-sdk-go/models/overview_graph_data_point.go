@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // OverviewGraphDataPoint overview graph data point
+//
 // swagger:model OverviewGraphDataPoint
 type OverviewGraphDataPoint struct {
 
@@ -29,6 +32,11 @@ type OverviewGraphDataPoint struct {
 
 // Validate validates this overview graph data point
 func (m *OverviewGraphDataPoint) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this overview graph data point based on context it is used
+func (m *OverviewGraphDataPoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

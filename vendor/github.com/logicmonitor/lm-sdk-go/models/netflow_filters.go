@@ -6,13 +6,21 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+	"strconv"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // NetflowFilters netflow filters
+//
 // swagger:model NetflowFilters
 type NetflowFilters struct {
+
+	// conversation
+	Conversation []*ConversationFilter `json:"conversation,omitempty"`
 
 	// direction
 	Direction string `json:"direction,omitempty"`
@@ -22,6 +30,9 @@ type NetflowFilters struct {
 
 	// if name
 	IfName string `json:"ifName,omitempty"`
+
+	// ip version
+	IPVersion string `json:"ipVersion,omitempty"`
 
 	// node a
 	NodeA string `json:"nodeA,omitempty"`
@@ -44,6 +55,71 @@ type NetflowFilters struct {
 
 // Validate validates this netflow filters
 func (m *NetflowFilters) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateConversation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowFilters) validateConversation(formats strfmt.Registry) error {
+	if swag.IsZero(m.Conversation) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Conversation); i++ {
+		if swag.IsZero(m.Conversation[i]) { // not required
+			continue
+		}
+
+		if m.Conversation[i] != nil {
+			if err := m.Conversation[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("conversation" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this netflow filters based on the context it is used
+func (m *NetflowFilters) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateConversation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowFilters) contextValidateConversation(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Conversation); i++ {
+
+		if m.Conversation[i] != nil {
+			if err := m.Conversation[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("conversation" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 

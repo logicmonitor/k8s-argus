@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // UpdateCollectorByIDReader is a Reader for the UpdateCollectorByID structure.
@@ -22,14 +25,18 @@ type UpdateCollectorByIDReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdateCollectorByIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewUpdateCollectorByIDOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
+	case 429:
+		result := NewUpdateCollectorByIDTooManyRequests()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		result := NewUpdateCollectorByIDDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -47,7 +54,7 @@ func NewUpdateCollectorByIDOK() *UpdateCollectorByIDOK {
 	return &UpdateCollectorByIDOK{}
 }
 
-/*UpdateCollectorByIDOK handles this case with default header values.
+/* UpdateCollectorByIDOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -58,13 +65,83 @@ type UpdateCollectorByIDOK struct {
 func (o *UpdateCollectorByIDOK) Error() string {
 	return fmt.Sprintf("[PUT /setting/collector/collectors/{id}][%d] updateCollectorByIdOK  %+v", 200, o.Payload)
 }
+func (o *UpdateCollectorByIDOK) GetPayload() *models.Collector {
+	return o.Payload
+}
 
 func (o *UpdateCollectorByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.Collector)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
+	}
+
+	return nil
+}
+
+// NewUpdateCollectorByIDTooManyRequests creates a UpdateCollectorByIDTooManyRequests with default headers values
+func NewUpdateCollectorByIDTooManyRequests() *UpdateCollectorByIDTooManyRequests {
+	return &UpdateCollectorByIDTooManyRequests{}
+}
+
+/* UpdateCollectorByIDTooManyRequests describes a response with status code 429, with default header values.
+
+Too Many Requests
+*/
+type UpdateCollectorByIDTooManyRequests struct {
+
+	/* Request limit per X-Rate-Limit-Window
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests left for the time window
+	 */
+	XRateLimitRemaining int64
+
+	/* The rolling time window length with the unit of second
+	 */
+	XRateLimitWindow int64
+}
+
+func (o *UpdateCollectorByIDTooManyRequests) Error() string {
+	return fmt.Sprintf("[PUT /setting/collector/collectors/{id}][%d] updateCollectorByIdTooManyRequests ", 429)
+}
+
+func (o *UpdateCollectorByIDTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header x-rate-limit-limit
+	hdrXRateLimitLimit := response.GetHeader("x-rate-limit-limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header x-rate-limit-remaining
+	hdrXRateLimitRemaining := response.GetHeader("x-rate-limit-remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	// hydrates response header x-rate-limit-window
+	hdrXRateLimitWindow := response.GetHeader("x-rate-limit-window")
+
+	if hdrXRateLimitWindow != "" {
+		valxRateLimitWindow, err := swag.ConvertInt64(hdrXRateLimitWindow)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-window", "header", "int64", hdrXRateLimitWindow)
+		}
+		o.XRateLimitWindow = valxRateLimitWindow
 	}
 
 	return nil
@@ -77,7 +154,7 @@ func NewUpdateCollectorByIDDefault(code int) *UpdateCollectorByIDDefault {
 	}
 }
 
-/*UpdateCollectorByIDDefault handles this case with default header values.
+/* UpdateCollectorByIDDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +172,12 @@ func (o *UpdateCollectorByIDDefault) Code() int {
 func (o *UpdateCollectorByIDDefault) Error() string {
 	return fmt.Sprintf("[PUT /setting/collector/collectors/{id}][%d] updateCollectorById default  %+v", o._statusCode, o.Payload)
 }
+func (o *UpdateCollectorByIDDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
 
 func (o *UpdateCollectorByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

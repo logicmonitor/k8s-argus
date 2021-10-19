@@ -6,18 +6,26 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // GenerateReportRequest generate report request
+//
 // swagger:model GenerateReportRequest
 type GenerateReportRequest struct {
 
 	// The email addresses that LogicMonitor should send the report to, separated by commas
+	// Example: bob@logicmonitor.com
 	ReceiveEmails string `json:"receiveEmails,omitempty"`
 
 	// The id of the report to run
+	// Example: 998
+	// Read Only: true
 	ReportID int32 `json:"reportId,omitempty"`
 
 	// Generate the report with the admin. 0 mean current user
@@ -27,6 +35,42 @@ type GenerateReportRequest struct {
 
 // Validate validates this generate report request
 func (m *GenerateReportRequest) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this generate report request based on the context it is used
+func (m *GenerateReportRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReportID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWithAdminID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GenerateReportRequest) contextValidateReportID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportId", "body", int32(m.ReportID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GenerateReportRequest) contextValidateWithAdminID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "withAdminId", "body", int32(m.WithAdminID)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

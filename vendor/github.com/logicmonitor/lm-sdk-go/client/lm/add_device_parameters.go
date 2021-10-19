@@ -6,80 +6,118 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewAddDeviceParams creates a new AddDeviceParams object
-// with the default values initialized.
+// NewAddDeviceParams creates a new AddDeviceParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewAddDeviceParams() *AddDeviceParams {
-	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
-		AddFromWizard: &addFromWizardDefault,
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewAddDeviceParamsWithTimeout creates a new AddDeviceParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewAddDeviceParamsWithTimeout(timeout time.Duration) *AddDeviceParams {
-	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
-		AddFromWizard: &addFromWizardDefault,
-
 		timeout: timeout,
 	}
 }
 
 // NewAddDeviceParamsWithContext creates a new AddDeviceParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewAddDeviceParamsWithContext(ctx context.Context) *AddDeviceParams {
-	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
-		AddFromWizard: &addFromWizardDefault,
-
 		Context: ctx,
 	}
 }
 
 // NewAddDeviceParamsWithHTTPClient creates a new AddDeviceParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewAddDeviceParamsWithHTTPClient(client *http.Client) *AddDeviceParams {
-	addFromWizardDefault := bool(false)
 	return &AddDeviceParams{
-		AddFromWizard: &addFromWizardDefault,
-		HTTPClient:    client,
+		HTTPClient: client,
 	}
 }
 
-/*AddDeviceParams contains all the parameters to send to the API endpoint
-for the add device operation typically these are written to a http.Request
+/* AddDeviceParams contains all the parameters to send to the API endpoint
+   for the add device operation.
+
+   Typically these are written to a http.Request.
 */
 type AddDeviceParams struct {
 
-	/*AddFromWizard*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// AddFromWizard.
 	AddFromWizard *bool
-	/*Body*/
+
+	// Body.
 	Body *models.Device
-	/*End*/
+
+	// End.
+	//
+	// Format: int64
 	End *int64
-	/*NetflowFilter*/
+
+	// NetflowFilter.
 	NetflowFilter *string
-	/*Start*/
+
+	// Start.
+	//
+	// Format: int64
 	Start *int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the add device params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *AddDeviceParams) WithDefaults() *AddDeviceParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the add device params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *AddDeviceParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+
+		addFromWizardDefault = bool(false)
+	)
+
+	val := AddDeviceParams{
+		UserAgent:     &userAgentDefault,
+		AddFromWizard: &addFromWizardDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the add device params
@@ -113,6 +151,17 @@ func (o *AddDeviceParams) WithHTTPClient(client *http.Client) *AddDeviceParams {
 // SetHTTPClient adds the HTTPClient to the add device params
 func (o *AddDeviceParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the add device params
+func (o *AddDeviceParams) WithUserAgent(userAgent *string) *AddDeviceParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the add device params
+func (o *AddDeviceParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithAddFromWizard adds the addFromWizard to the add device params
@@ -172,27 +221,36 @@ func (o *AddDeviceParams) SetStart(start *int64) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *AddDeviceParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.AddFromWizard != nil {
 
 		// query param addFromWizard
 		var qrAddFromWizard bool
+
 		if o.AddFromWizard != nil {
 			qrAddFromWizard = *o.AddFromWizard
 		}
 		qAddFromWizard := swag.FormatBool(qrAddFromWizard)
 		if qAddFromWizard != "" {
+
 			if err := r.SetQueryParam("addFromWizard", qAddFromWizard); err != nil {
 				return err
 			}
 		}
-
 	}
-
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
@@ -203,48 +261,51 @@ func (o *AddDeviceParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 
 		// query param end
 		var qrEnd int64
+
 		if o.End != nil {
 			qrEnd = *o.End
 		}
 		qEnd := swag.FormatInt64(qrEnd)
 		if qEnd != "" {
+
 			if err := r.SetQueryParam("end", qEnd); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.NetflowFilter != nil {
 
 		// query param netflowFilter
 		var qrNetflowFilter string
+
 		if o.NetflowFilter != nil {
 			qrNetflowFilter = *o.NetflowFilter
 		}
 		qNetflowFilter := qrNetflowFilter
 		if qNetflowFilter != "" {
+
 			if err := r.SetQueryParam("netflowFilter", qNetflowFilter); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Start != nil {
 
 		// query param start
 		var qrStart int64
+
 		if o.Start != nil {
 			qrStart = *o.Start
 		}
 		qStart := swag.FormatInt64(qrStart)
 		if qStart != "" {
+
 			if err := r.SetQueryParam("start", qStart); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if len(res) > 0 {
