@@ -73,7 +73,16 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 						dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
 					},
-					ChildGroups: nil,
+					ChildGroups: []*types.ResourceGroupTree{
+						{
+							DontCreate: doNotCreateDeletedGroup,
+							Options: []types.ResourceGroupOption{
+								dgBuilder.GroupName(constants.DeletedResourceGroup),
+								dgBuilder.DisableAlerting(true),
+								dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
+							},
+						},
+					},
 				})
 		}
 	}
@@ -112,17 +121,6 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 	}
 	nodes := enums.Nodes
 	doNotCreateDeletedGroup := conf.DeleteResources
-	deletedBuilder := dgbuilder.NewAppliesToBuilder().
-		Auto("clustername").Equals(conf.ClusterName).And().
-		OpenBracket()
-	for _, e := range enums.ALLResourceTypes {
-		if e == enums.Namespaces || !e.IsNamespaceScopedResource() {
-			continue
-		}
-		deletedBuilder = deletedBuilder.HasCategory(e.GetDeletedCategory()).Or()
-	}
-	deletedBuilder.TrimOrCloseBracket()
-
 	clusterProps, ok := conf.ResourceGroupProperties.Raw["cluster"]
 	if !ok {
 		clusterProps = []config.PropOpts{}
@@ -156,7 +154,16 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 				Options: []types.ResourceGroupOption{
 					dgBuilder.GroupName(constants.ClusterScopedGroupName),
 				},
-				ChildGroups: clusterscoped,
+				ChildGroups: append(clusterscoped,
+					&types.ResourceGroupTree{
+						DontCreate: doNotCreateDeletedGroup,
+						Options: []types.ResourceGroupOption{
+							dgBuilder.GroupName(constants.DeletedResourceGroup),
+							dgBuilder.DisableAlerting(true),
+							dgBuilder.AppliesTo(getDeleteBuilderForClusterScopedResources(conf.ClusterName)),
+						},
+						ChildGroups: nil,
+					}),
 			},
 			{
 				Options: []types.ResourceGroupOption{
@@ -193,7 +200,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 						Options: []types.ResourceGroupOption{
 							dgBuilder.GroupName(constants.DeletedResourceGroup),
 							dgBuilder.DisableAlerting(true),
-							dgBuilder.AppliesTo(deletedBuilder),
+							dgBuilder.AppliesTo(getDeleteBuilderForNamespaceScopedResources(conf.ClusterName)),
 						},
 					},
 				},
@@ -233,4 +240,32 @@ func checkAndUpdateClusterGroup(lctx *lmctx.LMContext, config *config.Config, lm
 		config.ClusterGroupID = constants.RootResourceGroupID
 	}
 	return nil
+}
+
+func getDeleteBuilderForNamespaceScopedResources(clusterName string) types.AppliesToBuilder {
+	deletedBuilderForNamespaceScoped := dgbuilder.NewAppliesToBuilder().
+		Auto("clustername").Equals(clusterName).And().
+		OpenBracket()
+	for _, e := range enums.ALLResourceTypes {
+		if e == enums.Namespaces || !e.IsNamespaceScopedResource() {
+			continue
+		}
+		deletedBuilderForNamespaceScoped = deletedBuilderForNamespaceScoped.HasCategory(e.GetDeletedCategory()).Or()
+	}
+	deletedBuilderForNamespaceScoped.TrimOrCloseBracket()
+	return deletedBuilderForNamespaceScoped
+}
+
+func getDeleteBuilderForClusterScopedResources(clusterName string) types.AppliesToBuilder {
+	deletedBuilderForClusterScoped := dgbuilder.NewAppliesToBuilder().
+		Auto("clustername").Equals(clusterName).And().
+		OpenBracket()
+	for _, e := range enums.ALLResourceTypes {
+		if e == enums.Namespaces || e.IsNamespaceScopedResource() {
+			continue
+		}
+		deletedBuilderForClusterScoped = deletedBuilderForClusterScoped.HasCategory(e.GetDeletedCategory()).Or()
+	}
+	deletedBuilderForClusterScoped.TrimOrCloseBracket()
+	return deletedBuilderForClusterScoped
 }
