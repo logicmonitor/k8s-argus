@@ -7,21 +7,23 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // SNMPAutoDiscoveryMethod s n m p auto discovery method
+//
 // swagger:model SNMPAutoDiscoveryMethod
 type SNMPAutoDiscoveryMethod struct {
 
 	// i l p
-	ILP []*ILP `json:"ILP,omitempty"`
+	ILP []*SNMPILP `json:"ILP,omitempty"`
 
 	// o ID
 	// Required: true
@@ -57,28 +59,12 @@ func (m *SNMPAutoDiscoveryMethod) Name() string {
 func (m *SNMPAutoDiscoveryMethod) SetName(val string) {
 }
 
-// ILP gets the i l p of this subtype
-
-// OID gets the o ID of this subtype
-
-// DescriptionOID gets the description o ID of this subtype
-
-// DiscoveryType gets the discovery type of this subtype
-
-// EnableSNMPILP gets the enable s n m p i l p of this subtype
-
-// ExternalResourceID gets the external resource ID of this subtype
-
-// ExternalResourceType gets the external resource type of this subtype
-
-// LookupOID gets the lookup o ID of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *SNMPAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	var data struct {
 
 		// i l p
-		ILP []*ILP `json:"ILP,omitempty"`
+		ILP []*SNMPILP `json:"ILP,omitempty"`
 
 		// o ID
 		// Required: true
@@ -133,19 +119,12 @@ func (m *SNMPAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.ILP = data.ILP
-
 	result.OID = data.OID
-
 	result.DescriptionOID = data.DescriptionOID
-
 	result.DiscoveryType = data.DiscoveryType
-
 	result.EnableSNMPILP = data.EnableSNMPILP
-
 	result.ExternalResourceID = data.ExternalResourceID
-
 	result.ExternalResourceType = data.ExternalResourceType
-
 	result.LookupOID = data.LookupOID
 
 	*m = result
@@ -160,7 +139,7 @@ func (m SNMPAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	b1, err = json.Marshal(struct {
 
 		// i l p
-		ILP []*ILP `json:"ILP,omitempty"`
+		ILP []*SNMPILP `json:"ILP,omitempty"`
 
 		// o ID
 		// Required: true
@@ -202,8 +181,7 @@ func (m SNMPAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		ExternalResourceType: m.ExternalResourceType,
 
 		LookupOID: m.LookupOID,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -212,8 +190,7 @@ func (m SNMPAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -248,6 +225,7 @@ func (m *SNMPAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateILP(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.ILP) { // not required
 		return nil
 	}
@@ -272,6 +250,7 @@ func (m *SNMPAutoDiscoveryMethod) validateILP(formats strfmt.Registry) error {
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateOID(formats strfmt.Registry) error {
+
 	if err := validate.Required("OID", "body", m.OID); err != nil {
 		return err
 	}
@@ -280,6 +259,7 @@ func (m *SNMPAutoDiscoveryMethod) validateOID(formats strfmt.Registry) error {
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateDiscoveryType(formats strfmt.Registry) error {
+
 	if err := validate.Required("discoveryType", "body", m.DiscoveryType); err != nil {
 		return err
 	}
@@ -288,8 +268,41 @@ func (m *SNMPAutoDiscoveryMethod) validateDiscoveryType(formats strfmt.Registry)
 }
 
 func (m *SNMPAutoDiscoveryMethod) validateLookupOID(formats strfmt.Registry) error {
+
 	if err := validate.Required("lookupOID", "body", m.LookupOID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this s n m p auto discovery method based on the context it is used
+func (m *SNMPAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateILP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SNMPAutoDiscoveryMethod) contextValidateILP(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ILP); i++ {
+
+		if m.ILP[i] != nil {
+			if err := m.ILP[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ILP" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

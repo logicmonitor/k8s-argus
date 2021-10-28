@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // TableWidgetForecastConfiguration table widget forecast configuration
+//
 // swagger:model TableWidgetForecastConfiguration
 type TableWidgetForecastConfiguration struct {
 
@@ -33,6 +38,68 @@ type TableWidgetForecastConfiguration struct {
 
 // Validate validates this table widget forecast configuration
 func (m *TableWidgetForecastConfiguration) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this table widget forecast configuration based on the context it is used
+func (m *TableWidgetForecastConfiguration) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAlgorithm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConfidence(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSeverity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimeRange(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TableWidgetForecastConfiguration) contextValidateAlgorithm(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "algorithm", "body", string(m.Algorithm)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetForecastConfiguration) contextValidateConfidence(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "confidence", "body", int32(m.Confidence)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetForecastConfiguration) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "severity", "body", string(m.Severity)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetForecastConfiguration) contextValidateTimeRange(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "timeRange", "body", string(m.TimeRange)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

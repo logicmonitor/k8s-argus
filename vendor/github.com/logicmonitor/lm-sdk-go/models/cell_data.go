@@ -6,14 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // CellData cell data
+//
 // swagger:model CellData
 type CellData struct {
 
@@ -77,6 +80,103 @@ func (m *CellData) validateDaysUntilAlertList(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cell data based on the context it is used
+func (m *CellData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAlertStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDaysUntilAlertList(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateForecastDay(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CellData) contextValidateAlertStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertStatus", "body", string(m.AlertStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CellData) contextValidateDaysUntilAlertList(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.DaysUntilAlertList); i++ {
+
+		if m.DaysUntilAlertList[i] != nil {
+			if err := m.DaysUntilAlertList[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("daysUntilAlertList" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *CellData) contextValidateForecastDay(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "forecastDay", "body", int32(m.ForecastDay)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CellData) contextValidateInstanceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceId", "body", int32(m.InstanceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CellData) contextValidateInstanceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceName", "body", string(m.InstanceName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *CellData) contextValidateValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "value", "body", float64(m.Value)); err != nil {
+		return err
 	}
 
 	return nil

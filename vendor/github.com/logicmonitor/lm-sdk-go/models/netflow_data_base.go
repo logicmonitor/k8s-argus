@@ -7,25 +7,31 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // NetflowDataBase netflow data base
+//
 // swagger:discriminator NetflowDataBase dataType
 type NetflowDataBase interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// data type
 	// Read Only: true
 	DataType() string
 	SetDataType(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type netflowDataBase struct {
@@ -93,40 +99,58 @@ func unmarshalNetflowDataBase(data []byte, consumer runtime.Consumer) (NetflowDa
 			return nil, err
 		}
 		return &result, nil
-
 	case "application":
 		var result NetflowApplication
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "bandwidth":
 		var result NetflowBandwidth
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "groupFlowRecord":
 		var result GroupNetFlowRecord
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "qosReportTableRow":
 		var result NetflowQoSReportTableRow
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid dataType value: %q", getType.DataType)
 }
 
 // Validate validates this netflow data base
 func (m *netflowDataBase) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this netflow data base based on the context it is used
+func (m *netflowDataBase) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDataType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *netflowDataBase) contextValidateDataType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataType", "body", string(m.DataType())); err != nil {
+		return err
+	}
+
 	return nil
 }

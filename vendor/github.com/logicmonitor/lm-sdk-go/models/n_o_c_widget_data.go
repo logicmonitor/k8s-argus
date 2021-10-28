@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // NOCWidgetData n o c widget data
+//
 // swagger:model NOCWidgetData
 type NOCWidgetData struct {
 	titleField string
@@ -53,12 +55,6 @@ func (m *NOCWidgetData) Type() string {
 // SetType sets the type of this subtype
 func (m *NOCWidgetData) SetType(val string) {
 }
-
-// AckChecked gets the ack checked of this subtype
-
-// Items gets the items of this subtype
-
-// SDTChecked gets the sdt checked of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NOCWidgetData) UnmarshalJSON(raw []byte) error {
@@ -110,9 +106,7 @@ func (m *NOCWidgetData) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.AckChecked = data.AckChecked
-
 	result.Items = data.Items
-
 	result.SDTChecked = data.SDTChecked
 
 	*m = result
@@ -145,8 +139,7 @@ func (m NOCWidgetData) MarshalJSON() ([]byte, error) {
 		Items: m.Items,
 
 		SDTChecked: m.SDTChecked,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +152,7 @@ func (m NOCWidgetData) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +175,7 @@ func (m *NOCWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NOCWidgetData) validateItems(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Items) { // not required
 		return nil
 	}
@@ -205,6 +198,77 @@ func (m *NOCWidgetData) validateItems(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this n o c widget data based on the context it is used
+func (m *NOCWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAckChecked(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateItems(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSDTChecked(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NOCWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NOCWidgetData) contextValidateAckChecked(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackChecked", "body", m.AckChecked); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NOCWidgetData) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "items", "body", []*ItemData(m.Items)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Items); i++ {
+
+		if m.Items[i] != nil {
+			if err := m.Items[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("items" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *NOCWidgetData) contextValidateSDTChecked(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sdtChecked", "body", m.SDTChecked); err != nil {
+		return err
 	}
 
 	return nil

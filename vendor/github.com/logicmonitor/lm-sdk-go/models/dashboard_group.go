@@ -6,15 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DashboardGroup dashboard group
+//
 // swagger:model DashboardGroup
 type DashboardGroup struct {
 
@@ -23,6 +25,7 @@ type DashboardGroup struct {
 	Dashboards []*DashboardData `json:"dashboards,omitempty"`
 
 	// This is a description of the dashboard group
+	// Example: Servers in LA DataCenter
 	Description string `json:"description,omitempty"`
 
 	// The full path of the dashboard group
@@ -34,6 +37,7 @@ type DashboardGroup struct {
 	ID int32 `json:"id,omitempty"`
 
 	// The name of the dashboard group
+	// Example: LogicMonitor Dashboards
 	// Required: true
 	Name *string `json:"name"`
 
@@ -50,6 +54,7 @@ type DashboardGroup struct {
 	NumOfDirectSubGroups int64 `json:"numOfDirectSubGroups,omitempty"`
 
 	// The Id of the parent dashboard group
+	// Example: 1
 	ParentID int32 `json:"parentId,omitempty"`
 
 	// The template which is used for import dashboard group
@@ -110,6 +115,7 @@ func (m *DashboardGroup) validateDashboards(formats strfmt.Registry) error {
 }
 
 func (m *DashboardGroup) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -129,6 +135,142 @@ func (m *DashboardGroup) validateWidgetTokens(formats strfmt.Registry) error {
 
 		if m.WidgetTokens[i] != nil {
 			if err := m.WidgetTokens[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("widgetTokens" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dashboard group based on the context it is used
+func (m *DashboardGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDashboards(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfDashboards(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfDirectDashboards(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfDirectSubGroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWidgetTokens(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateDashboards(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dashboards", "body", []*DashboardData(m.Dashboards)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Dashboards); i++ {
+
+		if m.Dashboards[i] != nil {
+			if err := m.Dashboards[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("dashboards" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "fullPath", "body", string(m.FullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateNumOfDashboards(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfDashboards", "body", int64(m.NumOfDashboards)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateNumOfDirectDashboards(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfDirectDashboards", "body", int64(m.NumOfDirectDashboards)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateNumOfDirectSubGroups(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfDirectSubGroups", "body", int64(m.NumOfDirectSubGroups)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardGroup) contextValidateWidgetTokens(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.WidgetTokens); i++ {
+
+		if m.WidgetTokens[i] != nil {
+			if err := m.WidgetTokens[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("widgetTokens" + "." + strconv.Itoa(i))
 				}

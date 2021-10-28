@@ -6,22 +6,26 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Dashboard dashboard
+//
 // swagger:model Dashboard
 type Dashboard struct {
 
 	// The description of the dashboard
+	// Example: Windows Servers Performance
 	Description string `json:"description,omitempty"`
 
 	// Full name of the dashboard, including group path
+	// Example: a new group//Collector Health/
 	// Read Only: true
 	FullName string `json:"fullName,omitempty"`
 
@@ -30,9 +34,11 @@ type Dashboard struct {
 	GroupFullPath string `json:"groupFullPath,omitempty"`
 
 	// The id of the group the dashboard belongs to
+	// Example: 1
 	GroupID int32 `json:"groupId,omitempty"`
 
 	// The name of group where created dashboard will reside
+	// Example: Server Dashboard
 	GroupName string `json:"groupName,omitempty"`
 
 	// The Id of the dashboard
@@ -40,6 +46,7 @@ type Dashboard struct {
 	ID int32 `json:"id,omitempty"`
 
 	// The name of the dashboard
+	// Example: Default Device Group
 	// Required: true
 	Name *string `json:"name"`
 
@@ -47,6 +54,7 @@ type Dashboard struct {
 	Owner string `json:"owner,omitempty"`
 
 	// Whether or not the dashboard is sharable. This value will always be true unless the dashboard is a private dashboard
+	// Example: true
 	Sharable bool `json:"sharable,omitempty"`
 
 	// The template which is used for import dashboard
@@ -57,6 +65,7 @@ type Dashboard struct {
 	UserPermission string `json:"userPermission,omitempty"`
 
 	// If useDynamicWidget=true, this field must at least contain tokens defaultDeviceGroup and defaultServiceGroup
+	// Example: \"widgetTokens\":[{\"name\":\"defaultDeviceGroup\",\"value\":\"*\"},{\"name\":\"defaultServiceGroup\",\"value\":\"*\"}]
 	WidgetTokens []*WidgetToken `json:"widgetTokens,omitempty"`
 
 	// Information about widget configuration used by the UI
@@ -82,6 +91,7 @@ func (m *Dashboard) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Dashboard) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -101,6 +111,90 @@ func (m *Dashboard) validateWidgetTokens(formats strfmt.Registry) error {
 
 		if m.WidgetTokens[i] != nil {
 			if err := m.WidgetTokens[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("widgetTokens" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dashboard based on the context it is used
+func (m *Dashboard) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateFullName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWidgetTokens(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Dashboard) contextValidateFullName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "fullName", "body", string(m.FullName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Dashboard) contextValidateGroupFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupFullPath", "body", string(m.GroupFullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Dashboard) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Dashboard) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Dashboard) contextValidateWidgetTokens(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.WidgetTokens); i++ {
+
+		if m.WidgetTokens[i] != nil {
+			if err := m.WidgetTokens[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("widgetTokens" + "." + strconv.Itoa(i))
 				}

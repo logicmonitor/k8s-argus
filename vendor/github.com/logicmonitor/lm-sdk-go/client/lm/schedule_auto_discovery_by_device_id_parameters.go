@@ -6,73 +6,112 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewScheduleAutoDiscoveryByDeviceIDParams creates a new ScheduleAutoDiscoveryByDeviceIDParams object
-// with the default values initialized.
+// NewScheduleAutoDiscoveryByDeviceIDParams creates a new ScheduleAutoDiscoveryByDeviceIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewScheduleAutoDiscoveryByDeviceIDParams() *ScheduleAutoDiscoveryByDeviceIDParams {
-	var ()
 	return &ScheduleAutoDiscoveryByDeviceIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewScheduleAutoDiscoveryByDeviceIDParamsWithTimeout creates a new ScheduleAutoDiscoveryByDeviceIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewScheduleAutoDiscoveryByDeviceIDParamsWithTimeout(timeout time.Duration) *ScheduleAutoDiscoveryByDeviceIDParams {
-	var ()
 	return &ScheduleAutoDiscoveryByDeviceIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewScheduleAutoDiscoveryByDeviceIDParamsWithContext creates a new ScheduleAutoDiscoveryByDeviceIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewScheduleAutoDiscoveryByDeviceIDParamsWithContext(ctx context.Context) *ScheduleAutoDiscoveryByDeviceIDParams {
-	var ()
 	return &ScheduleAutoDiscoveryByDeviceIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewScheduleAutoDiscoveryByDeviceIDParamsWithHTTPClient creates a new ScheduleAutoDiscoveryByDeviceIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewScheduleAutoDiscoveryByDeviceIDParamsWithHTTPClient(client *http.Client) *ScheduleAutoDiscoveryByDeviceIDParams {
-	var ()
 	return &ScheduleAutoDiscoveryByDeviceIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*ScheduleAutoDiscoveryByDeviceIDParams contains all the parameters to send to the API endpoint
-for the schedule auto discovery by device Id operation typically these are written to a http.Request
+/* ScheduleAutoDiscoveryByDeviceIDParams contains all the parameters to send to the API endpoint
+   for the schedule auto discovery by device Id operation.
+
+   Typically these are written to a http.Request.
 */
 type ScheduleAutoDiscoveryByDeviceIDParams struct {
 
-	/*End*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// End.
+	//
+	// Format: int64
 	End *int64
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
-	/*NetflowFilter*/
+
+	// NetflowFilter.
 	NetflowFilter *string
-	/*Start*/
+
+	// Start.
+	//
+	// Format: int64
 	Start *int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the schedule auto discovery by device Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *ScheduleAutoDiscoveryByDeviceIDParams) WithDefaults() *ScheduleAutoDiscoveryByDeviceIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the schedule auto discovery by device Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *ScheduleAutoDiscoveryByDeviceIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := ScheduleAutoDiscoveryByDeviceIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the schedule auto discovery by device Id params
@@ -106,6 +145,17 @@ func (o *ScheduleAutoDiscoveryByDeviceIDParams) WithHTTPClient(client *http.Clie
 // SetHTTPClient adds the HTTPClient to the schedule auto discovery by device Id params
 func (o *ScheduleAutoDiscoveryByDeviceIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the schedule auto discovery by device Id params
+func (o *ScheduleAutoDiscoveryByDeviceIDParams) WithUserAgent(userAgent *string) *ScheduleAutoDiscoveryByDeviceIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the schedule auto discovery by device Id params
+func (o *ScheduleAutoDiscoveryByDeviceIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithEnd adds the end to the schedule auto discovery by device Id params
@@ -154,25 +204,35 @@ func (o *ScheduleAutoDiscoveryByDeviceIDParams) SetStart(start *int64) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *ScheduleAutoDiscoveryByDeviceIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.End != nil {
 
 		// query param end
 		var qrEnd int64
+
 		if o.End != nil {
 			qrEnd = *o.End
 		}
 		qEnd := swag.FormatInt64(qrEnd)
 		if qEnd != "" {
+
 			if err := r.SetQueryParam("end", qEnd); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param id
@@ -184,32 +244,34 @@ func (o *ScheduleAutoDiscoveryByDeviceIDParams) WriteToRequest(r runtime.ClientR
 
 		// query param netflowFilter
 		var qrNetflowFilter string
+
 		if o.NetflowFilter != nil {
 			qrNetflowFilter = *o.NetflowFilter
 		}
 		qNetflowFilter := qrNetflowFilter
 		if qNetflowFilter != "" {
+
 			if err := r.SetQueryParam("netflowFilter", qNetflowFilter); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Start != nil {
 
 		// query param start
 		var qrStart int64
+
 		if o.Start != nil {
 			qrStart = *o.Start
 		}
 		qStart := swag.FormatInt64(qrStart)
 		if qStart != "" {
+
 			if err := r.SetQueryParam("start", qStart); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if len(res) > 0 {

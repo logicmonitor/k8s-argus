@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DNSCollectorAttribute DNS collector attribute
+//
 // swagger:model DNSCollectorAttribute
 type DNSCollectorAttribute struct {
 	DNSCollectorAttributeAllOf1
@@ -61,7 +63,6 @@ func (m *DNSCollectorAttribute) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.DNSCollectorAttributeAllOf1 = data.DNSCollectorAttributeAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m DNSCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		DNSCollectorAttributeAllOf1: m.DNSCollectorAttributeAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m DNSCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m DNSCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this DNS collector attribute
 func (m *DNSCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with DNSCollectorAttributeAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this DNS collector attribute based on the context it is used
+func (m *DNSCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with DNSCollectorAttributeAllOf1
@@ -128,5 +139,6 @@ func (m *DNSCollectorAttribute) UnmarshalBinary(b []byte) error {
 }
 
 // DNSCollectorAttributeAllOf1 DNS collector attribute all of1
+//
 // swagger:model DNSCollectorAttributeAllOf1
 type DNSCollectorAttributeAllOf1 interface{}

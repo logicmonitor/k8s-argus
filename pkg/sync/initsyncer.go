@@ -74,26 +74,7 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	log.Tracef("Current cache: %v", list)
 
 	log.Infof("Deleting duplicate resources if any")
-	for _, entry := range list {
-		log.Tracef("Iterate resource cache entry : %v ", entry)
-		cacheResourceName := entry.K
-		cacheResourceMeta := entry.V
-
-		if ignoreSync[cacheResourceName.Resource] || cacheResourceName.Resource == enums.Namespaces {
-			continue
-		}
-
-		if strings.HasSuffix(cacheResourceMeta.Container, "-dupl") {
-			childLctx := lmlog.LMContextWithFields(lctx, logrus.Fields{
-				"name":  cacheResourceName.Resource.FQName(cacheResourceName.Name),
-				"type":  cacheResourceName.Resource.Singular(),
-				"ns":    cacheResourceMeta.Container,
-				"event": "sync",
-			})
-			childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
-			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
-		}
-	}
+	i.removeDuplicateResources(lctx, list, ignoreSync)
 
 	for _, entry := range list {
 		log.Tracef("Iterate resource cache entry : %v ", entry)
@@ -111,7 +92,7 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		})
 		childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
 
-		if cacheResourceName.Resource == enums.Namespaces {
+		if cacheResourceName.Resource == enums.Namespaces && cacheResourceName.Name != constants.DeletedResourceGroup {
 			if err := i.deleteNamespace(allK8SResourcesStore, childLctx, cacheResourceName, cacheResourceMeta, log, conf); err != nil && !errors.Is(err, aerrors.ErrResourceGroupIsNotEmpty) &&
 				!errors.Is(err, aerrors.ErrResourceGroupParentIsNotValid) &&
 				!strings.Contains(err.Error(), util.ClusterGroupName(conf.ClusterName)) {
@@ -134,6 +115,30 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	err3 := i.ResourceManager.GetResourceCache().Save(lctx)
 	if err3 != nil {
 		log.Errorf("Failed to flush resource cache after resync: %s", err3)
+	}
+}
+
+func (i *InitSyncer) removeDuplicateResources(lctx *lmctx.LMContext, list []types.IterItem, ignoreSync map[enums.ResourceType]bool) {
+	log := lmlog.Logger(lctx)
+	for _, entry := range list {
+		log.Tracef("Iterate resource cache entry : %v ", entry)
+		cacheResourceName := entry.K
+		cacheResourceMeta := entry.V
+
+		if ignoreSync[cacheResourceName.Resource] || cacheResourceName.Resource == enums.Namespaces {
+			continue
+		}
+
+		if strings.HasSuffix(cacheResourceMeta.Container, "-dupl") {
+			childLctx := lmlog.LMContextWithFields(lctx, logrus.Fields{
+				"name":  cacheResourceName.Resource.FQName(cacheResourceName.Name),
+				"type":  cacheResourceName.Resource.Singular(),
+				"ns":    cacheResourceMeta.Container,
+				"event": "sync",
+			})
+			childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
+			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
+		}
 	}
 }
 

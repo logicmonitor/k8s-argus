@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ESXAutoDiscoveryMethod e s x auto discovery method
+//
 // swagger:model ESXAutoDiscoveryMethod
 type ESXAutoDiscoveryMethod struct {
 
@@ -32,8 +34,6 @@ func (m *ESXAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *ESXAutoDiscoveryMethod) SetName(val string) {
 }
-
-// Entity gets the entity of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *ESXAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -90,8 +90,7 @@ func (m ESXAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Entity: m.Entity,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +99,7 @@ func (m ESXAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +122,21 @@ func (m *ESXAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ESXAutoDiscoveryMethod) validateEntity(formats strfmt.Registry) error {
+
 	if err := validate.Required("entity", "body", m.Entity); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this e s x auto discovery method based on the context it is used
+func (m *ESXAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AzureBillingCollectorAttribute azure billing collector attribute
+//
 // swagger:model AzureBillingCollectorAttribute
 type AzureBillingCollectorAttribute struct {
 	AzureBillingCollectorAttributeAllOf1
@@ -61,7 +63,6 @@ func (m *AzureBillingCollectorAttribute) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AzureBillingCollectorAttributeAllOf1 = data.AzureBillingCollectorAttributeAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AzureBillingCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		AzureBillingCollectorAttributeAllOf1: m.AzureBillingCollectorAttributeAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AzureBillingCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AzureBillingCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this azure billing collector attribute
 func (m *AzureBillingCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AzureBillingCollectorAttributeAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this azure billing collector attribute based on the context it is used
+func (m *AzureBillingCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AzureBillingCollectorAttributeAllOf1
@@ -128,5 +139,6 @@ func (m *AzureBillingCollectorAttribute) UnmarshalBinary(b []byte) error {
 }
 
 // AzureBillingCollectorAttributeAllOf1 azure billing collector attribute all of1
+//
 // swagger:model AzureBillingCollectorAttributeAllOf1
 type AzureBillingCollectorAttributeAllOf1 interface{}

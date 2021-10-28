@@ -6,68 +6,99 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
-	"golang.org/x/net/context"
+	"github.com/go-openapi/strfmt"
 )
 
-// NewGetSDTByIDParams creates a new GetSDTByIDParams object
-// with the default values initialized.
+// NewGetSDTByIDParams creates a new GetSDTByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetSDTByIDParams() *GetSDTByIDParams {
-	var ()
 	return &GetSDTByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetSDTByIDParamsWithTimeout creates a new GetSDTByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetSDTByIDParamsWithTimeout(timeout time.Duration) *GetSDTByIDParams {
-	var ()
 	return &GetSDTByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetSDTByIDParamsWithContext creates a new GetSDTByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetSDTByIDParamsWithContext(ctx context.Context) *GetSDTByIDParams {
-	var ()
 	return &GetSDTByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetSDTByIDParamsWithHTTPClient creates a new GetSDTByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetSDTByIDParamsWithHTTPClient(client *http.Client) *GetSDTByIDParams {
-	var ()
 	return &GetSDTByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetSDTByIDParams contains all the parameters to send to the API endpoint
-for the get SDT by Id operation typically these are written to a http.Request
+/* GetSDTByIDParams contains all the parameters to send to the API endpoint
+   for the get SDT by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type GetSDTByIDParams struct {
 
-	/*Fields*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Fields.
 	Fields *string
-	/*ID*/
+
+	// ID.
 	ID string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get SDT by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetSDTByIDParams) WithDefaults() *GetSDTByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get SDT by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetSDTByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := GetSDTByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the get SDT by Id params
@@ -103,6 +134,17 @@ func (o *GetSDTByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the get SDT by Id params
+func (o *GetSDTByIDParams) WithUserAgent(userAgent *string) *GetSDTByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the get SDT by Id params
+func (o *GetSDTByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithFields adds the fields to the get SDT by Id params
 func (o *GetSDTByIDParams) WithFields(fields *string) *GetSDTByIDParams {
 	o.SetFields(fields)
@@ -127,25 +169,35 @@ func (o *GetSDTByIDParams) SetID(id string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetSDTByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.Fields != nil {
 
 		// query param fields
 		var qrFields string
+
 		if o.Fields != nil {
 			qrFields = *o.Fields
 		}
 		qFields := qrFields
 		if qFields != "" {
+
 			if err := r.SetQueryParam("fields", qFields); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param id

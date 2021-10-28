@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // IPMIAutoDiscoveryMethod IP m i auto discovery method
+//
 // swagger:model IPMIAutoDiscoveryMethod
 type IPMIAutoDiscoveryMethod struct {
 
@@ -30,8 +32,6 @@ func (m *IPMIAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *IPMIAutoDiscoveryMethod) SetName(val string) {
 }
-
-// Method gets the method of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *IPMIAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -86,8 +86,7 @@ func (m IPMIAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Method: m.Method,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,7 @@ func (m IPMIAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +105,16 @@ func (m IPMIAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this IP m i auto discovery method
 func (m *IPMIAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this IP m i auto discovery method based on the context it is used
+func (m *IPMIAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

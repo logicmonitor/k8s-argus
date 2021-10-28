@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // MemcachedCollectorAttribute memcached collector attribute
+//
 // swagger:model MemcachedCollectorAttribute
 type MemcachedCollectorAttribute struct {
 
@@ -33,10 +35,6 @@ func (m *MemcachedCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *MemcachedCollectorAttribute) SetName(val string) {
 }
-
-// IP gets the ip of this subtype
-
-// Port gets the port of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *MemcachedCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -77,7 +75,6 @@ func (m *MemcachedCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.IP = data.IP
-
 	result.Port = data.Port
 
 	*m = result
@@ -101,8 +98,7 @@ func (m MemcachedCollectorAttribute) MarshalJSON() ([]byte, error) {
 		IP: m.IP,
 
 		Port: m.Port,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +107,7 @@ func (m MemcachedCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +117,16 @@ func (m MemcachedCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this memcached collector attribute
 func (m *MemcachedCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this memcached collector attribute based on the context it is used
+func (m *MemcachedCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

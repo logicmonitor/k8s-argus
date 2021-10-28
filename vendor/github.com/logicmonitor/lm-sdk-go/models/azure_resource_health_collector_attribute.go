@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AzureResourceHealthCollectorAttribute azure resource health collector attribute
+//
 // swagger:model AzureResourceHealthCollectorAttribute
 type AzureResourceHealthCollectorAttribute struct {
 
@@ -30,8 +32,6 @@ func (m *AzureResourceHealthCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *AzureResourceHealthCollectorAttribute) SetName(val string) {
 }
-
-// Period gets the period of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AzureResourceHealthCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -86,8 +86,7 @@ func (m AzureResourceHealthCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Period: m.Period,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,7 @@ func (m AzureResourceHealthCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +105,16 @@ func (m AzureResourceHealthCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this azure resource health collector attribute
 func (m *AzureResourceHealthCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this azure resource health collector attribute based on the context it is used
+func (m *AzureResourceHealthCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

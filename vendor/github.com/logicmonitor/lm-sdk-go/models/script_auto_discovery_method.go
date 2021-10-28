@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ScriptAutoDiscoveryMethod script auto discovery method
+//
 // swagger:model ScriptAutoDiscoveryMethod
 type ScriptAutoDiscoveryMethod struct {
 
@@ -47,18 +49,6 @@ func (m *ScriptAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *ScriptAutoDiscoveryMethod) SetName(val string) {
 }
-
-// GroovyScript gets the groovy script of this subtype
-
-// LinuxCmdline gets the linux cmdline of this subtype
-
-// LinuxScript gets the linux script of this subtype
-
-// Type gets the type of this subtype
-
-// WinCmdline gets the win cmdline of this subtype
-
-// WinScript gets the win script of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *ScriptAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -112,15 +102,10 @@ func (m *ScriptAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.GroovyScript = data.GroovyScript
-
 	result.LinuxCmdline = data.LinuxCmdline
-
 	result.LinuxScript = data.LinuxScript
-
 	result.Type = data.Type
-
 	result.WinCmdline = data.WinCmdline
-
 	result.WinScript = data.WinScript
 
 	*m = result
@@ -165,8 +150,7 @@ func (m ScriptAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		WinCmdline: m.WinCmdline,
 
 		WinScript: m.WinScript,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -175,8 +159,7 @@ func (m ScriptAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -199,10 +182,21 @@ func (m *ScriptAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ScriptAutoDiscoveryMethod) validateType(formats strfmt.Registry) error {
+
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this script auto discovery method based on the context it is used
+func (m *ScriptAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

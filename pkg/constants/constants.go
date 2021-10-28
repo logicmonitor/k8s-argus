@@ -48,6 +48,8 @@ const (
 	NodeResourceGroupName = "Nodes"
 	// NamespacesGroupName is the namespaces resource group name in the cluster resource group.
 	NamespacesGroupName = "Namespaces"
+	// ClusterScopedGroupName is the resource group name for Cluster Scoped Resources in the cluster resource group.
+	ClusterScopedGroupName = "ClusterScoped"
 )
 
 const (
@@ -90,6 +92,16 @@ const (
 	K8sAPIVersionAppsV1 = "apps/v1"
 	// K8sAutoscalingV1 is the version 'autoscaling/v1' of k8s api
 	K8sAutoscalingV1 = "autoscaling/v1"
+	// K8sAPIVersionBatchV1 is the version 'batch/v1' of k8s api
+	K8sAPIVersionBatchV1 = "batch/v1"
+	// K8sAPIVersionBatchV1Beta1 is the version 'batch/v1beta1' of k8s api
+	K8sAPIVersionBatchV1Beta1 = "batch/v1beta1"
+	// K8sAPIVersionExtensionsV1Beta1 is the version 'extensions/v1beta1' of k8s api
+	K8sAPIVersionExtensionsV1Beta1 = "extensions/v1beta1"
+	// K8sAPIVersionNetworkingV1 is the version 'networking/v1' of k8s api
+	K8sAPIVersionNetworkingV1 = "networking/v1"
+	// K8sAPIVersionNetworkingV1Beta1 is the version 'networking/v1beta1' of k8s api
+	K8sAPIVersionNetworkingV1Beta1 = "networking/v1beta1"
 )
 
 const (

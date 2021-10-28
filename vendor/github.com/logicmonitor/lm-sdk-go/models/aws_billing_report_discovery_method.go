@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AwsBillingReportDiscoveryMethod aws billing report discovery method
+//
 // swagger:model AwsBillingReportDiscoveryMethod
 type AwsBillingReportDiscoveryMethod struct {
 
@@ -32,8 +34,6 @@ func (m *AwsBillingReportDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *AwsBillingReportDiscoveryMethod) SetName(val string) {
 }
-
-// AwsBillingReportAttribute gets the aws billing report attribute of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AwsBillingReportDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -90,8 +90,7 @@ func (m AwsBillingReportDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		AwsBillingReportAttribute: m.AwsBillingReportAttribute,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +99,7 @@ func (m AwsBillingReportDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -124,10 +122,21 @@ func (m *AwsBillingReportDiscoveryMethod) Validate(formats strfmt.Registry) erro
 }
 
 func (m *AwsBillingReportDiscoveryMethod) validateAwsBillingReportAttribute(formats strfmt.Registry) error {
+
 	if err := validate.Required("awsBillingReportAttribute", "body", m.AwsBillingReportAttribute); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this aws billing report discovery method based on the context it is used
+func (m *AwsBillingReportDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

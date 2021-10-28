@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // WebResource web resource
+//
 // swagger:model WebResource
 type WebResource struct {
 
@@ -44,6 +47,7 @@ func (m *WebResource) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebResource) validateURL(formats strfmt.Registry) error {
+
 	if err := validate.Required("URL", "body", m.URL); err != nil {
 		return err
 	}
@@ -52,10 +56,16 @@ func (m *WebResource) validateURL(formats strfmt.Registry) error {
 }
 
 func (m *WebResource) validateType(formats strfmt.Registry) error {
+
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this web resource based on context it is used
+func (m *WebResource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

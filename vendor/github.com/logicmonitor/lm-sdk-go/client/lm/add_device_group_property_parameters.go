@@ -6,73 +6,107 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewAddDeviceGroupPropertyParams creates a new AddDeviceGroupPropertyParams object
-// with the default values initialized.
+// NewAddDeviceGroupPropertyParams creates a new AddDeviceGroupPropertyParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewAddDeviceGroupPropertyParams() *AddDeviceGroupPropertyParams {
-	var ()
 	return &AddDeviceGroupPropertyParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewAddDeviceGroupPropertyParamsWithTimeout creates a new AddDeviceGroupPropertyParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewAddDeviceGroupPropertyParamsWithTimeout(timeout time.Duration) *AddDeviceGroupPropertyParams {
-	var ()
 	return &AddDeviceGroupPropertyParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewAddDeviceGroupPropertyParamsWithContext creates a new AddDeviceGroupPropertyParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewAddDeviceGroupPropertyParamsWithContext(ctx context.Context) *AddDeviceGroupPropertyParams {
-	var ()
 	return &AddDeviceGroupPropertyParams{
-
 		Context: ctx,
 	}
 }
 
 // NewAddDeviceGroupPropertyParamsWithHTTPClient creates a new AddDeviceGroupPropertyParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewAddDeviceGroupPropertyParamsWithHTTPClient(client *http.Client) *AddDeviceGroupPropertyParams {
-	var ()
 	return &AddDeviceGroupPropertyParams{
 		HTTPClient: client,
 	}
 }
 
-/*AddDeviceGroupPropertyParams contains all the parameters to send to the API endpoint
-for the add device group property operation typically these are written to a http.Request
+/* AddDeviceGroupPropertyParams contains all the parameters to send to the API endpoint
+   for the add device group property operation.
+
+   Typically these are written to a http.Request.
 */
 type AddDeviceGroupPropertyParams struct {
 
-	/*Body*/
-	Body *models.EntityProperty
-	/*Gid
-	  group ID
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
 
+	// Body.
+	Body *models.EntityProperty
+
+	/* Gid.
+
+	   group ID
+
+	   Format: int32
 	*/
 	Gid int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the add device group property params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *AddDeviceGroupPropertyParams) WithDefaults() *AddDeviceGroupPropertyParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the add device group property params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *AddDeviceGroupPropertyParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := AddDeviceGroupPropertyParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the add device group property params
@@ -108,6 +142,17 @@ func (o *AddDeviceGroupPropertyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the add device group property params
+func (o *AddDeviceGroupPropertyParams) WithUserAgent(userAgent *string) *AddDeviceGroupPropertyParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the add device group property params
+func (o *AddDeviceGroupPropertyParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithBody adds the body to the add device group property params
 func (o *AddDeviceGroupPropertyParams) WithBody(body *models.EntityProperty) *AddDeviceGroupPropertyParams {
 	o.SetBody(body)
@@ -132,11 +177,19 @@ func (o *AddDeviceGroupPropertyParams) SetGid(gid int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *AddDeviceGroupPropertyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

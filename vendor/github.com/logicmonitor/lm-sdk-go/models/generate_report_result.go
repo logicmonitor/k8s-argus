@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // GenerateReportResult generate report result
+//
 // swagger:model GenerateReportResult
 type GenerateReportResult struct {
 
@@ -48,6 +51,7 @@ func (m *GenerateReportResult) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GenerateReportResult) validateReportID(formats strfmt.Registry) error {
+
 	if err := validate.Required("reportId", "body", m.ReportID); err != nil {
 		return err
 	}
@@ -56,7 +60,31 @@ func (m *GenerateReportResult) validateReportID(formats strfmt.Registry) error {
 }
 
 func (m *GenerateReportResult) validateTaskID(formats strfmt.Registry) error {
+
 	if err := validate.Required("taskId", "body", m.TaskID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this generate report result based on the context it is used
+func (m *GenerateReportResult) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateResulturl(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GenerateReportResult) contextValidateResulturl(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "resulturl", "body", string(m.Resulturl)); err != nil {
 		return err
 	}
 

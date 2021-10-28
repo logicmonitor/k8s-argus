@@ -7,16 +7,19 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // WebCheckStep web check step
+//
 // swagger:model WebCheckStep
 type WebCheckStep struct {
 
@@ -27,9 +30,11 @@ type WebCheckStep struct {
 	HTTPHeaders string `json:"HTTPHeaders,omitempty"`
 
 	// HTTP method
+	// Example: GET
 	HTTPMethod string `json:"HTTPMethod,omitempty"`
 
 	// HTTP version
+	// Example: 1.1
 	HTTPVersion string `json:"HTTPVersion,omitempty"`
 
 	authField Authentication
@@ -38,15 +43,18 @@ type WebCheckStep struct {
 	Description string `json:"description,omitempty"`
 
 	// enable
-	Enable bool `json:"enable,omitempty"`
+	Enable interface{} `json:"enable,omitempty"`
 
 	// follow redirection
-	FollowRedirection bool `json:"followRedirection,omitempty"`
+	// Example: true
+	FollowRedirection interface{} `json:"followRedirection,omitempty"`
 
 	// fullpage load
+	// Example: false
 	FullpageLoad bool `json:"fullpageLoad,omitempty"`
 
 	// invert match
+	// Example: false
 	InvertMatch bool `json:"invertMatch,omitempty"`
 
 	// keyword
@@ -56,6 +64,7 @@ type WebCheckStep struct {
 	Label string `json:"label,omitempty"`
 
 	// match type
+	// Example: plain
 	MatchType string `json:"matchType,omitempty"`
 
 	// name
@@ -65,6 +74,7 @@ type WebCheckStep struct {
 	Path string `json:"path,omitempty"`
 
 	// post data edit type
+	// Example: raw
 	PostDataEditType string `json:"postDataEditType,omitempty"`
 
 	// req script
@@ -74,6 +84,7 @@ type WebCheckStep struct {
 	ReqType string `json:"reqType,omitempty"`
 
 	// require auth
+	// Example: false
 	RequireAuth bool `json:"requireAuth,omitempty"`
 
 	// resp script
@@ -92,14 +103,17 @@ type WebCheckStep struct {
 	Timeout int32 `json:"timeout,omitempty"`
 
 	// type
+	// Example: config
 	// Read Only: true
 	Type string `json:"type,omitempty"`
 
 	// url
+	// Example: /
 	URL string `json:"url,omitempty"`
 
 	// use default root
-	UseDefaultRoot bool `json:"useDefaultRoot,omitempty"`
+	// Example: true
+	UseDefaultRoot interface{} `json:"useDefaultRoot,omitempty"`
 }
 
 // Auth gets the auth of this base type
@@ -127,9 +141,9 @@ func (m *WebCheckStep) UnmarshalJSON(raw []byte) error {
 
 		Description string `json:"description,omitempty"`
 
-		Enable bool `json:"enable,omitempty"`
+		Enable interface{} `json:"enable,omitempty"`
 
-		FollowRedirection bool `json:"followRedirection,omitempty"`
+		FollowRedirection interface{} `json:"followRedirection,omitempty"`
 
 		FullpageLoad bool `json:"fullpageLoad,omitempty"`
 
@@ -167,7 +181,7 @@ func (m *WebCheckStep) UnmarshalJSON(raw []byte) error {
 
 		URL string `json:"url,omitempty"`
 
-		UseDefaultRoot bool `json:"useDefaultRoot,omitempty"`
+		UseDefaultRoot interface{} `json:"useDefaultRoot,omitempty"`
 	}
 	buf := bytes.NewBuffer(raw)
 	dec := json.NewDecoder(buf)
@@ -289,9 +303,9 @@ func (m WebCheckStep) MarshalJSON() ([]byte, error) {
 
 		Description string `json:"description,omitempty"`
 
-		Enable bool `json:"enable,omitempty"`
+		Enable interface{} `json:"enable,omitempty"`
 
-		FollowRedirection bool `json:"followRedirection,omitempty"`
+		FollowRedirection interface{} `json:"followRedirection,omitempty"`
 
 		FullpageLoad bool `json:"fullpageLoad,omitempty"`
 
@@ -329,7 +343,7 @@ func (m WebCheckStep) MarshalJSON() ([]byte, error) {
 
 		URL string `json:"url,omitempty"`
 
-		UseDefaultRoot bool `json:"useDefaultRoot,omitempty"`
+		UseDefaultRoot interface{} `json:"useDefaultRoot,omitempty"`
 	}{
 
 		HTTPBody: m.HTTPBody,
@@ -383,8 +397,7 @@ func (m WebCheckStep) MarshalJSON() ([]byte, error) {
 		URL: m.URL,
 
 		UseDefaultRoot: m.UseDefaultRoot,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -393,8 +406,7 @@ func (m WebCheckStep) MarshalJSON() ([]byte, error) {
 	}{
 
 		Auth: m.authField,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -425,6 +437,45 @@ func (m *WebCheckStep) validateAuth(formats strfmt.Registry) error {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("auth")
 		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this web check step based on the context it is used
+func (m *WebCheckStep) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAuth(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebCheckStep) contextValidateAuth(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Auth().ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("auth")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebCheckStep) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
 		return err
 	}
 

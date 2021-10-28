@@ -6,91 +6,113 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewDeleteDeviceGroupByIDParams creates a new DeleteDeviceGroupByIDParams object
-// with the default values initialized.
+// NewDeleteDeviceGroupByIDParams creates a new DeleteDeviceGroupByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewDeleteDeviceGroupByIDParams() *DeleteDeviceGroupByIDParams {
-	var (
-		deleteChildrenDefault = bool(false)
-		deleteHardDefault     = bool(true)
-	)
 	return &DeleteDeviceGroupByIDParams{
-		DeleteChildren: &deleteChildrenDefault,
-		DeleteHard:     &deleteHardDefault,
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewDeleteDeviceGroupByIDParamsWithTimeout creates a new DeleteDeviceGroupByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewDeleteDeviceGroupByIDParamsWithTimeout(timeout time.Duration) *DeleteDeviceGroupByIDParams {
-	var (
-		deleteChildrenDefault = bool(false)
-		deleteHardDefault     = bool(true)
-	)
 	return &DeleteDeviceGroupByIDParams{
-		DeleteChildren: &deleteChildrenDefault,
-		DeleteHard:     &deleteHardDefault,
-
 		timeout: timeout,
 	}
 }
 
 // NewDeleteDeviceGroupByIDParamsWithContext creates a new DeleteDeviceGroupByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewDeleteDeviceGroupByIDParamsWithContext(ctx context.Context) *DeleteDeviceGroupByIDParams {
-	var (
-		deleteChildrenDefault = bool(false)
-		deleteHardDefault     = bool(true)
-	)
 	return &DeleteDeviceGroupByIDParams{
-		DeleteChildren: &deleteChildrenDefault,
-		DeleteHard:     &deleteHardDefault,
-
 		Context: ctx,
 	}
 }
 
 // NewDeleteDeviceGroupByIDParamsWithHTTPClient creates a new DeleteDeviceGroupByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewDeleteDeviceGroupByIDParamsWithHTTPClient(client *http.Client) *DeleteDeviceGroupByIDParams {
-	var (
-		deleteChildrenDefault = bool(false)
-		deleteHardDefault     = bool(true)
-	)
 	return &DeleteDeviceGroupByIDParams{
-		DeleteChildren: &deleteChildrenDefault,
-		DeleteHard:     &deleteHardDefault,
-		HTTPClient:     client,
+		HTTPClient: client,
 	}
 }
 
-/*DeleteDeviceGroupByIDParams contains all the parameters to send to the API endpoint
-for the delete device group by Id operation typically these are written to a http.Request
+/* DeleteDeviceGroupByIDParams contains all the parameters to send to the API endpoint
+   for the delete device group by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type DeleteDeviceGroupByIDParams struct {
 
-	/*DeleteChildren*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// DeleteChildren.
 	DeleteChildren *bool
-	/*DeleteHard*/
+
+	// DeleteHard.
+	//
+	// Default: true
 	DeleteHard *bool
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the delete device group by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteDeviceGroupByIDParams) WithDefaults() *DeleteDeviceGroupByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the delete device group by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteDeviceGroupByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+
+		deleteChildrenDefault = bool(false)
+
+		deleteHardDefault = bool(true)
+	)
+
+	val := DeleteDeviceGroupByIDParams{
+		UserAgent:      &userAgentDefault,
+		DeleteChildren: &deleteChildrenDefault,
+		DeleteHard:     &deleteHardDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the delete device group by Id params
@@ -124,6 +146,17 @@ func (o *DeleteDeviceGroupByIDParams) WithHTTPClient(client *http.Client) *Delet
 // SetHTTPClient adds the HTTPClient to the delete device group by Id params
 func (o *DeleteDeviceGroupByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the delete device group by Id params
+func (o *DeleteDeviceGroupByIDParams) WithUserAgent(userAgent *string) *DeleteDeviceGroupByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the delete device group by Id params
+func (o *DeleteDeviceGroupByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithDeleteChildren adds the deleteChildren to the delete device group by Id params
@@ -161,41 +194,52 @@ func (o *DeleteDeviceGroupByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteDeviceGroupByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.DeleteChildren != nil {
 
 		// query param deleteChildren
 		var qrDeleteChildren bool
+
 		if o.DeleteChildren != nil {
 			qrDeleteChildren = *o.DeleteChildren
 		}
 		qDeleteChildren := swag.FormatBool(qrDeleteChildren)
 		if qDeleteChildren != "" {
+
 			if err := r.SetQueryParam("deleteChildren", qDeleteChildren); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.DeleteHard != nil {
 
 		// query param deleteHard
 		var qrDeleteHard bool
+
 		if o.DeleteHard != nil {
 			qrDeleteHard = *o.DeleteHard
 		}
 		qDeleteHard := swag.FormatBool(qrDeleteHard)
 		if qDeleteHard != "" {
+
 			if err := r.SetQueryParam("deleteHard", qDeleteHard); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param id

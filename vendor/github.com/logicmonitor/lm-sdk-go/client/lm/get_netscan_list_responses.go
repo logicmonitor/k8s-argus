@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // GetNetscanListReader is a Reader for the GetNetscanList structure.
@@ -22,14 +25,18 @@ type GetNetscanListReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetNetscanListReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetNetscanListOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
+	case 429:
+		result := NewGetNetscanListTooManyRequests()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		result := NewGetNetscanListDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -47,7 +54,7 @@ func NewGetNetscanListOK() *GetNetscanListOK {
 	return &GetNetscanListOK{}
 }
 
-/*GetNetscanListOK handles this case with default header values.
+/* GetNetscanListOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -58,13 +65,83 @@ type GetNetscanListOK struct {
 func (o *GetNetscanListOK) Error() string {
 	return fmt.Sprintf("[GET /setting/netscans][%d] getNetscanListOK  %+v", 200, o.Payload)
 }
+func (o *GetNetscanListOK) GetPayload() *models.NetscanPaginationResponse {
+	return o.Payload
+}
 
 func (o *GetNetscanListOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.NetscanPaginationResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
+	}
+
+	return nil
+}
+
+// NewGetNetscanListTooManyRequests creates a GetNetscanListTooManyRequests with default headers values
+func NewGetNetscanListTooManyRequests() *GetNetscanListTooManyRequests {
+	return &GetNetscanListTooManyRequests{}
+}
+
+/* GetNetscanListTooManyRequests describes a response with status code 429, with default header values.
+
+Too Many Requests
+*/
+type GetNetscanListTooManyRequests struct {
+
+	/* Request limit per X-Rate-Limit-Window
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests left for the time window
+	 */
+	XRateLimitRemaining int64
+
+	/* The rolling time window length with the unit of second
+	 */
+	XRateLimitWindow int64
+}
+
+func (o *GetNetscanListTooManyRequests) Error() string {
+	return fmt.Sprintf("[GET /setting/netscans][%d] getNetscanListTooManyRequests ", 429)
+}
+
+func (o *GetNetscanListTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header x-rate-limit-limit
+	hdrXRateLimitLimit := response.GetHeader("x-rate-limit-limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header x-rate-limit-remaining
+	hdrXRateLimitRemaining := response.GetHeader("x-rate-limit-remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	// hydrates response header x-rate-limit-window
+	hdrXRateLimitWindow := response.GetHeader("x-rate-limit-window")
+
+	if hdrXRateLimitWindow != "" {
+		valxRateLimitWindow, err := swag.ConvertInt64(hdrXRateLimitWindow)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-window", "header", "int64", hdrXRateLimitWindow)
+		}
+		o.XRateLimitWindow = valxRateLimitWindow
 	}
 
 	return nil
@@ -77,7 +154,7 @@ func NewGetNetscanListDefault(code int) *GetNetscanListDefault {
 	}
 }
 
-/*GetNetscanListDefault handles this case with default header values.
+/* GetNetscanListDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +172,12 @@ func (o *GetNetscanListDefault) Code() int {
 func (o *GetNetscanListDefault) Error() string {
 	return fmt.Sprintf("[GET /setting/netscans][%d] getNetscanList default  %+v", o._statusCode, o.Payload)
 }
+func (o *GetNetscanListDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
 
 func (o *GetNetscanListDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

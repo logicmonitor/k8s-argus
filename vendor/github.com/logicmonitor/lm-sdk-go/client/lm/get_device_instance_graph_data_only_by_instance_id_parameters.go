@@ -6,75 +6,117 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewGetDeviceInstanceGraphDataOnlyByInstanceIDParams creates a new GetDeviceInstanceGraphDataOnlyByInstanceIDParams object
-// with the default values initialized.
+// NewGetDeviceInstanceGraphDataOnlyByInstanceIDParams creates a new GetDeviceInstanceGraphDataOnlyByInstanceIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetDeviceInstanceGraphDataOnlyByInstanceIDParams() *GetDeviceInstanceGraphDataOnlyByInstanceIDParams {
-	var ()
 	return &GetDeviceInstanceGraphDataOnlyByInstanceIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetDeviceInstanceGraphDataOnlyByInstanceIDParamsWithTimeout creates a new GetDeviceInstanceGraphDataOnlyByInstanceIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetDeviceInstanceGraphDataOnlyByInstanceIDParamsWithTimeout(timeout time.Duration) *GetDeviceInstanceGraphDataOnlyByInstanceIDParams {
-	var ()
 	return &GetDeviceInstanceGraphDataOnlyByInstanceIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetDeviceInstanceGraphDataOnlyByInstanceIDParamsWithContext creates a new GetDeviceInstanceGraphDataOnlyByInstanceIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetDeviceInstanceGraphDataOnlyByInstanceIDParamsWithContext(ctx context.Context) *GetDeviceInstanceGraphDataOnlyByInstanceIDParams {
-	var ()
 	return &GetDeviceInstanceGraphDataOnlyByInstanceIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetDeviceInstanceGraphDataOnlyByInstanceIDParamsWithHTTPClient creates a new GetDeviceInstanceGraphDataOnlyByInstanceIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetDeviceInstanceGraphDataOnlyByInstanceIDParamsWithHTTPClient(client *http.Client) *GetDeviceInstanceGraphDataOnlyByInstanceIDParams {
-	var ()
 	return &GetDeviceInstanceGraphDataOnlyByInstanceIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetDeviceInstanceGraphDataOnlyByInstanceIDParams contains all the parameters to send to the API endpoint
-for the get device instance graph data only by instance Id operation typically these are written to a http.Request
+/* GetDeviceInstanceGraphDataOnlyByInstanceIDParams contains all the parameters to send to the API endpoint
+   for the get device instance graph data only by instance Id operation.
+
+   Typically these are written to a http.Request.
 */
 type GetDeviceInstanceGraphDataOnlyByInstanceIDParams struct {
 
-	/*End*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// End.
+	//
+	// Format: int64
 	End *int64
-	/*Format*/
+
+	// Format.
 	Format *string
-	/*GraphID*/
+
+	// GraphID.
+	//
+	// Format: int32
 	GraphID int32
-	/*InstanceID*/
+
+	// InstanceID.
+	//
+	// Format: int32
 	InstanceID int32
-	/*Start*/
+
+	// Start.
+	//
+	// Format: int64
 	Start *int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get device instance graph data only by instance Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) WithDefaults() *GetDeviceInstanceGraphDataOnlyByInstanceIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get device instance graph data only by instance Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := GetDeviceInstanceGraphDataOnlyByInstanceIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the get device instance graph data only by instance Id params
@@ -108,6 +150,17 @@ func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) WithHTTPClient(client
 // SetHTTPClient adds the HTTPClient to the get device instance graph data only by instance Id params
 func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the get device instance graph data only by instance Id params
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) WithUserAgent(userAgent *string) *GetDeviceInstanceGraphDataOnlyByInstanceIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the get device instance graph data only by instance Id params
+func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithEnd adds the end to the get device instance graph data only by instance Id params
@@ -167,41 +220,52 @@ func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) SetStart(start *int64
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.End != nil {
 
 		// query param end
 		var qrEnd int64
+
 		if o.End != nil {
 			qrEnd = *o.End
 		}
 		qEnd := swag.FormatInt64(qrEnd)
 		if qEnd != "" {
+
 			if err := r.SetQueryParam("end", qEnd); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Format != nil {
 
 		// query param format
 		var qrFormat string
+
 		if o.Format != nil {
 			qrFormat = *o.Format
 		}
 		qFormat := qrFormat
 		if qFormat != "" {
+
 			if err := r.SetQueryParam("format", qFormat); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param graphId
@@ -218,16 +282,17 @@ func (o *GetDeviceInstanceGraphDataOnlyByInstanceIDParams) WriteToRequest(r runt
 
 		// query param start
 		var qrStart int64
+
 		if o.Start != nil {
 			qrStart = *o.Start
 		}
 		qStart := swag.FormatInt64(qrStart)
 		if qStart != "" {
+
 			if err := r.SetQueryParam("start", qStart); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if len(res) > 0 {

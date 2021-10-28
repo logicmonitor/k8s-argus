@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Alert alert
+//
 // swagger:model Alert
 type Alert struct {
 
@@ -69,6 +74,12 @@ type Alert struct {
 	// The alert message, if needMessage=true is included in the query parameters
 	// Read Only: true
 	DetailMessage interface{} `json:"detailMessage,omitempty"`
+
+	// enable anomaly alert generation
+	EnableAnomalyAlertGeneration string `json:"enableAnomalyAlertGeneration,omitempty"`
+
+	// enable anomaly alert suppression
+	EnableAnomalyAlertSuppression string `json:"enableAnomalyAlertSuppression,omitempty"`
 
 	// The time (in epoch format) that the alert ended
 	// Read Only: true
@@ -144,7 +155,7 @@ type Alert struct {
 
 	// Whether or not the alert was triggered during an SDT
 	// Read Only: true
-	SDTED *bool `json:"sdted,omitempty"`
+	Sdted *bool `json:"sdted,omitempty"`
 
 	// The alert severity, where 2=warning, 3=error and 4=critical
 	// Read Only: true
@@ -169,6 +180,458 @@ type Alert struct {
 
 // Validate validates this alert
 func (m *Alert) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this alert based on the context it is used
+func (m *Alert) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAckComment(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAcked(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAckedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAckedEpoch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAlertValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateChain(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateChainID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateClearValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCleared(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPointID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPointName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndEpoch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInternalID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMonitorObjectID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMonitorObjectName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMonitorObjectType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNextRecipient(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReceivedList(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResourceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResourceTemplateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResourceTemplateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResourceTemplateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRule(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRuleID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSdted(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSeverity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartEpoch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubChainID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThreshold(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Alert) contextValidateAckComment(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackComment", "body", string(m.AckComment)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateAcked(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "acked", "body", m.Acked); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateAckedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackedBy", "body", string(m.AckedBy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateAckedEpoch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackedEpoch", "body", int64(m.AckedEpoch)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateAlertValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertValue", "body", string(m.AlertValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateChain(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "chain", "body", string(m.Chain)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateChainID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "chainId", "body", int32(m.ChainID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateClearValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clearValue", "body", string(m.ClearValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateCleared(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cleared", "body", m.Cleared); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateDataPointID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointId", "body", int32(m.DataPointID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateDataPointName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointName", "body", string(m.DataPointName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateEndEpoch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endEpoch", "body", int64(m.EndEpoch)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateInstanceDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceDescription", "body", string(m.InstanceDescription)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateInstanceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceId", "body", int32(m.InstanceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateInstanceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceName", "body", string(m.InstanceName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateInternalID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "internalId", "body", string(m.InternalID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateMonitorObjectID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "monitorObjectId", "body", int32(m.MonitorObjectID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateMonitorObjectName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "monitorObjectName", "body", string(m.MonitorObjectName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateMonitorObjectType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "monitorObjectType", "body", string(m.MonitorObjectType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateNextRecipient(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nextRecipient", "body", int32(m.NextRecipient)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateReceivedList(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "receivedList", "body", string(m.ReceivedList)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateResourceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "resourceId", "body", int32(m.ResourceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateResourceTemplateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "resourceTemplateId", "body", int32(m.ResourceTemplateID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateResourceTemplateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "resourceTemplateName", "body", string(m.ResourceTemplateName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateResourceTemplateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "resourceTemplateType", "body", string(m.ResourceTemplateType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateRule(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rule", "body", string(m.Rule)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateRuleID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ruleId", "body", int32(m.RuleID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateSdted(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sdted", "body", m.Sdted); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateSeverity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "severity", "body", int32(m.Severity)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateStartEpoch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startEpoch", "body", int64(m.StartEpoch)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateSubChainID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subChainId", "body", int32(m.SubChainID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateThreshold(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "threshold", "body", string(m.Threshold)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Alert) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

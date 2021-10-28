@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // WebsiteCheckPoint website check point
+//
 // swagger:model WebsiteCheckPoint
 type WebsiteCheckPoint struct {
 
@@ -29,6 +34,55 @@ type WebsiteCheckPoint struct {
 
 // Validate validates this website check point
 func (m *WebsiteCheckPoint) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this website check point based on the context it is used
+func (m *WebsiteCheckPoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateGeoInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSmgID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebsiteCheckPoint) contextValidateGeoInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "geoInfo", "body", string(m.GeoInfo)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCheckPoint) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCheckPoint) contextValidateSmgID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "smgId", "body", int32(m.SmgID)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

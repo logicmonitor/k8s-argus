@@ -6,24 +6,26 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // LinkedWmiClass linked wmi class
+//
 // swagger:model LinkedWmiClass
 type LinkedWmiClass struct {
 
 	// i l p
 	ILP []*ILP `json:"ILP,omitempty"`
 
-	// anchor class w m iproperty
+	// anchor class w m i property
 	// Required: true
-	AnchorClassWMIproperty *string `json:"anchorClassWMIProperty"`
+	AnchorClassWMIProperty *string `json:"anchorClassWMIProperty"`
 
 	// linked wmi class
 	// Required: true
@@ -32,8 +34,8 @@ type LinkedWmiClass struct {
 	// match
 	Match *PropertyMatchRule `json:"match,omitempty"`
 
-	// my link w m iproperty
-	MyLinkWMIproperty string `json:"myLinkWMIProperty,omitempty"`
+	// my link w m i property
+	MyLinkWMIProperty string `json:"myLinkWMIProperty,omitempty"`
 }
 
 // Validate validates this linked wmi class
@@ -44,7 +46,7 @@ func (m *LinkedWmiClass) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateAnchorClassWMIproperty(formats); err != nil {
+	if err := m.validateAnchorClassWMIProperty(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -86,8 +88,9 @@ func (m *LinkedWmiClass) validateILP(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *LinkedWmiClass) validateAnchorClassWMIproperty(formats strfmt.Registry) error {
-	if err := validate.Required("anchorClassWMIProperty", "body", m.AnchorClassWMIproperty); err != nil {
+func (m *LinkedWmiClass) validateAnchorClassWMIProperty(formats strfmt.Registry) error {
+
+	if err := validate.Required("anchorClassWMIProperty", "body", m.AnchorClassWMIProperty); err != nil {
 		return err
 	}
 
@@ -95,6 +98,7 @@ func (m *LinkedWmiClass) validateAnchorClassWMIproperty(formats strfmt.Registry)
 }
 
 func (m *LinkedWmiClass) validateLinkedWmiClass(formats strfmt.Registry) error {
+
 	if err := validate.Required("linkedWmiClass", "body", m.LinkedWmiClass); err != nil {
 		return err
 	}
@@ -109,6 +113,56 @@ func (m *LinkedWmiClass) validateMatch(formats strfmt.Registry) error {
 
 	if m.Match != nil {
 		if err := m.Match.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("match")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this linked wmi class based on the context it is used
+func (m *LinkedWmiClass) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateILP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMatch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *LinkedWmiClass) contextValidateILP(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ILP); i++ {
+
+		if m.ILP[i] != nil {
+			if err := m.ILP[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ILP" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *LinkedWmiClass) contextValidateMatch(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Match != nil {
+		if err := m.Match.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("match")
 			}

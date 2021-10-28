@@ -6,17 +6,21 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Privilege privilege
+//
 // swagger:model Privilege
 type Privilege struct {
 
 	// object Id
+	// Example: 123
 	// Required: true
 	ObjectID *string `json:"objectId"`
 
@@ -25,10 +29,12 @@ type Privilege struct {
 	ObjectName string `json:"objectName,omitempty"`
 
 	// object type
+	// Example: dashboard group
 	// Required: true
 	ObjectType *string `json:"objectType"`
 
 	// operation
+	// Example: write
 	// Required: true
 	Operation *string `json:"operation"`
 
@@ -60,6 +66,7 @@ func (m *Privilege) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Privilege) validateObjectID(formats strfmt.Registry) error {
+
 	if err := validate.Required("objectId", "body", m.ObjectID); err != nil {
 		return err
 	}
@@ -68,6 +75,7 @@ func (m *Privilege) validateObjectID(formats strfmt.Registry) error {
 }
 
 func (m *Privilege) validateObjectType(formats strfmt.Registry) error {
+
 	if err := validate.Required("objectType", "body", m.ObjectType); err != nil {
 		return err
 	}
@@ -76,7 +84,44 @@ func (m *Privilege) validateObjectType(formats strfmt.Registry) error {
 }
 
 func (m *Privilege) validateOperation(formats strfmt.Registry) error {
+
 	if err := validate.Required("operation", "body", m.Operation); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this privilege based on the context it is used
+func (m *Privilege) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateObjectName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubOperation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Privilege) contextValidateObjectName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "objectName", "body", string(m.ObjectName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Privilege) contextValidateSubOperation(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subOperation", "body", string(m.SubOperation)); err != nil {
 		return err
 	}
 

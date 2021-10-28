@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // GcpBillingCollectorAttributeV2 gcp billing collector attribute v2
+//
 // swagger:model GcpBillingCollectorAttributeV2
 type GcpBillingCollectorAttributeV2 struct {
 	GcpBillingCollectorAttributeV2AllOf1
@@ -61,7 +63,6 @@ func (m *GcpBillingCollectorAttributeV2) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.GcpBillingCollectorAttributeV2AllOf1 = data.GcpBillingCollectorAttributeV2AllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m GcpBillingCollectorAttributeV2) MarshalJSON() ([]byte, error) {
 	}{
 
 		GcpBillingCollectorAttributeV2AllOf1: m.GcpBillingCollectorAttributeV2AllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m GcpBillingCollectorAttributeV2) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m GcpBillingCollectorAttributeV2) MarshalJSON() ([]byte, error) {
 
 // Validate validates this gcp billing collector attribute v2
 func (m *GcpBillingCollectorAttributeV2) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with GcpBillingCollectorAttributeV2AllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this gcp billing collector attribute v2 based on the context it is used
+func (m *GcpBillingCollectorAttributeV2) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with GcpBillingCollectorAttributeV2AllOf1
@@ -128,5 +139,6 @@ func (m *GcpBillingCollectorAttributeV2) UnmarshalBinary(b []byte) error {
 }
 
 // GcpBillingCollectorAttributeV2AllOf1 gcp billing collector attribute v2 all of1
+//
 // swagger:model GcpBillingCollectorAttributeV2AllOf1
 type GcpBillingCollectorAttributeV2AllOf1 interface{}

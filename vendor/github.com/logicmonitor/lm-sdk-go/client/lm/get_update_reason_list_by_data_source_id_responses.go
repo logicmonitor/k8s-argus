@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // GetUpdateReasonListByDataSourceIDReader is a Reader for the GetUpdateReasonListByDataSourceID structure.
@@ -22,14 +25,18 @@ type GetUpdateReasonListByDataSourceIDReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetUpdateReasonListByDataSourceIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetUpdateReasonListByDataSourceIDOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
+	case 429:
+		result := NewGetUpdateReasonListByDataSourceIDTooManyRequests()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		result := NewGetUpdateReasonListByDataSourceIDDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -47,7 +54,7 @@ func NewGetUpdateReasonListByDataSourceIDOK() *GetUpdateReasonListByDataSourceID
 	return &GetUpdateReasonListByDataSourceIDOK{}
 }
 
-/*GetUpdateReasonListByDataSourceIDOK handles this case with default header values.
+/* GetUpdateReasonListByDataSourceIDOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -58,13 +65,83 @@ type GetUpdateReasonListByDataSourceIDOK struct {
 func (o *GetUpdateReasonListByDataSourceIDOK) Error() string {
 	return fmt.Sprintf("[GET /setting/datasources/{id}/updatereasons][%d] getUpdateReasonListByDataSourceIdOK  %+v", 200, o.Payload)
 }
+func (o *GetUpdateReasonListByDataSourceIDOK) GetPayload() *models.DataSourceUpdateReasonsPaginationResponse {
+	return o.Payload
+}
 
 func (o *GetUpdateReasonListByDataSourceIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.DataSourceUpdateReasonsPaginationResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
+	}
+
+	return nil
+}
+
+// NewGetUpdateReasonListByDataSourceIDTooManyRequests creates a GetUpdateReasonListByDataSourceIDTooManyRequests with default headers values
+func NewGetUpdateReasonListByDataSourceIDTooManyRequests() *GetUpdateReasonListByDataSourceIDTooManyRequests {
+	return &GetUpdateReasonListByDataSourceIDTooManyRequests{}
+}
+
+/* GetUpdateReasonListByDataSourceIDTooManyRequests describes a response with status code 429, with default header values.
+
+Too Many Requests
+*/
+type GetUpdateReasonListByDataSourceIDTooManyRequests struct {
+
+	/* Request limit per X-Rate-Limit-Window
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests left for the time window
+	 */
+	XRateLimitRemaining int64
+
+	/* The rolling time window length with the unit of second
+	 */
+	XRateLimitWindow int64
+}
+
+func (o *GetUpdateReasonListByDataSourceIDTooManyRequests) Error() string {
+	return fmt.Sprintf("[GET /setting/datasources/{id}/updatereasons][%d] getUpdateReasonListByDataSourceIdTooManyRequests ", 429)
+}
+
+func (o *GetUpdateReasonListByDataSourceIDTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header x-rate-limit-limit
+	hdrXRateLimitLimit := response.GetHeader("x-rate-limit-limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header x-rate-limit-remaining
+	hdrXRateLimitRemaining := response.GetHeader("x-rate-limit-remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	// hydrates response header x-rate-limit-window
+	hdrXRateLimitWindow := response.GetHeader("x-rate-limit-window")
+
+	if hdrXRateLimitWindow != "" {
+		valxRateLimitWindow, err := swag.ConvertInt64(hdrXRateLimitWindow)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-window", "header", "int64", hdrXRateLimitWindow)
+		}
+		o.XRateLimitWindow = valxRateLimitWindow
 	}
 
 	return nil
@@ -77,7 +154,7 @@ func NewGetUpdateReasonListByDataSourceIDDefault(code int) *GetUpdateReasonListB
 	}
 }
 
-/*GetUpdateReasonListByDataSourceIDDefault handles this case with default header values.
+/* GetUpdateReasonListByDataSourceIDDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +172,12 @@ func (o *GetUpdateReasonListByDataSourceIDDefault) Code() int {
 func (o *GetUpdateReasonListByDataSourceIDDefault) Error() string {
 	return fmt.Sprintf("[GET /setting/datasources/{id}/updatereasons][%d] getUpdateReasonListByDataSourceId default  %+v", o._statusCode, o.Payload)
 }
+func (o *GetUpdateReasonListByDataSourceIDDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
 
 func (o *GetUpdateReasonListByDataSourceIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

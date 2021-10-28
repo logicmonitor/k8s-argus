@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // ESXCollectorAttribute e s x collector attribute
+//
 // swagger:model ESXCollectorAttribute
 type ESXCollectorAttribute struct {
 
@@ -34,10 +36,6 @@ func (m *ESXCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *ESXCollectorAttribute) SetName(val string) {
 }
-
-// Counters gets the counters of this subtype
-
-// Entity gets the entity of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *ESXCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -78,7 +76,6 @@ func (m *ESXCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Counters = data.Counters
-
 	result.Entity = data.Entity
 
 	*m = result
@@ -102,8 +99,7 @@ func (m ESXCollectorAttribute) MarshalJSON() ([]byte, error) {
 		Counters: m.Counters,
 
 		Entity: m.Entity,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +108,7 @@ func (m ESXCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +131,7 @@ func (m *ESXCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ESXCollectorAttribute) validateCounters(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Counters) { // not required
 		return nil
 	}
@@ -147,6 +143,38 @@ func (m *ESXCollectorAttribute) validateCounters(formats strfmt.Registry) error 
 
 		if m.Counters[i] != nil {
 			if err := m.Counters[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this e s x collector attribute based on the context it is used
+func (m *ESXCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCounters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ESXCollectorAttribute) contextValidateCounters(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Counters); i++ {
+
+		if m.Counters[i] != nil {
+			if err := m.Counters[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
 				}

@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AlertThresholdReport alert threshold report
+//
 // swagger:model AlertThresholdReport
 type AlertThresholdReport struct {
 	customReportTypeIdField int32
@@ -71,7 +73,8 @@ type AlertThresholdReport struct {
 
 	// true: only variations from the global thresholds will be displayed
 	// false: all thresholds will be displayed, including global thresholds an custom group and instance level thresholds
-	ExcludeGlobal bool `json:"excludeGlobal,omitempty"`
+	// the default value is true
+	ExcludeGlobal interface{} `json:"excludeGlobal,omitempty"`
 
 	// The full path of the group whose member devices you are going to include in the report. Glob expressions supported
 	GroupFullPath string `json:"groupFullPath,omitempty"`
@@ -282,20 +285,6 @@ func (m *AlertThresholdReport) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// Columns gets the columns of this subtype
-
-// DataPoint gets the data point of this subtype
-
-// DataSourceInstanceName gets the data source instance name of this subtype
-
-// DeviceDisplayName gets the device display name of this subtype
-
-// ExcludeGlobal gets the exclude global of this subtype
-
-// GroupFullPath gets the group full path of this subtype
-
-// SortedBy gets the sorted by of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AlertThresholdReport) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -314,7 +303,8 @@ func (m *AlertThresholdReport) UnmarshalJSON(raw []byte) error {
 
 		// true: only variations from the global thresholds will be displayed
 		// false: all thresholds will be displayed, including global thresholds an custom group and instance level thresholds
-		ExcludeGlobal bool `json:"excludeGlobal,omitempty"`
+		// the default value is true
+		ExcludeGlobal interface{} `json:"excludeGlobal,omitempty"`
 
 		// The full path of the group whose member devices you are going to include in the report. Glob expressions supported
 		GroupFullPath string `json:"groupFullPath,omitempty"`
@@ -426,21 +416,14 @@ func (m *AlertThresholdReport) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.Columns = data.Columns
-
 	result.DataPoint = data.DataPoint
-
 	result.DataSourceInstanceName = data.DataSourceInstanceName
-
 	result.DeviceDisplayName = data.DeviceDisplayName
-
 	result.ExcludeGlobal = data.ExcludeGlobal
-
 	result.GroupFullPath = data.GroupFullPath
-
 	result.SortedBy = data.SortedBy
 
 	*m = result
@@ -468,7 +451,8 @@ func (m AlertThresholdReport) MarshalJSON() ([]byte, error) {
 
 		// true: only variations from the global thresholds will be displayed
 		// false: all thresholds will be displayed, including global thresholds an custom group and instance level thresholds
-		ExcludeGlobal bool `json:"excludeGlobal,omitempty"`
+		// the default value is true
+		ExcludeGlobal interface{} `json:"excludeGlobal,omitempty"`
 
 		// The full path of the group whose member devices you are going to include in the report. Glob expressions supported
 		GroupFullPath string `json:"groupFullPath,omitempty"`
@@ -493,8 +477,7 @@ func (m AlertThresholdReport) MarshalJSON() ([]byte, error) {
 		GroupFullPath: m.GroupFullPath,
 
 		SortedBy: m.SortedBy,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -579,8 +562,7 @@ func (m AlertThresholdReport) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -611,6 +593,7 @@ func (m *AlertThresholdReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertThresholdReport) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -619,6 +602,7 @@ func (m *AlertThresholdReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AlertThresholdReport) validateRecipients(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -643,6 +627,7 @@ func (m *AlertThresholdReport) validateRecipients(formats strfmt.Registry) error
 }
 
 func (m *AlertThresholdReport) validateColumns(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Columns) { // not required
 		return nil
 	}
@@ -654,6 +639,203 @@ func (m *AlertThresholdReport) validateColumns(formats strfmt.Registry) error {
 
 		if m.Columns[i] != nil {
 			if err := m.Columns[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this alert threshold report based on the context it is used
+func (m *AlertThresholdReport) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomReportTypeID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomReportTypeName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnableViewAsOtherUser(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGeneratePages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecipients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportLinkNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColumns(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateCustomReportTypeID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeId", "body", int32(m.CustomReportTypeID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateCustomReportTypeName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeName", "body", string(m.CustomReportTypeName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateEnableViewAsOtherUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enableViewAsOtherUser", "body", m.EnableViewAsOtherUser()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateLastGenerateOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateOn", "body", int64(m.LastGenerateOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateLastGeneratePages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGeneratePages", "body", int32(m.LastGeneratePages())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateLastGenerateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateSize", "body", int64(m.LastGenerateSize())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateLastmodifyUserID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserId", "body", int32(m.LastmodifyUserID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateLastmodifyUserName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserName", "body", string(m.LastmodifyUserName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateRecipients(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Recipients()); i++ {
+
+		if m.recipientsField[i] != nil {
+			if err := m.recipientsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateReportLinkNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportLinkNum", "body", int32(m.ReportLinkNum())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AlertThresholdReport) contextValidateColumns(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Columns); i++ {
+
+		if m.Columns[i] != nil {
+			if err := m.Columns[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
 				}

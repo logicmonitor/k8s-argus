@@ -6,14 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Collector collector
+//
 // swagger:model Collector
 type Collector struct {
 
@@ -45,6 +48,7 @@ type Collector struct {
 	AutomaticUpgradeInfo *AutomaticUpgradeInfo `json:"automaticUpgradeInfo,omitempty"`
 
 	// The Id of the backup Collector assigned to the Collector
+	// Example: 75
 	BackupAgentID int32 `json:"backupAgentId,omitempty"`
 
 	// The Collector version
@@ -72,6 +76,7 @@ type Collector struct {
 	CollectorDeviceID int32 `json:"collectorDeviceId,omitempty"`
 
 	// The Id of the group the Collector is in
+	// Example: 10
 	CollectorGroupID int32 `json:"collectorGroupId,omitempty"`
 
 	// The name of the group the Collector is in
@@ -98,19 +103,23 @@ type Collector struct {
 	CustomProperties []*NameAndValue `json:"customProperties,omitempty"`
 
 	// The Collector's description
+	// Example: Linux Collector
 	Description string `json:"description,omitempty"`
 
 	// Whether the collector is in EA version
 	// Read Only: true
 	Ea *bool `json:"ea,omitempty"`
 
-	// Whether or not automatic failback is enabled for the Collector
-	EnableFailBack bool `json:"enableFailBack,omitempty"`
+	// Whether or not automatic failback is enabled for the Collector, the default value is true
+	// Example: true
+	EnableFailBack interface{} `json:"enableFailBack,omitempty"`
 
 	// Whether or not the device the Collector is installed on is enabled for fail over
+	// Example: true
 	EnableFailOverOnCollectorDevice bool `json:"enableFailOverOnCollectorDevice,omitempty"`
 
 	// The Id of the escalation chain associated with this Collector
+	// Example: 80
 	EscalatingChainID int32 `json:"escalatingChainId,omitempty"`
 
 	// Whether the collector has failover devices
@@ -142,6 +151,7 @@ type Collector struct {
 	LastSentNotificationOnLocal string `json:"lastSentNotificationOnLocal,omitempty"`
 
 	// Whether to create a collector device when instance collector, the default value is true
+	// Example: true
 	NeedAutoCreateCollectorDevice interface{} `json:"needAutoCreateCollectorDevice,omitempty"`
 
 	// The Netscan version associated with the Collector
@@ -186,6 +196,7 @@ type Collector struct {
 	PreviousVersion string `json:"previousVersion,omitempty"`
 
 	// The interval, in minutes, after which alert notifications for the Collector will be resent
+	// Example: 15
 	ResendIval int32 `json:"resendIval,omitempty"`
 
 	// The Proxy's configuration
@@ -193,6 +204,7 @@ type Collector struct {
 	SbproxyConf string `json:"sbproxyConf,omitempty"`
 
 	// The device group id when create a new collector device
+	// Example: 0
 	SpecifiedCollectorDeviceGroupID int32 `json:"specifiedCollectorDeviceGroupId,omitempty"`
 
 	// The registration status of the Collector. Acceptable values are: 0= unregistered, 1= registered, 2= stopped, 3= suspended
@@ -200,6 +212,7 @@ type Collector struct {
 	Status int32 `json:"status,omitempty"`
 
 	// Whether alert clear notifications are suppressed for the Collector
+	// Example: true
 	SuppressAlertClear bool `json:"suppressAlertClear,omitempty"`
 
 	// The time the Collector has been up, in seconds
@@ -372,6 +385,708 @@ func (m *Collector) validateOnetimeUpgradeInfo(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this collector based on the context it is used
+func (m *Collector) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAckComment(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAcked(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAckedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAckedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAckedOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateArch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAutomaticUpgradeInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBuild(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCanDowngrade(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCanDowngradeReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateClearSent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectorConf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectorDeviceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectorGroupName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectorSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConfVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCreatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCreatedOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEa(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHasFailOverDevice(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHostname(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDT(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsDown(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastSentNotificationOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastSentNotificationOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNetscanVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNextRecipient(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNextUpgradeInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumberOfHosts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumberOfWebsites(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOnetimeDowngradeInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOnetimeUpgradeInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePlatform(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePreviousVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSbproxyConf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpdatedOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserChangeOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserChangeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserVisibleHostsNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserVisibleWebsitesNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWatchdogConf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWatchdogUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWatchdogUpdatedOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWebsiteConf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWrapperConf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Collector) contextValidateAckComment(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackComment", "body", string(m.AckComment)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateAcked(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "acked", "body", m.Acked); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateAckedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackedBy", "body", string(m.AckedBy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateAckedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackedOn", "body", int64(m.AckedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateAckedOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ackedOnLocal", "body", string(m.AckedOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateArch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "arch", "body", string(m.Arch)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateAutomaticUpgradeInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AutomaticUpgradeInfo != nil {
+		if err := m.AutomaticUpgradeInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("automaticUpgradeInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateBuild(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "build", "body", string(m.Build)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCanDowngrade(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "canDowngrade", "body", m.CanDowngrade); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCanDowngradeReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "canDowngradeReason", "body", string(m.CanDowngradeReason)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateClearSent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clearSent", "body", m.ClearSent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCollectorConf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectorConf", "body", string(m.CollectorConf)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCollectorDeviceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectorDeviceId", "body", int32(m.CollectorDeviceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCollectorGroupName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectorGroupName", "body", string(m.CollectorGroupName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCollectorSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectorSize", "body", string(m.CollectorSize)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateConfVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "confVersion", "body", string(m.ConfVersion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCreatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdOn", "body", int64(m.CreatedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCreatedOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdOnLocal", "body", string(m.CreatedOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateCustomProperties(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CustomProperties); i++ {
+
+		if m.CustomProperties[i] != nil {
+			if err := m.CustomProperties[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("customProperties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateEa(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ea", "body", m.Ea); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateHasFailOverDevice(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "hasFailOverDevice", "body", m.HasFailOverDevice); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateHostname(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "hostname", "body", string(m.Hostname)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateInSDT(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDT", "body", m.InSDT); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateIsDown(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isDown", "body", m.IsDown); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateLastSentNotificationOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastSentNotificationOn", "body", int64(m.LastSentNotificationOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateLastSentNotificationOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastSentNotificationOnLocal", "body", string(m.LastSentNotificationOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateNetscanVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "netscanVersion", "body", string(m.NetscanVersion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateNextRecipient(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nextRecipient", "body", int32(m.NextRecipient)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateNextUpgradeInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.NextUpgradeInfo != nil {
+		if err := m.NextUpgradeInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nextUpgradeInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateNumberOfHosts(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numberOfHosts", "body", int32(m.NumberOfHosts)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateNumberOfWebsites(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numberOfWebsites", "body", int32(m.NumberOfWebsites)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateOnetimeDowngradeInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.OnetimeDowngradeInfo != nil {
+		if err := m.OnetimeDowngradeInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("onetimeDowngradeInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateOnetimeUpgradeInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.OnetimeUpgradeInfo != nil {
+		if err := m.OnetimeUpgradeInfo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("onetimeUpgradeInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidatePlatform(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "platform", "body", string(m.Platform)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidatePreviousVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "previousVersion", "body", string(m.PreviousVersion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateSbproxyConf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sbproxyConf", "body", string(m.SbproxyConf)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status", "body", int32(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUpTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "upTime", "body", int64(m.UpTime)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "updatedOn", "body", int64(m.UpdatedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUpdatedOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "updatedOnLocal", "body", string(m.UpdatedOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUserChangeOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userChangeOn", "body", int64(m.UserChangeOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUserChangeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userChangeOnLocal", "body", string(m.UserChangeOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUserVisibleHostsNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userVisibleHostsNum", "body", int32(m.UserVisibleHostsNum)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateUserVisibleWebsitesNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userVisibleWebsitesNum", "body", int32(m.UserVisibleWebsitesNum)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateWatchdogConf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "watchdogConf", "body", string(m.WatchdogConf)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateWatchdogUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "watchdogUpdatedOn", "body", int64(m.WatchdogUpdatedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateWatchdogUpdatedOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "watchdogUpdatedOnLocal", "body", string(m.WatchdogUpdatedOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateWebsiteConf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "websiteConf", "body", string(m.WebsiteConf)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Collector) contextValidateWrapperConf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "wrapperConf", "body", string(m.WrapperConf)); err != nil {
+		return err
 	}
 
 	return nil

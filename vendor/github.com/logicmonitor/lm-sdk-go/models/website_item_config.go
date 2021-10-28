@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // WebsiteItemConfig website item config
+//
 // swagger:model WebsiteItemConfig
 type WebsiteItemConfig struct {
 
@@ -47,6 +50,7 @@ func (m *WebsiteItemConfig) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteItemConfig) validateWebsite(formats strfmt.Registry) error {
+
 	if err := validate.Required("website", "body", m.Website); err != nil {
 		return err
 	}
@@ -55,10 +59,16 @@ func (m *WebsiteItemConfig) validateWebsite(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteItemConfig) validateWebsiteGroup(formats strfmt.Registry) error {
+
 	if err := validate.Required("websiteGroup", "body", m.WebsiteGroup); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this website item config based on context it is used
+func (m *WebsiteItemConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

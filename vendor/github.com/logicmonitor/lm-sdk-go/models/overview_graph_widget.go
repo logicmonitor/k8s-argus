@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // OverviewGraphWidget overview graph widget
+//
 // swagger:model OverviewGraphWidget
 type OverviewGraphWidget struct {
 	dashboardIdField *int32
@@ -178,22 +180,6 @@ func (m *OverviewGraphWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// DsID gets the ds Id of this subtype
-
-// DsName gets the ds name of this subtype
-
-// DsigID gets the dsig Id of this subtype
-
-// DsigName gets the dsig name of this subtype
-
-// GraphID gets the graph Id of this subtype
-
-// GraphName gets the graph name of this subtype
-
-// HID gets the h Id of this subtype
-
-// HostName gets the host name of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *OverviewGraphWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -293,23 +279,15 @@ func (m *OverviewGraphWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.DsID = data.DsID
-
 	result.DsName = data.DsName
-
 	result.DsigID = data.DsigID
-
 	result.DsigName = data.DsigName
-
 	result.GraphID = data.GraphID
-
 	result.GraphName = data.GraphName
-
 	result.HID = data.HID
-
 	result.HostName = data.HostName
 
 	*m = result
@@ -369,8 +347,7 @@ func (m OverviewGraphWidget) MarshalJSON() ([]byte, error) {
 		HID: m.HID,
 
 		HostName: m.HostName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -419,8 +396,7 @@ func (m OverviewGraphWidget) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -455,6 +431,7 @@ func (m *OverviewGraphWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OverviewGraphWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -463,6 +440,7 @@ func (m *OverviewGraphWidget) validateDashboardID(formats strfmt.Registry) error
 }
 
 func (m *OverviewGraphWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -471,6 +449,7 @@ func (m *OverviewGraphWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *OverviewGraphWidget) validateDsigID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dsigId", "body", m.DsigID); err != nil {
 		return err
 	}
@@ -479,7 +458,109 @@ func (m *OverviewGraphWidget) validateDsigID(formats strfmt.Registry) error {
 }
 
 func (m *OverviewGraphWidget) validateHID(formats strfmt.Registry) error {
+
 	if err := validate.Required("hId", "body", m.HID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this overview graph widget based on the context it is used
+func (m *OverviewGraphWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDsName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDsigName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGraphName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHostName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OverviewGraphWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OverviewGraphWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OverviewGraphWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OverviewGraphWidget) contextValidateDsName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dsName", "body", string(m.DsName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OverviewGraphWidget) contextValidateDsigName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dsigName", "body", string(m.DsigName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OverviewGraphWidget) contextValidateGraphName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "graphName", "body", string(m.GraphName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OverviewGraphWidget) contextValidateHostName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "hostName", "body", string(m.HostName)); err != nil {
 		return err
 	}
 

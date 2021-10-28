@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AzureServiceRegionDiscoveryMethod azure service region discovery method
+//
 // swagger:model AzureServiceRegionDiscoveryMethod
 type AzureServiceRegionDiscoveryMethod struct {
 	AzureServiceRegionDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *AzureServiceRegionDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AzureServiceRegionDiscoveryMethodAllOf1 = data.AzureServiceRegionDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AzureServiceRegionDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		AzureServiceRegionDiscoveryMethodAllOf1: m.AzureServiceRegionDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AzureServiceRegionDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AzureServiceRegionDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this azure service region discovery method
 func (m *AzureServiceRegionDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AzureServiceRegionDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this azure service region discovery method based on the context it is used
+func (m *AzureServiceRegionDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AzureServiceRegionDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *AzureServiceRegionDiscoveryMethod) UnmarshalBinary(b []byte) error {
 }
 
 // AzureServiceRegionDiscoveryMethodAllOf1 azure service region discovery method all of1
+//
 // swagger:model AzureServiceRegionDiscoveryMethodAllOf1
 type AzureServiceRegionDiscoveryMethodAllOf1 interface{}

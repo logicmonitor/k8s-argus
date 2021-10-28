@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // MapItemInfo map item info
+//
 // swagger:model MapItemInfo
 type MapItemInfo struct {
 
@@ -69,6 +74,185 @@ type MapItemInfo struct {
 
 // Validate validates this map item info
 func (m *MapItemInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this map item info based on the context it is used
+func (m *MapItemInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateActiveStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAlertStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFormattedLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLatitude(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLongitude(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSDTStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateActiveStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "activeStatus", "body", string(m.ActiveStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateAlertStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertStatus", "body", string(m.AlertStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "displayName", "body", string(m.DisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateFormattedLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "formattedLocation", "body", string(m.FormattedLocation)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateLatitude(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "latitude", "body", string(m.Latitude)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "location", "body", string(m.Location)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateLongitude(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "longitude", "body", string(m.Longitude)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateSDTStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sdtStatus", "body", string(m.SDTStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateSubType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subType", "body", string(m.SubType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MapItemInfo) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

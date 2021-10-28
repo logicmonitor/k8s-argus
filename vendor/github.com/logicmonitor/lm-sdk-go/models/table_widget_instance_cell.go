@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // TableWidgetInstanceCell table widget instance cell
+//
 // swagger:model TableWidgetInstanceCell
 type TableWidgetInstanceCell struct {
 
@@ -52,7 +55,70 @@ func (m *TableWidgetInstanceCell) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetInstanceCell) validateInstanceID(formats strfmt.Registry) error {
+
 	if err := validate.Required("instanceId", "body", m.InstanceID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this table widget instance cell based on the context it is used
+func (m *TableWidgetInstanceCell) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDataPointID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPointName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateValidationStatusCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TableWidgetInstanceCell) contextValidateDataPointID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointId", "body", int32(m.DataPointID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetInstanceCell) contextValidateDataPointName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointName", "body", string(m.DataPointName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetInstanceCell) contextValidateInstanceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceName", "body", string(m.InstanceName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetInstanceCell) contextValidateValidationStatusCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "validationStatusCode", "body", int32(m.ValidationStatusCode)); err != nil {
 		return err
 	}
 

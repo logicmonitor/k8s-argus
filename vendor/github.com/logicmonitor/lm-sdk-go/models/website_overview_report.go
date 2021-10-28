@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // WebsiteOverviewReport website overview report
+//
 // swagger:model WebsiteOverviewReport
 type WebsiteOverviewReport struct {
 	customReportTypeIdField int32
@@ -281,20 +283,6 @@ func (m *WebsiteOverviewReport) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// DateRange gets the date range of this subtype
-
-// DisplayType gets the display type of this subtype
-
-// Exclude100Availability gets the exclude100 availability of this subtype
-
-// ExcludeSDT gets the exclude SDT of this subtype
-
-// IncludeTypes gets the include types of this subtype
-
-// Items gets the items of this subtype
-
-// ItemsType gets the items type of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *WebsiteOverviewReport) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -424,21 +412,14 @@ func (m *WebsiteOverviewReport) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.DateRange = data.DateRange
-
 	result.DisplayType = data.DisplayType
-
 	result.Exclude100Availability = data.Exclude100Availability
-
 	result.ExcludeSDT = data.ExcludeSDT
-
 	result.IncludeTypes = data.IncludeTypes
-
 	result.Items = data.Items
-
 	result.ItemsType = data.ItemsType
 
 	*m = result
@@ -490,8 +471,7 @@ func (m WebsiteOverviewReport) MarshalJSON() ([]byte, error) {
 		Items: m.Items,
 
 		ItemsType: m.ItemsType,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -576,8 +556,7 @@ func (m WebsiteOverviewReport) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -608,6 +587,7 @@ func (m *WebsiteOverviewReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteOverviewReport) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -616,6 +596,7 @@ func (m *WebsiteOverviewReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteOverviewReport) validateRecipients(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -640,7 +621,183 @@ func (m *WebsiteOverviewReport) validateRecipients(formats strfmt.Registry) erro
 }
 
 func (m *WebsiteOverviewReport) validateItemsType(formats strfmt.Registry) error {
+
 	if err := validate.Required("itemsType", "body", m.ItemsType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this website overview report based on the context it is used
+func (m *WebsiteOverviewReport) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomReportTypeID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomReportTypeName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnableViewAsOtherUser(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGeneratePages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecipients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportLinkNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateCustomReportTypeID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeId", "body", int32(m.CustomReportTypeID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateCustomReportTypeName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeName", "body", string(m.CustomReportTypeName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateEnableViewAsOtherUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enableViewAsOtherUser", "body", m.EnableViewAsOtherUser()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateLastGenerateOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateOn", "body", int64(m.LastGenerateOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateLastGeneratePages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGeneratePages", "body", int32(m.LastGeneratePages())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateLastGenerateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateSize", "body", int64(m.LastGenerateSize())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateLastmodifyUserID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserId", "body", int32(m.LastmodifyUserID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateLastmodifyUserName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserName", "body", string(m.LastmodifyUserName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateRecipients(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Recipients()); i++ {
+
+		if m.recipientsField[i] != nil {
+			if err := m.recipientsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateReportLinkNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportLinkNum", "body", int32(m.ReportLinkNum())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteOverviewReport) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
 		return err
 	}
 

@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NextUpgradeInfo next upgrade info
+//
 // swagger:model NextUpgradeInfo
 type NextUpgradeInfo struct {
 
@@ -41,6 +46,94 @@ type NextUpgradeInfo struct {
 
 // Validate validates this next upgrade info
 func (m *NextUpgradeInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this next upgrade info based on the context it is used
+func (m *NextUpgradeInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateMajorVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMandatory(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMinorVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpgradeTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpgradeTimeEpoch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NextUpgradeInfo) contextValidateMajorVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "majorVersion", "body", int32(m.MajorVersion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NextUpgradeInfo) contextValidateMandatory(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "mandatory", "body", m.Mandatory); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NextUpgradeInfo) contextValidateMinorVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "minorVersion", "body", int32(m.MinorVersion)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NextUpgradeInfo) contextValidateStable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stable", "body", m.Stable); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NextUpgradeInfo) contextValidateUpgradeTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "upgradeTime", "body", string(m.UpgradeTime)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NextUpgradeInfo) contextValidateUpgradeTimeEpoch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "upgradeTimeEpoch", "body", int64(m.UpgradeTimeEpoch)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

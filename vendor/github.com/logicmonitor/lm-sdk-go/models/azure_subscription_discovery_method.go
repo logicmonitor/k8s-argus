@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AzureSubscriptionDiscoveryMethod azure subscription discovery method
+//
 // swagger:model AzureSubscriptionDiscoveryMethod
 type AzureSubscriptionDiscoveryMethod struct {
 	AzureSubscriptionDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *AzureSubscriptionDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AzureSubscriptionDiscoveryMethodAllOf1 = data.AzureSubscriptionDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AzureSubscriptionDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		AzureSubscriptionDiscoveryMethodAllOf1: m.AzureSubscriptionDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AzureSubscriptionDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AzureSubscriptionDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this azure subscription discovery method
 func (m *AzureSubscriptionDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AzureSubscriptionDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this azure subscription discovery method based on the context it is used
+func (m *AzureSubscriptionDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AzureSubscriptionDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *AzureSubscriptionDiscoveryMethod) UnmarshalBinary(b []byte) error {
 }
 
 // AzureSubscriptionDiscoveryMethodAllOf1 azure subscription discovery method all of1
+//
 // swagger:model AzureSubscriptionDiscoveryMethodAllOf1
 type AzureSubscriptionDiscoveryMethodAllOf1 interface{}

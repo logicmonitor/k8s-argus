@@ -7,15 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // CIMCollectorAttribute c i m collector attribute
+//
 // swagger:model CIMCollectorAttribute
 type CIMCollectorAttribute struct {
 
@@ -47,18 +50,6 @@ func (m *CIMCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *CIMCollectorAttribute) SetName(val string) {
 }
-
-// Fields gets the fields of this subtype
-
-// IP gets the ip of this subtype
-
-// Namespace gets the namespace of this subtype
-
-// QueryClass gets the query class of this subtype
-
-// QueryIndex gets the query index of this subtype
-
-// QueryValue gets the query value of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *CIMCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -112,15 +103,10 @@ func (m *CIMCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Fields = data.Fields
-
 	result.IP = data.IP
-
 	result.Namespace = data.Namespace
-
 	result.QueryClass = data.QueryClass
-
 	result.QueryIndex = data.QueryIndex
-
 	result.QueryValue = data.QueryValue
 
 	*m = result
@@ -165,8 +151,7 @@ func (m CIMCollectorAttribute) MarshalJSON() ([]byte, error) {
 		QueryIndex: m.QueryIndex,
 
 		QueryValue: m.QueryValue,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -175,8 +160,7 @@ func (m CIMCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -199,6 +183,7 @@ func (m *CIMCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CIMCollectorAttribute) validateFields(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Fields) { // not required
 		return nil
 	}
@@ -217,6 +202,51 @@ func (m *CIMCollectorAttribute) validateFields(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this c i m collector attribute based on the context it is used
+func (m *CIMCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateFields(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *CIMCollectorAttribute) contextValidateFields(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Fields); i++ {
+
+		if m.Fields[i] != nil {
+			if err := m.Fields[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fields" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *CIMCollectorAttribute) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ip", "body", string(m.IP)); err != nil {
+		return err
 	}
 
 	return nil

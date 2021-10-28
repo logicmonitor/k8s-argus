@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DynamicTableWidgetRow dynamic table widget row
+//
 // swagger:model DynamicTableWidgetRow
 type DynamicTableWidgetRow struct {
 
@@ -32,6 +37,55 @@ type DynamicTableWidgetRow struct {
 
 // Validate validates this dynamic table widget row
 func (m *DynamicTableWidgetRow) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this dynamic table widget row based on the context it is used
+func (m *DynamicTableWidgetRow) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDeviceDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DynamicTableWidgetRow) contextValidateDeviceDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDisplayName", "body", string(m.DeviceDisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidgetRow) contextValidateGroupFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupFullPath", "body", string(m.GroupFullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidgetRow) contextValidateInstanceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceName", "body", string(m.InstanceName)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

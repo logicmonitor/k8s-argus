@@ -7,15 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // BigNumberWidgetData big number widget data
+//
 // swagger:model BigNumberWidgetData
 type BigNumberWidgetData struct {
 	titleField string
@@ -43,8 +46,6 @@ func (m *BigNumberWidgetData) Type() string {
 // SetType sets the type of this subtype
 func (m *BigNumberWidgetData) SetType(val string) {
 }
-
-// Data gets the data of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *BigNumberWidgetData) UnmarshalJSON(raw []byte) error {
@@ -105,8 +106,7 @@ func (m BigNumberWidgetData) MarshalJSON() ([]byte, error) {
 	}{
 
 		Data: m.Data,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +119,7 @@ func (m BigNumberWidgetData) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +142,7 @@ func (m *BigNumberWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberWidgetData) validateData(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Data) { // not required
 		return nil
 	}
@@ -154,6 +154,51 @@ func (m *BigNumberWidgetData) validateData(formats strfmt.Registry) error {
 
 		if m.Data[i] != nil {
 			if err := m.Data[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("data" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this big number widget data based on the context it is used
+func (m *BigNumberWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *BigNumberWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberWidgetData) contextValidateData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "data", "body", []*BigNumberData(m.Data)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Data); i++ {
+
+		if m.Data[i] != nil {
+			if err := m.Data[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("data" + "." + strconv.Itoa(i))
 				}

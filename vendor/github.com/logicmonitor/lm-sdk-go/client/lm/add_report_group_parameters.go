@@ -6,67 +6,98 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+	"github.com/go-openapi/strfmt"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewAddReportGroupParams creates a new AddReportGroupParams object
-// with the default values initialized.
+// NewAddReportGroupParams creates a new AddReportGroupParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewAddReportGroupParams() *AddReportGroupParams {
-	var ()
 	return &AddReportGroupParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewAddReportGroupParamsWithTimeout creates a new AddReportGroupParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewAddReportGroupParamsWithTimeout(timeout time.Duration) *AddReportGroupParams {
-	var ()
 	return &AddReportGroupParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewAddReportGroupParamsWithContext creates a new AddReportGroupParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewAddReportGroupParamsWithContext(ctx context.Context) *AddReportGroupParams {
-	var ()
 	return &AddReportGroupParams{
-
 		Context: ctx,
 	}
 }
 
 // NewAddReportGroupParamsWithHTTPClient creates a new AddReportGroupParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewAddReportGroupParamsWithHTTPClient(client *http.Client) *AddReportGroupParams {
-	var ()
 	return &AddReportGroupParams{
 		HTTPClient: client,
 	}
 }
 
-/*AddReportGroupParams contains all the parameters to send to the API endpoint
-for the add report group operation typically these are written to a http.Request
+/* AddReportGroupParams contains all the parameters to send to the API endpoint
+   for the add report group operation.
+
+   Typically these are written to a http.Request.
 */
 type AddReportGroupParams struct {
 
-	/*Body*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.ReportGroup
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the add report group params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *AddReportGroupParams) WithDefaults() *AddReportGroupParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the add report group params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *AddReportGroupParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := AddReportGroupParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the add report group params
@@ -102,6 +133,17 @@ func (o *AddReportGroupParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the add report group params
+func (o *AddReportGroupParams) WithUserAgent(userAgent *string) *AddReportGroupParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the add report group params
+func (o *AddReportGroupParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithBody adds the body to the add report group params
 func (o *AddReportGroupParams) WithBody(body *models.ReportGroup) *AddReportGroupParams {
 	o.SetBody(body)
@@ -115,11 +157,19 @@ func (o *AddReportGroupParams) SetBody(body *models.ReportGroup) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *AddReportGroupParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

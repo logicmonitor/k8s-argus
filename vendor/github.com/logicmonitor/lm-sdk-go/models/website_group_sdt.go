@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // WebsiteGroupSDT website group SDT
+//
 // swagger:model WebsiteGroupSDT
 type WebsiteGroupSDT struct {
 	adminField string
@@ -252,10 +254,6 @@ func (m *WebsiteGroupSDT) SetWeekOfMonth(val string) {
 	m.weekOfMonthField = val
 }
 
-// WebsiteGroupID gets the website group Id of this subtype
-
-// WebsiteGroupName gets the website group name of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *WebsiteGroupSDT) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -363,13 +361,11 @@ func (m *WebsiteGroupSDT) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.weekDayField = base.WeekDay
 
 	result.weekOfMonthField = base.WeekOfMonth
 
 	result.WebsiteGroupID = data.WebsiteGroupID
-
 	result.WebsiteGroupName = data.WebsiteGroupName
 
 	*m = result
@@ -395,8 +391,7 @@ func (m WebsiteGroupSDT) MarshalJSON() ([]byte, error) {
 		WebsiteGroupID: m.WebsiteGroupID,
 
 		WebsiteGroupName: m.WebsiteGroupName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -477,8 +472,7 @@ func (m WebsiteGroupSDT) MarshalJSON() ([]byte, error) {
 		WeekDay: m.WeekDay(),
 
 		WeekOfMonth: m.WeekOfMonth(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -501,7 +495,96 @@ func (m *WebsiteGroupSDT) Validate(formats strfmt.Registry) error {
 }
 
 func (m *WebsiteGroupSDT) validateWebsiteGroupID(formats strfmt.Registry) error {
+
 	if err := validate.Required("websiteGroupId", "body", m.WebsiteGroupID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this website group SDT based on the context it is used
+func (m *WebsiteGroupSDT) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsEffective(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWebsiteGroupName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebsiteGroupSDT) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", string(m.Admin())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteGroupSDT) contextValidateEndDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endDateTimeOnLocal", "body", string(m.EndDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteGroupSDT) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteGroupSDT) contextValidateIsEffective(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isEffective", "body", m.IsEffective()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteGroupSDT) contextValidateStartDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startDateTimeOnLocal", "body", string(m.StartDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteGroupSDT) contextValidateWebsiteGroupName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "websiteGroupName", "body", string(m.WebsiteGroupName)); err != nil {
 		return err
 	}
 

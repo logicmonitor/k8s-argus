@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // StatsDGraphDisplay stats d graph display
+//
 // swagger:model StatsDGraphDisplay
 type StatsDGraphDisplay struct {
 
@@ -29,6 +32,11 @@ type StatsDGraphDisplay struct {
 
 // Validate validates this stats d graph display
 func (m *StatsDGraphDisplay) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this stats d graph display based on context it is used
+func (m *StatsDGraphDisplay) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

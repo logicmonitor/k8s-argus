@@ -6,19 +6,22 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DeviceGroup device group
+//
 // swagger:model DeviceGroup
 type DeviceGroup struct {
 
 	// The Applies to custom query for this group (only for dynamic groups)
+	// Example: isLinux()
 	AppliesTo string `json:"appliesTo,omitempty"`
 
 	// The number of instances in each AWS region (only applies to AWS groups)
@@ -57,12 +60,15 @@ type DeviceGroup struct {
 	DefaultCollectorDescription string `json:"defaultCollectorDescription,omitempty"`
 
 	// The Id of the default collector assigned to the device group
+	// Example: 1
 	DefaultCollectorID int32 `json:"defaultCollectorId,omitempty"`
 
 	// The description of the device group
+	// Example: Linux Servers
 	Description string `json:"description,omitempty"`
 
 	// Indicates whether alerting is disabled (true) or enabled (false) for this device group
+	// Example: true
 	DisableAlerting bool `json:"disableAlerting,omitempty"`
 
 	// Whether or not alerting is effectively disabled for this device group (alerting may be disabled at a higher level, e.g. parent group)
@@ -70,6 +76,7 @@ type DeviceGroup struct {
 	EffectiveAlertEnabled *bool `json:"effectiveAlertEnabled,omitempty"`
 
 	// Indicates whether Netflow is enabled (true) or disabled (false) for the device group, the default value is true
+	// Example: true
 	EnableNetflow interface{} `json:"enableNetflow,omitempty"`
 
 	// The extra setting for cloud group
@@ -97,6 +104,7 @@ type DeviceGroup struct {
 	GroupStatus string `json:"groupStatus,omitempty"`
 
 	// The type of device group: normal and dynamic device groups will have groupType=Normal, and AWS groups will have a groupType value of AWS/SERVICE (e.g. AWS/S3)
+	// Example: Normal
 	GroupType string `json:"groupType,omitempty"`
 
 	// Whether if any Netflow enabled devices in this device group
@@ -108,6 +116,7 @@ type DeviceGroup struct {
 	ID int32 `json:"id,omitempty"`
 
 	// The name of the device group
+	// Example: Linux Servers
 	// Required: true
 	Name *string `json:"name"`
 
@@ -136,6 +145,7 @@ type DeviceGroup struct {
 	NumOfHosts int64 `json:"numOfHosts,omitempty"`
 
 	// The id of the parent group for this device group (the root device group has an Id of 1)
+	// Example: 1
 	ParentID int32 `json:"parentId,omitempty"`
 
 	// The child device groups within this device group
@@ -257,6 +267,7 @@ func (m *DeviceGroup) validateGcpTestResult(formats strfmt.Registry) error {
 }
 
 func (m *DeviceGroup) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
@@ -283,6 +294,378 @@ func (m *DeviceGroup) validateSubGroups(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device group based on the context it is used
+func (m *DeviceGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAwsRegionsInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAwsTestResult(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAwsTestResultCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAzureRegionsInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAzureTestResult(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAzureTestResultCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCreatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDefaultCollectorDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEffectiveAlertEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGcpRegionsInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGcpTestResult(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGcpTestResultCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHasNetflowEnabledDevices(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfAWSDevices(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfAzureDevices(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfDirectDevices(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfDirectSubGroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfGcpDevices(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNumOfHosts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubGroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateAwsRegionsInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "awsRegionsInfo", "body", string(m.AwsRegionsInfo)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateAwsTestResult(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AwsTestResult != nil {
+		if err := m.AwsTestResult.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("awsTestResult")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateAwsTestResultCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "awsTestResultCode", "body", int32(m.AwsTestResultCode)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateAzureRegionsInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "azureRegionsInfo", "body", string(m.AzureRegionsInfo)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateAzureTestResult(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AzureTestResult != nil {
+		if err := m.AzureTestResult.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("azureTestResult")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateAzureTestResultCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "azureTestResultCode", "body", int32(m.AzureTestResultCode)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateCreatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdOn", "body", int64(m.CreatedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateCustomProperties(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CustomProperties); i++ {
+
+		if m.CustomProperties[i] != nil {
+			if err := m.CustomProperties[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("customProperties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateDefaultCollectorDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "defaultCollectorDescription", "body", string(m.DefaultCollectorDescription)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateEffectiveAlertEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "effectiveAlertEnabled", "body", m.EffectiveAlertEnabled); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "fullPath", "body", string(m.FullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateGcpRegionsInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "gcpRegionsInfo", "body", string(m.GcpRegionsInfo)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateGcpTestResult(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.GcpTestResult != nil {
+		if err := m.GcpTestResult.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("gcpTestResult")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateGcpTestResultCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "gcpTestResultCode", "body", int32(m.GcpTestResultCode)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateGroupStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupStatus", "body", string(m.GroupStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateHasNetflowEnabledDevices(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "hasNetflowEnabledDevices", "body", m.HasNetflowEnabledDevices); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateNumOfAWSDevices(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfAWSDevices", "body", int64(m.NumOfAWSDevices)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateNumOfAzureDevices(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfAzureDevices", "body", int64(m.NumOfAzureDevices)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateNumOfDirectDevices(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfDirectDevices", "body", int64(m.NumOfDirectDevices)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateNumOfDirectSubGroups(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfDirectSubGroups", "body", int64(m.NumOfDirectSubGroups)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateNumOfGcpDevices(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfGcpDevices", "body", int64(m.NumOfGcpDevices)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateNumOfHosts(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "numOfHosts", "body", int64(m.NumOfHosts)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateSubGroups(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subGroups", "body", []*DeviceGroupData(m.SubGroups)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.SubGroups); i++ {
+
+		if m.SubGroups[i] != nil {
+			if err := m.SubGroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("subGroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceGroup) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission)); err != nil {
+		return err
 	}
 
 	return nil

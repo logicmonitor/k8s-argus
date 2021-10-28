@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Period period
+//
 // swagger:model Period
 type Period struct {
 
@@ -60,6 +63,7 @@ func (m *Period) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateEndMinutes(formats strfmt.Registry) error {
+
 	if err := validate.Required("endMinutes", "body", m.EndMinutes); err != nil {
 		return err
 	}
@@ -68,6 +72,7 @@ func (m *Period) validateEndMinutes(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateStartMinutes(formats strfmt.Registry) error {
+
 	if err := validate.Required("startMinutes", "body", m.StartMinutes); err != nil {
 		return err
 	}
@@ -76,6 +81,7 @@ func (m *Period) validateStartMinutes(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateTimezone(formats strfmt.Registry) error {
+
 	if err := validate.Required("timezone", "body", m.Timezone); err != nil {
 		return err
 	}
@@ -84,10 +90,16 @@ func (m *Period) validateTimezone(formats strfmt.Registry) error {
 }
 
 func (m *Period) validateWeekDays(formats strfmt.Registry) error {
+
 	if err := validate.Required("weekDays", "body", m.WeekDays); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this period based on context it is used
+func (m *Period) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

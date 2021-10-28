@@ -12,6 +12,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
+	"strings"
 	"text/template"
 	"time"
 
@@ -27,11 +29,25 @@ type Resource struct {
 	Apis               string   `yaml:"apis"`
 	Namespaced         bool     `yaml:"namespaced"`
 	PingResource       bool     `yaml:"pingResource"`
+	ObjectType         string   `yaml:"objectType"`
+	TitlePlural        string   `yaml:"titlePlural"`
+}
+
+type Apis struct {
+	PackageName string `yaml:"packageName"`
+	Alias       string `yaml:"alias"`
+	ApiGroup    string `yaml:"apiGroup"`
+	ApiVersion  string `yaml:"apiVersion"`
 }
 
 type Resources struct {
 	Resources []Resource `yaml:"resources"`
+	Apis      []Apis     `yaml:"apis"`
 }
+
+const ApiRegex string = "([a-z0-9.-]+)"
+
+var r *regexp.Regexp = regexp.MustCompile(ApiRegex)
 
 func readConf(filename string) (*Resources, error) {
 	buf, err := ioutil.ReadFile(filename)
@@ -48,6 +64,16 @@ func readConf(filename string) (*Resources, error) {
 	return c, nil
 }
 
+func apiExtractor(packageName string) (string, string) {
+	match := r.FindAllStringSubmatch(packageName, -1)
+	len := len(match)
+	if len > 2 {
+		return match[len-2][0], match[len-1][0]
+	} else {
+		panic("Invalid Match")
+	}
+}
+
 func main() {
 	c, err := readConf("enums.yaml")
 	if err != nil {
@@ -59,6 +85,21 @@ func main() {
 	f, err := os.Create(fileName)
 	die(err)
 	defer f.Close()
+
+	for i, v := range c.Apis {
+		if strings.Contains(v.PackageName, "/") {
+			api, version := apiExtractor(v.PackageName)
+			if v.Alias == "" {
+				c.Apis[i].Alias = api + version
+			}
+			if v.ApiGroup == "" || api != "core" {
+				c.Apis[i].ApiGroup = api
+			}
+			if v.ApiVersion == "" {
+				c.Apis[i].ApiVersion = version
+			}
+		}
+	}
 
 	tmpl := template.Must(template.New("enum_template.tmpl").Funcs(lastFunc).ParseFiles("enum_template.tmpl"))
 
@@ -110,5 +151,71 @@ var lastFunc = template.FuncMap{
 			}
 		}
 		return s[:len(s)-2]
+	},
+	"apiGroup": func(cases []Resource, apis []Apis, apiGroup string) string {
+		s := ""
+		m := map[string]struct{}{}
+		for _, a := range apis {
+			if a.ApiGroup == apiGroup {
+				m[a.Alias] = struct{}{}
+			}
+		}
+		for _, c := range cases {
+			if _, ok := m[c.Apis]; ok {
+				s = s + c.LongName + ", "
+			}
+		}
+		return s[:len(s)-2]
+	},
+	"apiVersion": func(cases []Resource, api Apis) string {
+		s := ""
+		for _, c := range cases {
+			if c.Apis == api.Alias {
+				s = s + c.LongName + ", "
+			}
+		}
+		return s[:len(s)-2]
+	},
+	"api": func(api Apis) string {
+		s := api.ApiGroup
+		if s == "" {
+			return api.ApiVersion
+		} else {
+			return s + "/" + api.ApiVersion
+		}
+	},
+	"k8sObjectType": func(resource Resource) string {
+		if resource.ObjectType == "" {
+			return resource.DisplayName
+		} else {
+			return resource.ObjectType
+		}
+	},
+	"getApiGroups": func(apis []Apis) []string {
+		m := map[string]struct{}{}
+		for _, v := range apis {
+			m[v.ApiGroup] = struct{}{}
+		}
+		arr := make([]string, len(m))
+		i := 0
+		for key := range m {
+			arr[i] = key
+			i++
+		}
+		return arr
+	},
+	"apiGroupValue": func(val string) string {
+		if val == "core" {
+			return ""
+		} else {
+			return val
+		}
+	},
+	"titlePlural": func(rt Resource) string {
+		if rt.TitlePlural != "" {
+			return rt.TitlePlural
+		} else {
+			return rt.LongName
+		}
 	},
 }

@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsBillingCollectorAttribute aws billing collector attribute
+//
 // swagger:model AwsBillingCollectorAttribute
 type AwsBillingCollectorAttribute struct {
 	AwsBillingCollectorAttributeAllOf1
@@ -61,7 +63,6 @@ func (m *AwsBillingCollectorAttribute) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AwsBillingCollectorAttributeAllOf1 = data.AwsBillingCollectorAttributeAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AwsBillingCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		AwsBillingCollectorAttributeAllOf1: m.AwsBillingCollectorAttributeAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AwsBillingCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AwsBillingCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this aws billing collector attribute
 func (m *AwsBillingCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AwsBillingCollectorAttributeAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws billing collector attribute based on the context it is used
+func (m *AwsBillingCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AwsBillingCollectorAttributeAllOf1
@@ -128,5 +139,6 @@ func (m *AwsBillingCollectorAttribute) UnmarshalBinary(b []byte) error {
 }
 
 // AwsBillingCollectorAttributeAllOf1 aws billing collector attribute all of1
+//
 // swagger:model AwsBillingCollectorAttributeAllOf1
 type AwsBillingCollectorAttributeAllOf1 interface{}

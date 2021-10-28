@@ -7,17 +7,20 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetflowGroupWidgetData netflow group widget data
+//
 // swagger:model NetflowGroupWidgetData
 type NetflowGroupWidgetData struct {
 	titleField string
@@ -57,8 +60,6 @@ func (m *NetflowGroupWidgetData) Items() []NetflowDataBase {
 func (m *NetflowGroupWidgetData) SetItems(val []NetflowDataBase) {
 	m.itemsField = val
 }
-
-// Total gets the total of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NetflowGroupWidgetData) UnmarshalJSON(raw []byte) error {
@@ -111,7 +112,6 @@ func (m *NetflowGroupWidgetData) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.itemsField = allOfItems
-
 	result.Total = data.Total
 
 	*m = result
@@ -131,8 +131,7 @@ func (m NetflowGroupWidgetData) MarshalJSON() ([]byte, error) {
 	}{
 
 		Total: m.Total,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +148,7 @@ func (m NetflowGroupWidgetData) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		Items: m.Items(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -173,17 +171,76 @@ func (m *NetflowGroupWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NetflowGroupWidgetData) validateItems(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Items()) { // not required
 		return nil
 	}
 
 	for i := 0; i < len(m.Items()); i++ {
+
 		if err := m.itemsField[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("items" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this netflow group widget data based on the context it is used
+func (m *NetflowGroupWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateItems(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowGroupWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowGroupWidgetData) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "items", "body", []NetflowDataBase(m.Items())); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Items()); i++ {
+
+		if err := m.itemsField[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("items" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *NetflowGroupWidgetData) contextValidateTotal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "total", "body", int32(m.Total)); err != nil {
+		return err
 	}
 
 	return nil

@@ -6,69 +6,104 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewDeleteAPITokenByIDParams creates a new DeleteAPITokenByIDParams object
-// with the default values initialized.
+// NewDeleteAPITokenByIDParams creates a new DeleteAPITokenByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewDeleteAPITokenByIDParams() *DeleteAPITokenByIDParams {
-	var ()
 	return &DeleteAPITokenByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewDeleteAPITokenByIDParamsWithTimeout creates a new DeleteAPITokenByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewDeleteAPITokenByIDParamsWithTimeout(timeout time.Duration) *DeleteAPITokenByIDParams {
-	var ()
 	return &DeleteAPITokenByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewDeleteAPITokenByIDParamsWithContext creates a new DeleteAPITokenByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewDeleteAPITokenByIDParamsWithContext(ctx context.Context) *DeleteAPITokenByIDParams {
-	var ()
 	return &DeleteAPITokenByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewDeleteAPITokenByIDParamsWithHTTPClient creates a new DeleteAPITokenByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewDeleteAPITokenByIDParamsWithHTTPClient(client *http.Client) *DeleteAPITokenByIDParams {
-	var ()
 	return &DeleteAPITokenByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*DeleteAPITokenByIDParams contains all the parameters to send to the API endpoint
-for the delete Api token by Id operation typically these are written to a http.Request
+/* DeleteAPITokenByIDParams contains all the parameters to send to the API endpoint
+   for the delete Api token by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type DeleteAPITokenByIDParams struct {
 
-	/*AdminID*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// AdminID.
+	//
+	// Format: int32
 	AdminID int32
-	/*ApitokenID*/
+
+	// ApitokenID.
+	//
+	// Format: int32
 	ApitokenID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the delete Api token by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteAPITokenByIDParams) WithDefaults() *DeleteAPITokenByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the delete Api token by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteAPITokenByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := DeleteAPITokenByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the delete Api token by Id params
@@ -104,6 +139,17 @@ func (o *DeleteAPITokenByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the delete Api token by Id params
+func (o *DeleteAPITokenByIDParams) WithUserAgent(userAgent *string) *DeleteAPITokenByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the delete Api token by Id params
+func (o *DeleteAPITokenByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithAdminID adds the adminID to the delete Api token by Id params
 func (o *DeleteAPITokenByIDParams) WithAdminID(adminID int32) *DeleteAPITokenByIDParams {
 	o.SetAdminID(adminID)
@@ -128,10 +174,19 @@ func (o *DeleteAPITokenByIDParams) SetApitokenID(apitokenID int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *DeleteAPITokenByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 
 	// path param adminId
 	if err := r.SetPathParam("adminId", swag.FormatInt32(o.AdminID)); err != nil {

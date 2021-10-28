@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AuditLogReport audit log report
+//
 // swagger:model AuditLogReport
 type AuditLogReport struct {
 	customReportTypeIdField int32
@@ -272,16 +274,6 @@ func (m *AuditLogReport) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// Columns gets the columns of this subtype
-
-// DateRange gets the date range of this subtype
-
-// Filter gets the filter of this subtype
-
-// SortedBy gets the sorted by of this subtype
-
-// Username gets the username of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AuditLogReport) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -402,17 +394,12 @@ func (m *AuditLogReport) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.Columns = data.Columns
-
 	result.DateRange = data.DateRange
-
 	result.Filter = data.Filter
-
 	result.SortedBy = data.SortedBy
-
 	result.Username = data.Username
 
 	*m = result
@@ -451,8 +438,7 @@ func (m AuditLogReport) MarshalJSON() ([]byte, error) {
 		SortedBy: m.SortedBy,
 
 		Username: m.Username,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -537,8 +523,7 @@ func (m AuditLogReport) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -569,6 +554,7 @@ func (m *AuditLogReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AuditLogReport) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -577,6 +563,7 @@ func (m *AuditLogReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AuditLogReport) validateRecipients(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -601,6 +588,7 @@ func (m *AuditLogReport) validateRecipients(formats strfmt.Registry) error {
 }
 
 func (m *AuditLogReport) validateColumns(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Columns) { // not required
 		return nil
 	}
@@ -612,6 +600,203 @@ func (m *AuditLogReport) validateColumns(formats strfmt.Registry) error {
 
 		if m.Columns[i] != nil {
 			if err := m.Columns[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this audit log report based on the context it is used
+func (m *AuditLogReport) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomReportTypeID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomReportTypeName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnableViewAsOtherUser(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGeneratePages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecipients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportLinkNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColumns(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateCustomReportTypeID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeId", "body", int32(m.CustomReportTypeID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateCustomReportTypeName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeName", "body", string(m.CustomReportTypeName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateEnableViewAsOtherUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enableViewAsOtherUser", "body", m.EnableViewAsOtherUser()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateLastGenerateOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateOn", "body", int64(m.LastGenerateOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateLastGeneratePages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGeneratePages", "body", int32(m.LastGeneratePages())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateLastGenerateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateSize", "body", int64(m.LastGenerateSize())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateLastmodifyUserID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserId", "body", int32(m.LastmodifyUserID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateLastmodifyUserName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserName", "body", string(m.LastmodifyUserName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateRecipients(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Recipients()); i++ {
+
+		if m.recipientsField[i] != nil {
+			if err := m.recipientsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateReportLinkNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportLinkNum", "body", int32(m.ReportLinkNum())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AuditLogReport) contextValidateColumns(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Columns); i++ {
+
+		if m.Columns[i] != nil {
+			if err := m.Columns[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("columns" + "." + strconv.Itoa(i))
 				}

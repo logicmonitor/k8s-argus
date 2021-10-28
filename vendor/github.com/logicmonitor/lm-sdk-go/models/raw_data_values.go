@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // RawDataValues raw data values
+//
 // swagger:model RawDataValues
 type RawDataValues struct {
 
@@ -29,6 +34,55 @@ type RawDataValues struct {
 
 // Validate validates this raw data values
 func (m *RawDataValues) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this raw data values based on the context it is used
+func (m *RawDataValues) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateNextPageParams(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateValues(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *RawDataValues) contextValidateNextPageParams(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nextPageParams", "body", string(m.NextPageParams)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RawDataValues) contextValidateTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "time", "body", []int64(m.Time)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RawDataValues) contextValidateValues(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "values", "body", [][]interface{}(m.Values)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

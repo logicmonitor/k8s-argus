@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DynamicColumn dynamic column
+//
 // swagger:model DynamicColumn
 type DynamicColumn struct {
 
@@ -23,6 +26,11 @@ type DynamicColumn struct {
 
 // Validate validates this dynamic column
 func (m *DynamicColumn) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this dynamic column based on context it is used
+func (m *DynamicColumn) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

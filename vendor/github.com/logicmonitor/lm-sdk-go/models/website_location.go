@@ -6,19 +6,22 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // WebsiteLocation website location
+//
 // swagger:model WebsiteLocation
 type WebsiteLocation struct {
 
 	// all
-	All bool `json:"all,omitempty"`
+	// Example: true
+	All interface{} `json:"all,omitempty"`
 
 	// collector ids
 	CollectorIds []int32 `json:"collectorIds,omitempty"`
@@ -27,6 +30,7 @@ type WebsiteLocation struct {
 	Collectors []*WebsiteCollectorInfo `json:"collectors,omitempty"`
 
 	// smg ids
+	// Example: [1, 2, 4, 3, 5, 6]
 	SmgIds []int32 `json:"smgIds,omitempty"`
 }
 
@@ -56,6 +60,38 @@ func (m *WebsiteLocation) validateCollectors(formats strfmt.Registry) error {
 
 		if m.Collectors[i] != nil {
 			if err := m.Collectors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("collectors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this website location based on the context it is used
+func (m *WebsiteLocation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCollectors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebsiteLocation) contextValidateCollectors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Collectors); i++ {
+
+		if m.Collectors[i] != nil {
+			if err := m.Collectors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("collectors" + "." + strconv.Itoa(i))
 				}

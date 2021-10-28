@@ -7,32 +7,34 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
-// AggragateCollectorAttribute aggragate collector attribute
-// swagger:model AggragateCollectorAttribute
-type AggragateCollectorAttribute struct {
-	AggragateCollectorAttributeAllOf1
+// AggregateCollectorAttribute aggregate collector attribute
+//
+// swagger:model AggregateCollectorAttribute
+type AggregateCollectorAttribute struct {
+	AggregateCollectorAttributeAllOf1
 }
 
 // Name gets the name of this subtype
-func (m *AggragateCollectorAttribute) Name() string {
-	return "aggregate"
+func (m *AggregateCollectorAttribute) Name() string {
+	return "AggregateCollectorAttribute"
 }
 
 // SetName sets the name of this subtype
-func (m *AggragateCollectorAttribute) SetName(val string) {
+func (m *AggregateCollectorAttribute) SetName(val string) {
 }
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
-func (m *AggragateCollectorAttribute) UnmarshalJSON(raw []byte) error {
+func (m *AggregateCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	var data struct {
-		AggragateCollectorAttributeAllOf1
+		AggregateCollectorAttributeAllOf1
 	}
 	buf := bytes.NewBuffer(raw)
 	dec := json.NewDecoder(buf)
@@ -55,14 +57,13 @@ func (m *AggragateCollectorAttribute) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
-	var result AggragateCollectorAttribute
+	var result AggregateCollectorAttribute
 
 	if base.Name != result.Name() {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
-	result.AggragateCollectorAttributeAllOf1 = data.AggragateCollectorAttributeAllOf1
+	result.AggregateCollectorAttributeAllOf1 = data.AggregateCollectorAttributeAllOf1
 
 	*m = result
 
@@ -70,16 +71,15 @@ func (m *AggragateCollectorAttribute) UnmarshalJSON(raw []byte) error {
 }
 
 // MarshalJSON marshals this object with a polymorphic type to a JSON structure
-func (m AggragateCollectorAttribute) MarshalJSON() ([]byte, error) {
+func (m AggregateCollectorAttribute) MarshalJSON() ([]byte, error) {
 	var b1, b2, b3 []byte
 	var err error
 	b1, err = json.Marshal(struct {
-		AggragateCollectorAttributeAllOf1
+		AggregateCollectorAttributeAllOf1
 	}{
 
-		AggragateCollectorAttributeAllOf1: m.AggragateCollectorAttributeAllOf1,
-	},
-	)
+		AggregateCollectorAttributeAllOf1: m.AggregateCollectorAttributeAllOf1,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AggragateCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -97,11 +96,23 @@ func (m AggragateCollectorAttribute) MarshalJSON() ([]byte, error) {
 	return swag.ConcatJSON(b1, b2, b3), nil
 }
 
-// Validate validates this aggragate collector attribute
-func (m *AggragateCollectorAttribute) Validate(formats strfmt.Registry) error {
+// Validate validates this aggregate collector attribute
+func (m *AggregateCollectorAttribute) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	// validation for a type composition with AggragateCollectorAttributeAllOf1
+	// validation for a type composition with AggregateCollectorAttributeAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aggregate collector attribute based on the context it is used
+func (m *AggregateCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AggregateCollectorAttributeAllOf1
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
@@ -110,7 +121,7 @@ func (m *AggragateCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *AggragateCollectorAttribute) MarshalBinary() ([]byte, error) {
+func (m *AggregateCollectorAttribute) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -118,8 +129,8 @@ func (m *AggragateCollectorAttribute) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *AggragateCollectorAttribute) UnmarshalBinary(b []byte) error {
-	var res AggragateCollectorAttribute
+func (m *AggregateCollectorAttribute) UnmarshalBinary(b []byte) error {
+	var res AggregateCollectorAttribute
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -127,6 +138,7 @@ func (m *AggragateCollectorAttribute) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// AggragateCollectorAttributeAllOf1 aggragate collector attribute all of1
-// swagger:model AggragateCollectorAttributeAllOf1
-type AggragateCollectorAttributeAllOf1 interface{}
+// AggregateCollectorAttributeAllOf1 aggregate collector attribute all of1
+//
+// swagger:model AggregateCollectorAttributeAllOf1
+type AggregateCollectorAttributeAllOf1 interface{}

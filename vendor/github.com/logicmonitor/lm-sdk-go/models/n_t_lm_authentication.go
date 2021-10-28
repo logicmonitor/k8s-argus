@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // NTLMAuthentication n t LM authentication
+//
 // swagger:model NTLMAuthentication
 type NTLMAuthentication struct {
 	passwordField *string
@@ -54,8 +56,6 @@ func (m *NTLMAuthentication) UserName() *string {
 func (m *NTLMAuthentication) SetUserName(val *string) {
 	m.userNameField = val
 }
-
-// Domain gets the domain of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NTLMAuthentication) UnmarshalJSON(raw []byte) error {
@@ -97,7 +97,6 @@ func (m *NTLMAuthentication) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userNameField = base.UserName
 
 	result.Domain = data.Domain
@@ -118,8 +117,7 @@ func (m NTLMAuthentication) MarshalJSON() ([]byte, error) {
 	}{
 
 		Domain: m.Domain,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +134,7 @@ func (m NTLMAuthentication) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserName: m.UserName(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -164,6 +161,7 @@ func (m *NTLMAuthentication) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NTLMAuthentication) validatePassword(formats strfmt.Registry) error {
+
 	if err := validate.Required("password", "body", m.Password()); err != nil {
 		return err
 	}
@@ -172,10 +170,21 @@ func (m *NTLMAuthentication) validatePassword(formats strfmt.Registry) error {
 }
 
 func (m *NTLMAuthentication) validateUserName(formats strfmt.Registry) error {
+
 	if err := validate.Required("userName", "body", m.UserName()); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this n t LM authentication based on the context it is used
+func (m *NTLMAuthentication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

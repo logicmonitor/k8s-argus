@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // BasicAuthentication basic authentication
+//
 // swagger:model BasicAuthentication
 type BasicAuthentication struct {
 	passwordField *string
@@ -92,7 +94,6 @@ func (m *BasicAuthentication) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userNameField = base.UserName
 
 	result.BasicAuthenticationAllOf1 = data.BasicAuthenticationAllOf1
@@ -111,8 +112,7 @@ func (m BasicAuthentication) MarshalJSON() ([]byte, error) {
 	}{
 
 		BasicAuthenticationAllOf1: m.BasicAuthenticationAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -129,8 +129,7 @@ func (m BasicAuthentication) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserName: m.UserName(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -159,6 +158,7 @@ func (m *BasicAuthentication) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BasicAuthentication) validatePassword(formats strfmt.Registry) error {
+
 	if err := validate.Required("password", "body", m.Password()); err != nil {
 		return err
 	}
@@ -167,10 +167,23 @@ func (m *BasicAuthentication) validatePassword(formats strfmt.Registry) error {
 }
 
 func (m *BasicAuthentication) validateUserName(formats strfmt.Registry) error {
+
 	if err := validate.Required("userName", "body", m.UserName()); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this basic authentication based on the context it is used
+func (m *BasicAuthentication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with BasicAuthenticationAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
@@ -193,5 +206,6 @@ func (m *BasicAuthentication) UnmarshalBinary(b []byte) error {
 }
 
 // BasicAuthenticationAllOf1 basic authentication all of1
+//
 // swagger:model BasicAuthenticationAllOf1
 type BasicAuthenticationAllOf1 interface{}

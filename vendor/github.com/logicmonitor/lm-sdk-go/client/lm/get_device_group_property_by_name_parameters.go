@@ -6,74 +6,108 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewGetDeviceGroupPropertyByNameParams creates a new GetDeviceGroupPropertyByNameParams object
-// with the default values initialized.
+// NewGetDeviceGroupPropertyByNameParams creates a new GetDeviceGroupPropertyByNameParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetDeviceGroupPropertyByNameParams() *GetDeviceGroupPropertyByNameParams {
-	var ()
 	return &GetDeviceGroupPropertyByNameParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetDeviceGroupPropertyByNameParamsWithTimeout creates a new GetDeviceGroupPropertyByNameParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetDeviceGroupPropertyByNameParamsWithTimeout(timeout time.Duration) *GetDeviceGroupPropertyByNameParams {
-	var ()
 	return &GetDeviceGroupPropertyByNameParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetDeviceGroupPropertyByNameParamsWithContext creates a new GetDeviceGroupPropertyByNameParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetDeviceGroupPropertyByNameParamsWithContext(ctx context.Context) *GetDeviceGroupPropertyByNameParams {
-	var ()
 	return &GetDeviceGroupPropertyByNameParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetDeviceGroupPropertyByNameParamsWithHTTPClient creates a new GetDeviceGroupPropertyByNameParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetDeviceGroupPropertyByNameParamsWithHTTPClient(client *http.Client) *GetDeviceGroupPropertyByNameParams {
-	var ()
 	return &GetDeviceGroupPropertyByNameParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetDeviceGroupPropertyByNameParams contains all the parameters to send to the API endpoint
-for the get device group property by name operation typically these are written to a http.Request
+/* GetDeviceGroupPropertyByNameParams contains all the parameters to send to the API endpoint
+   for the get device group property by name operation.
+
+   Typically these are written to a http.Request.
 */
 type GetDeviceGroupPropertyByNameParams struct {
 
-	/*Fields*/
-	Fields *string
-	/*Gid
-	  group ID
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
 
+	// Fields.
+	Fields *string
+
+	/* Gid.
+
+	   group ID
+
+	   Format: int32
 	*/
 	Gid int32
-	/*Name*/
+
+	// Name.
 	Name string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get device group property by name params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDeviceGroupPropertyByNameParams) WithDefaults() *GetDeviceGroupPropertyByNameParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get device group property by name params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDeviceGroupPropertyByNameParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := GetDeviceGroupPropertyByNameParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the get device group property by name params
@@ -107,6 +141,17 @@ func (o *GetDeviceGroupPropertyByNameParams) WithHTTPClient(client *http.Client)
 // SetHTTPClient adds the HTTPClient to the get device group property by name params
 func (o *GetDeviceGroupPropertyByNameParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the get device group property by name params
+func (o *GetDeviceGroupPropertyByNameParams) WithUserAgent(userAgent *string) *GetDeviceGroupPropertyByNameParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the get device group property by name params
+func (o *GetDeviceGroupPropertyByNameParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithFields adds the fields to the get device group property by name params
@@ -144,25 +189,35 @@ func (o *GetDeviceGroupPropertyByNameParams) SetName(name string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDeviceGroupPropertyByNameParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.Fields != nil {
 
 		// query param fields
 		var qrFields string
+
 		if o.Fields != nil {
 			qrFields = *o.Fields
 		}
 		qFields := qrFields
 		if qFields != "" {
+
 			if err := r.SetQueryParam("fields", qFields); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param gid

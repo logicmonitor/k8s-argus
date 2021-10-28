@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // OpsNoteWebsiteScope ops note website scope
+//
 // swagger:model OpsNoteWebsiteScope
 type OpsNoteWebsiteScope struct {
 
@@ -22,9 +24,11 @@ type OpsNoteWebsiteScope struct {
 	FullPath string `json:"fullPath,omitempty"`
 
 	// group Id
+	// Example: 74
 	GroupID int32 `json:"groupId,omitempty"`
 
 	// website Id
+	// Example: 87
 	WebsiteID int32 `json:"websiteId,omitempty"`
 
 	// website name
@@ -40,14 +44,6 @@ func (m *OpsNoteWebsiteScope) Type() string {
 func (m *OpsNoteWebsiteScope) SetType(val string) {
 }
 
-// FullPath gets the full path of this subtype
-
-// GroupID gets the group Id of this subtype
-
-// WebsiteID gets the website Id of this subtype
-
-// WebsiteName gets the website name of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *OpsNoteWebsiteScope) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -56,9 +52,11 @@ func (m *OpsNoteWebsiteScope) UnmarshalJSON(raw []byte) error {
 		FullPath string `json:"fullPath,omitempty"`
 
 		// group Id
+		// Example: 74
 		GroupID int32 `json:"groupId,omitempty"`
 
 		// website Id
+		// Example: 87
 		WebsiteID int32 `json:"websiteId,omitempty"`
 
 		// website name
@@ -93,11 +91,8 @@ func (m *OpsNoteWebsiteScope) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.FullPath = data.FullPath
-
 	result.GroupID = data.GroupID
-
 	result.WebsiteID = data.WebsiteID
-
 	result.WebsiteName = data.WebsiteName
 
 	*m = result
@@ -115,9 +110,11 @@ func (m OpsNoteWebsiteScope) MarshalJSON() ([]byte, error) {
 		FullPath string `json:"fullPath,omitempty"`
 
 		// group Id
+		// Example: 74
 		GroupID int32 `json:"groupId,omitempty"`
 
 		// website Id
+		// Example: 87
 		WebsiteID int32 `json:"websiteId,omitempty"`
 
 		// website name
@@ -131,8 +128,7 @@ func (m OpsNoteWebsiteScope) MarshalJSON() ([]byte, error) {
 		WebsiteID: m.WebsiteID,
 
 		WebsiteName: m.WebsiteName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +137,7 @@ func (m OpsNoteWebsiteScope) MarshalJSON() ([]byte, error) {
 	}{
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +147,16 @@ func (m OpsNoteWebsiteScope) MarshalJSON() ([]byte, error) {
 
 // Validate validates this ops note website scope
 func (m *OpsNoteWebsiteScope) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this ops note website scope based on the context it is used
+func (m *OpsNoteWebsiteScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

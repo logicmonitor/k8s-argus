@@ -6,17 +6,21 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AlertAck alert ack
+//
 // swagger:model AlertAck
 type AlertAck struct {
 
 	// your comment on the alert
+	// Example: looking into this alert
 	// Required: true
 	AckComment *string `json:"ackComment"`
 }
@@ -36,10 +40,16 @@ func (m *AlertAck) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertAck) validateAckComment(formats strfmt.Registry) error {
+
 	if err := validate.Required("ackComment", "body", m.AckComment); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this alert ack based on context it is used
+func (m *AlertAck) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

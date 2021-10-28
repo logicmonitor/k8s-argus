@@ -6,75 +6,110 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewGetDatasourceByIDParams creates a new GetDatasourceByIDParams object
-// with the default values initialized.
+// NewGetDatasourceByIDParams creates a new GetDatasourceByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetDatasourceByIDParams() *GetDatasourceByIDParams {
-	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
-		Format: &formatDefault,
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetDatasourceByIDParamsWithTimeout creates a new GetDatasourceByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetDatasourceByIDParamsWithTimeout(timeout time.Duration) *GetDatasourceByIDParams {
-	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
-		Format: &formatDefault,
-
 		timeout: timeout,
 	}
 }
 
 // NewGetDatasourceByIDParamsWithContext creates a new GetDatasourceByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetDatasourceByIDParamsWithContext(ctx context.Context) *GetDatasourceByIDParams {
-	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
-		Format: &formatDefault,
-
 		Context: ctx,
 	}
 }
 
 // NewGetDatasourceByIDParamsWithHTTPClient creates a new GetDatasourceByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetDatasourceByIDParamsWithHTTPClient(client *http.Client) *GetDatasourceByIDParams {
-	formatDefault := string("json")
 	return &GetDatasourceByIDParams{
-		Format:     &formatDefault,
 		HTTPClient: client,
 	}
 }
 
-/*GetDatasourceByIDParams contains all the parameters to send to the API endpoint
-for the get datasource by Id operation typically these are written to a http.Request
+/* GetDatasourceByIDParams contains all the parameters to send to the API endpoint
+   for the get datasource by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type GetDatasourceByIDParams struct {
 
-	/*Fields*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Fields.
 	Fields *string
-	/*Format*/
+
+	// Format.
+	//
+	// Default: "json"
 	Format *string
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get datasource by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDatasourceByIDParams) WithDefaults() *GetDatasourceByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get datasource by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDatasourceByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+
+		formatDefault = string("json")
+	)
+
+	val := GetDatasourceByIDParams{
+		UserAgent: &userAgentDefault,
+		Format:    &formatDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the get datasource by Id params
@@ -108,6 +143,17 @@ func (o *GetDatasourceByIDParams) WithHTTPClient(client *http.Client) *GetDataso
 // SetHTTPClient adds the HTTPClient to the get datasource by Id params
 func (o *GetDatasourceByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the get datasource by Id params
+func (o *GetDatasourceByIDParams) WithUserAgent(userAgent *string) *GetDatasourceByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the get datasource by Id params
+func (o *GetDatasourceByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithFields adds the fields to the get datasource by Id params
@@ -145,41 +191,52 @@ func (o *GetDatasourceByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDatasourceByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.Fields != nil {
 
 		// query param fields
 		var qrFields string
+
 		if o.Fields != nil {
 			qrFields = *o.Fields
 		}
 		qFields := qrFields
 		if qFields != "" {
+
 			if err := r.SetQueryParam("fields", qFields); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Format != nil {
 
 		// query param format
 		var qrFormat string
+
 		if o.Format != nil {
 			qrFormat = *o.Format
 		}
 		qFormat := qrFormat
 		if qFormat != "" {
+
 			if err := r.SetQueryParam("format", qFormat); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param id

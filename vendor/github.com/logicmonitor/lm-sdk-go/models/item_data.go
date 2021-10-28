@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ItemData item data
+//
 // swagger:model ItemData
 type ItemData struct {
 
@@ -93,6 +98,263 @@ type ItemData struct {
 
 // Validate validates this item data
 func (m *ItemData) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this item data based on the context it is used
+func (m *ItemData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateConfirmedCriticalAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConfirmedErrorAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateConfirmedWarnAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCriticalAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEntityID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateErrorAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDT(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDTAndConfirmedCriticalAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDTAndConfirmedErrorAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDTAndConfirmedWarnAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDTCriticalAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDTErrorAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInSDTWarnAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateParentID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateResourceTemplateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWarnAlert(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ItemData) contextValidateConfirmedCriticalAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "confirmedCriticalAlert", "body", int32(m.ConfirmedCriticalAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateConfirmedErrorAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "confirmedErrorAlert", "body", int32(m.ConfirmedErrorAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateConfirmedWarnAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "confirmedWarnAlert", "body", int32(m.ConfirmedWarnAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateCriticalAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "criticalAlert", "body", int32(m.CriticalAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateEntityID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "entityId", "body", int32(m.EntityID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateErrorAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "errorAlert", "body", int32(m.ErrorAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateInSDT(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDT", "body", m.InSDT); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateInSDTAndConfirmedCriticalAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDTAndConfirmedCriticalAlert", "body", int32(m.InSDTAndConfirmedCriticalAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateInSDTAndConfirmedErrorAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDTAndConfirmedErrorAlert", "body", int32(m.InSDTAndConfirmedErrorAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateInSDTAndConfirmedWarnAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDTAndConfirmedWarnAlert", "body", int32(m.InSDTAndConfirmedWarnAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateInSDTCriticalAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDTCriticalAlert", "body", int32(m.InSDTCriticalAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateInSDTErrorAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDTErrorAlert", "body", int32(m.InSDTErrorAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateInSDTWarnAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inSDTWarnAlert", "body", int32(m.InSDTWarnAlert)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateParentID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "parentId", "body", int32(m.ParentID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateResourceTemplateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "resourceTemplateType", "body", string(m.ResourceTemplateType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateSubType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "subType", "body", string(m.SubType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ItemData) contextValidateWarnAlert(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "warnAlert", "body", int32(m.WarnAlert)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

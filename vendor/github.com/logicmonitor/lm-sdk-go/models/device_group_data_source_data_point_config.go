@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DeviceGroupDataSourceDataPointConfig device group data source data point config
+//
 // swagger:model DeviceGroupDataSourceDataPointConfig
 type DeviceGroupDataSourceDataPointConfig struct {
 
@@ -66,6 +69,7 @@ func (m *DeviceGroupDataSourceDataPointConfig) Validate(formats strfmt.Registry)
 }
 
 func (m *DeviceGroupDataSourceDataPointConfig) validateAlertExpr(formats strfmt.Registry) error {
+
 	if err := validate.Required("alertExpr", "body", m.AlertExpr); err != nil {
 		return err
 	}
@@ -74,6 +78,7 @@ func (m *DeviceGroupDataSourceDataPointConfig) validateAlertExpr(formats strfmt.
 }
 
 func (m *DeviceGroupDataSourceDataPointConfig) validateDataPointID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dataPointId", "body", m.DataPointID); err != nil {
 		return err
 	}
@@ -82,7 +87,44 @@ func (m *DeviceGroupDataSourceDataPointConfig) validateDataPointID(formats strfm
 }
 
 func (m *DeviceGroupDataSourceDataPointConfig) validateDataPointName(formats strfmt.Registry) error {
+
 	if err := validate.Required("dataPointName", "body", m.DataPointName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device group data source data point config based on the context it is used
+func (m *DeviceGroupDataSourceDataPointConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDataPointDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGlobalAlertExpr(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceGroupDataSourceDataPointConfig) contextValidateDataPointDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointDescription", "body", string(m.DataPointDescription)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroupDataSourceDataPointConfig) contextValidateGlobalAlertExpr(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "globalAlertExpr", "body", string(m.GlobalAlertExpr)); err != nil {
 		return err
 	}
 

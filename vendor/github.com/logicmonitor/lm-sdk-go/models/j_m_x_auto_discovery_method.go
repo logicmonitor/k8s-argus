@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // JMXAutoDiscoveryMethod j m x auto discovery method
+//
 // swagger:model JMXAutoDiscoveryMethod
 type JMXAutoDiscoveryMethod struct {
 
@@ -40,12 +42,6 @@ func (m *JMXAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *JMXAutoDiscoveryMethod) SetName(val string) {
 }
-
-// Path gets the path of this subtype
-
-// Ports gets the ports of this subtype
-
-// URL gets the url of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *JMXAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -92,9 +88,7 @@ func (m *JMXAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Path = data.Path
-
 	result.Ports = data.Ports
-
 	result.URL = data.URL
 
 	*m = result
@@ -126,8 +120,7 @@ func (m JMXAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		Ports: m.Ports,
 
 		URL: m.URL,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +129,7 @@ func (m JMXAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -168,6 +160,7 @@ func (m *JMXAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *JMXAutoDiscoveryMethod) validatePath(formats strfmt.Registry) error {
+
 	if err := validate.Required("path", "body", m.Path); err != nil {
 		return err
 	}
@@ -176,6 +169,7 @@ func (m *JMXAutoDiscoveryMethod) validatePath(formats strfmt.Registry) error {
 }
 
 func (m *JMXAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
+
 	if err := validate.Required("ports", "body", m.Ports); err != nil {
 		return err
 	}
@@ -184,10 +178,21 @@ func (m *JMXAutoDiscoveryMethod) validatePorts(formats strfmt.Registry) error {
 }
 
 func (m *JMXAutoDiscoveryMethod) validateURL(formats strfmt.Registry) error {
+
 	if err := validate.Required("url", "body", m.URL); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this j m x auto discovery method based on the context it is used
+func (m *JMXAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

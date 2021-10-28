@@ -6,107 +6,131 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewGetWebsiteAlertListByWebsiteIDParams creates a new GetWebsiteAlertListByWebsiteIDParams object
-// with the default values initialized.
+// NewGetWebsiteAlertListByWebsiteIDParams creates a new GetWebsiteAlertListByWebsiteIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetWebsiteAlertListByWebsiteIDParams() *GetWebsiteAlertListByWebsiteIDParams {
-	var (
-		needMessageDefault = bool(false)
-		offsetDefault      = int32(0)
-		sizeDefault        = int32(50)
-	)
 	return &GetWebsiteAlertListByWebsiteIDParams{
-		NeedMessage: &needMessageDefault,
-		Offset:      &offsetDefault,
-		Size:        &sizeDefault,
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetWebsiteAlertListByWebsiteIDParamsWithTimeout creates a new GetWebsiteAlertListByWebsiteIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetWebsiteAlertListByWebsiteIDParamsWithTimeout(timeout time.Duration) *GetWebsiteAlertListByWebsiteIDParams {
-	var (
-		needMessageDefault = bool(false)
-		offsetDefault      = int32(0)
-		sizeDefault        = int32(50)
-	)
 	return &GetWebsiteAlertListByWebsiteIDParams{
-		NeedMessage: &needMessageDefault,
-		Offset:      &offsetDefault,
-		Size:        &sizeDefault,
-
 		timeout: timeout,
 	}
 }
 
 // NewGetWebsiteAlertListByWebsiteIDParamsWithContext creates a new GetWebsiteAlertListByWebsiteIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetWebsiteAlertListByWebsiteIDParamsWithContext(ctx context.Context) *GetWebsiteAlertListByWebsiteIDParams {
-	var (
-		needMessageDefault = bool(false)
-		offsetDefault      = int32(0)
-		sizeDefault        = int32(50)
-	)
 	return &GetWebsiteAlertListByWebsiteIDParams{
-		NeedMessage: &needMessageDefault,
-		Offset:      &offsetDefault,
-		Size:        &sizeDefault,
-
 		Context: ctx,
 	}
 }
 
 // NewGetWebsiteAlertListByWebsiteIDParamsWithHTTPClient creates a new GetWebsiteAlertListByWebsiteIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetWebsiteAlertListByWebsiteIDParamsWithHTTPClient(client *http.Client) *GetWebsiteAlertListByWebsiteIDParams {
-	var (
-		needMessageDefault = bool(false)
-		offsetDefault      = int32(0)
-		sizeDefault        = int32(50)
-	)
 	return &GetWebsiteAlertListByWebsiteIDParams{
-		NeedMessage: &needMessageDefault,
-		Offset:      &offsetDefault,
-		Size:        &sizeDefault,
-		HTTPClient:  client,
+		HTTPClient: client,
 	}
 }
 
-/*GetWebsiteAlertListByWebsiteIDParams contains all the parameters to send to the API endpoint
-for the get website alert list by website Id operation typically these are written to a http.Request
+/* GetWebsiteAlertListByWebsiteIDParams contains all the parameters to send to the API endpoint
+   for the get website alert list by website Id operation.
+
+   Typically these are written to a http.Request.
 */
 type GetWebsiteAlertListByWebsiteIDParams struct {
 
-	/*CustomColumns*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// CustomColumns.
 	CustomColumns *string
-	/*Fields*/
+
+	// Fields.
 	Fields *string
-	/*Filter*/
+
+	// Filter.
 	Filter *string
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
-	/*NeedMessage*/
+
+	// NeedMessage.
 	NeedMessage *bool
-	/*Offset*/
+
+	// Offset.
+	//
+	// Format: int32
 	Offset *int32
-	/*Size*/
+
+	// Size.
+	//
+	// Format: int32
+	// Default: 50
 	Size *int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get website alert list by website Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetWebsiteAlertListByWebsiteIDParams) WithDefaults() *GetWebsiteAlertListByWebsiteIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get website alert list by website Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetWebsiteAlertListByWebsiteIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+
+		needMessageDefault = bool(false)
+
+		offsetDefault = int32(0)
+
+		sizeDefault = int32(50)
+	)
+
+	val := GetWebsiteAlertListByWebsiteIDParams{
+		UserAgent:   &userAgentDefault,
+		NeedMessage: &needMessageDefault,
+		Offset:      &offsetDefault,
+		Size:        &sizeDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the get website alert list by website Id params
@@ -140,6 +164,17 @@ func (o *GetWebsiteAlertListByWebsiteIDParams) WithHTTPClient(client *http.Clien
 // SetHTTPClient adds the HTTPClient to the get website alert list by website Id params
 func (o *GetWebsiteAlertListByWebsiteIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the get website alert list by website Id params
+func (o *GetWebsiteAlertListByWebsiteIDParams) WithUserAgent(userAgent *string) *GetWebsiteAlertListByWebsiteIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the get website alert list by website Id params
+func (o *GetWebsiteAlertListByWebsiteIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithCustomColumns adds the customColumns to the get website alert list by website Id params
@@ -221,57 +256,69 @@ func (o *GetWebsiteAlertListByWebsiteIDParams) SetSize(size *int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetWebsiteAlertListByWebsiteIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
+
 	if o.CustomColumns != nil {
 
 		// query param customColumns
 		var qrCustomColumns string
+
 		if o.CustomColumns != nil {
 			qrCustomColumns = *o.CustomColumns
 		}
 		qCustomColumns := qrCustomColumns
 		if qCustomColumns != "" {
+
 			if err := r.SetQueryParam("customColumns", qCustomColumns); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Fields != nil {
 
 		// query param fields
 		var qrFields string
+
 		if o.Fields != nil {
 			qrFields = *o.Fields
 		}
 		qFields := qrFields
 		if qFields != "" {
+
 			if err := r.SetQueryParam("fields", qFields); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Filter != nil {
 
 		// query param filter
 		var qrFilter string
+
 		if o.Filter != nil {
 			qrFilter = *o.Filter
 		}
 		qFilter := qrFilter
 		if qFilter != "" {
+
 			if err := r.SetQueryParam("filter", qFilter); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param id
@@ -283,48 +330,51 @@ func (o *GetWebsiteAlertListByWebsiteIDParams) WriteToRequest(r runtime.ClientRe
 
 		// query param needMessage
 		var qrNeedMessage bool
+
 		if o.NeedMessage != nil {
 			qrNeedMessage = *o.NeedMessage
 		}
 		qNeedMessage := swag.FormatBool(qrNeedMessage)
 		if qNeedMessage != "" {
+
 			if err := r.SetQueryParam("needMessage", qNeedMessage); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Offset != nil {
 
 		// query param offset
 		var qrOffset int32
+
 		if o.Offset != nil {
 			qrOffset = *o.Offset
 		}
 		qOffset := swag.FormatInt32(qrOffset)
 		if qOffset != "" {
+
 			if err := r.SetQueryParam("offset", qOffset); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if o.Size != nil {
 
 		// query param size
 		var qrSize int32
+
 		if o.Size != nil {
 			qrSize = *o.Size
 		}
 		qSize := swag.FormatInt32(qrSize)
 		if qSize != "" {
+
 			if err := r.SetQueryParam("size", qSize); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if len(res) > 0 {

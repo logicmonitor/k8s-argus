@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // WebsiteCollectorInfo website collector info
+//
 // swagger:model WebsiteCollectorInfo
 type WebsiteCollectorInfo struct {
 
@@ -41,6 +46,94 @@ type WebsiteCollectorInfo struct {
 
 // Validate validates this website collector info
 func (m *WebsiteCollectorInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this website collector info based on the context it is used
+func (m *WebsiteCollectorInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCollectorGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectorGroupName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateHostname(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebsiteCollectorInfo) contextValidateCollectorGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectorGroupId", "body", int32(m.CollectorGroupID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCollectorInfo) contextValidateCollectorGroupName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectorGroupName", "body", string(m.CollectorGroupName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCollectorInfo) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCollectorInfo) contextValidateHostname(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "hostname", "body", string(m.Hostname)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCollectorInfo) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCollectorInfo) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -6,69 +6,104 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+	"github.com/go-openapi/strfmt"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewPatchOpsNoteByIDParams creates a new PatchOpsNoteByIDParams object
-// with the default values initialized.
+// NewPatchOpsNoteByIDParams creates a new PatchOpsNoteByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPatchOpsNoteByIDParams() *PatchOpsNoteByIDParams {
-	var ()
 	return &PatchOpsNoteByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPatchOpsNoteByIDParamsWithTimeout creates a new PatchOpsNoteByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPatchOpsNoteByIDParamsWithTimeout(timeout time.Duration) *PatchOpsNoteByIDParams {
-	var ()
 	return &PatchOpsNoteByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPatchOpsNoteByIDParamsWithContext creates a new PatchOpsNoteByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPatchOpsNoteByIDParamsWithContext(ctx context.Context) *PatchOpsNoteByIDParams {
-	var ()
 	return &PatchOpsNoteByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPatchOpsNoteByIDParamsWithHTTPClient creates a new PatchOpsNoteByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPatchOpsNoteByIDParamsWithHTTPClient(client *http.Client) *PatchOpsNoteByIDParams {
-	var ()
 	return &PatchOpsNoteByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*PatchOpsNoteByIDParams contains all the parameters to send to the API endpoint
-for the patch ops note by Id operation typically these are written to a http.Request
+/* PatchOpsNoteByIDParams contains all the parameters to send to the API endpoint
+   for the patch ops note by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type PatchOpsNoteByIDParams struct {
 
-	/*Body*/
+	// PatchFields.
+	PatchFields *string
+
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.OpsNote
-	/*ID*/
+
+	// ID.
 	ID string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the patch ops note by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchOpsNoteByIDParams) WithDefaults() *PatchOpsNoteByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the patch ops note by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchOpsNoteByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := PatchOpsNoteByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the patch ops note by Id params
@@ -104,6 +139,28 @@ func (o *PatchOpsNoteByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithPatchFields adds the patchFields to the patch ops note by Id params
+func (o *PatchOpsNoteByIDParams) WithPatchFields(patchFields *string) *PatchOpsNoteByIDParams {
+	o.SetPatchFields(patchFields)
+	return o
+}
+
+// SetPatchFields adds the patchFields to the patch ops note by Id params
+func (o *PatchOpsNoteByIDParams) SetPatchFields(patchFields *string) {
+	o.PatchFields = patchFields
+}
+
+// WithUserAgent adds the userAgent to the patch ops note by Id params
+func (o *PatchOpsNoteByIDParams) WithUserAgent(userAgent *string) *PatchOpsNoteByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the patch ops note by Id params
+func (o *PatchOpsNoteByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithBody adds the body to the patch ops note by Id params
 func (o *PatchOpsNoteByIDParams) WithBody(body *models.OpsNote) *PatchOpsNoteByIDParams {
 	o.SetBody(body)
@@ -128,11 +185,36 @@ func (o *PatchOpsNoteByIDParams) SetID(id string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchOpsNoteByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.PatchFields != nil {
+
+		// query param PatchFields
+		var qrPatchFields string
+
+		if o.PatchFields != nil {
+			qrPatchFields = *o.PatchFields
+		}
+		qPatchFields := qrPatchFields
+		if qPatchFields != "" {
+
+			if err := r.SetQueryParam("PatchFields", qPatchFields); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

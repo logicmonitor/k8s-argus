@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // BigNumberWidget big number widget
+//
 // swagger:model BigNumberWidget
 type BigNumberWidget struct {
 	dashboardIdField *int32
@@ -152,8 +154,6 @@ func (m *BigNumberWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// BigNumberInfo gets the big number info of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *BigNumberWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -227,7 +227,6 @@ func (m *BigNumberWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.BigNumberInfo = data.BigNumberInfo
@@ -249,8 +248,7 @@ func (m BigNumberWidget) MarshalJSON() ([]byte, error) {
 	}{
 
 		BigNumberInfo: m.BigNumberInfo,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -299,8 +297,7 @@ func (m BigNumberWidget) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -331,6 +328,7 @@ func (m *BigNumberWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -339,6 +337,7 @@ func (m *BigNumberWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -347,12 +346,80 @@ func (m *BigNumberWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberWidget) validateBigNumberInfo(formats strfmt.Registry) error {
+
 	if err := validate.Required("bigNumberInfo", "body", m.BigNumberInfo); err != nil {
 		return err
 	}
 
 	if m.BigNumberInfo != nil {
 		if err := m.BigNumberInfo.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("bigNumberInfo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this big number widget based on the context it is used
+func (m *BigNumberWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBigNumberInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *BigNumberWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberWidget) contextValidateBigNumberInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BigNumberInfo != nil {
+		if err := m.BigNumberInfo.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("bigNumberInfo")
 			}

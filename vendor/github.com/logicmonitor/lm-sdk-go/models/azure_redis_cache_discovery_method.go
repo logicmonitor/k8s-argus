@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AzureRedisCacheDiscoveryMethod azure redis cache discovery method
+//
 // swagger:model AzureRedisCacheDiscoveryMethod
 type AzureRedisCacheDiscoveryMethod struct {
 	AzureRedisCacheDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *AzureRedisCacheDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.AzureRedisCacheDiscoveryMethodAllOf1 = data.AzureRedisCacheDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m AzureRedisCacheDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		AzureRedisCacheDiscoveryMethodAllOf1: m.AzureRedisCacheDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m AzureRedisCacheDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m AzureRedisCacheDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this azure redis cache discovery method
 func (m *AzureRedisCacheDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with AzureRedisCacheDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this azure redis cache discovery method based on the context it is used
+func (m *AzureRedisCacheDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with AzureRedisCacheDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *AzureRedisCacheDiscoveryMethod) UnmarshalBinary(b []byte) error {
 }
 
 // AzureRedisCacheDiscoveryMethodAllOf1 azure redis cache discovery method all of1
+//
 // swagger:model AzureRedisCacheDiscoveryMethodAllOf1
 type AzureRedisCacheDiscoveryMethodAllOf1 interface{}

@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // TCPCollectorAttribute TCP collector attribute
+//
 // swagger:model TCPCollectorAttribute
 type TCPCollectorAttribute struct {
 
@@ -39,14 +41,6 @@ func (m *TCPCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *TCPCollectorAttribute) SetName(val string) {
 }
-
-// Encoding gets the encoding of this subtype
-
-// Payload gets the payload of this subtype
-
-// Port gets the port of this subtype
-
-// Timeout gets the timeout of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *TCPCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -93,11 +87,8 @@ func (m *TCPCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Encoding = data.Encoding
-
 	result.Payload = data.Payload
-
 	result.Port = data.Port
-
 	result.Timeout = data.Timeout
 
 	*m = result
@@ -131,8 +122,7 @@ func (m TCPCollectorAttribute) MarshalJSON() ([]byte, error) {
 		Port: m.Port,
 
 		Timeout: m.Timeout,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +131,7 @@ func (m TCPCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +141,16 @@ func (m TCPCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this TCP collector attribute
 func (m *TCPCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this TCP collector attribute based on the context it is used
+func (m *TCPCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

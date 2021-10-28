@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // GaugeDataPoint gauge data point
+//
 // swagger:model GaugeDataPoint
 type GaugeDataPoint struct {
 
@@ -73,6 +76,7 @@ func (m *GaugeDataPoint) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GaugeDataPoint) validateDeviceDisplayName(formats strfmt.Registry) error {
+
 	if err := validate.Required("deviceDisplayName", "body", m.DeviceDisplayName); err != nil {
 		return err
 	}
@@ -81,6 +85,7 @@ func (m *GaugeDataPoint) validateDeviceDisplayName(formats strfmt.Registry) erro
 }
 
 func (m *GaugeDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry) error {
+
 	if err := validate.Required("deviceGroupFullPath", "body", m.DeviceGroupFullPath); err != nil {
 		return err
 	}
@@ -89,10 +94,16 @@ func (m *GaugeDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry) er
 }
 
 func (m *GaugeDataPoint) validateInstanceName(formats strfmt.Registry) error {
+
 	if err := validate.Required("instanceName", "body", m.InstanceName); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this gauge data point based on context it is used
+func (m *GaugeDataPoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // PingCheck ping check
+//
 // swagger:model PingCheck
 type PingCheck struct {
 	checkpointsField []*WebsiteCheckPoint
@@ -38,6 +40,8 @@ type PingCheck struct {
 	individualSmAlertEnableField bool
 
 	isInternalField bool
+
+	lastUpdatedField int64
 
 	nameField *string
 
@@ -180,6 +184,16 @@ func (m *PingCheck) SetIsInternal(val bool) {
 	m.isInternalField = val
 }
 
+// LastUpdated gets the last updated of this subtype
+func (m *PingCheck) LastUpdated() int64 {
+	return m.lastUpdatedField
+}
+
+// SetLastUpdated sets the last updated of this subtype
+func (m *PingCheck) SetLastUpdated(val int64) {
+	m.lastUpdatedField = val
+}
+
 // Name gets the name of this subtype
 func (m *PingCheck) Name() *string {
 	return m.nameField
@@ -319,14 +333,6 @@ func (m *PingCheck) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// Count gets the count of this subtype
-
-// Host gets the host of this subtype
-
-// PercentPktsNotReceiveInTime gets the percent pkts not receive in time of this subtype
-
-// TimeoutInMSPktsNotReceive gets the timeout in m s pkts not receive of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *PingCheck) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -375,6 +381,8 @@ func (m *PingCheck) UnmarshalJSON(raw []byte) error {
 		IndividualSmAlertEnable bool `json:"individualSmAlertEnable,omitempty"`
 
 		IsInternal bool `json:"isInternal,omitempty"`
+
+		LastUpdated int64 `json:"lastUpdated,omitempty"`
 
 		Name *string `json:"name"`
 
@@ -434,6 +442,8 @@ func (m *PingCheck) UnmarshalJSON(raw []byte) error {
 
 	result.isInternalField = base.IsInternal
 
+	result.lastUpdatedField = base.LastUpdated
+
 	result.nameField = base.Name
 
 	result.overallAlertLevelField = base.OverallAlertLevel
@@ -458,7 +468,6 @@ func (m *PingCheck) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.useDefaultAlertSettingField = base.UseDefaultAlertSetting
 
 	result.useDefaultLocationSettingField = base.UseDefaultLocationSetting
@@ -466,11 +475,8 @@ func (m *PingCheck) UnmarshalJSON(raw []byte) error {
 	result.userPermissionField = base.UserPermission
 
 	result.Count = data.Count
-
 	result.Host = data.Host
-
 	result.PercentPktsNotReceiveInTime = data.PercentPktsNotReceiveInTime
-
 	result.TimeoutInMSPktsNotReceive = data.TimeoutInMSPktsNotReceive
 
 	*m = result
@@ -506,8 +512,7 @@ func (m PingCheck) MarshalJSON() ([]byte, error) {
 		PercentPktsNotReceiveInTime: m.PercentPktsNotReceiveInTime,
 
 		TimeoutInMSPktsNotReceive: m.TimeoutInMSPktsNotReceive,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -531,6 +536,8 @@ func (m PingCheck) MarshalJSON() ([]byte, error) {
 		IndividualSmAlertEnable bool `json:"individualSmAlertEnable,omitempty"`
 
 		IsInternal bool `json:"isInternal,omitempty"`
+
+		LastUpdated int64 `json:"lastUpdated,omitempty"`
 
 		Name *string `json:"name"`
 
@@ -581,6 +588,8 @@ func (m PingCheck) MarshalJSON() ([]byte, error) {
 
 		IsInternal: m.IsInternal(),
 
+		LastUpdated: m.LastUpdated(),
+
 		Name: m.Name(),
 
 		OverallAlertLevel: m.OverallAlertLevel(),
@@ -608,8 +617,7 @@ func (m PingCheck) MarshalJSON() ([]byte, error) {
 		UseDefaultLocationSetting: m.UseDefaultLocationSetting(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -652,6 +660,7 @@ func (m *PingCheck) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateCheckpoints(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Checkpoints()) { // not required
 		return nil
 	}
@@ -676,6 +685,7 @@ func (m *PingCheck) validateCheckpoints(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateCollectors(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Collectors()) { // not required
 		return nil
 	}
@@ -700,6 +710,7 @@ func (m *PingCheck) validateCollectors(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -708,6 +719,7 @@ func (m *PingCheck) validateName(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateProperties(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Properties()) { // not required
 		return nil
 	}
@@ -732,6 +744,7 @@ func (m *PingCheck) validateProperties(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateTestLocation(formats strfmt.Registry) error {
+
 	if err := validate.Required("testLocation", "body", m.TestLocation()); err != nil {
 		return err
 	}
@@ -749,8 +762,176 @@ func (m *PingCheck) validateTestLocation(formats strfmt.Registry) error {
 }
 
 func (m *PingCheck) validateHost(formats strfmt.Registry) error {
+
 	if err := validate.Required("host", "body", m.Host); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ping check based on the context it is used
+func (m *PingCheck) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCheckpoints(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCollectors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProperties(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStopMonitoringByFolder(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTestLocation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PingCheck) contextValidateCheckpoints(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Checkpoints()); i++ {
+
+		if m.checkpointsField[i] != nil {
+			if err := m.checkpointsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("checkpoints" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateCollectors(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "collectors", "body", []*WebsiteCollectorInfo(m.Collectors())); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Collectors()); i++ {
+
+		if m.collectorsField[i] != nil {
+			if err := m.collectorsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("collectors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupId", "body", int32(m.GroupID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateLastUpdated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdated", "body", int64(m.LastUpdated())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateProperties(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "properties", "body", []*NameAndValue(m.Properties())); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Properties()); i++ {
+
+		if m.propertiesField[i] != nil {
+			if err := m.propertiesField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("properties" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status", "body", string(m.Status())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateStopMonitoringByFolder(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stopMonitoringByFolder", "body", m.StopMonitoringByFolder()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PingCheck) contextValidateTestLocation(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.TestLocation() != nil {
+		if err := m.TestLocation().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("testLocation")
+			}
+			return err
+		}
 	}
 
 	return nil

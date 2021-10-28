@@ -6,37 +6,50 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
-// NetScanSchedule net scan schedule
-// swagger:model NetScanSchedule
-type NetScanSchedule struct {
+// RestSchedule rest schedule
+//
+// swagger:model RestSchedule
+type RestSchedule struct {
 
 	// The cron schedule for when the scan should be run
+	// Example: 12 * * * *
 	Cron string `json:"cron,omitempty"`
 
 	// Whether or not an email should be sent when the scan finishes
+	// Example: false
 	Notify bool `json:"notify,omitempty"`
 
 	// The recipients that should receive the notification of the scan finish
+	// Example: [\"sarah@logicmonitor.com\" ]
 	Recipients []string `json:"recipients,omitempty"`
 
 	// The timezone for the schedule
+	// Example: America/Los_Angeles
 	Timezone string `json:"timezone,omitempty"`
 
 	// The type of schedule. Possible values are manual (no schedule), hourly, daily, weekly, monthly
+	// Example: manual
 	Type string `json:"type,omitempty"`
 }
 
-// Validate validates this net scan schedule
-func (m *NetScanSchedule) Validate(formats strfmt.Registry) error {
+// Validate validates this rest schedule
+func (m *RestSchedule) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this rest schedule based on context it is used
+func (m *RestSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NetScanSchedule) MarshalBinary() ([]byte, error) {
+func (m *RestSchedule) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -44,8 +57,8 @@ func (m *NetScanSchedule) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NetScanSchedule) UnmarshalBinary(b []byte) error {
-	var res NetScanSchedule
+func (m *RestSchedule) UnmarshalBinary(b []byte) error {
+	var res RestSchedule
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

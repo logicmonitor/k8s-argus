@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // OnetimeUpgradeInfo onetime upgrade info
+//
 // swagger:model OnetimeUpgradeInfo
 type OnetimeUpgradeInfo struct {
 
@@ -21,6 +24,7 @@ type OnetimeUpgradeInfo struct {
 	CreatedBy string `json:"createdBy,omitempty"`
 
 	// description
+	// Example: regular MGD updates
 	Description string `json:"description,omitempty"`
 
 	// end epoch
@@ -32,14 +36,17 @@ type OnetimeUpgradeInfo struct {
 	Level string `json:"level,omitempty"`
 
 	// major version
+	// Example: 27
 	// Required: true
 	MajorVersion *int32 `json:"majorVersion"`
 
 	// minor version
+	// Example: 1
 	// Required: true
 	MinorVersion *int32 `json:"minorVersion"`
 
 	// start epoch
+	// Example: 1534888740
 	// Required: true
 	StartEpoch *int64 `json:"startEpoch"`
 
@@ -74,6 +81,7 @@ func (m *OnetimeUpgradeInfo) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OnetimeUpgradeInfo) validateMajorVersion(formats strfmt.Registry) error {
+
 	if err := validate.Required("majorVersion", "body", m.MajorVersion); err != nil {
 		return err
 	}
@@ -82,6 +90,7 @@ func (m *OnetimeUpgradeInfo) validateMajorVersion(formats strfmt.Registry) error
 }
 
 func (m *OnetimeUpgradeInfo) validateMinorVersion(formats strfmt.Registry) error {
+
 	if err := validate.Required("minorVersion", "body", m.MinorVersion); err != nil {
 		return err
 	}
@@ -90,7 +99,70 @@ func (m *OnetimeUpgradeInfo) validateMinorVersion(formats strfmt.Registry) error
 }
 
 func (m *OnetimeUpgradeInfo) validateStartEpoch(formats strfmt.Registry) error {
+
 	if err := validate.Required("startEpoch", "body", m.StartEpoch); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this onetime upgrade info based on the context it is used
+func (m *OnetimeUpgradeInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCreatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndEpoch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLevel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OnetimeUpgradeInfo) contextValidateCreatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdBy", "body", string(m.CreatedBy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OnetimeUpgradeInfo) contextValidateEndEpoch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endEpoch", "body", int64(m.EndEpoch)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OnetimeUpgradeInfo) contextValidateLevel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "level", "body", string(m.Level)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OnetimeUpgradeInfo) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
 		return err
 	}
 

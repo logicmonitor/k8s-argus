@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DeviceDataSourceData device data source data
+//
 // swagger:model DeviceDataSourceData
 type DeviceDataSourceData struct {
 
@@ -63,6 +66,74 @@ func (m *DeviceDataSourceData) validateInstances(formats strfmt.Registry) error 
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device data source data based on the context it is used
+func (m *DeviceDataSourceData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDataPoints(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstances(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNextPageParams(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceDataSourceData) contextValidateDataPoints(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPoints", "body", []string(m.DataPoints)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceData) contextValidateDataSourceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceName", "body", string(m.DataSourceName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceData) contextValidateInstances(ctx context.Context, formats strfmt.Registry) error {
+
+	for k := range m.Instances {
+
+		if val, ok := m.Instances[k]; ok {
+			if err := val.ContextValidate(ctx, formats); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceData) contextValidateNextPageParams(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nextPageParams", "body", string(m.NextPageParams)); err != nil {
+		return err
 	}
 
 	return nil

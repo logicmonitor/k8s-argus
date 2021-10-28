@@ -6,22 +6,26 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // RecipientGroup recipient group
+//
 // swagger:model RecipientGroup
 type RecipientGroup struct {
 
 	// The description of the recipient group
+	// Example: Tier 1 Helpdesk
 	Description string `json:"description,omitempty"`
 
 	// The name of the recipient group
+	// Example: Tier 1 Helpdesk
 	// Required: true
 	GroupName *string `json:"groupName"`
 
@@ -52,6 +56,7 @@ func (m *RecipientGroup) Validate(formats strfmt.Registry) error {
 }
 
 func (m *RecipientGroup) validateGroupName(formats strfmt.Registry) error {
+
 	if err := validate.Required("groupName", "body", m.GroupName); err != nil {
 		return err
 	}
@@ -71,6 +76,51 @@ func (m *RecipientGroup) validateRecipients(formats strfmt.Registry) error {
 
 		if m.Recipients[i] != nil {
 			if err := m.Recipients[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this recipient group based on the context it is used
+func (m *RecipientGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecipients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *RecipientGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *RecipientGroup) contextValidateRecipients(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Recipients); i++ {
+
+		if m.Recipients[i] != nil {
+			if err := m.Recipients[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
 				}

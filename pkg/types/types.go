@@ -332,7 +332,7 @@ type LMFacade interface {
 // RateLimits struct to send new rate limits received from server to manager
 type RateLimits struct {
 	Limit  int64
-	Window int
+	Window int64
 }
 
 // WorkerRateLimitsUpdate struct to send new rate limits received from server to manager

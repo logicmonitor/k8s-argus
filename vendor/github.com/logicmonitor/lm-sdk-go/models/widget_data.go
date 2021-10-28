@@ -7,20 +7,23 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // WidgetData widget data
+//
 // swagger:discriminator WidgetData type
 type WidgetData interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// title
 	Title() string
@@ -30,6 +33,9 @@ type WidgetData interface {
 	// Read Only: true
 	Type() string
 	SetType(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type widgetData struct {
@@ -109,110 +115,118 @@ func unmarshalWidgetData(data []byte, consumer runtime.Consumer) (WidgetData, er
 			return nil, err
 		}
 		return &result, nil
-
 	case "alert":
 		var result AlertWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "batchjob":
 		var result BatchJobWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "bigNumber":
 		var result BigNumberWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "deviceSLA":
 		var result DeviceSLAWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "dynamicTable":
 		var result DynamicTableWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "gauge":
 		var result GaugeWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "gmap":
 		var result GoogleMapWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "graph":
 		var result GraphPlot
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "groupNetflow":
 		var result NetflowGroupWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "netflow":
 		var result NetflowWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "noc":
 		var result NOCWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "pieChart":
 		var result PieChartWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "table":
 		var result TableWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "websiteSLA":
 		var result WebsiteSLAWidgetData
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
 }
 
 // Validate validates this widget data
 func (m *widgetData) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this widget data based on the context it is used
+func (m *widgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *widgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // GcpStackDriverCollectorAttributeV2 gcp stack driver collector attribute v2
+//
 // swagger:model GcpStackDriverCollectorAttributeV2
 type GcpStackDriverCollectorAttributeV2 struct {
 
@@ -30,8 +32,6 @@ func (m *GcpStackDriverCollectorAttributeV2) Name() string {
 // SetName sets the name of this subtype
 func (m *GcpStackDriverCollectorAttributeV2) SetName(val string) {
 }
-
-// Period gets the period of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *GcpStackDriverCollectorAttributeV2) UnmarshalJSON(raw []byte) error {
@@ -86,8 +86,7 @@ func (m GcpStackDriverCollectorAttributeV2) MarshalJSON() ([]byte, error) {
 	}{
 
 		Period: m.Period,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,7 @@ func (m GcpStackDriverCollectorAttributeV2) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +105,16 @@ func (m GcpStackDriverCollectorAttributeV2) MarshalJSON() ([]byte, error) {
 
 // Validate validates this gcp stack driver collector attribute v2
 func (m *GcpStackDriverCollectorAttributeV2) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this gcp stack driver collector attribute v2 based on the context it is used
+func (m *GcpStackDriverCollectorAttributeV2) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

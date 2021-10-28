@@ -7,27 +7,32 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // Widget widget
+//
 // swagger:discriminator Widget type
 type Widget interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// The id of the dashboard the widget belongs to
+	// Example: 1
 	// Required: true
 	DashboardID() *int32
 	SetDashboardID(*int32)
 
 	// The description of the widget
+	// Example: Devices By Type
 	Description() string
 	SetDescription(string)
 
@@ -36,6 +41,7 @@ type Widget interface {
 	SetID(int32)
 
 	// The refresh interval of the widget, in minutes
+	// Example: 5
 	Interval() int32
 	SetInterval(int32)
 
@@ -50,11 +56,13 @@ type Widget interface {
 	SetLastUpdatedOn(int64)
 
 	// The name of the widget
+	// Example: Test
 	// Required: true
 	Name() *string
 	SetName(*string)
 
 	// The color scheme of the widget. Options are: borderPurple | borderGray | borderBlue | solidPurple | solidGray | solidBlue | simplePurple | simpleBlue | simpleGray | newBorderGray | newBorderBlue | newBorderDarkBlue | newSolidGray | newSolidBlue | newSolidDarkBlue | newSimpleGray | newSimpleBlue |newSimpleDarkBlue
+	// Example: newBorderBlue
 	Theme() string
 	SetTheme(string)
 
@@ -63,14 +71,19 @@ type Widget interface {
 	SetTimescale(string)
 
 	// alert | batchjob | flash | gmap | ngraph | ograph | cgraph | sgraph | netflowgraph | groupNetflowGraph | netflow | groupNetflow | html | bigNumber | gauge | pieChart | table | dynamicTable | deviceSLA | text | statsd | deviceStatus | serviceAlert | noc | websiteOverview | websiteOverallStatus | websiteIndividualStatus | websiteSLA
+	// Example: bigNumber
 	// Required: true
 	Type() string
 	SetType(string)
 
 	// The permission level of the user who last modified the widget
+	// Example: write
 	// Read Only: true
 	UserPermission() string
 	SetUserPermission(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type widget struct {
@@ -258,203 +271,174 @@ func unmarshalWidget(data []byte, consumer runtime.Consumer) (Widget, error) {
 			return nil, err
 		}
 		return &result, nil
-
 	case "Widget":
 		var result widget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "alert":
 		var result AlertWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "batchjob":
 		var result BatchJobWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "bigNumber":
 		var result BigNumberWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "cgraph":
-		var result CustomerGraphWidget
+		var result CustomGraphWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "deviceSLA":
 		var result DeviceSLAWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "deviceStatus":
 		var result DeviceStatus
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "dynamicTable":
 		var result DynamicTableWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "flash":
 		var result FlashWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "gauge":
 		var result GaugeWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "gmap":
 		var result GoogleMapWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "groupNetflow":
 		var result NetflowGroupWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "groupNetflowGraph":
 		var result NetflowGroupGraphWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "html":
 		var result HTMLWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "netflow":
 		var result NetflowWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "netflowgraph":
 		var result NetflowGraphWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ngraph":
 		var result NormalGraphWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "noc":
 		var result NOCWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ograph":
 		var result OverviewGraphWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "pieChart":
 		var result PieChartWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "sgraph":
 		var result WebsiteGraphWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "statsd":
 		var result StatsDWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "table":
 		var result TableWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "text":
 		var result TextWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "websiteIndividualStatus":
 		var result WebsiteIndividualsStatusWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "websiteOverallStatus":
 		var result WebsiteOverallStatusWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "websiteOverview":
 		var result WebsiteOverviewWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "websiteSLA":
 		var result WebsiteSLAWidget
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid type value: %q", getType.Type)
 }
@@ -478,6 +462,7 @@ func (m *widget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *widget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -486,7 +471,57 @@ func (m *widget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *widget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this widget based on the context it is used
+func (m *widget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *widget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *widget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *widget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
 		return err
 	}
 

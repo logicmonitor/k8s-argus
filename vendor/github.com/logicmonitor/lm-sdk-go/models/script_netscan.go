@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ScriptNetscan script netscan
+//
 // swagger:model ScriptNetscan
 type ScriptNetscan struct {
 	collectorField *int32
@@ -36,6 +38,8 @@ type ScriptNetscan struct {
 
 	idField int32
 
+	ignoreSystemIPsDuplicatesField bool
+
 	nameField *string
 
 	nextStartField string
@@ -44,20 +48,24 @@ type ScriptNetscan struct {
 
 	nsgIdField int32
 
-	scheduleField *NetScanSchedule
+	scheduleField *RestSchedule
 
 	versionField int32
 
 	// The ID of the default group to add discovered devices to
+	// Example: 1
 	DefaultGroup int32 `json:"defaultGroup,omitempty"`
 
 	// The full path of the default group to add discovered devices to
+	// Example: lm/prod/servers
 	DefaultGroupFullPath string `json:"defaultGroupFullPath,omitempty"`
 
 	// For embedded script scans, the groovy script contents
+	// Example: testing
 	GroovyScript string `json:"groovyScript,omitempty"`
 
 	// For embedded script scans, the groovy script parameters
+	// Example: prod=true
 	GroovyScriptParams string `json:"groovyScriptParams,omitempty"`
 
 	// linux script
@@ -67,12 +75,15 @@ type ScriptNetscan struct {
 	LinuxScriptParams string `json:"linuxScriptParams,omitempty"`
 
 	// The parameters for an external script
+	// Example: prod=true
 	ScriptParams string `json:"scriptParams,omitempty"`
 
 	// The script path for an external script
+	// Example: C://scripts
 	ScriptPath string `json:"scriptPath,omitempty"`
 
 	// For script scans, the type of script. Options are embeded and external
+	// Example: embeded
 	// Required: true
 	ScriptType *string `json:"scriptType"`
 
@@ -173,6 +184,16 @@ func (m *ScriptNetscan) SetID(val int32) {
 	m.idField = val
 }
 
+// IgnoreSystemIPsDuplicates gets the ignore system i ps duplicates of this subtype
+func (m *ScriptNetscan) IgnoreSystemIPsDuplicates() bool {
+	return m.ignoreSystemIPsDuplicatesField
+}
+
+// SetIgnoreSystemIPsDuplicates sets the ignore system i ps duplicates of this subtype
+func (m *ScriptNetscan) SetIgnoreSystemIPsDuplicates(val bool) {
+	m.ignoreSystemIPsDuplicatesField = val
+}
+
 // Method gets the method of this subtype
 func (m *ScriptNetscan) Method() string {
 	return "script"
@@ -223,12 +244,12 @@ func (m *ScriptNetscan) SetNsgID(val int32) {
 }
 
 // Schedule gets the schedule of this subtype
-func (m *ScriptNetscan) Schedule() *NetScanSchedule {
+func (m *ScriptNetscan) Schedule() *RestSchedule {
 	return m.scheduleField
 }
 
 // SetSchedule sets the schedule of this subtype
-func (m *ScriptNetscan) SetSchedule(val *NetScanSchedule) {
+func (m *ScriptNetscan) SetSchedule(val *RestSchedule) {
 	m.scheduleField = val
 }
 
@@ -242,42 +263,24 @@ func (m *ScriptNetscan) SetVersion(val int32) {
 	m.versionField = val
 }
 
-// DefaultGroup gets the default group of this subtype
-
-// DefaultGroupFullPath gets the default group full path of this subtype
-
-// GroovyScript gets the groovy script of this subtype
-
-// GroovyScriptParams gets the groovy script params of this subtype
-
-// LinuxScript gets the linux script of this subtype
-
-// LinuxScriptParams gets the linux script params of this subtype
-
-// ScriptParams gets the script params of this subtype
-
-// ScriptPath gets the script path of this subtype
-
-// ScriptType gets the script type of this subtype
-
-// WindowsScript gets the windows script of this subtype
-
-// WindowsScriptParams gets the windows script params of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *ScriptNetscan) UnmarshalJSON(raw []byte) error {
 	var data struct {
 
 		// The ID of the default group to add discovered devices to
+		// Example: 1
 		DefaultGroup int32 `json:"defaultGroup,omitempty"`
 
 		// The full path of the default group to add discovered devices to
+		// Example: lm/prod/servers
 		DefaultGroupFullPath string `json:"defaultGroupFullPath,omitempty"`
 
 		// For embedded script scans, the groovy script contents
+		// Example: testing
 		GroovyScript string `json:"groovyScript,omitempty"`
 
 		// For embedded script scans, the groovy script parameters
+		// Example: prod=true
 		GroovyScriptParams string `json:"groovyScriptParams,omitempty"`
 
 		// linux script
@@ -287,12 +290,15 @@ func (m *ScriptNetscan) UnmarshalJSON(raw []byte) error {
 		LinuxScriptParams string `json:"linuxScriptParams,omitempty"`
 
 		// The parameters for an external script
+		// Example: prod=true
 		ScriptParams string `json:"scriptParams,omitempty"`
 
 		// The script path for an external script
+		// Example: C://scripts
 		ScriptPath string `json:"scriptPath,omitempty"`
 
 		// For script scans, the type of script. Options are embeded and external
+		// Example: embeded
 		// Required: true
 		ScriptType *string `json:"scriptType"`
 
@@ -331,6 +337,8 @@ func (m *ScriptNetscan) UnmarshalJSON(raw []byte) error {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -341,7 +349,7 @@ func (m *ScriptNetscan) UnmarshalJSON(raw []byte) error {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}
@@ -373,11 +381,12 @@ func (m *ScriptNetscan) UnmarshalJSON(raw []byte) error {
 
 	result.idField = base.ID
 
+	result.ignoreSystemIPsDuplicatesField = base.IgnoreSystemIPsDuplicates
+
 	if base.Method != result.Method() {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid method value: %q", base.Method)
 	}
-
 	result.nameField = base.Name
 
 	result.nextStartField = base.NextStart
@@ -391,25 +400,15 @@ func (m *ScriptNetscan) UnmarshalJSON(raw []byte) error {
 	result.versionField = base.Version
 
 	result.DefaultGroup = data.DefaultGroup
-
 	result.DefaultGroupFullPath = data.DefaultGroupFullPath
-
 	result.GroovyScript = data.GroovyScript
-
 	result.GroovyScriptParams = data.GroovyScriptParams
-
 	result.LinuxScript = data.LinuxScript
-
 	result.LinuxScriptParams = data.LinuxScriptParams
-
 	result.ScriptParams = data.ScriptParams
-
 	result.ScriptPath = data.ScriptPath
-
 	result.ScriptType = data.ScriptType
-
 	result.WindowsScript = data.WindowsScript
-
 	result.WindowsScriptParams = data.WindowsScriptParams
 
 	*m = result
@@ -424,15 +423,19 @@ func (m ScriptNetscan) MarshalJSON() ([]byte, error) {
 	b1, err = json.Marshal(struct {
 
 		// The ID of the default group to add discovered devices to
+		// Example: 1
 		DefaultGroup int32 `json:"defaultGroup,omitempty"`
 
 		// The full path of the default group to add discovered devices to
+		// Example: lm/prod/servers
 		DefaultGroupFullPath string `json:"defaultGroupFullPath,omitempty"`
 
 		// For embedded script scans, the groovy script contents
+		// Example: testing
 		GroovyScript string `json:"groovyScript,omitempty"`
 
 		// For embedded script scans, the groovy script parameters
+		// Example: prod=true
 		GroovyScriptParams string `json:"groovyScriptParams,omitempty"`
 
 		// linux script
@@ -442,12 +445,15 @@ func (m ScriptNetscan) MarshalJSON() ([]byte, error) {
 		LinuxScriptParams string `json:"linuxScriptParams,omitempty"`
 
 		// The parameters for an external script
+		// Example: prod=true
 		ScriptParams string `json:"scriptParams,omitempty"`
 
 		// The script path for an external script
+		// Example: C://scripts
 		ScriptPath string `json:"scriptPath,omitempty"`
 
 		// For script scans, the type of script. Options are embeded and external
+		// Example: embeded
 		// Required: true
 		ScriptType *string `json:"scriptType"`
 
@@ -479,8 +485,7 @@ func (m ScriptNetscan) MarshalJSON() ([]byte, error) {
 		WindowsScript: m.WindowsScript,
 
 		WindowsScriptParams: m.WindowsScriptParams,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -503,6 +508,8 @@ func (m ScriptNetscan) MarshalJSON() ([]byte, error) {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -513,7 +520,7 @@ func (m ScriptNetscan) MarshalJSON() ([]byte, error) {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}{
@@ -536,6 +543,8 @@ func (m ScriptNetscan) MarshalJSON() ([]byte, error) {
 
 		ID: m.ID(),
 
+		IgnoreSystemIPsDuplicates: m.IgnoreSystemIPsDuplicates(),
+
 		Method: m.Method(),
 
 		Name: m.Name(),
@@ -549,8 +558,7 @@ func (m ScriptNetscan) MarshalJSON() ([]byte, error) {
 		Schedule: m.Schedule(),
 
 		Version: m.Version(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -589,6 +597,7 @@ func (m *ScriptNetscan) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ScriptNetscan) validateCollector(formats strfmt.Registry) error {
+
 	if err := validate.Required("collector", "body", m.Collector()); err != nil {
 		return err
 	}
@@ -597,6 +606,7 @@ func (m *ScriptNetscan) validateCollector(formats strfmt.Registry) error {
 }
 
 func (m *ScriptNetscan) validateDuplicate(formats strfmt.Registry) error {
+
 	if err := validate.Required("duplicate", "body", m.Duplicate()); err != nil {
 		return err
 	}
@@ -614,6 +624,7 @@ func (m *ScriptNetscan) validateDuplicate(formats strfmt.Registry) error {
 }
 
 func (m *ScriptNetscan) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -622,6 +633,7 @@ func (m *ScriptNetscan) validateName(formats strfmt.Registry) error {
 }
 
 func (m *ScriptNetscan) validateSchedule(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Schedule()) { // not required
 		return nil
 	}
@@ -639,8 +651,55 @@ func (m *ScriptNetscan) validateSchedule(formats strfmt.Registry) error {
 }
 
 func (m *ScriptNetscan) validateScriptType(formats strfmt.Registry) error {
+
 	if err := validate.Required("scriptType", "body", m.ScriptType); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this script netscan based on the context it is used
+func (m *ScriptNetscan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDuplicate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSchedule(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ScriptNetscan) contextValidateDuplicate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Duplicate() != nil {
+		if err := m.Duplicate().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("duplicate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ScriptNetscan) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Schedule() != nil {
+		if err := m.Schedule().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule")
+			}
+			return err
+		}
 	}
 
 	return nil

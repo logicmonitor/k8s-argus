@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // PieChartData pie chart data
+//
 // swagger:model PieChartData
 type PieChartData struct {
 
@@ -33,6 +38,68 @@ type PieChartData struct {
 
 // Validate validates this pie chart data
 func (m *PieChartData) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this pie chart data based on the context it is used
+func (m *PieChartData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateColorName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPointName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLegend(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PieChartData) contextValidateColorName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "colorName", "body", string(m.ColorName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PieChartData) contextValidateDataPointName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointName", "body", string(m.DataPointName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PieChartData) contextValidateLegend(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "legend", "body", string(m.Legend)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PieChartData) contextValidateValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "value", "body", float64(m.Value)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

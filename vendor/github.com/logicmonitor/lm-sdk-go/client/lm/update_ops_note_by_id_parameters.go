@@ -6,69 +6,101 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+	"github.com/go-openapi/strfmt"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewUpdateOpsNoteByIDParams creates a new UpdateOpsNoteByIDParams object
-// with the default values initialized.
+// NewUpdateOpsNoteByIDParams creates a new UpdateOpsNoteByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewUpdateOpsNoteByIDParams() *UpdateOpsNoteByIDParams {
-	var ()
 	return &UpdateOpsNoteByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewUpdateOpsNoteByIDParamsWithTimeout creates a new UpdateOpsNoteByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewUpdateOpsNoteByIDParamsWithTimeout(timeout time.Duration) *UpdateOpsNoteByIDParams {
-	var ()
 	return &UpdateOpsNoteByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewUpdateOpsNoteByIDParamsWithContext creates a new UpdateOpsNoteByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewUpdateOpsNoteByIDParamsWithContext(ctx context.Context) *UpdateOpsNoteByIDParams {
-	var ()
 	return &UpdateOpsNoteByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewUpdateOpsNoteByIDParamsWithHTTPClient creates a new UpdateOpsNoteByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewUpdateOpsNoteByIDParamsWithHTTPClient(client *http.Client) *UpdateOpsNoteByIDParams {
-	var ()
 	return &UpdateOpsNoteByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*UpdateOpsNoteByIDParams contains all the parameters to send to the API endpoint
-for the update ops note by Id operation typically these are written to a http.Request
+/* UpdateOpsNoteByIDParams contains all the parameters to send to the API endpoint
+   for the update ops note by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type UpdateOpsNoteByIDParams struct {
 
-	/*Body*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.OpsNote
-	/*ID*/
+
+	// ID.
 	ID string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the update ops note by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateOpsNoteByIDParams) WithDefaults() *UpdateOpsNoteByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the update ops note by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateOpsNoteByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := UpdateOpsNoteByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the update ops note by Id params
@@ -104,6 +136,17 @@ func (o *UpdateOpsNoteByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the update ops note by Id params
+func (o *UpdateOpsNoteByIDParams) WithUserAgent(userAgent *string) *UpdateOpsNoteByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the update ops note by Id params
+func (o *UpdateOpsNoteByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithBody adds the body to the update ops note by Id params
 func (o *UpdateOpsNoteByIDParams) WithBody(body *models.OpsNote) *UpdateOpsNoteByIDParams {
 	o.SetBody(body)
@@ -128,11 +171,19 @@ func (o *UpdateOpsNoteByIDParams) SetID(id string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *UpdateOpsNoteByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

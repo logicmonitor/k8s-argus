@@ -6,76 +6,115 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"golang.org/x/net/context"
 )
 
-// NewGetDeviceDatasourceInstanceByIDParams creates a new GetDeviceDatasourceInstanceByIDParams object
-// with the default values initialized.
+// NewGetDeviceDatasourceInstanceByIDParams creates a new GetDeviceDatasourceInstanceByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetDeviceDatasourceInstanceByIDParams() *GetDeviceDatasourceInstanceByIDParams {
-	var ()
 	return &GetDeviceDatasourceInstanceByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetDeviceDatasourceInstanceByIDParamsWithTimeout creates a new GetDeviceDatasourceInstanceByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetDeviceDatasourceInstanceByIDParamsWithTimeout(timeout time.Duration) *GetDeviceDatasourceInstanceByIDParams {
-	var ()
 	return &GetDeviceDatasourceInstanceByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetDeviceDatasourceInstanceByIDParamsWithContext creates a new GetDeviceDatasourceInstanceByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetDeviceDatasourceInstanceByIDParamsWithContext(ctx context.Context) *GetDeviceDatasourceInstanceByIDParams {
-	var ()
 	return &GetDeviceDatasourceInstanceByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetDeviceDatasourceInstanceByIDParamsWithHTTPClient creates a new GetDeviceDatasourceInstanceByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetDeviceDatasourceInstanceByIDParamsWithHTTPClient(client *http.Client) *GetDeviceDatasourceInstanceByIDParams {
-	var ()
 	return &GetDeviceDatasourceInstanceByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetDeviceDatasourceInstanceByIDParams contains all the parameters to send to the API endpoint
-for the get device datasource instance by Id operation typically these are written to a http.Request
+/* GetDeviceDatasourceInstanceByIDParams contains all the parameters to send to the API endpoint
+   for the get device datasource instance by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type GetDeviceDatasourceInstanceByIDParams struct {
 
-	/*DeviceID*/
-	DeviceID int32
-	/*Fields*/
-	Fields *string
-	/*HdsID
-	  The device-datasource ID
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
 
+	// DeviceID.
+	//
+	// Format: int32
+	DeviceID int32
+
+	// Fields.
+	Fields *string
+
+	/* HdsID.
+
+	   The device-datasource ID
+
+	   Format: int32
 	*/
 	HdsID int32
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get device datasource instance by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDeviceDatasourceInstanceByIDParams) WithDefaults() *GetDeviceDatasourceInstanceByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get device datasource instance by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetDeviceDatasourceInstanceByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := GetDeviceDatasourceInstanceByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the get device datasource instance by Id params
@@ -109,6 +148,17 @@ func (o *GetDeviceDatasourceInstanceByIDParams) WithHTTPClient(client *http.Clie
 // SetHTTPClient adds the HTTPClient to the get device datasource instance by Id params
 func (o *GetDeviceDatasourceInstanceByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithUserAgent adds the userAgent to the get device datasource instance by Id params
+func (o *GetDeviceDatasourceInstanceByIDParams) WithUserAgent(userAgent *string) *GetDeviceDatasourceInstanceByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the get device datasource instance by Id params
+func (o *GetDeviceDatasourceInstanceByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithDeviceID adds the deviceID to the get device datasource instance by Id params
@@ -157,10 +207,19 @@ func (o *GetDeviceDatasourceInstanceByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetDeviceDatasourceInstanceByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 
 	// path param deviceId
 	if err := r.SetPathParam("deviceId", swag.FormatInt32(o.DeviceID)); err != nil {
@@ -171,16 +230,17 @@ func (o *GetDeviceDatasourceInstanceByIDParams) WriteToRequest(r runtime.ClientR
 
 		// query param fields
 		var qrFields string
+
 		if o.Fields != nil {
 			qrFields = *o.Fields
 		}
 		qFields := qrFields
 		if qFields != "" {
+
 			if err := r.SetQueryParam("fields", qFields); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	// path param hdsId

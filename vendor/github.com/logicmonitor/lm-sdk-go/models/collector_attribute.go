@@ -7,25 +7,31 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // CollectorAttribute collector attribute
+//
 // swagger:discriminator CollectorAttribute name
 type CollectorAttribute interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// name
 	// Required: true
 	Name() string
 	SetName(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type collectorAttribute struct {
@@ -87,347 +93,310 @@ func unmarshalCollectorAttribute(data []byte, consumer runtime.Consumer) (Collec
 
 	// The value of name is used to determine which type to create and unmarshal the data into
 	switch getType.Name {
+	case "AggregateCollectorAttribute":
+		var result AggregateCollectorAttribute
+		if err := consumer.Consume(buf2, &result); err != nil {
+			return nil, err
+		}
+		return &result, nil
 	case "CollectorAttribute":
 		var result collectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "GcpBillingCollectorAttributeV2":
 		var result GcpBillingCollectorAttributeV2
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "GcpComputeServiceLimitsCollectorAttributeV2":
 		var result GcpComputeServiceLimitsCollectorAttributeV2
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "GcpStackDriverCollectorAttributeV2":
 		var result GcpStackDriverCollectorAttributeV2
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
-	case "aggregate":
-		var result AggragateCollectorAttribute
+	case "OpenMetricCollectorAttributeV2":
+		var result OpenMetricCollectorAttributeV2
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsautoscalingservicelimits":
 		var result AwsAutoScalingServiceLimitsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsbilling":
 		var result AwsBillingCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsbillingreport":
 		var result AwsBillingReportCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsclassicelbservicelimits":
 		var result AwsClassicElbServiceLimitsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awscloudwatch":
 		var result AwsCloudWatchCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsdynamodb":
 		var result AwsDynamodbCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsec2reservedinstance":
 		var result AwsEC2ReservedInstanceCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsec2reservedinstancecoverage":
 		var result AwsEC2ReservedInstanceCoverageCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsec2scheduledevents":
 		var result AwsEC2ScheduledEventsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsec2servicelimits":
 		var result AwsEc2ServiceLimitsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsecsservicedetails":
 		var result AwsEcsServiceDetailsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awss3":
 		var result AwsS3CollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awsservicelimitsfromtrustedadvisor":
 		var result AwsServiceLimitsFromTrustedAdvisorCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awssesservicelimits":
 		var result AwsSesServiceLimitsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "awssqs":
 		var result AwsSqsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "azurebilling":
 		var result AzureBillingCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "azureinsights":
 		var result AzureInsightsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "azurenetworkservicelimits":
 		var result AzureNetworkServiceLimitsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "azureresourcehealth":
 		var result AzureResourceHealthCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "azurestorageservicelimits":
 		var result AzureStorageServiceLimitsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "azurevmservicelimits":
 		var result AzureVMServiceLimitsCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "batchscript":
 		var result BatchScriptCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "cim":
 		var result CIMCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "datapump":
 		var result DataPumpCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "dns":
 		var result DNSCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "esx":
 		var result ESXCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "internal":
 		var result InternalCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ipmi":
 		var result IPMICollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "jdbc":
 		var result JDBCCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "jmx":
 		var result JMXCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "memcached":
 		var result MemcachedCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "mongo":
 		var result MongoCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "netapp":
 		var result NetAppCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "perfmon":
 		var result PerfmonCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ping":
 		var result PingCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "script":
 		var result ScriptCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "sdkscript":
 		var result SDKScriptCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "snmp":
 		var result SNMPCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "tcp":
 		var result TCPCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "udp":
 		var result UDPCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "webpage":
 		var result WebPageCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "wmi":
 		var result WMICollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "xen":
 		var result XENCollectorAttribute
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid name value: %q", getType.Name)
 }
 
 // Validate validates this collector attribute
 func (m *collectorAttribute) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this collector attribute based on context it is used
+func (m *collectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
