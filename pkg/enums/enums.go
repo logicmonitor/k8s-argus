@@ -320,11 +320,11 @@ func (resourceType *ResourceType) TitlePlural() string {
 	case Services:
 		return "Services"
 	case Hpas:
-		return "Hpas"
+		return "HorizontalPodAutoscalers"
 	case Nodes:
 		return "Nodes"
 	case ETCD:
-		return "Etcds"
+		return "Etcd"
 	case Namespaces:
 		return "Namespaces"
 	case DaemonSets:
