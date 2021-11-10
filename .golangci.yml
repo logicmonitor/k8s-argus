@@ -129,6 +129,7 @@ linters-settings:
         - github.com/logicmonitor/lm-sdk-go
         - github.com/logicmonitor/k8s-collectorset-controller
         - github.com/pkg/profile
+        - github.com/senseyeio/duration
     
     blocked:
       modules:

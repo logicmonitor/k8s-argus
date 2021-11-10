@@ -167,6 +167,9 @@ github.com/prometheus/procfs/internal/fs
 # github.com/robfig/cron/v3 v3.0.1
 ## explicit
 github.com/robfig/cron/v3
+# github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
+## explicit
+github.com/senseyeio/duration
 # github.com/sirupsen/logrus v1.4.2
 ## explicit
 github.com/sirupsen/logrus
