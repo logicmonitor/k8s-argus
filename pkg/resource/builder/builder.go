@@ -48,6 +48,13 @@ func (b *Builder) SystemCategory(category string, action enums.BuilderAction) ty
 	return setProperty(constants.K8sSystemCategoriesPropertyKey, category, action)
 }
 
+// DisableResourceAlerting implements types.ResourceBuilder
+func (b *Builder) DisableResourceAlerting(disable bool) types.ResourceOption {
+	return func(device *models.Device) {
+		device.DisableAlerting = disable
+	}
+}
+
 // ResourceAnnotations implements types.ResourceBuilder
 func (b *Builder) ResourceAnnotations(properties map[string]string) types.ResourceOption {
 	return func(resource *models.Device) {
@@ -369,8 +376,12 @@ func (b *Builder) GetMarkDeleteOptions(lctx *lmctx.LMContext, rt enums.ResourceT
 
 	options := []types.ResourceOption{
 		b.SystemCategory(rt.GetDeletedCategory(), enums.Add),
+		b.DisableResourceAlerting(true),
 		b.DeletedOn(meta.DeletionTimestamp.Time),
 		b.ChangePrimaryKeysToMarkDelete(),
+	}
+	if val, ok := meta.Labels["logicmonitor/deleteafterduration"]; ok {
+		options = append(options, b.Custom("kubernetes.resourcedeleteafterduration", val))
 	}
 	// We are not deleting argus pod, as we need argus pod logs for troubleshooting
 	if util.IsArgusPodObject(lctx, rt, meta) {
@@ -378,7 +389,7 @@ func (b *Builder) GetMarkDeleteOptions(lctx *lmctx.LMContext, rt enums.ResourceT
 		scheduledDeleteTime := "P10DT0H0M0S"
 		conf, err := config.GetConfig(lctx)
 		if err == nil {
-			scheduledDeleteTime = *conf.DeleteArgusPodAfter
+			scheduledDeleteTime = *conf.DeleteInfraPodsAfter
 		}
 		options = append(options, b.Custom("kubernetes.resourcedeleteafterduration", scheduledDeleteTime))
 	}

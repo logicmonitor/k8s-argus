@@ -16,6 +16,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/senseyeio/duration"
 )
 
 // AddFunc returns func
@@ -59,7 +60,7 @@ func (m *Manager) UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 }
 
 // DeleteFunc returns function
-func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.ResourceOption) error {
+func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...types.ResourceOption) error { //nolint:cyclop
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, options ...types.ResourceOption) error {
 		log := lmlog.Logger(lctx)
 		conf, err := config.GetConfig(lctx)
@@ -71,8 +72,22 @@ func (m *Manager) DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 		if err != nil {
 			return err
 		}
-		if conf.DeleteResources &&
-			!util.IsArgusPod(lctx, rt, resource) {
+		objMeta, err := rt.ObjectMeta(obj)
+		if err != nil {
+			return err
+		}
+		val, deleteAfterLabelExists := objMeta.Labels["logicmonitor/deleteafterduration"]
+		d := duration.Duration{}
+		if deleteAfterLabelExists {
+			du, err := duration.ParseISO8601(val)
+			if err != nil {
+				deleteAfterLabelExists = false
+			} else {
+				d = du
+			}
+		}
+		if (conf.DeleteResources && !util.IsArgusPod(lctx, rt, resource)) ||
+			(!conf.DeleteResources && deleteAfterLabelExists && d.IsZero()) {
 			err := m.Delete(lctx, rt, obj, options...)
 			if err != nil {
 				if util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
