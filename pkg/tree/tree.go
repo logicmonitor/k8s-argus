@@ -8,6 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcegroup/dgbuilder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -67,6 +68,7 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 		if !resource.IsNamespaceScopedResource() && resource != nodes && !conf.IsMonitoringDisabled(resource) {
 			treeObj.ChildGroups = append(treeObj.ChildGroups,
 				&types.ResourceGroupTree{
+					DontCreate: !permission.HasPermissions(resource),
 					Options: []types.ResourceGroupOption{
 						dgBuilder.GroupName(resource.TitlePlural()),
 						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
@@ -89,24 +91,25 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 
 	for _, resource := range enums.ALLResourceTypes {
 		if resource != enums.Namespaces && resource.IsNamespaceScopedResource() && !conf.IsMonitoringDisabled(resource) {
-			treeObj.ChildGroups = append(treeObj.ChildGroups,
-				&types.ResourceGroupTree{
-					Options: []types.ResourceGroupOption{
-						dgBuilder.GroupName(resource.TitlePlural()),
-						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
-						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
-					},
-					ChildGroups: []*types.ResourceGroupTree{
-						{
-							DontCreate: doNotCreateDeletedGroup,
-							Options: []types.ResourceGroupOption{
-								dgBuilder.GroupName(constants.DeletedResourceGroup),
-								dgBuilder.DisableAlerting(true),
-								dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-							},
+			resourceTree := &types.ResourceGroupTree{
+				DontCreate: !permission.HasPermissions(resource),
+				Options: []types.ResourceGroupOption{
+					dgBuilder.GroupName(resource.TitlePlural()),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
+					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
+				},
+				ChildGroups: []*types.ResourceGroupTree{
+					{
+						DontCreate: doNotCreateDeletedGroup && !(resource == enums.Pods),
+						Options: []types.ResourceGroupOption{
+							dgBuilder.GroupName(constants.DeletedResourceGroup),
+							dgBuilder.DisableAlerting(true),
+							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 						},
 					},
-				})
+				},
+			}
+			treeObj.ChildGroups = append(treeObj.ChildGroups, resourceTree)
 		}
 	}
 	return treeObj, nil
@@ -131,6 +134,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 		if !resource.IsNamespaceScopedResource() && resource != enums.Nodes {
 			clusterscoped = append(clusterscoped,
 				&types.ResourceGroupTree{
+					DontCreate: !permission.HasPermissions(resource),
 					Options: []types.ResourceGroupOption{
 						dgBuilder.GroupName(resource.TitlePlural()),
 						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
