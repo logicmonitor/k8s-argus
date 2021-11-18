@@ -225,7 +225,21 @@ func postProcess(uconf *Config) {
 	}
 }
 
+func ResourceContains(arr []enums.ResourceType, rt enums.ResourceType) bool {
+	for _, v := range arr {
+		if v == rt {
+			return true
+		}
+	}
+	return false
+}
+
 func postLoad(pconf *Config, uconf *Config) {
+	// Disabling Discovery for ConfigMaps for now
+	if !ResourceContains(uconf.DisableResourceMonitoring, enums.ConfigMaps) {
+		logrus.Debugln("Adding ConfigMaps into DisabledResourceMonitoring")
+		uconf.DisableResourceMonitoring = append(uconf.DisableResourceMonitoring, enums.ConfigMaps)
+	}
 	t := reflect.TypeOf(pconf).Elem()
 	v := reflect.ValueOf(pconf).Elem()
 	nv := reflect.ValueOf(uconf).Elem()
