@@ -6,26 +6,37 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // EC2NetscanPolicyCredential e c2 netscan policy credential
+//
 // swagger:model EC2NetscanPolicyCredential
 type EC2NetscanPolicyCredential struct {
 
 	// Custom credentials that should be used for this scan
+	// Example: [{\"snmp.community\":\"test\"}]
 	Custom map[string]string `json:"custom,omitempty"`
 
 	// The ID of the device group that credentials should be inherited from, for this scan
+	// Example: 1
 	DeviceGroupID int32 `json:"deviceGroupId,omitempty"`
 
 	// The name of the device group that credentials should be inherited from, for this scan
+	// Example: Network Devices
 	DeviceGroupName string `json:"deviceGroupName,omitempty"`
 }
 
 // Validate validates this e c2 netscan policy credential
 func (m *EC2NetscanPolicyCredential) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this e c2 netscan policy credential based on context it is used
+func (m *EC2NetscanPolicyCredential) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

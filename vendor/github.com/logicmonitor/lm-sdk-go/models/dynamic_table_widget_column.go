@@ -6,15 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DynamicTableWidgetColumn dynamic table widget column
+//
 // swagger:model DynamicTableWidgetColumn
 type DynamicTableWidgetColumn struct {
 
@@ -33,7 +35,7 @@ type DynamicTableWidgetColumn struct {
 	// Read Only: true
 	DataPointName string `json:"dataPointName,omitempty"`
 
-	// The display type, it includes two options: raw|percent
+	// The display type, it includes three options: raw|percent|colorBar
 	DisplayType string `json:"displayType,omitempty"`
 
 	// Whether or not forecasting is enabled
@@ -50,6 +52,9 @@ type DynamicTableWidgetColumn struct {
 
 	// The expression in this field will be performed on the datapoint. The Column name should be referenced as the datapoint
 	Rpn string `json:"rpn,omitempty"`
+
+	// The unit label
+	UnitLabel string `json:"unitLabel,omitempty"`
 }
 
 // Validate validates this dynamic table widget column
@@ -99,6 +104,7 @@ func (m *DynamicTableWidgetColumn) validateColorThresholds(formats strfmt.Regist
 }
 
 func (m *DynamicTableWidgetColumn) validateColumnName(formats strfmt.Registry) error {
+
 	if err := validate.Required("columnName", "body", m.ColumnName); err != nil {
 		return err
 	}
@@ -107,7 +113,53 @@ func (m *DynamicTableWidgetColumn) validateColumnName(formats strfmt.Registry) e
 }
 
 func (m *DynamicTableWidgetColumn) validateDataPointID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dataPointId", "body", m.DataPointID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dynamic table widget column based on the context it is used
+func (m *DynamicTableWidgetColumn) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateColorThresholds(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPointName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DynamicTableWidgetColumn) contextValidateColorThresholds(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ColorThresholds); i++ {
+
+		if m.ColorThresholds[i] != nil {
+			if err := m.ColorThresholds[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("colorThresholds" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DynamicTableWidgetColumn) contextValidateDataPointName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointName", "body", string(m.DataPointName)); err != nil {
 		return err
 	}
 

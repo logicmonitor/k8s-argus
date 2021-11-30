@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // BatchJobExecutionItem batch job execution item
+//
 // swagger:model BatchJobExecutionItem
 type BatchJobExecutionItem struct {
 
@@ -77,6 +82,211 @@ type BatchJobExecutionItem struct {
 
 // Validate validates this batch job execution item
 func (m *BatchJobExecutionItem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this batch job execution item based on the context it is used
+func (m *BatchJobExecutionItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAlertLevel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBjName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCmdline(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceBatchJobID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExecutionNo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExitCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFinishedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFinishedOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartedOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStderr(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStdout(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateAlertLevel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertLevel", "body", int32(m.AlertLevel)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateBjName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "bjName", "body", string(m.BjName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateCmdline(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "cmdline", "body", string(m.Cmdline)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateDeviceBatchJobID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceBatchJobId", "body", int32(m.DeviceBatchJobID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateDeviceDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDisplayName", "body", string(m.DeviceDisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateExecutionNo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "executionNo", "body", int64(m.ExecutionNo)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateExitCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "exitCode", "body", int32(m.ExitCode)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateFinishedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "finishedOn", "body", int64(m.FinishedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateFinishedOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "finishedOnLocal", "body", string(m.FinishedOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateStartedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startedOn", "body", int64(m.StartedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateStartedOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startedOnLocal", "body", string(m.StartedOnLocal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateStderr(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stderr", "body", string(m.Stderr)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateStdout(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stdout", "body", string(m.Stdout)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobExecutionItem) contextValidateUserData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userData", "body", string(m.UserData)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

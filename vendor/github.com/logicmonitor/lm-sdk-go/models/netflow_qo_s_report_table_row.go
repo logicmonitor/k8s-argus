@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetflowQoSReportTableRow netflow qo s report table row
+//
 // swagger:model NetflowQoSReportTableRow
 type NetflowQoSReportTableRow struct {
 
@@ -39,12 +42,6 @@ func (m *NetflowQoSReportTableRow) DataType() string {
 // SetDataType sets the data type of this subtype
 func (m *NetflowQoSReportTableRow) SetDataType(val string) {
 }
-
-// Received gets the received of this subtype
-
-// Sent gets the sent of this subtype
-
-// Type gets the type of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NetflowQoSReportTableRow) UnmarshalJSON(raw []byte) error {
@@ -91,9 +88,7 @@ func (m *NetflowQoSReportTableRow) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Received = data.Received
-
 	result.Sent = data.Sent
-
 	result.Type = data.Type
 
 	*m = result
@@ -125,8 +120,7 @@ func (m NetflowQoSReportTableRow) MarshalJSON() ([]byte, error) {
 		Sent: m.Sent,
 
 		Type: m.Type,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +129,7 @@ func (m NetflowQoSReportTableRow) MarshalJSON() ([]byte, error) {
 	}{
 
 		DataType: m.DataType(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +144,64 @@ func (m *NetflowQoSReportTableRow) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this netflow qo s report table row based on the context it is used
+func (m *NetflowQoSReportTableRow) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReceived(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowQoSReportTableRow) contextValidateDataType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataType", "body", string(m.DataType())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowQoSReportTableRow) contextValidateReceived(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "received", "body", float64(m.Received)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowQoSReportTableRow) contextValidateSent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sent", "body", float64(m.Sent)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowQoSReportTableRow) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

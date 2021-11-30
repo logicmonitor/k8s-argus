@@ -7,18 +7,20 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // OpsNote ops note
+//
 // swagger:model OpsNote
 type OpsNote struct {
 
@@ -27,6 +29,7 @@ type OpsNote struct {
 	CreatedBy string `json:"createdBy,omitempty"`
 
 	// The date and time associated with the note, in epoch seconds format
+	// Example: 1488826440
 	HappenOnInSec int64 `json:"happenOnInSec,omitempty"`
 
 	// The id associated with the Ops Note
@@ -34,6 +37,7 @@ type OpsNote struct {
 	ID string `json:"id,omitempty"`
 
 	// The note message
+	// Example: software update from 1.0.0 to 1.2.4
 	// Required: true
 	Note *string `json:"note"`
 
@@ -135,8 +139,7 @@ func (m OpsNote) MarshalJSON() ([]byte, error) {
 		Note: m.Note,
 
 		Tags: m.Tags,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +148,7 @@ func (m OpsNote) MarshalJSON() ([]byte, error) {
 	}{
 
 		Scopes: m.scopesField,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -177,6 +179,7 @@ func (m *OpsNote) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OpsNote) validateNote(formats strfmt.Registry) error {
+
 	if err := validate.Required("note", "body", m.Note); err != nil {
 		return err
 	}
@@ -190,12 +193,14 @@ func (m *OpsNote) validateScopes(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.Scopes()); i++ {
+
 		if err := m.scopesField[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("scopes" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
+
 	}
 
 	return nil
@@ -213,6 +218,84 @@ func (m *OpsNote) validateTags(formats strfmt.Registry) error {
 
 		if m.Tags[i] != nil {
 			if err := m.Tags[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this ops note based on the context it is used
+func (m *OpsNote) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCreatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateScopes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTags(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OpsNote) contextValidateCreatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdBy", "body", string(m.CreatedBy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OpsNote) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *OpsNote) contextValidateScopes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Scopes()); i++ {
+
+		if err := m.scopesField[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("scopes" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *OpsNote) contextValidateTags(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Tags); i++ {
+
+		if m.Tags[i] != nil {
+			if err := m.Tags[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
 				}

@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
-	models "github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
 // UpdateReportByIDReader is a Reader for the UpdateReportByID structure.
@@ -22,14 +25,18 @@ type UpdateReportByIDReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdateReportByIDReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewUpdateReportByIDOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
+	case 429:
+		result := NewUpdateReportByIDTooManyRequests()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		result := NewUpdateReportByIDDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -47,7 +54,7 @@ func NewUpdateReportByIDOK() *UpdateReportByIDOK {
 	return &UpdateReportByIDOK{}
 }
 
-/*UpdateReportByIDOK handles this case with default header values.
+/* UpdateReportByIDOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -58,14 +65,84 @@ type UpdateReportByIDOK struct {
 func (o *UpdateReportByIDOK) Error() string {
 	return fmt.Sprintf("[PUT /report/reports/{id}][%d] updateReportByIdOK  %+v", 200, o.Payload)
 }
+func (o *UpdateReportByIDOK) GetPayload() models.ReportBase {
+	return o.Payload
+}
 
 func (o *UpdateReportByIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	// response payload as interface type
 	payload, err := models.UnmarshalReportBase(response.Body(), consumer)
 	if err != nil {
 		return err
 	}
 	o.Payload = payload
+
+	return nil
+}
+
+// NewUpdateReportByIDTooManyRequests creates a UpdateReportByIDTooManyRequests with default headers values
+func NewUpdateReportByIDTooManyRequests() *UpdateReportByIDTooManyRequests {
+	return &UpdateReportByIDTooManyRequests{}
+}
+
+/* UpdateReportByIDTooManyRequests describes a response with status code 429, with default header values.
+
+Too Many Requests
+*/
+type UpdateReportByIDTooManyRequests struct {
+
+	/* Request limit per X-Rate-Limit-Window
+	 */
+	XRateLimitLimit int64
+
+	/* The number of requests left for the time window
+	 */
+	XRateLimitRemaining int64
+
+	/* The rolling time window length with the unit of second
+	 */
+	XRateLimitWindow int64
+}
+
+func (o *UpdateReportByIDTooManyRequests) Error() string {
+	return fmt.Sprintf("[PUT /report/reports/{id}][%d] updateReportByIdTooManyRequests ", 429)
+}
+
+func (o *UpdateReportByIDTooManyRequests) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header x-rate-limit-limit
+	hdrXRateLimitLimit := response.GetHeader("x-rate-limit-limit")
+
+	if hdrXRateLimitLimit != "" {
+		valxRateLimitLimit, err := swag.ConvertInt64(hdrXRateLimitLimit)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-limit", "header", "int64", hdrXRateLimitLimit)
+		}
+		o.XRateLimitLimit = valxRateLimitLimit
+	}
+
+	// hydrates response header x-rate-limit-remaining
+	hdrXRateLimitRemaining := response.GetHeader("x-rate-limit-remaining")
+
+	if hdrXRateLimitRemaining != "" {
+		valxRateLimitRemaining, err := swag.ConvertInt64(hdrXRateLimitRemaining)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-remaining", "header", "int64", hdrXRateLimitRemaining)
+		}
+		o.XRateLimitRemaining = valxRateLimitRemaining
+	}
+
+	// hydrates response header x-rate-limit-window
+	hdrXRateLimitWindow := response.GetHeader("x-rate-limit-window")
+
+	if hdrXRateLimitWindow != "" {
+		valxRateLimitWindow, err := swag.ConvertInt64(hdrXRateLimitWindow)
+		if err != nil {
+			return errors.InvalidType("x-rate-limit-window", "header", "int64", hdrXRateLimitWindow)
+		}
+		o.XRateLimitWindow = valxRateLimitWindow
+	}
 
 	return nil
 }
@@ -77,7 +154,7 @@ func NewUpdateReportByIDDefault(code int) *UpdateReportByIDDefault {
 	}
 }
 
-/*UpdateReportByIDDefault handles this case with default header values.
+/* UpdateReportByIDDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +172,12 @@ func (o *UpdateReportByIDDefault) Code() int {
 func (o *UpdateReportByIDDefault) Error() string {
 	return fmt.Sprintf("[PUT /report/reports/{id}][%d] updateReportById default  %+v", o._statusCode, o.Payload)
 }
+func (o *UpdateReportByIDDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
 
 func (o *UpdateReportByIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
 	o.Payload = new(models.ErrorResponse)
 
 	// response payload

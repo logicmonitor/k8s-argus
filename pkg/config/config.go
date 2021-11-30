@@ -37,7 +37,7 @@ type Config struct {
 	EnableNewResourceTree         bool                    `yaml:"enable_new_resource_tree"`
 	EnableNamespacesDeletedGroups bool                    `yaml:"enable_namespaces_deleted_groups"`
 	RegisterGenericFilter         bool                    `yaml:"register_generic_filter"`
-	DeleteArgusPodAfter           *string                 `yaml:"delete_argus_pod_after"`
+	DeleteInfraPodsAfter          *string                 `yaml:"delete_infra_pods_after"`
 	DisableResourceMonitoring     []enums.ResourceType    `yaml:"disable_resource_monitoring"`
 	DisableResourceAlerting       []enums.ResourceType    `yaml:"disable_resource_alerting"`
 	TelemetryCronString           *string                 `yaml:"telemetry_cron_string"`
@@ -225,7 +225,21 @@ func postProcess(uconf *Config) {
 	}
 }
 
+func ResourceContains(arr []enums.ResourceType, rt enums.ResourceType) bool {
+	for _, v := range arr {
+		if v == rt {
+			return true
+		}
+	}
+	return false
+}
+
 func postLoad(pconf *Config, uconf *Config) {
+	// Disabling Discovery for ConfigMaps for now
+	if !ResourceContains(uconf.DisableResourceMonitoring, enums.ConfigMaps) {
+		logrus.Debugln("Adding ConfigMaps into DisabledResourceMonitoring")
+		uconf.DisableResourceMonitoring = append(uconf.DisableResourceMonitoring, enums.ConfigMaps)
+	}
 	t := reflect.TypeOf(pconf).Elem()
 	v := reflect.ValueOf(pconf).Elem()
 	nv := reflect.ValueOf(uconf).Elem()
@@ -282,9 +296,9 @@ func validateConfig(conf *Config) {
 		defaultQueueSize := 100
 		conf.ParallelRunnerQueueSize = &defaultQueueSize
 	}
-	if conf.DeleteArgusPodAfter == nil {
+	if conf.DeleteInfraPodsAfter == nil {
 		scheduledDeleteTime := "P10DT0H0M0S"
-		conf.DeleteArgusPodAfter = &scheduledDeleteTime
+		conf.DeleteInfraPodsAfter = &scheduledDeleteTime
 	}
 	if conf.TelemetryCronString == nil {
 		// Defaults to 10 minute if not specified

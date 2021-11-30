@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DashboardReport dashboard report
+//
 // swagger:model DashboardReport
 type DashboardReport struct {
 	customReportTypeIdField int32
@@ -279,18 +281,6 @@ func (m *DashboardReport) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// DashboardGroupFullPath gets the dashboard group full path of this subtype
-
-// DashboardID gets the dashboard Id of this subtype
-
-// DashboardName gets the dashboard name of this subtype
-
-// DateRange gets the date range of this subtype
-
-// DisplayLink gets the display link of this subtype
-
-// DisplayName gets the display name of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *DashboardReport) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -418,19 +408,13 @@ func (m *DashboardReport) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.DashboardGroupFullPath = data.DashboardGroupFullPath
-
 	result.DashboardID = data.DashboardID
-
 	result.DashboardName = data.DashboardName
-
 	result.DateRange = data.DateRange
-
 	result.DisplayLink = data.DisplayLink
-
 	result.DisplayName = data.DisplayName
 
 	*m = result
@@ -478,8 +462,7 @@ func (m DashboardReport) MarshalJSON() ([]byte, error) {
 		DisplayLink: m.DisplayLink,
 
 		DisplayName: m.DisplayName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -564,8 +547,7 @@ func (m DashboardReport) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -600,6 +582,7 @@ func (m *DashboardReport) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DashboardReport) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -608,6 +591,7 @@ func (m *DashboardReport) validateName(formats strfmt.Registry) error {
 }
 
 func (m *DashboardReport) validateRecipients(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Recipients()) { // not required
 		return nil
 	}
@@ -632,6 +616,7 @@ func (m *DashboardReport) validateRecipients(formats strfmt.Registry) error {
 }
 
 func (m *DashboardReport) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID); err != nil {
 		return err
 	}
@@ -640,7 +625,209 @@ func (m *DashboardReport) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *DashboardReport) validateDateRange(formats strfmt.Registry) error {
+
 	if err := validate.Required("dateRange", "body", m.DateRange); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dashboard report based on the context it is used
+func (m *DashboardReport) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomReportTypeID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCustomReportTypeName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEnableViewAsOtherUser(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGeneratePages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastGenerateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastmodifyUserName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRecipients(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportLinkNum(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDashboardGroupFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDashboardName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DashboardReport) contextValidateCustomReportTypeID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeId", "body", int32(m.CustomReportTypeID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateCustomReportTypeName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customReportTypeName", "body", string(m.CustomReportTypeName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateEnableViewAsOtherUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "enableViewAsOtherUser", "body", m.EnableViewAsOtherUser()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateLastGenerateOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateOn", "body", int64(m.LastGenerateOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateLastGeneratePages(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGeneratePages", "body", int32(m.LastGeneratePages())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateLastGenerateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastGenerateSize", "body", int64(m.LastGenerateSize())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateLastmodifyUserID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserId", "body", int32(m.LastmodifyUserID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateLastmodifyUserName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastmodifyUserName", "body", string(m.LastmodifyUserName())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateRecipients(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Recipients()); i++ {
+
+		if m.recipientsField[i] != nil {
+			if err := m.recipientsField[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("recipients" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateReportLinkNum(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportLinkNum", "body", int32(m.ReportLinkNum())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateDashboardGroupFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dashboardGroupFullPath", "body", string(m.DashboardGroupFullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DashboardReport) contextValidateDashboardName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dashboardName", "body", string(m.DashboardName)); err != nil {
 		return err
 	}
 

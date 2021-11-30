@@ -6,15 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // TableWidgetRow table widget row
+//
 // swagger:model TableWidgetRow
 type TableWidgetRow struct {
 
@@ -60,6 +62,7 @@ func (m *TableWidgetRow) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TableWidgetRow) validateDeviceID(formats strfmt.Registry) error {
+
 	if err := validate.Required("deviceId", "body", m.DeviceID); err != nil {
 		return err
 	}
@@ -79,6 +82,68 @@ func (m *TableWidgetRow) validateInstances(formats strfmt.Registry) error {
 
 		if m.Instances[i] != nil {
 			if err := m.Instances[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("instances" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this table widget row based on the context it is used
+func (m *TableWidgetRow) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDeviceDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstances(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TableWidgetRow) contextValidateDeviceDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDisplayName", "body", string(m.DeviceDisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetRow) contextValidateGroupFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupFullPath", "body", string(m.GroupFullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TableWidgetRow) contextValidateInstances(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instances", "body", []*TableWidgetInstanceCell(m.Instances)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Instances); i++ {
+
+		if m.Instances[i] != nil {
+			if err := m.Instances[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("instances" + "." + strconv.Itoa(i))
 				}

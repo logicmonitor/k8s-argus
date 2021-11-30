@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DeviceEventSourceSDT device event source SDT
+//
 // swagger:model DeviceEventSourceSDT
 type DeviceEventSourceSDT struct {
 	adminField string
@@ -255,14 +258,6 @@ func (m *DeviceEventSourceSDT) SetWeekOfMonth(val string) {
 	m.weekOfMonthField = val
 }
 
-// DeviceDisplayName gets the device display name of this subtype
-
-// DeviceEventSourceID gets the device event source Id of this subtype
-
-// DeviceID gets the device Id of this subtype
-
-// EventSourceName gets the event source name of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *DeviceEventSourceSDT) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -374,17 +369,13 @@ func (m *DeviceEventSourceSDT) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.weekDayField = base.WeekDay
 
 	result.weekOfMonthField = base.WeekOfMonth
 
 	result.DeviceDisplayName = data.DeviceDisplayName
-
 	result.DeviceEventSourceID = data.DeviceEventSourceID
-
 	result.DeviceID = data.DeviceID
-
 	result.EventSourceName = data.EventSourceName
 
 	*m = result
@@ -418,8 +409,7 @@ func (m DeviceEventSourceSDT) MarshalJSON() ([]byte, error) {
 		DeviceID: m.DeviceID,
 
 		EventSourceName: m.EventSourceName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -500,8 +490,7 @@ func (m DeviceEventSourceSDT) MarshalJSON() ([]byte, error) {
 		WeekDay: m.WeekDay(),
 
 		WeekOfMonth: m.WeekOfMonth(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -516,6 +505,81 @@ func (m *DeviceEventSourceSDT) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this device event source SDT based on the context it is used
+func (m *DeviceEventSourceSDT) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsEffective(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceEventSourceSDT) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", string(m.Admin())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceEventSourceSDT) contextValidateEndDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endDateTimeOnLocal", "body", string(m.EndDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceEventSourceSDT) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceEventSourceSDT) contextValidateIsEffective(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isEffective", "body", m.IsEffective()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceEventSourceSDT) contextValidateStartDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startDateTimeOnLocal", "body", string(m.StartDateTimeOnLocal())); err != nil {
+		return err
+	}
+
 	return nil
 }
 

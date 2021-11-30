@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // ReportGroup report group
+//
 // swagger:model ReportGroup
 type ReportGroup struct {
 
@@ -19,6 +22,9 @@ type ReportGroup struct {
 
 	// id
 	ID int32 `json:"id,omitempty"`
+
+	// matched report count
+	MatchedReportCount int32 `json:"matchedReportCount,omitempty"`
 
 	// name
 	Name string `json:"name,omitempty"`
@@ -32,6 +38,11 @@ type ReportGroup struct {
 
 // Validate validates this report group
 func (m *ReportGroup) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this report group based on context it is used
+func (m *ReportGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

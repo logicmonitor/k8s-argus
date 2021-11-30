@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DeviceDataSourceInstanceGroup device data source instance group
+//
 // swagger:model DeviceDataSourceInstanceGroup
 type DeviceDataSourceInstanceGroup struct {
 
@@ -21,6 +24,7 @@ type DeviceDataSourceInstanceGroup struct {
 	CreateOn int64 `json:"createOn,omitempty"`
 
 	// The description of the datasource instance group
+	// Example: Test the availability of HQ
 	Description string `json:"description,omitempty"`
 
 	// device data source Id
@@ -40,6 +44,7 @@ type DeviceDataSourceInstanceGroup struct {
 	ID int32 `json:"id,omitempty"`
 
 	// Name of the datasource instance group
+	// Example: Ping Checks at HQ
 	// Required: true
 	Name *string `json:"name"`
 }
@@ -59,7 +64,83 @@ func (m *DeviceDataSourceInstanceGroup) Validate(formats strfmt.Registry) error 
 }
 
 func (m *DeviceDataSourceInstanceGroup) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device data source instance group based on the context it is used
+func (m *DeviceDataSourceInstanceGroup) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCreateOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceDataSourceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceDataSourceInstanceGroup) contextValidateCreateOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createOn", "body", int64(m.CreateOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstanceGroup) contextValidateDeviceDataSourceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDataSourceId", "body", int32(m.DeviceDataSourceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstanceGroup) contextValidateDeviceDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDisplayName", "body", string(m.DeviceDisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstanceGroup) contextValidateDeviceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceId", "body", int32(m.DeviceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSourceInstanceGroup) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
 		return err
 	}
 

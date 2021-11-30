@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetflowBandwidth netflow bandwidth
+//
 // swagger:model NetflowBandwidth
 type NetflowBandwidth struct {
 
@@ -39,14 +42,6 @@ func (m *NetflowBandwidth) DataType() string {
 // SetDataType sets the data type of this subtype
 func (m *NetflowBandwidth) SetDataType(val string) {
 }
-
-// DeviceDisplayName gets the device display name of this subtype
-
-// Receive gets the receive of this subtype
-
-// Send gets the send of this subtype
-
-// Usage gets the usage of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NetflowBandwidth) UnmarshalJSON(raw []byte) error {
@@ -93,11 +88,8 @@ func (m *NetflowBandwidth) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.DeviceDisplayName = data.DeviceDisplayName
-
 	result.Receive = data.Receive
-
 	result.Send = data.Send
-
 	result.Usage = data.Usage
 
 	*m = result
@@ -131,8 +123,7 @@ func (m NetflowBandwidth) MarshalJSON() ([]byte, error) {
 		Send: m.Send,
 
 		Usage: m.Usage,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +132,7 @@ func (m NetflowBandwidth) MarshalJSON() ([]byte, error) {
 	}{
 
 		DataType: m.DataType(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +147,25 @@ func (m *NetflowBandwidth) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this netflow bandwidth based on the context it is used
+func (m *NetflowBandwidth) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowBandwidth) contextValidateDataType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataType", "body", string(m.DataType())); err != nil {
+		return err
+	}
+
 	return nil
 }
 

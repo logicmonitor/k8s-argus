@@ -8,6 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcegroup"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcegroup/dgbuilder"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
@@ -15,13 +16,14 @@ import (
 )
 
 // GetResourceGroupTree creates the ResourceGroup tree that will represent the cluster in LogicMonitor.
+// nolint: cyclop
 func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager, requester *types.LMRequester) (*types.ResourceGroupTree, error) {
 	conf, err2 := getConf(lctx, requester)
 	if err2 != nil {
 		return nil, err2
 	}
 	nodes := enums.Nodes
-	etcd := enums.ETCD
+	// etcd := enums.ETCD
 	doNotCreateDeletedGroup := conf.DeleteResources
 	clusterProps, ok := conf.ResourceGroupProperties.Raw["cluster"]
 	if !ok {
@@ -60,25 +62,17 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 					},
 				},
 			},
-			{
-				ChildGroups: nil,
-				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
-					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
-				},
-			},
 		},
 	}
-
 	for _, resource := range enums.ALLResourceTypes {
-		if resource != enums.Namespaces && resource.IsNamespaceScopedResource() && !conf.IsMonitoringDisabled(resource) {
+		if !resource.IsNamespaceScopedResource() && resource != nodes && !conf.IsMonitoringDisabled(resource) {
 			treeObj.ChildGroups = append(treeObj.ChildGroups,
 				&types.ResourceGroupTree{
+					DontCreate: !permission.HasPermissions(resource),
 					Options: []types.ResourceGroupOption{
 						dgBuilder.GroupName(resource.TitlePlural()),
 						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
+						dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
 						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
 					},
 					ChildGroups: []*types.ResourceGroupTree{
@@ -94,6 +88,30 @@ func GetResourceGroupTree(lctx *lmctx.LMContext, dgBuilder types.ResourceManager
 				})
 		}
 	}
+
+	for _, resource := range enums.ALLResourceTypes {
+		if resource != enums.Namespaces && resource.IsNamespaceScopedResource() && !conf.IsMonitoringDisabled(resource) {
+			resourceTree := &types.ResourceGroupTree{
+				DontCreate: !permission.HasPermissions(resource),
+				Options: []types.ResourceGroupOption{
+					dgBuilder.GroupName(resource.TitlePlural()),
+					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
+					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
+				},
+				ChildGroups: []*types.ResourceGroupTree{
+					{
+						DontCreate: doNotCreateDeletedGroup && !(resource == enums.Pods),
+						Options: []types.ResourceGroupOption{
+							dgBuilder.GroupName(constants.DeletedResourceGroup),
+							dgBuilder.DisableAlerting(true),
+							dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetDeletedCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
+						},
+					},
+				},
+			}
+			treeObj.ChildGroups = append(treeObj.ChildGroups, resourceTree)
+		}
+	}
 	return treeObj, nil
 }
 
@@ -104,23 +122,28 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 	if err2 != nil {
 		return nil, err2
 	}
-	etcd := enums.ETCD
 	nodes := enums.Nodes
 	doNotCreateDeletedGroup := conf.DeleteResources
-	deletedBuilder := dgbuilder.NewAppliesToBuilder().
-		Auto("clustername").Equals(conf.ClusterName).And().
-		OpenBracket()
-	for _, e := range enums.ALLResourceTypes {
-		if e == enums.Namespaces || !e.IsNamespaceScopedResource() {
-			continue
-		}
-		deletedBuilder = deletedBuilder.HasCategory(e.GetDeletedCategory()).Or()
-	}
-	deletedBuilder.TrimOrCloseBracket()
-
 	clusterProps, ok := conf.ResourceGroupProperties.Raw["cluster"]
 	if !ok {
 		clusterProps = []config.PropOpts{}
+	}
+
+	clusterscoped := []*types.ResourceGroupTree{}
+	for _, resource := range enums.ALLResourceTypes {
+		if !resource.IsNamespaceScopedResource() && resource != enums.Nodes {
+			clusterscoped = append(clusterscoped,
+				&types.ResourceGroupTree{
+					DontCreate: !permission.HasPermissions(resource),
+					Options: []types.ResourceGroupOption{
+						dgBuilder.GroupName(resource.TitlePlural()),
+						dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(resource)),
+						dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(resource.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
+						dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(resource))),
+					},
+					ChildGroups: nil,
+				})
+		}
 	}
 	return &types.ResourceGroupTree{
 		Options: []types.ResourceGroupOption{
@@ -133,11 +156,18 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 		ChildGroups: []*types.ResourceGroupTree{
 			{
 				Options: []types.ResourceGroupOption{
-					dgBuilder.GroupName(constants.EtcdResourceGroupName),
-					dgBuilder.DisableAlerting(conf.ShouldDisableAlerting(etcd)),
-					dgBuilder.AppliesTo(dgbuilder.NewAppliesToBuilder().HasCategory(etcd.GetCategory()).And().Auto("clustername").Equals(conf.ClusterName)),
-					dgBuilder.CustomProperties(dgbuilder.NewPropertyBuilder().AddProperties(conf.ResourceGroupProperties.Get(enums.ETCD))),
+					dgBuilder.GroupName(constants.ClusterScopedGroupName),
 				},
+				ChildGroups: append(clusterscoped,
+					&types.ResourceGroupTree{
+						DontCreate: doNotCreateDeletedGroup,
+						Options: []types.ResourceGroupOption{
+							dgBuilder.GroupName(constants.DeletedResourceGroup),
+							dgBuilder.DisableAlerting(true),
+							dgBuilder.AppliesTo(getDeleteBuilderForClusterScopedResources(conf.ClusterName)),
+						},
+						ChildGroups: nil,
+					}),
 			},
 			{
 				Options: []types.ResourceGroupOption{
@@ -174,7 +204,7 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 						Options: []types.ResourceGroupOption{
 							dgBuilder.GroupName(constants.DeletedResourceGroup),
 							dgBuilder.DisableAlerting(true),
-							dgBuilder.AppliesTo(deletedBuilder),
+							dgBuilder.AppliesTo(getDeleteBuilderForNamespaceScopedResources(conf.ClusterName)),
 						},
 					},
 				},
@@ -214,4 +244,32 @@ func checkAndUpdateClusterGroup(lctx *lmctx.LMContext, config *config.Config, lm
 		config.ClusterGroupID = constants.RootResourceGroupID
 	}
 	return nil
+}
+
+func getDeleteBuilderForNamespaceScopedResources(clusterName string) types.AppliesToBuilder {
+	deletedBuilderForNamespaceScoped := dgbuilder.NewAppliesToBuilder().
+		Auto("clustername").Equals(clusterName).And().
+		OpenBracket()
+	for _, e := range enums.ALLResourceTypes {
+		if e == enums.Namespaces || !e.IsNamespaceScopedResource() {
+			continue
+		}
+		deletedBuilderForNamespaceScoped = deletedBuilderForNamespaceScoped.HasCategory(e.GetDeletedCategory()).Or()
+	}
+	deletedBuilderForNamespaceScoped.TrimOrCloseBracket()
+	return deletedBuilderForNamespaceScoped
+}
+
+func getDeleteBuilderForClusterScopedResources(clusterName string) types.AppliesToBuilder {
+	deletedBuilderForClusterScoped := dgbuilder.NewAppliesToBuilder().
+		Auto("clustername").Equals(clusterName).And().
+		OpenBracket()
+	for _, e := range enums.ALLResourceTypes {
+		if e == enums.Namespaces || e.IsNamespaceScopedResource() {
+			continue
+		}
+		deletedBuilderForClusterScoped = deletedBuilderForClusterScoped.HasCategory(e.GetDeletedCategory()).Or()
+	}
+	deletedBuilderForClusterScoped.TrimOrCloseBracket()
+	return deletedBuilderForClusterScoped
 }

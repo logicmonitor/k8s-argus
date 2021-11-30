@@ -6,49 +6,176 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // SDTHistory SDT history
+//
 // swagger:model SDTHistory
 type SDTHistory struct {
 
 	// The user that added the SDT
+	// Example: sarah@logicmonitor.com
 	// Read Only: true
 	Admin string `json:"admin,omitempty"`
 
 	// The comment associated with the SDT
+	// Example: migrating devices to new network and new IP addresses
 	// Read Only: true
 	Comment string `json:"comment,omitempty"`
 
 	// The duration of the SDT, in minutes
+	// Example: 456
 	// Read Only: true
 	Duration int64 `json:"duration,omitempty"`
 
 	// The end epoch for the SDT
+	// Example: 1475902808000
 	// Read Only: true
 	EndEpoch int64 `json:"endEpoch,omitempty"`
 
 	// The ID of the SDT
+	// Example: b-nTH4ECTH2rZ-Q548GOKg
 	// Read Only: true
 	ID string `json:"id,omitempty"`
 
 	// The ID of the resource in SDT, e.g. the group or device in SDT
+	// Example: 1
 	// Read Only: true
 	ItemID int32 `json:"itemId,omitempty"`
 
 	// The start epoch for the SDT
+	// Example: 1475875446000
 	// Read Only: true
 	StartEpoch int64 `json:"startEpoch,omitempty"`
 
 	// The SDT type
+	// Example: DeviceGroupSDT
 	// Read Only: true
 	Type string `json:"type,omitempty"`
 }
 
 // Validate validates this SDT history
 func (m *SDTHistory) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this SDT history based on the context it is used
+func (m *SDTHistory) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateComment(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndEpoch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateItemID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartEpoch(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SDTHistory) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", string(m.Admin)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SDTHistory) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "comment", "body", string(m.Comment)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SDTHistory) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "duration", "body", int64(m.Duration)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SDTHistory) contextValidateEndEpoch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endEpoch", "body", int64(m.EndEpoch)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SDTHistory) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SDTHistory) contextValidateItemID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "itemId", "body", int32(m.ItemID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SDTHistory) contextValidateStartEpoch(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startEpoch", "body", int64(m.StartEpoch)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SDTHistory) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

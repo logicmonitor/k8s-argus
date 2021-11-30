@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // GlobMatchToggle glob match toggle
+//
 // swagger:model GlobMatchToggle
 type GlobMatchToggle struct {
 
@@ -23,6 +26,11 @@ type GlobMatchToggle struct {
 
 // Validate validates this glob match toggle
 func (m *GlobMatchToggle) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this glob match toggle based on context it is used
+func (m *GlobMatchToggle) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

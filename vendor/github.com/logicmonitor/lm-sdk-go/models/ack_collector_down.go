@@ -6,20 +6,29 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AckCollectorDown ack collector down
+//
 // swagger:model AckCollectorDown
 type AckCollectorDown struct {
 
 	// comment
+	// Example: Collector Down Acknowledged
 	Comment string `json:"comment,omitempty"`
 }
 
 // Validate validates this ack collector down
 func (m *AckCollectorDown) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this ack collector down based on context it is used
+func (m *AckCollectorDown) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

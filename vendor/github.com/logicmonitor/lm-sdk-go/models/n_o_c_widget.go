@@ -7,18 +7,20 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // NOCWidget n o c widget
+//
 // swagger:model NOCWidget
 type NOCWidget struct {
 	dashboardIdField *int32
@@ -41,25 +43,25 @@ type NOCWidget struct {
 
 	userPermissionField string
 
-	// Whether or not acknowledgements are displayed in the NOC widget
-	AckChecked bool `json:"ackChecked,omitempty"`
+	// Whether or not acknowledgements are displayed in the NOC widget, the default value is true
+	AckChecked interface{} `json:"ackChecked,omitempty"`
 
 	// The maximum number columns displayed in the NOC widget
 	DisplayColumn int32 `json:"displayColumn,omitempty"`
 
-	// Whether or not critical alerts are displayed in the NOC widget
-	DisplayCriticalAlert bool `json:"displayCriticalAlert,omitempty"`
+	// Whether or not critical alerts are displayed in the NOC widget, the default value is true
+	DisplayCriticalAlert interface{} `json:"displayCriticalAlert,omitempty"`
 
-	// Whether or not error alerts are displayed in the NOC widget
-	DisplayErrorAlert bool `json:"displayErrorAlert,omitempty"`
+	// Whether or not error alerts are displayed in the NOC widget, the default value is true
+	DisplayErrorAlert interface{} `json:"displayErrorAlert,omitempty"`
 
-	// Whether or not warning alerts are displayed in the NOC widget
-	DisplayWarnAlert bool `json:"displayWarnAlert,omitempty"`
+	// Whether or not warning alerts are displayed in the NOC widget, the default value is true
+	DisplayWarnAlert interface{} `json:"displayWarnAlert,omitempty"`
 
 	itemsField []NOCItemBase
 
-	// Whether or not SDTs are displayed in the NOC widget
-	SDTChecked bool `json:"sdtChecked,omitempty"`
+	// Whether or not SDTs are displayed in the NOC widget, the default value is true
+	SDTChecked interface{} `json:"sdtChecked,omitempty"`
 
 	// How NOC items are sorted
 	SortBy string `json:"sortBy,omitempty"`
@@ -174,16 +176,6 @@ func (m *NOCWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// AckChecked gets the ack checked of this subtype
-
-// DisplayColumn gets the display column of this subtype
-
-// DisplayCriticalAlert gets the display critical alert of this subtype
-
-// DisplayErrorAlert gets the display error alert of this subtype
-
-// DisplayWarnAlert gets the display warn alert of this subtype
-
 // Items gets the items of this subtype
 func (m *NOCWidget) Items() []NOCItemBase {
 	return m.itemsField
@@ -194,33 +186,29 @@ func (m *NOCWidget) SetItems(val []NOCItemBase) {
 	m.itemsField = val
 }
 
-// SDTChecked gets the sdt checked of this subtype
-
-// SortBy gets the sort by of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NOCWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
 
-		// Whether or not acknowledgements are displayed in the NOC widget
-		AckChecked bool `json:"ackChecked,omitempty"`
+		// Whether or not acknowledgements are displayed in the NOC widget, the default value is true
+		AckChecked interface{} `json:"ackChecked,omitempty"`
 
 		// The maximum number columns displayed in the NOC widget
 		DisplayColumn int32 `json:"displayColumn,omitempty"`
 
-		// Whether or not critical alerts are displayed in the NOC widget
-		DisplayCriticalAlert bool `json:"displayCriticalAlert,omitempty"`
+		// Whether or not critical alerts are displayed in the NOC widget, the default value is true
+		DisplayCriticalAlert interface{} `json:"displayCriticalAlert,omitempty"`
 
-		// Whether or not error alerts are displayed in the NOC widget
-		DisplayErrorAlert bool `json:"displayErrorAlert,omitempty"`
+		// Whether or not error alerts are displayed in the NOC widget, the default value is true
+		DisplayErrorAlert interface{} `json:"displayErrorAlert,omitempty"`
 
-		// Whether or not warning alerts are displayed in the NOC widget
-		DisplayWarnAlert bool `json:"displayWarnAlert,omitempty"`
+		// Whether or not warning alerts are displayed in the NOC widget, the default value is true
+		DisplayWarnAlert interface{} `json:"displayWarnAlert,omitempty"`
 
 		Items json.RawMessage `json:"items"`
 
-		// Whether or not SDTs are displayed in the NOC widget
-		SDTChecked bool `json:"sdtChecked,omitempty"`
+		// Whether or not SDTs are displayed in the NOC widget, the default value is true
+		SDTChecked interface{} `json:"sdtChecked,omitempty"`
 
 		// How NOC items are sorted
 		SortBy string `json:"sortBy,omitempty"`
@@ -295,23 +283,15 @@ func (m *NOCWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.AckChecked = data.AckChecked
-
 	result.DisplayColumn = data.DisplayColumn
-
 	result.DisplayCriticalAlert = data.DisplayCriticalAlert
-
 	result.DisplayErrorAlert = data.DisplayErrorAlert
-
 	result.DisplayWarnAlert = data.DisplayWarnAlert
-
 	result.itemsField = allOfItems
-
 	result.SDTChecked = data.SDTChecked
-
 	result.SortBy = data.SortBy
 
 	*m = result
@@ -325,23 +305,23 @@ func (m NOCWidget) MarshalJSON() ([]byte, error) {
 	var err error
 	b1, err = json.Marshal(struct {
 
-		// Whether or not acknowledgements are displayed in the NOC widget
-		AckChecked bool `json:"ackChecked,omitempty"`
+		// Whether or not acknowledgements are displayed in the NOC widget, the default value is true
+		AckChecked interface{} `json:"ackChecked,omitempty"`
 
 		// The maximum number columns displayed in the NOC widget
 		DisplayColumn int32 `json:"displayColumn,omitempty"`
 
-		// Whether or not critical alerts are displayed in the NOC widget
-		DisplayCriticalAlert bool `json:"displayCriticalAlert,omitempty"`
+		// Whether or not critical alerts are displayed in the NOC widget, the default value is true
+		DisplayCriticalAlert interface{} `json:"displayCriticalAlert,omitempty"`
 
-		// Whether or not error alerts are displayed in the NOC widget
-		DisplayErrorAlert bool `json:"displayErrorAlert,omitempty"`
+		// Whether or not error alerts are displayed in the NOC widget, the default value is true
+		DisplayErrorAlert interface{} `json:"displayErrorAlert,omitempty"`
 
-		// Whether or not warning alerts are displayed in the NOC widget
-		DisplayWarnAlert bool `json:"displayWarnAlert,omitempty"`
+		// Whether or not warning alerts are displayed in the NOC widget, the default value is true
+		DisplayWarnAlert interface{} `json:"displayWarnAlert,omitempty"`
 
-		// Whether or not SDTs are displayed in the NOC widget
-		SDTChecked bool `json:"sdtChecked,omitempty"`
+		// Whether or not SDTs are displayed in the NOC widget, the default value is true
+		SDTChecked interface{} `json:"sdtChecked,omitempty"`
 
 		// How NOC items are sorted
 		SortBy string `json:"sortBy,omitempty"`
@@ -360,8 +340,7 @@ func (m NOCWidget) MarshalJSON() ([]byte, error) {
 		SDTChecked: m.SDTChecked,
 
 		SortBy: m.SortBy,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -414,8 +393,7 @@ func (m NOCWidget) MarshalJSON() ([]byte, error) {
 		UserPermission: m.UserPermission(),
 
 		Items: m.Items(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -446,6 +424,7 @@ func (m *NOCWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NOCWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -454,6 +433,7 @@ func (m *NOCWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *NOCWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -462,17 +442,89 @@ func (m *NOCWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *NOCWidget) validateItems(formats strfmt.Registry) error {
+
 	if err := validate.Required("items", "body", m.Items()); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.Items()); i++ {
+
 		if err := m.itemsField[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("items" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this n o c widget based on the context it is used
+func (m *NOCWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateItems(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NOCWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NOCWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NOCWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NOCWidget) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Items()); i++ {
+
+		if err := m.itemsField[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("items" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
 	}
 
 	return nil

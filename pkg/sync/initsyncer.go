@@ -20,6 +20,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/logicmonitor/lm-sdk-go/models"
+	"github.com/senseyeio/duration"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,6 +75,54 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 	log.Tracef("Current cache: %v", list)
 
 	log.Infof("Deleting duplicate resources if any")
+	i.removeDuplicateResources(lctx, list, ignoreSync)
+
+	for _, entry := range list {
+		log.Tracef("Iterate resource cache entry : %v ", entry)
+		cacheResourceName := entry.K
+		cacheResourceMeta := entry.V
+
+		if ignoreSync[cacheResourceName.Resource] {
+			continue
+		}
+		childLctx := lmlog.LMContextWithFields(lctx, logrus.Fields{
+			"name":  cacheResourceName.Resource.FQName(cacheResourceName.Name),
+			"type":  cacheResourceName.Resource.Singular(),
+			"ns":    cacheResourceMeta.Container,
+			"event": "sync",
+		})
+		childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
+
+		if cacheResourceName.Resource == enums.Namespaces {
+			if cacheResourceName.Name != constants.DeletedResourceGroup {
+				if err := i.deleteNamespace(allK8SResourcesStore, childLctx, cacheResourceName, cacheResourceMeta, log, conf); err != nil && !errors.Is(err, aerrors.ErrResourceGroupIsNotEmpty) &&
+					!errors.Is(err, aerrors.ErrResourceGroupParentIsNotValid) &&
+					!strings.Contains(err.Error(), util.ClusterGroupName(conf.ClusterName)) {
+					log.Errorf("failed to delete resource group: %s", err)
+				}
+			}
+			continue
+		}
+		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
+		// Delete resource if no more exists or delete if UID does not match.
+		if !ok ||
+			clusterPresentMeta.UID != cacheResourceMeta.UID ||
+			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) {
+			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
+		} else if resolveConflicts {
+			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
+		}
+	}
+
+	// Flush updated cache to configmaps
+	err3 := i.ResourceManager.GetResourceCache().Save(lctx)
+	if err3 != nil {
+		log.Errorf("Failed to flush resource cache after resync: %s", err3)
+	}
+}
+
+func (i *InitSyncer) removeDuplicateResources(lctx *lmctx.LMContext, list []types.IterItem, ignoreSync map[enums.ResourceType]bool) {
+	log := lmlog.Logger(lctx)
 	for _, entry := range list {
 		log.Tracef("Iterate resource cache entry : %v ", entry)
 		cacheResourceName := entry.K
@@ -93,47 +142,6 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 			childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
 			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
 		}
-	}
-
-	for _, entry := range list {
-		log.Tracef("Iterate resource cache entry : %v ", entry)
-		cacheResourceName := entry.K
-		cacheResourceMeta := entry.V
-
-		if ignoreSync[cacheResourceName.Resource] {
-			continue
-		}
-		childLctx := lmlog.LMContextWithFields(lctx, logrus.Fields{
-			"name":  cacheResourceName.Resource.FQName(cacheResourceName.Name),
-			"type":  cacheResourceName.Resource.Singular(),
-			"ns":    cacheResourceMeta.Container,
-			"event": "sync",
-		})
-		childLctx = childLctx.LMContextWith(map[string]interface{}{constants.PartitionKey: fmt.Sprintf("%s-%s", cacheResourceName.Resource.String(), cacheResourceName.Name)})
-
-		if cacheResourceName.Resource == enums.Namespaces {
-			if err := i.deleteNamespace(allK8SResourcesStore, childLctx, cacheResourceName, cacheResourceMeta, log, conf); err != nil && !errors.Is(err, aerrors.ErrResourceGroupIsNotEmpty) &&
-				!errors.Is(err, aerrors.ErrResourceGroupParentIsNotValid) &&
-				!strings.Contains(err.Error(), util.ClusterGroupName(conf.ClusterName)) {
-				log.Errorf("failed to delete resource group: %s", err)
-			}
-			continue
-		}
-		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
-		// Delete resource if no more exists or delete if UID does not match.
-		if !ok ||
-			clusterPresentMeta.UID != cacheResourceMeta.UID ||
-			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) {
-			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
-		} else if resolveConflicts {
-			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
-		}
-	}
-
-	// Flush updated cache to configmaps
-	err3 := i.ResourceManager.GetResourceCache().Save(lctx)
-	if err3 != nil {
-		log.Errorf("Failed to flush resource cache after resync: %s", err3)
 	}
 }
 
@@ -193,15 +201,20 @@ func (i *InitSyncer) resolveConflicts(lctx *lmctx.LMContext, cacheMeta types.Res
 	}
 }
 
-func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.ResourceName, resourceMeta types.ResourceMeta) {
+func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.ResourceName, resourceMeta types.ResourceMeta) { //nolint:cyclop
 	log := lmlog.Logger(lctx)
 	conf, err := config.GetConfig(lctx)
 	if err != nil {
 		log.Errorf("Failed to get config")
 		return
 	}
-	if conf.DeleteResources &&
-		!util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta) {
+	argusDeleteAfter, err := duration.ParseISO8601(*conf.DeleteInfraPodsAfter)
+	if err != nil {
+		log.Errorf("Failed to parse delete argus after parameter to duration as per ISO 8601 format: %s", err)
+		return
+	}
+	if (conf.DeleteResources && !util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta)) ||
+		(util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta) && argusDeleteAfter.IsZero() && conf.DeleteResources) {
 		log.Info("Deleting resource")
 		err := i.ResourceManager.DeleteResourceByID(lctx, resourceName.Resource, resourceMeta.LMID)
 		if err != nil {
@@ -218,7 +231,9 @@ func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.Re
 		}
 	} else if !resourceMeta.HasSysCategory(resourceName.Resource.GetDeletedCategory()) {
 		log.Info("Soft delete")
-		deleteOptions := i.ResourceManager.GetMarkDeleteOptions(lctx, resourceName.Resource, meta.AsPartialObjectMetadata(&metav1.ObjectMeta{}))
+		deleteOptions := i.ResourceManager.GetMarkDeleteOptions(lctx, resourceName.Resource, meta.AsPartialObjectMetadata(&metav1.ObjectMeta{
+			Labels: resourceMeta.Labels,
+		}))
 
 		_, err = i.ResourceManager.UpdateResourceByID(lctx, resourceName.Resource, resourceMeta.LMID, deleteOptions...)
 		if err != nil {

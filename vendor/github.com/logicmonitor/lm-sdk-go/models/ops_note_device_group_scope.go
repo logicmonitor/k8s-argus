@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // OpsNoteDeviceGroupScope ops note device group scope
+//
 // swagger:model OpsNoteDeviceGroupScope
 type OpsNoteDeviceGroupScope struct {
 
@@ -33,10 +35,6 @@ func (m *OpsNoteDeviceGroupScope) Type() string {
 // SetType sets the type of this subtype
 func (m *OpsNoteDeviceGroupScope) SetType(val string) {
 }
-
-// FullPath gets the full path of this subtype
-
-// GroupID gets the group Id of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *OpsNoteDeviceGroupScope) UnmarshalJSON(raw []byte) error {
@@ -77,7 +75,6 @@ func (m *OpsNoteDeviceGroupScope) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.FullPath = data.FullPath
-
 	result.GroupID = data.GroupID
 
 	*m = result
@@ -101,8 +98,7 @@ func (m OpsNoteDeviceGroupScope) MarshalJSON() ([]byte, error) {
 		FullPath: m.FullPath,
 
 		GroupID: m.GroupID,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +107,7 @@ func (m OpsNoteDeviceGroupScope) MarshalJSON() ([]byte, error) {
 	}{
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +117,16 @@ func (m OpsNoteDeviceGroupScope) MarshalJSON() ([]byte, error) {
 
 // Validate validates this ops note device group scope
 func (m *OpsNoteDeviceGroupScope) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this ops note device group scope based on the context it is used
+func (m *OpsNoteDeviceGroupScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

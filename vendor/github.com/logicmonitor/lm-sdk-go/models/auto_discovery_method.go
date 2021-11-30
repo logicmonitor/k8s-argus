@@ -7,25 +7,31 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // AutoDiscoveryMethod auto discovery method
+//
 // swagger:discriminator AutoDiscoveryMethod name
 type AutoDiscoveryMethod interface {
 	runtime.Validatable
+	runtime.ContextValidatable
 
 	// name
 	// Required: true
 	Name() string
 	SetName(string)
+
+	// AdditionalProperties in base type shoud be handled just like regular properties
+	// At this moment, the base type property is pushed down to the subtype
 }
 
 type autoDiscoveryMethod struct {
@@ -93,250 +99,226 @@ func unmarshalAutoDiscoveryMethod(data []byte, consumer runtime.Consumer) (AutoD
 			return nil, err
 		}
 		return &result, nil
-
 	case "GcpAppEngineDiscoveryMethod":
 		var result GcpAppEngineDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "GcpBillingDiscoveryMethod":
 		var result GcpBillingDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
+	case "OpenMetricDiscoveryMethod":
+		var result OpenMetricDiscoveryMethod
+		if err := consumer.Consume(buf2, &result); err != nil {
+			return nil, err
+		}
+		return &result, nil
 	case "ad_awsbillingreport":
 		var result AwsBillingReportDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awsec2reservedinstance":
 		var result AwsEC2ReservedInstanceDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awsec2reservedinstancecoverage":
 		var result AwsEC2ReservedInstanceCoverageDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awsec2scheduledevents":
 		var result EC2ScheduledEventAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awsecsservice":
 		var result AwsEcsServiceDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awselasticache":
 		var result AwsElastiCacheDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awslbtargetgroups":
 		var result AwsLBTargetGroupDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awsredshift":
 		var result AwsRedShiftDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_awsserviceregion":
 		var result AwsServiceRegionDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_azurebilling":
 		var result AzureBillingDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_azurerediscache":
 		var result AzureRedisCacheDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_azureserviceregion":
 		var result AzureServiceRegionDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_azuresubscription":
 		var result AzureSubscriptionDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_cim":
 		var result CIMAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_cloudwatch":
 		var result CloudWatchAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_collector":
 		var result CollectorAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_dummy":
 		var result DummyAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_ec2":
 		var result EC2AutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_esx":
 		var result ESXAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_http":
 		var result HTTPAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_ipmi":
 		var result IPMIAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_jdbc":
 		var result JDBCAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_jmx":
 		var result JMXAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_mongo":
 		var result MongoAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_netapp":
 		var result NetAppAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_pdh":
 		var result PDHAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_port":
 		var result PortAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_script":
 		var result ScriptAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_sdkscript":
 		var result SDKScriptDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_snmp":
 		var result SNMPAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_wmi":
 		var result WMIAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	case "ad_xen":
 		var result XENAutoDiscoveryMethod
 		if err := consumer.Consume(buf2, &result); err != nil {
 			return nil, err
 		}
 		return &result, nil
-
 	}
 	return nil, errors.New(422, "invalid name value: %q", getType.Name)
 }
 
 // Validate validates this auto discovery method
 func (m *autoDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this auto discovery method based on context it is used
+func (m *autoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }

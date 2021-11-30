@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetflowApplication netflow application
+//
 // swagger:model NetflowApplication
 type NetflowApplication struct {
 
@@ -75,30 +78,6 @@ func (m *NetflowApplication) DataType() string {
 // SetDataType sets the data type of this subtype
 func (m *NetflowApplication) SetDataType(val string) {
 }
-
-// IP gets the IP of this subtype
-
-// ClientCount gets the client count of this subtype
-
-// DestinationMBytes gets the destination m bytes of this subtype
-
-// DNS gets the dns of this subtype
-
-// FirstEpochInSec gets the first epoch in sec of this subtype
-
-// FlowCount gets the flow count of this subtype
-
-// LastEpochInSec gets the last epoch in sec of this subtype
-
-// PercentUsage gets the percent usage of this subtype
-
-// Port gets the port of this subtype
-
-// Protocol gets the protocol of this subtype
-
-// SourceMBytes gets the source m bytes of this subtype
-
-// Usage gets the usage of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NetflowApplication) UnmarshalJSON(raw []byte) error {
@@ -181,27 +160,16 @@ func (m *NetflowApplication) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.IP = data.IP
-
 	result.ClientCount = data.ClientCount
-
 	result.DestinationMBytes = data.DestinationMBytes
-
 	result.DNS = data.DNS
-
 	result.FirstEpochInSec = data.FirstEpochInSec
-
 	result.FlowCount = data.FlowCount
-
 	result.LastEpochInSec = data.LastEpochInSec
-
 	result.PercentUsage = data.PercentUsage
-
 	result.Port = data.Port
-
 	result.Protocol = data.Protocol
-
 	result.SourceMBytes = data.SourceMBytes
-
 	result.Usage = data.Usage
 
 	*m = result
@@ -287,8 +255,7 @@ func (m NetflowApplication) MarshalJSON() ([]byte, error) {
 		SourceMBytes: m.SourceMBytes,
 
 		Usage: m.Usage,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -297,8 +264,7 @@ func (m NetflowApplication) MarshalJSON() ([]byte, error) {
 	}{
 
 		DataType: m.DataType(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -313,6 +279,181 @@ func (m *NetflowApplication) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this netflow application based on the context it is used
+func (m *NetflowApplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateClientCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDestinationMBytes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDNS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirstEpochInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFlowCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastEpochInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProtocol(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSourceMBytes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateDataType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataType", "body", string(m.DataType())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "IP", "body", string(m.IP)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateClientCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "clientCount", "body", int32(m.ClientCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateDestinationMBytes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "destinationMBytes", "body", float64(m.DestinationMBytes)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateDNS(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dns", "body", string(m.DNS)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateFirstEpochInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "firstEpochInSec", "body", int64(m.FirstEpochInSec)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateFlowCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "flowCount", "body", int64(m.FlowCount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateLastEpochInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastEpochInSec", "body", int64(m.LastEpochInSec)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidatePercentUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "percentUsage", "body", float64(m.PercentUsage)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidatePort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "port", "body", int32(m.Port)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protocol", "body", string(m.Protocol)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateSourceMBytes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sourceMBytes", "body", float64(m.SourceMBytes)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowApplication) contextValidateUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "usage", "body", float64(m.Usage)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

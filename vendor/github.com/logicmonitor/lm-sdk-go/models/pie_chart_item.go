@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // PieChartItem pie chart item
+//
 // swagger:model PieChartItem
 type PieChartItem struct {
 
@@ -47,6 +50,7 @@ func (m *PieChartItem) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PieChartItem) validateDataPointName(formats strfmt.Registry) error {
+
 	if err := validate.Required("dataPointName", "body", m.DataPointName); err != nil {
 		return err
 	}
@@ -55,10 +59,16 @@ func (m *PieChartItem) validateDataPointName(formats strfmt.Registry) error {
 }
 
 func (m *PieChartItem) validateLegend(formats strfmt.Registry) error {
+
 	if err := validate.Required("legend", "body", m.Legend); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this pie chart item based on context it is used
+func (m *PieChartItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

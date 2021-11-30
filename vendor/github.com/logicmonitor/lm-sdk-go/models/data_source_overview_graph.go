@@ -6,14 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DataSourceOverviewGraph data source overview graph
+//
 // swagger:model DataSourceOverviewGraph
 type DataSourceOverviewGraph struct {
 
@@ -148,6 +150,82 @@ func (m *DataSourceOverviewGraph) validateVirtualDataPoints(formats strfmt.Regis
 
 		if m.VirtualDataPoints[i] != nil {
 			if err := m.VirtualDataPoints[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("virtualDataPoints" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this data source overview graph based on the context it is used
+func (m *DataSourceOverviewGraph) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDataPoints(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLines(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVirtualDataPoints(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DataSourceOverviewGraph) contextValidateDataPoints(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.DataPoints); i++ {
+
+		if m.DataPoints[i] != nil {
+			if err := m.DataPoints[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("dataPoints" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DataSourceOverviewGraph) contextValidateLines(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Lines); i++ {
+
+		if m.Lines[i] != nil {
+			if err := m.Lines[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("lines" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DataSourceOverviewGraph) contextValidateVirtualDataPoints(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VirtualDataPoints); i++ {
+
+		if m.VirtualDataPoints[i] != nil {
+			if err := m.VirtualDataPoints[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("virtualDataPoints" + "." + strconv.Itoa(i))
 				}

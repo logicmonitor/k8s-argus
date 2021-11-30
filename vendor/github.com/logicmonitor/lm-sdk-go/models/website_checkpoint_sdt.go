@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // WebsiteCheckpointSDT website checkpoint SDT
+//
 // swagger:model WebsiteCheckpointSDT
 type WebsiteCheckpointSDT struct {
 	adminField string
@@ -252,12 +255,6 @@ func (m *WebsiteCheckpointSDT) SetWeekOfMonth(val string) {
 	m.weekOfMonthField = val
 }
 
-// CheckpointID gets the checkpoint Id of this subtype
-
-// CheckpointName gets the checkpoint name of this subtype
-
-// WebsiteName gets the website name of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *WebsiteCheckpointSDT) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -366,15 +363,12 @@ func (m *WebsiteCheckpointSDT) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.weekDayField = base.WeekDay
 
 	result.weekOfMonthField = base.WeekOfMonth
 
 	result.CheckpointID = data.CheckpointID
-
 	result.CheckpointName = data.CheckpointName
-
 	result.WebsiteName = data.WebsiteName
 
 	*m = result
@@ -403,8 +397,7 @@ func (m WebsiteCheckpointSDT) MarshalJSON() ([]byte, error) {
 		CheckpointName: m.CheckpointName,
 
 		WebsiteName: m.WebsiteName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -485,8 +478,7 @@ func (m WebsiteCheckpointSDT) MarshalJSON() ([]byte, error) {
 		WeekDay: m.WeekDay(),
 
 		WeekOfMonth: m.WeekOfMonth(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -501,6 +493,81 @@ func (m *WebsiteCheckpointSDT) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this website checkpoint SDT based on the context it is used
+func (m *WebsiteCheckpointSDT) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEndDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsEffective(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStartDateTimeOnLocal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebsiteCheckpointSDT) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", string(m.Admin())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCheckpointSDT) contextValidateEndDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "endDateTimeOnLocal", "body", string(m.EndDateTimeOnLocal())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCheckpointSDT) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCheckpointSDT) contextValidateIsEffective(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isEffective", "body", m.IsEffective()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WebsiteCheckpointSDT) contextValidateStartDateTimeOnLocal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "startDateTimeOnLocal", "body", string(m.StartDateTimeOnLocal())); err != nil {
+		return err
+	}
+
 	return nil
 }
 

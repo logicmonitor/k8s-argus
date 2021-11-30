@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // OpsNoteGroupAllScope ops note group all scope
+//
 // swagger:model OpsNoteGroupAllScope
 type OpsNoteGroupAllScope struct {
 
@@ -30,8 +32,6 @@ func (m *OpsNoteGroupAllScope) Type() string {
 // SetType sets the type of this subtype
 func (m *OpsNoteGroupAllScope) SetType(val string) {
 }
-
-// GroupID gets the group Id of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *OpsNoteGroupAllScope) UnmarshalJSON(raw []byte) error {
@@ -86,8 +86,7 @@ func (m OpsNoteGroupAllScope) MarshalJSON() ([]byte, error) {
 	}{
 
 		GroupID: m.GroupID,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,7 @@ func (m OpsNoteGroupAllScope) MarshalJSON() ([]byte, error) {
 	}{
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +105,16 @@ func (m OpsNoteGroupAllScope) MarshalJSON() ([]byte, error) {
 
 // Validate validates this ops note group all scope
 func (m *OpsNoteGroupAllScope) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this ops note group all scope based on the context it is used
+func (m *OpsNoteGroupAllScope) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

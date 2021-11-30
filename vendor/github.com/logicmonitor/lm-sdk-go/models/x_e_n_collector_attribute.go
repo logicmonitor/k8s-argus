@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // XENCollectorAttribute x e n collector attribute
+//
 // swagger:model XENCollectorAttribute
 type XENCollectorAttribute struct {
 
@@ -34,10 +36,6 @@ func (m *XENCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *XENCollectorAttribute) SetName(val string) {
 }
-
-// Counters gets the counters of this subtype
-
-// XenEntity gets the xen entity of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *XENCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -78,7 +76,6 @@ func (m *XENCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Counters = data.Counters
-
 	result.XenEntity = data.XenEntity
 
 	*m = result
@@ -102,8 +99,7 @@ func (m XENCollectorAttribute) MarshalJSON() ([]byte, error) {
 		Counters: m.Counters,
 
 		XenEntity: m.XenEntity,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +108,7 @@ func (m XENCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +131,7 @@ func (m *XENCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *XENCollectorAttribute) validateCounters(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Counters) { // not required
 		return nil
 	}
@@ -147,6 +143,38 @@ func (m *XENCollectorAttribute) validateCounters(formats strfmt.Registry) error 
 
 		if m.Counters[i] != nil {
 			if err := m.Counters[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this x e n collector attribute based on the context it is used
+func (m *XENCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCounters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *XENCollectorAttribute) contextValidateCounters(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Counters); i++ {
+
+		if m.Counters[i] != nil {
+			if err := m.Counters[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("counters" + "." + strconv.Itoa(i))
 				}

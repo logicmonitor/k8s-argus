@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // VirtualDataPoint virtual data point
+//
 // swagger:model VirtualDataPoint
 type VirtualDataPoint struct {
 
@@ -23,6 +26,11 @@ type VirtualDataPoint struct {
 
 // Validate validates this virtual data point
 func (m *VirtualDataPoint) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this virtual data point based on context it is used
+func (m *VirtualDataPoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

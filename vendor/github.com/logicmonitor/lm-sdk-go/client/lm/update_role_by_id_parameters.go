@@ -6,70 +6,104 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewUpdateRoleByIDParams creates a new UpdateRoleByIDParams object
-// with the default values initialized.
+// NewUpdateRoleByIDParams creates a new UpdateRoleByIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewUpdateRoleByIDParams() *UpdateRoleByIDParams {
-	var ()
 	return &UpdateRoleByIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewUpdateRoleByIDParamsWithTimeout creates a new UpdateRoleByIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewUpdateRoleByIDParamsWithTimeout(timeout time.Duration) *UpdateRoleByIDParams {
-	var ()
 	return &UpdateRoleByIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewUpdateRoleByIDParamsWithContext creates a new UpdateRoleByIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewUpdateRoleByIDParamsWithContext(ctx context.Context) *UpdateRoleByIDParams {
-	var ()
 	return &UpdateRoleByIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewUpdateRoleByIDParamsWithHTTPClient creates a new UpdateRoleByIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewUpdateRoleByIDParamsWithHTTPClient(client *http.Client) *UpdateRoleByIDParams {
-	var ()
 	return &UpdateRoleByIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*UpdateRoleByIDParams contains all the parameters to send to the API endpoint
-for the update role by Id operation typically these are written to a http.Request
+/* UpdateRoleByIDParams contains all the parameters to send to the API endpoint
+   for the update role by Id operation.
+
+   Typically these are written to a http.Request.
 */
 type UpdateRoleByIDParams struct {
 
-	/*Body*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body *models.Role
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the update role by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateRoleByIDParams) WithDefaults() *UpdateRoleByIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the update role by Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateRoleByIDParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := UpdateRoleByIDParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the update role by Id params
@@ -105,6 +139,17 @@ func (o *UpdateRoleByIDParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the update role by Id params
+func (o *UpdateRoleByIDParams) WithUserAgent(userAgent *string) *UpdateRoleByIDParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the update role by Id params
+func (o *UpdateRoleByIDParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithBody adds the body to the update role by Id params
 func (o *UpdateRoleByIDParams) WithBody(body *models.Role) *UpdateRoleByIDParams {
 	o.SetBody(body)
@@ -129,11 +174,19 @@ func (o *UpdateRoleByIDParams) SetID(id int32) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *UpdateRoleByIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

@@ -6,14 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DeviceDataSource device data source
+//
 // swagger:model DeviceDataSource
 type DeviceDataSource struct {
 
@@ -251,6 +254,450 @@ func (m *DeviceDataSource) validateOverviewGraphs(formats strfmt.Registry) error
 			}
 		}
 
+	}
+
+	return nil
+}
+
+// ContextValidate validate this device data source based on the context it is used
+func (m *DeviceDataSource) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAlertDisableStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAlertStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAlertStatusPriority(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAlertingDisabledOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAssignedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAutoDiscovery(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCreatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataSourceType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceDisplayName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGraphs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupsDisabledThisSource(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceAutoGroupEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInstanceNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsMultiple(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMonitoringInstanceNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNextAutoDiscoveryOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOverviewGraphs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSDTAt(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSDTStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStopMonitoring(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateAlertDisableStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertDisableStatus", "body", string(m.AlertDisableStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateAlertStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertStatus", "body", string(m.AlertStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateAlertStatusPriority(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertStatusPriority", "body", int32(m.AlertStatusPriority)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateAlertingDisabledOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AlertingDisabledOn != nil {
+		if err := m.AlertingDisabledOn.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("alertingDisabledOn")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateAssignedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "assignedOn", "body", int64(m.AssignedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateAutoDiscovery(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "autoDiscovery", "body", m.AutoDiscovery); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateCreatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdOn", "body", int64(m.CreatedOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDataSourceDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceDescription", "body", string(m.DataSourceDescription)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDataSourceDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceDisplayName", "body", string(m.DataSourceDisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDataSourceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceId", "body", int32(m.DataSourceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDataSourceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceName", "body", string(m.DataSourceName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDataSourceType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataSourceType", "body", string(m.DataSourceType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDeviceDisplayName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceDisplayName", "body", string(m.DeviceDisplayName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDeviceID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceId", "body", int32(m.DeviceID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateDeviceName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceName", "body", string(m.DeviceName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateGraphs(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "graphs", "body", []*DeviceDatasourceGraph(m.Graphs)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Graphs); i++ {
+
+		if m.Graphs[i] != nil {
+			if err := m.Graphs[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("graphs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateGroupName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupName", "body", string(m.GroupName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateGroupsDisabledThisSource(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupsDisabledThisSource", "body", []*TreeNode(m.GroupsDisabledThisSource)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.GroupsDisabledThisSource); i++ {
+
+		if m.GroupsDisabledThisSource[i] != nil {
+			if err := m.GroupsDisabledThisSource[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("groupsDisabledThisSource" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateInstanceAutoGroupEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceAutoGroupEnabled", "body", m.InstanceAutoGroupEnabled); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateInstanceNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "instanceNumber", "body", int32(m.InstanceNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateIsMultiple(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isMultiple", "body", m.IsMultiple); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateMonitoringInstanceNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "monitoringInstanceNumber", "body", int32(m.MonitoringInstanceNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateNextAutoDiscoveryOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "nextAutoDiscoveryOn", "body", int64(m.NextAutoDiscoveryOn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateOverviewGraphs(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "overviewGraphs", "body", []*DeviceDatasourceGraph(m.OverviewGraphs)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.OverviewGraphs); i++ {
+
+		if m.OverviewGraphs[i] != nil {
+			if err := m.OverviewGraphs[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("overviewGraphs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateSDTAt(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sdtAt", "body", string(m.SDTAt)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateSDTStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sdtStatus", "body", string(m.SDTStatus)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "status", "body", int32(m.Status)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateStopMonitoring(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "stopMonitoring", "body", m.StopMonitoring); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDataSource) contextValidateUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "updatedOn", "body", int64(m.UpdatedOn)); err != nil {
+		return err
 	}
 
 	return nil

@@ -6,66 +6,96 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
-	"golang.org/x/net/context"
+	"github.com/go-openapi/strfmt"
 )
 
-// NewImportConfigSourceParams creates a new ImportConfigSourceParams object
-// with the default values initialized.
+// NewImportConfigSourceParams creates a new ImportConfigSourceParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewImportConfigSourceParams() *ImportConfigSourceParams {
-	var ()
 	return &ImportConfigSourceParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewImportConfigSourceParamsWithTimeout creates a new ImportConfigSourceParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewImportConfigSourceParamsWithTimeout(timeout time.Duration) *ImportConfigSourceParams {
-	var ()
 	return &ImportConfigSourceParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewImportConfigSourceParamsWithContext creates a new ImportConfigSourceParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewImportConfigSourceParamsWithContext(ctx context.Context) *ImportConfigSourceParams {
-	var ()
 	return &ImportConfigSourceParams{
-
 		Context: ctx,
 	}
 }
 
 // NewImportConfigSourceParamsWithHTTPClient creates a new ImportConfigSourceParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewImportConfigSourceParamsWithHTTPClient(client *http.Client) *ImportConfigSourceParams {
-	var ()
 	return &ImportConfigSourceParams{
 		HTTPClient: client,
 	}
 }
 
-/*ImportConfigSourceParams contains all the parameters to send to the API endpoint
-for the import config source operation typically these are written to a http.Request
+/* ImportConfigSourceParams contains all the parameters to send to the API endpoint
+   for the import config source operation.
+
+   Typically these are written to a http.Request.
 */
 type ImportConfigSourceParams struct {
 
-	/*File*/
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// File.
 	File runtime.NamedReadCloser
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the import config source params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *ImportConfigSourceParams) WithDefaults() *ImportConfigSourceParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the import config source params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *ImportConfigSourceParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := ImportConfigSourceParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the import config source params
@@ -101,6 +131,17 @@ func (o *ImportConfigSourceParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithUserAgent adds the userAgent to the import config source params
+func (o *ImportConfigSourceParams) WithUserAgent(userAgent *string) *ImportConfigSourceParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the import config source params
+func (o *ImportConfigSourceParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
+}
+
 // WithFile adds the file to the import config source params
 func (o *ImportConfigSourceParams) WithFile(file runtime.NamedReadCloser) *ImportConfigSourceParams {
 	o.SetFile(file)
@@ -114,11 +155,19 @@ func (o *ImportConfigSourceParams) SetFile(file runtime.NamedReadCloser) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *ImportConfigSourceParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	// form file param file
 	if err := r.SetFileParam("file", o.File); err != nil {
 		return err

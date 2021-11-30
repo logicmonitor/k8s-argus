@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AlertTrendsMetric alert trends metric
+//
 // swagger:model AlertTrendsMetric
 type AlertTrendsMetric struct {
 
@@ -44,6 +47,7 @@ func (m *AlertTrendsMetric) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AlertTrendsMetric) validateItemType(formats strfmt.Registry) error {
+
 	if err := validate.Required("itemType", "body", m.ItemType); err != nil {
 		return err
 	}
@@ -52,10 +56,16 @@ func (m *AlertTrendsMetric) validateItemType(formats strfmt.Registry) error {
 }
 
 func (m *AlertTrendsMetric) validateItemVal(formats strfmt.Registry) error {
+
 	if err := validate.Required("itemVal", "body", m.ItemVal); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this alert trends metric based on context it is used
+func (m *AlertTrendsMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

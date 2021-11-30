@@ -7,16 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // GaugeWidget gauge widget
+//
 // swagger:model GaugeWidget
 type GaugeWidget struct {
 	dashboardIdField *int32
@@ -177,24 +179,6 @@ func (m *GaugeWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// ColorThresholds gets the color thresholds of this subtype
-
-// DataPoint gets the data point of this subtype
-
-// DisplayType gets the display type of this subtype
-
-// DisplayUnit gets the display unit of this subtype
-
-// Legend gets the legend of this subtype
-
-// MaxValue gets the max value of this subtype
-
-// MinValue gets the min value of this subtype
-
-// PeakTimeRange gets the peak time range of this subtype
-
-// ShowPeak gets the show peak of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *GaugeWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -292,25 +276,16 @@ func (m *GaugeWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.ColorThresholds = data.ColorThresholds
-
 	result.DataPoint = data.DataPoint
-
 	result.DisplayType = data.DisplayType
-
 	result.DisplayUnit = data.DisplayUnit
-
 	result.Legend = data.Legend
-
 	result.MaxValue = data.MaxValue
-
 	result.MinValue = data.MinValue
-
 	result.PeakTimeRange = data.PeakTimeRange
-
 	result.ShowPeak = data.ShowPeak
 
 	*m = result
@@ -370,8 +345,7 @@ func (m GaugeWidget) MarshalJSON() ([]byte, error) {
 		PeakTimeRange: m.PeakTimeRange,
 
 		ShowPeak: m.ShowPeak,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -420,8 +394,7 @@ func (m GaugeWidget) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -456,6 +429,7 @@ func (m *GaugeWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GaugeWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -464,6 +438,7 @@ func (m *GaugeWidget) validateDashboardID(formats strfmt.Registry) error {
 }
 
 func (m *GaugeWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -472,6 +447,7 @@ func (m *GaugeWidget) validateName(formats strfmt.Registry) error {
 }
 
 func (m *GaugeWidget) validateColorThresholds(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.ColorThresholds) { // not required
 		return nil
 	}
@@ -496,12 +472,102 @@ func (m *GaugeWidget) validateColorThresholds(formats strfmt.Registry) error {
 }
 
 func (m *GaugeWidget) validateDataPoint(formats strfmt.Registry) error {
+
 	if err := validate.Required("dataPoint", "body", m.DataPoint); err != nil {
 		return err
 	}
 
 	if m.DataPoint != nil {
 		if err := m.DataPoint.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dataPoint")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this gauge widget based on the context it is used
+func (m *GaugeWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColorThresholds(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPoint(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GaugeWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GaugeWidget) contextValidateColorThresholds(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ColorThresholds); i++ {
+
+		if m.ColorThresholds[i] != nil {
+			if err := m.ColorThresholds[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("colorThresholds" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *GaugeWidget) contextValidateDataPoint(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DataPoint != nil {
+		if err := m.DataPoint.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("dataPoint")
 			}

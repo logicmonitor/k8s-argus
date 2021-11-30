@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DeviceGroupAlertThresholdInfo device group alert threshold info
+//
 // swagger:model DeviceGroupAlertThresholdInfo
 type DeviceGroupAlertThresholdInfo struct {
 
@@ -37,6 +42,81 @@ type DeviceGroupAlertThresholdInfo struct {
 
 // Validate validates this device group alert threshold info
 func (m *DeviceGroupAlertThresholdInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this device group alert threshold info based on the context it is used
+func (m *DeviceGroupAlertThresholdInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAlertEnabled(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAlertExpr(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupFullPath(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceGroupAlertThresholdInfo) contextValidateAlertEnabled(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertEnabled", "body", m.AlertEnabled); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroupAlertThresholdInfo) contextValidateAlertExpr(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "alertExpr", "body", string(m.AlertExpr)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroupAlertThresholdInfo) contextValidateGroupFullPath(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupFullPath", "body", string(m.GroupFullPath)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroupAlertThresholdInfo) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupId", "body", int32(m.GroupID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceGroupAlertThresholdInfo) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // GroupNetFlowRecord group net flow record
+//
 // swagger:model GroupNetFlowRecord
 type GroupNetFlowRecord struct {
 
@@ -45,9 +48,15 @@ type GroupNetFlowRecord struct {
 	// Read Only: true
 	IfIn int64 `json:"ifIn,omitempty"`
 
+	// if in display name
+	IfInDisplayName string `json:"ifInDisplayName,omitempty"`
+
 	// if out
 	// Read Only: true
 	IfOut int64 `json:"ifOut,omitempty"`
+
+	// if out display name
+	IfOutDisplayName string `json:"ifOutDisplayName,omitempty"`
 
 	// last epoch in sec
 	// Read Only: true
@@ -91,38 +100,6 @@ func (m *GroupNetFlowRecord) DataType() string {
 func (m *GroupNetFlowRecord) SetDataType(val string) {
 }
 
-// DestinationMBytes gets the destination m bytes of this subtype
-
-// DeviceDisplayName gets the device display name of this subtype
-
-// DstDNS gets the dst DNS of this subtype
-
-// DstIP gets the dst IP of this subtype
-
-// DstPort gets the dst port of this subtype
-
-// FirstEpochInSec gets the first epoch in sec of this subtype
-
-// IfIn gets the if in of this subtype
-
-// IfOut gets the if out of this subtype
-
-// LastEpochInSec gets the last epoch in sec of this subtype
-
-// PercentUsage gets the percent usage of this subtype
-
-// Protocol gets the protocol of this subtype
-
-// SourceMBytes gets the source m bytes of this subtype
-
-// SrcDNS gets the src DNS of this subtype
-
-// SrcIP gets the src IP of this subtype
-
-// SrcPort gets the src port of this subtype
-
-// Usage gets the usage of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *GroupNetFlowRecord) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -154,9 +131,15 @@ func (m *GroupNetFlowRecord) UnmarshalJSON(raw []byte) error {
 		// Read Only: true
 		IfIn int64 `json:"ifIn,omitempty"`
 
+		// if in display name
+		IfInDisplayName string `json:"ifInDisplayName,omitempty"`
+
 		// if out
 		// Read Only: true
 		IfOut int64 `json:"ifOut,omitempty"`
+
+		// if out display name
+		IfOutDisplayName string `json:"ifOutDisplayName,omitempty"`
 
 		// last epoch in sec
 		// Read Only: true
@@ -219,35 +202,22 @@ func (m *GroupNetFlowRecord) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.DestinationMBytes = data.DestinationMBytes
-
 	result.DeviceDisplayName = data.DeviceDisplayName
-
 	result.DstDNS = data.DstDNS
-
 	result.DstIP = data.DstIP
-
 	result.DstPort = data.DstPort
-
 	result.FirstEpochInSec = data.FirstEpochInSec
-
 	result.IfIn = data.IfIn
-
+	result.IfInDisplayName = data.IfInDisplayName
 	result.IfOut = data.IfOut
-
+	result.IfOutDisplayName = data.IfOutDisplayName
 	result.LastEpochInSec = data.LastEpochInSec
-
 	result.PercentUsage = data.PercentUsage
-
 	result.Protocol = data.Protocol
-
 	result.SourceMBytes = data.SourceMBytes
-
 	result.SrcDNS = data.SrcDNS
-
 	result.SrcIP = data.SrcIP
-
 	result.SrcPort = data.SrcPort
-
 	result.Usage = data.Usage
 
 	*m = result
@@ -288,9 +258,15 @@ func (m GroupNetFlowRecord) MarshalJSON() ([]byte, error) {
 		// Read Only: true
 		IfIn int64 `json:"ifIn,omitempty"`
 
+		// if in display name
+		IfInDisplayName string `json:"ifInDisplayName,omitempty"`
+
 		// if out
 		// Read Only: true
 		IfOut int64 `json:"ifOut,omitempty"`
+
+		// if out display name
+		IfOutDisplayName string `json:"ifOutDisplayName,omitempty"`
 
 		// last epoch in sec
 		// Read Only: true
@@ -339,7 +315,11 @@ func (m GroupNetFlowRecord) MarshalJSON() ([]byte, error) {
 
 		IfIn: m.IfIn,
 
+		IfInDisplayName: m.IfInDisplayName,
+
 		IfOut: m.IfOut,
+
+		IfOutDisplayName: m.IfOutDisplayName,
 
 		LastEpochInSec: m.LastEpochInSec,
 
@@ -356,8 +336,7 @@ func (m GroupNetFlowRecord) MarshalJSON() ([]byte, error) {
 		SrcPort: m.SrcPort,
 
 		Usage: m.Usage,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -366,8 +345,7 @@ func (m GroupNetFlowRecord) MarshalJSON() ([]byte, error) {
 	}{
 
 		DataType: m.DataType(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -382,6 +360,220 @@ func (m *GroupNetFlowRecord) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this group net flow record based on the context it is used
+func (m *GroupNetFlowRecord) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDestinationMBytes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDstDNS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDstIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDstPort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirstEpochInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIfIn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIfOut(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastEpochInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProtocol(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSourceMBytes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSrcDNS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSrcIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSrcPort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateDataType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataType", "body", string(m.DataType())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateDestinationMBytes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "destinationMBytes", "body", float64(m.DestinationMBytes)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateDstDNS(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dstDNS", "body", string(m.DstDNS)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateDstIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dstIP", "body", string(m.DstIP)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateDstPort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dstPort", "body", int32(m.DstPort)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateFirstEpochInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "firstEpochInSec", "body", int64(m.FirstEpochInSec)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateIfIn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ifIn", "body", int64(m.IfIn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateIfOut(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ifOut", "body", int64(m.IfOut)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateLastEpochInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastEpochInSec", "body", int64(m.LastEpochInSec)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidatePercentUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "percentUsage", "body", float64(m.PercentUsage)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protocol", "body", string(m.Protocol)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateSourceMBytes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sourceMBytes", "body", float64(m.SourceMBytes)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateSrcDNS(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "srcDNS", "body", string(m.SrcDNS)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateSrcIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "srcIP", "body", string(m.SrcIP)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateSrcPort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "srcPort", "body", int32(m.SrcPort)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GroupNetFlowRecord) contextValidateUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "usage", "body", float64(m.Usage)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

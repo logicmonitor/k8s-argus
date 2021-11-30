@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/logicmonitor/k8s-argus/pkg/constants"
-	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
-	corev1 "k8s.io/api/core/v1"
+	{{- range $value := .Resources.Apis}}{{- if ne $value.Alias "" }}
+	{{ $value.Alias }} "{{ $value.PackageName }}"
+	{{- end}}{{- end }}
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+{{- $resources := .Resources.Resources }}
+{{ $apis := .Resources.Apis }}
 // ResourceType resource
 type ResourceType uint32
 
@@ -41,7 +42,6 @@ func (resourceType ResourceType) MarshalText() ([]byte, error) {
 	switch resourceType {
 	{{- range $value := .Resources.Resources }}
 	case {{ $value.LongName }}:
-
 		return []byte("{{ $value.LowerCase }}"), nil
 	{{- end }}
 	}
@@ -54,7 +54,7 @@ func ParseResourceType(resourceType string) (ResourceType, error) {
 	{{- range $value := .Resources.Resources }}{{ $length := len $value.ParsedResourceType }}{{ if last $length -1}}
 	case {{ range $i, $v := $value.ParsedResourceType }}"{{$v}}"{{ if last $length $i}}, {{ end}}{{ end }}:
 		return {{$value.LongName}}, nil
-	{{ end }}
+	{{- end }}
 	{{- end }}
 	}
 
@@ -66,7 +66,6 @@ func (resourceType ShortResourceType) MarshalText() ([]byte, error) {
 	switch ResourceType(resourceType) {
 	{{- range $value := .Resources.Resources }}
 	case {{ $value.LongName}}:
-
 		return []byte("{{ (index $value.ShortName 0) }}"), nil
 	{{- end}}
 	}
@@ -81,7 +80,7 @@ func ParseShortResourceType(shortResourceType string) (ShortResourceType, error)
 	{{- range $value := .Resources.Resources }}{{ $length := len $value.ShortName }}{{ if last $length -1}}
 	case {{ range $i, $v := $value.ShortName }}"{{$v}}"{{ if last $length $i}}, {{ end}}{{ end }}:
 		l = {{ $value.LongName}}
-	{{end}}
+	{{- end}}
 	{{- end}}
 	default:
 
@@ -96,8 +95,19 @@ func (resourceType *ResourceType) Title() string {
 	switch *resourceType {
 	{{- range $value := .Resources.Resources }}
 	case {{ $value.LongName }}:
-
 		return "{{ $value.DisplayName}}"
+	{{- end}}
+	}
+
+	return "Unknown"
+}
+
+// nolint: clyclop
+func (resourceType *ResourceType) TitlePlural() string {
+	switch *resourceType {
+	{{- range $value := .Resources.Resources }}
+	case {{ $value.LongName }}:
+		return "{{- titlePlural $value }}"
 	{{- end}}
 	}
 
@@ -109,8 +119,7 @@ func (resourceType *ResourceType) K8SObjectType() runtime.Object {
 	switch *resourceType {
 	{{- range $value := .Resources.Resources }}{{ if notNil $value.Apis }}
 	case {{ $value.LongName }}:
-
-		return &{{ $value.Apis }}.{{ $value.DisplayName }}{} // nolint: exhaustivestruct{{ end }}{{- end}}
+		return &{{ $value.Apis }}.{{ k8sObjectType $value }}{} // nolint: exhaustivestruct{{ end }}{{- end}}
 	case {{ getCases .Resources.Resources }}:
 		return nil
 	default:
@@ -122,23 +131,11 @@ func (resourceType *ResourceType) K8SObjectType() runtime.Object {
 // nolint: clyclop
 func (resourceType *ResourceType) K8SAPIVersion() string {
 	switch *resourceType {
-	// core v1 version
-	case Pods, Services, Nodes, Namespaces:
-
-		return constants.K8sAPIVersionV1
-	// apps api group apps/v1 version
-	case Deployments, DaemonSets, ReplicaSets, StatefulSets:
-
-		return constants.K8sAPIVersionAppsV1
-	// autoscaling api group v1 version
-	case Hpas:
-
-		return constants.K8sAutoscalingV1
-	case ETCD, Unknown:
-
-		return ""
+	{{- range $value := $apis }}
+	case {{ apiVersion $resources $value}}:
+		return "{{ api $value }}"
+	{{- end }}
 	default:
-
 		return ""
 	}
 }
@@ -156,23 +153,12 @@ func (resourceType *ResourceType) IsNamespaceScopedResource() bool {
 
 func (resourceType *ResourceType) APIGroup() string {
 	switch *resourceType {
-	// core v1 version
-	case Pods, Services, Nodes, Namespaces:
-
-		return ""
-	// apps api group apps/v1 version
-	case Deployments, DaemonSets, ReplicaSets, StatefulSets:
-
-		return "apps"
-	// autoscaling api group v1 version
-	case Hpas:
-
-		return "autoscaling"
-	case ETCD, Unknown:
-
-		return ""
+	{{- $apiGroups := getApiGroups .Resources.Apis }}
+	{{- range $value := $apiGroups }}
+	case {{ apiGroup $resources $apis $value }}:
+		return "{{- apiGroupValue $value }}"
+	{{- end }}
 	default:
-
 		return ""
 	}
 }

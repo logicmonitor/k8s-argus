@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // EC2ScheduledEventAutoDiscoveryMethod e c2 scheduled event auto discovery method
+//
 // swagger:model EC2ScheduledEventAutoDiscoveryMethod
 type EC2ScheduledEventAutoDiscoveryMethod struct {
 	EC2ScheduledEventAutoDiscoveryMethodAllOf1
@@ -61,7 +63,6 @@ func (m *EC2ScheduledEventAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.EC2ScheduledEventAutoDiscoveryMethodAllOf1 = data.EC2ScheduledEventAutoDiscoveryMethodAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m EC2ScheduledEventAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		EC2ScheduledEventAutoDiscoveryMethodAllOf1: m.EC2ScheduledEventAutoDiscoveryMethodAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m EC2ScheduledEventAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m EC2ScheduledEventAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 
 // Validate validates this e c2 scheduled event auto discovery method
 func (m *EC2ScheduledEventAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with EC2ScheduledEventAutoDiscoveryMethodAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this e c2 scheduled event auto discovery method based on the context it is used
+func (m *EC2ScheduledEventAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with EC2ScheduledEventAutoDiscoveryMethodAllOf1
@@ -128,5 +139,6 @@ func (m *EC2ScheduledEventAutoDiscoveryMethod) UnmarshalBinary(b []byte) error {
 }
 
 // EC2ScheduledEventAutoDiscoveryMethodAllOf1 e c2 scheduled event auto discovery method all of1
+//
 // swagger:model EC2ScheduledEventAutoDiscoveryMethodAllOf1
 type EC2ScheduledEventAutoDiscoveryMethodAllOf1 interface{}

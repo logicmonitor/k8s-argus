@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // NetflowGroupGraphWidget netflow group graph widget
+//
 // swagger:model NetflowGroupGraphWidget
 type NetflowGroupGraphWidget struct {
 	dashboardIdField *int32
@@ -155,10 +157,6 @@ func (m *NetflowGroupGraphWidget) SetUserPermission(val string) {
 	m.userPermissionField = val
 }
 
-// DeviceGroupID gets the device group Id of this subtype
-
-// DeviceGroupName gets the device group name of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NetflowGroupGraphWidget) UnmarshalJSON(raw []byte) error {
 	var data struct {
@@ -235,11 +233,9 @@ func (m *NetflowGroupGraphWidget) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid type value: %q", base.Type)
 	}
-
 	result.userPermissionField = base.UserPermission
 
 	result.DeviceGroupID = data.DeviceGroupID
-
 	result.DeviceGroupName = data.DeviceGroupName
 
 	*m = result
@@ -264,8 +260,7 @@ func (m NetflowGroupGraphWidget) MarshalJSON() ([]byte, error) {
 		DeviceGroupID: m.DeviceGroupID,
 
 		DeviceGroupName: m.DeviceGroupName,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -314,8 +309,7 @@ func (m NetflowGroupGraphWidget) MarshalJSON() ([]byte, error) {
 		Type: m.Type(),
 
 		UserPermission: m.UserPermission(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -342,6 +336,7 @@ func (m *NetflowGroupGraphWidget) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NetflowGroupGraphWidget) validateDashboardID(formats strfmt.Registry) error {
+
 	if err := validate.Required("dashboardId", "body", m.DashboardID()); err != nil {
 		return err
 	}
@@ -350,7 +345,70 @@ func (m *NetflowGroupGraphWidget) validateDashboardID(formats strfmt.Registry) e
 }
 
 func (m *NetflowGroupGraphWidget) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this netflow group graph widget based on the context it is used
+func (m *NetflowGroupGraphWidget) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedOn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserPermission(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDeviceGroupName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowGroupGraphWidget) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedBy", "body", string(m.LastUpdatedBy())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowGroupGraphWidget) contextValidateLastUpdatedOn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdatedOn", "body", int64(m.LastUpdatedOn())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowGroupGraphWidget) contextValidateUserPermission(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "userPermission", "body", string(m.UserPermission())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowGroupGraphWidget) contextValidateDeviceGroupName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "deviceGroupName", "body", string(m.DeviceGroupName)); err != nil {
 		return err
 	}
 

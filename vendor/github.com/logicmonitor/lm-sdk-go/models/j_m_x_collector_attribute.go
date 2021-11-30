@@ -7,14 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // JMXCollectorAttribute j m x collector attribute
+//
 // swagger:model JMXCollectorAttribute
 type JMXCollectorAttribute struct {
 
@@ -34,10 +37,6 @@ func (m *JMXCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *JMXCollectorAttribute) SetName(val string) {
 }
-
-// IP gets the ip of this subtype
-
-// QueryURL gets the query Url of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *JMXCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -79,7 +78,6 @@ func (m *JMXCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.IP = data.IP
-
 	result.QueryURL = data.QueryURL
 
 	*m = result
@@ -104,8 +102,7 @@ func (m JMXCollectorAttribute) MarshalJSON() ([]byte, error) {
 		IP: m.IP,
 
 		QueryURL: m.QueryURL,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -114,8 +111,7 @@ func (m JMXCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -130,6 +126,29 @@ func (m *JMXCollectorAttribute) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validate this j m x collector attribute based on the context it is used
+func (m *JMXCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *JMXCollectorAttribute) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ip", "body", string(m.IP)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

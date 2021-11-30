@@ -7,15 +7,18 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // BatchJobWidgetData batch job widget data
+//
 // swagger:model BatchJobWidgetData
 type BatchJobWidgetData struct {
 	titleField string
@@ -43,8 +46,6 @@ func (m *BatchJobWidgetData) Type() string {
 // SetType sets the type of this subtype
 func (m *BatchJobWidgetData) SetType(val string) {
 }
-
-// Items gets the items of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *BatchJobWidgetData) UnmarshalJSON(raw []byte) error {
@@ -105,8 +106,7 @@ func (m BatchJobWidgetData) MarshalJSON() ([]byte, error) {
 	}{
 
 		Items: m.Items,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +119,7 @@ func (m BatchJobWidgetData) MarshalJSON() ([]byte, error) {
 		Title: m.Title(),
 
 		Type: m.Type(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +142,7 @@ func (m *BatchJobWidgetData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BatchJobWidgetData) validateItems(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Items) { // not required
 		return nil
 	}
@@ -154,6 +154,51 @@ func (m *BatchJobWidgetData) validateItems(formats strfmt.Registry) error {
 
 		if m.Items[i] != nil {
 			if err := m.Items[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("items" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this batch job widget data based on the context it is used
+func (m *BatchJobWidgetData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateItems(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *BatchJobWidgetData) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BatchJobWidgetData) contextValidateItems(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "items", "body", []*BatchJobExecutionItem(m.Items)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Items); i++ {
+
+		if m.Items[i] != nil {
+			if err := m.Items[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("items" + "." + strconv.Itoa(i))
 				}

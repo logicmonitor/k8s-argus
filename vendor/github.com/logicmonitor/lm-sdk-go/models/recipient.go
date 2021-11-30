@@ -6,27 +6,33 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Recipient recipient
+//
 // swagger:model Recipient
 type Recipient struct {
 
 	// the user name if method = admin, or the email address if method = arbitrary
+	// Example: john.doe@logicmonitor.com
 	Addr string `json:"addr,omitempty"`
 
 	// contact
 	Contact string `json:"contact,omitempty"`
 
 	// Admin | Arbitrary, where Admin = a user, and Arbitrary = an arbitrary email
+	// Example: EMAIL
 	// Required: true
 	Method *string `json:"method"`
 
 	// email | sms | voice, where type must be email if method = arbitrary
+	// Example: Admin
 	// Required: true
 	Type *string `json:"type"`
 }
@@ -50,6 +56,7 @@ func (m *Recipient) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Recipient) validateMethod(formats strfmt.Registry) error {
+
 	if err := validate.Required("method", "body", m.Method); err != nil {
 		return err
 	}
@@ -58,10 +65,16 @@ func (m *Recipient) validateMethod(formats strfmt.Registry) error {
 }
 
 func (m *Recipient) validateType(formats strfmt.Registry) error {
+
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this recipient based on context it is used
+func (m *Recipient) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // SiteMonitorCheckpoint site monitor checkpoint
+//
 // swagger:model SiteMonitorCheckpoint
 type SiteMonitorCheckpoint struct {
 
@@ -55,7 +58,70 @@ func (m *SiteMonitorCheckpoint) Validate(formats strfmt.Registry) error {
 }
 
 func (m *SiteMonitorCheckpoint) validateDescription(formats strfmt.Registry) error {
+
 	if err := validate.Required("description", "body", m.Description); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this site monitor checkpoint based on the context it is used
+func (m *SiteMonitorCheckpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateGeoInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIsEnabledInRoot(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SiteMonitorCheckpoint) contextValidateGeoInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "geoInfo", "body", string(m.GeoInfo)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SiteMonitorCheckpoint) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SiteMonitorCheckpoint) contextValidateIsEnabledInRoot(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "isEnabledInRoot", "body", m.IsEnabledInRoot); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SiteMonitorCheckpoint) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
 		return err
 	}
 

@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // PieChartDataPoint pie chart data point
+//
 // swagger:model PieChartDataPoint
 type PieChartDataPoint struct {
 
@@ -81,6 +84,7 @@ func (m *PieChartDataPoint) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PieChartDataPoint) validateDeviceDisplayName(formats strfmt.Registry) error {
+
 	if err := validate.Required("deviceDisplayName", "body", m.DeviceDisplayName); err != nil {
 		return err
 	}
@@ -89,6 +93,7 @@ func (m *PieChartDataPoint) validateDeviceDisplayName(formats strfmt.Registry) e
 }
 
 func (m *PieChartDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry) error {
+
 	if err := validate.Required("deviceGroupFullPath", "body", m.DeviceGroupFullPath); err != nil {
 		return err
 	}
@@ -97,6 +102,7 @@ func (m *PieChartDataPoint) validateDeviceGroupFullPath(formats strfmt.Registry)
 }
 
 func (m *PieChartDataPoint) validateInstanceName(formats strfmt.Registry) error {
+
 	if err := validate.Required("instanceName", "body", m.InstanceName); err != nil {
 		return err
 	}
@@ -105,10 +111,16 @@ func (m *PieChartDataPoint) validateInstanceName(formats strfmt.Registry) error 
 }
 
 func (m *PieChartDataPoint) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this pie chart data point based on context it is used
+func (m *PieChartDataPoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

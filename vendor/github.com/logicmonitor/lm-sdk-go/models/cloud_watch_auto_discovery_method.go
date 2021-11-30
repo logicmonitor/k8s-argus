@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // CloudWatchAutoDiscoveryMethod cloud watch auto discovery method
+//
 // swagger:model CloudWatchAutoDiscoveryMethod
 type CloudWatchAutoDiscoveryMethod struct {
 
@@ -40,12 +42,6 @@ func (m *CloudWatchAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *CloudWatchAutoDiscoveryMethod) SetName(val string) {
 }
-
-// ClusterDimension gets the cluster dimension of this subtype
-
-// Namespace gets the namespace of this subtype
-
-// NodeDimension gets the node dimension of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *CloudWatchAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -92,9 +88,7 @@ func (m *CloudWatchAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.ClusterDimension = data.ClusterDimension
-
 	result.Namespace = data.Namespace
-
 	result.NodeDimension = data.NodeDimension
 
 	*m = result
@@ -126,8 +120,7 @@ func (m CloudWatchAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		Namespace: m.Namespace,
 
 		NodeDimension: m.NodeDimension,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +129,7 @@ func (m CloudWatchAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -168,6 +160,7 @@ func (m *CloudWatchAutoDiscoveryMethod) Validate(formats strfmt.Registry) error 
 }
 
 func (m *CloudWatchAutoDiscoveryMethod) validateClusterDimension(formats strfmt.Registry) error {
+
 	if err := validate.Required("clusterDimension", "body", m.ClusterDimension); err != nil {
 		return err
 	}
@@ -176,6 +169,7 @@ func (m *CloudWatchAutoDiscoveryMethod) validateClusterDimension(formats strfmt.
 }
 
 func (m *CloudWatchAutoDiscoveryMethod) validateNamespace(formats strfmt.Registry) error {
+
 	if err := validate.Required("namespace", "body", m.Namespace); err != nil {
 		return err
 	}
@@ -184,10 +178,21 @@ func (m *CloudWatchAutoDiscoveryMethod) validateNamespace(formats strfmt.Registr
 }
 
 func (m *CloudWatchAutoDiscoveryMethod) validateNodeDimension(formats strfmt.Registry) error {
+
 	if err := validate.Required("nodeDimension", "body", m.NodeDimension); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this cloud watch auto discovery method based on the context it is used
+func (m *CloudWatchAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

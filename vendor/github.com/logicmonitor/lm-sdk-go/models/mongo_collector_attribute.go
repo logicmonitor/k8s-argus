@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // MongoCollectorAttribute mongo collector attribute
+//
 // swagger:model MongoCollectorAttribute
 type MongoCollectorAttribute struct {
 
@@ -39,14 +41,6 @@ func (m *MongoCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *MongoCollectorAttribute) SetName(val string) {
 }
-
-// Collection gets the collection of this subtype
-
-// Database gets the database of this subtype
-
-// Port gets the port of this subtype
-
-// Query gets the query of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *MongoCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -93,11 +87,8 @@ func (m *MongoCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.Collection = data.Collection
-
 	result.Database = data.Database
-
 	result.Port = data.Port
-
 	result.Query = data.Query
 
 	*m = result
@@ -131,8 +122,7 @@ func (m MongoCollectorAttribute) MarshalJSON() ([]byte, error) {
 		Port: m.Port,
 
 		Query: m.Query,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +131,7 @@ func (m MongoCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +141,16 @@ func (m MongoCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this mongo collector attribute
 func (m *MongoCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this mongo collector attribute based on the context it is used
+func (m *MongoCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

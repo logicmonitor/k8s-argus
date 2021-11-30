@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AzureNetworkServiceLimitsCollectorAttribute azure network service limits collector attribute
+//
 // swagger:model AzureNetworkServiceLimitsCollectorAttribute
 type AzureNetworkServiceLimitsCollectorAttribute struct {
 
@@ -30,8 +32,6 @@ func (m *AzureNetworkServiceLimitsCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *AzureNetworkServiceLimitsCollectorAttribute) SetName(val string) {
 }
-
-// Period gets the period of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AzureNetworkServiceLimitsCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -86,8 +86,7 @@ func (m AzureNetworkServiceLimitsCollectorAttribute) MarshalJSON() ([]byte, erro
 	}{
 
 		Period: m.Period,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,7 @@ func (m AzureNetworkServiceLimitsCollectorAttribute) MarshalJSON() ([]byte, erro
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +105,16 @@ func (m AzureNetworkServiceLimitsCollectorAttribute) MarshalJSON() ([]byte, erro
 
 // Validate validates this azure network service limits collector attribute
 func (m *AzureNetworkServiceLimitsCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this azure network service limits collector attribute based on the context it is used
+func (m *AzureNetworkServiceLimitsCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

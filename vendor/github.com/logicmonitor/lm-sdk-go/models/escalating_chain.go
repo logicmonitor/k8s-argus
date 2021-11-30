@@ -6,15 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // EscalatingChain escalating chain
+//
 // swagger:model EscalatingChain
 type EscalatingChain struct {
 
@@ -22,6 +24,7 @@ type EscalatingChain struct {
 	CcDestinations []*Recipient `json:"ccDestinations,omitempty"`
 
 	// description
+	// Example: For alerts escalated to the NOC Team
 	Description string `json:"description,omitempty"`
 
 	// destinations
@@ -29,6 +32,7 @@ type EscalatingChain struct {
 	Destinations []*Chain `json:"destinations"`
 
 	// enable throttling
+	// Example: true
 	EnableThrottling bool `json:"enableThrottling,omitempty"`
 
 	// id
@@ -40,13 +44,16 @@ type EscalatingChain struct {
 	InAlerting *bool `json:"inAlerting,omitempty"`
 
 	// name
+	// Example: NOC Team
 	// Required: true
 	Name *string `json:"name"`
 
 	// throttling alerts
+	// Example: 40
 	ThrottlingAlerts int32 `json:"throttlingAlerts,omitempty"`
 
 	// throttling period
+	// Example: 30
 	ThrottlingPeriod int32 `json:"throttlingPeriod,omitempty"`
 }
 
@@ -97,6 +104,7 @@ func (m *EscalatingChain) validateCcDestinations(formats strfmt.Registry) error 
 }
 
 func (m *EscalatingChain) validateDestinations(formats strfmt.Registry) error {
+
 	if err := validate.Required("destinations", "body", m.Destinations); err != nil {
 		return err
 	}
@@ -121,7 +129,88 @@ func (m *EscalatingChain) validateDestinations(formats strfmt.Registry) error {
 }
 
 func (m *EscalatingChain) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this escalating chain based on the context it is used
+func (m *EscalatingChain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCcDestinations(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDestinations(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInAlerting(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *EscalatingChain) contextValidateCcDestinations(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.CcDestinations); i++ {
+
+		if m.CcDestinations[i] != nil {
+			if err := m.CcDestinations[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("ccDestinations" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *EscalatingChain) contextValidateDestinations(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Destinations); i++ {
+
+		if m.Destinations[i] != nil {
+			if err := m.Destinations[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("destinations" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *EscalatingChain) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *EscalatingChain) contextValidateInAlerting(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inAlerting", "body", m.InAlerting); err != nil {
 		return err
 	}
 

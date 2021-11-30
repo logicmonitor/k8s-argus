@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // AWSNetscan a w s netscan
+//
 // swagger:model AWSNetscan
 type AWSNetscan struct {
 	collectorField *int32
@@ -36,6 +38,8 @@ type AWSNetscan struct {
 
 	idField int32
 
+	ignoreSystemIPsDuplicatesField bool
+
 	nameField *string
 
 	nextStartField string
@@ -44,7 +48,7 @@ type AWSNetscan struct {
 
 	nsgIdField int32
 
-	scheduleField *NetScanSchedule
+	scheduleField *RestSchedule
 
 	versionField int32
 
@@ -175,6 +179,16 @@ func (m *AWSNetscan) SetID(val int32) {
 	m.idField = val
 }
 
+// IgnoreSystemIPsDuplicates gets the ignore system i ps duplicates of this subtype
+func (m *AWSNetscan) IgnoreSystemIPsDuplicates() bool {
+	return m.ignoreSystemIPsDuplicatesField
+}
+
+// SetIgnoreSystemIPsDuplicates sets the ignore system i ps duplicates of this subtype
+func (m *AWSNetscan) SetIgnoreSystemIPsDuplicates(val bool) {
+	m.ignoreSystemIPsDuplicatesField = val
+}
+
 // Method gets the method of this subtype
 func (m *AWSNetscan) Method() string {
 	return "aws"
@@ -225,12 +239,12 @@ func (m *AWSNetscan) SetNsgID(val int32) {
 }
 
 // Schedule gets the schedule of this subtype
-func (m *AWSNetscan) Schedule() *NetScanSchedule {
+func (m *AWSNetscan) Schedule() *RestSchedule {
 	return m.scheduleField
 }
 
 // SetSchedule sets the schedule of this subtype
-func (m *AWSNetscan) SetSchedule(val *NetScanSchedule) {
+func (m *AWSNetscan) SetSchedule(val *RestSchedule) {
 	m.scheduleField = val
 }
 
@@ -243,24 +257,6 @@ func (m *AWSNetscan) Version() int32 {
 func (m *AWSNetscan) SetVersion(val int32) {
 	m.versionField = val
 }
-
-// AccessID gets the access Id of this subtype
-
-// AccountID gets the account Id of this subtype
-
-// AssumedRoleArn gets the assumed role arn of this subtype
-
-// AwsAZ gets the aws a z of this subtype
-
-// AwsService gets the aws service of this subtype
-
-// ExternalID gets the external Id of this subtype
-
-// GroupID gets the group Id of this subtype
-
-// RootName gets the root name of this subtype
-
-// SecretKey gets the secret key of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AWSNetscan) UnmarshalJSON(raw []byte) error {
@@ -331,6 +327,8 @@ func (m *AWSNetscan) UnmarshalJSON(raw []byte) error {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -341,7 +339,7 @@ func (m *AWSNetscan) UnmarshalJSON(raw []byte) error {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}
@@ -373,11 +371,12 @@ func (m *AWSNetscan) UnmarshalJSON(raw []byte) error {
 
 	result.idField = base.ID
 
+	result.ignoreSystemIPsDuplicatesField = base.IgnoreSystemIPsDuplicates
+
 	if base.Method != result.Method() {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid method value: %q", base.Method)
 	}
-
 	result.nameField = base.Name
 
 	result.nextStartField = base.NextStart
@@ -391,21 +390,13 @@ func (m *AWSNetscan) UnmarshalJSON(raw []byte) error {
 	result.versionField = base.Version
 
 	result.AccessID = data.AccessID
-
 	result.AccountID = data.AccountID
-
 	result.AssumedRoleArn = data.AssumedRoleArn
-
 	result.AwsAZ = data.AwsAZ
-
 	result.AwsService = data.AwsService
-
 	result.ExternalID = data.ExternalID
-
 	result.GroupID = data.GroupID
-
 	result.RootName = data.RootName
-
 	result.SecretKey = data.SecretKey
 
 	*m = result
@@ -473,8 +464,7 @@ func (m AWSNetscan) MarshalJSON() ([]byte, error) {
 		RootName: m.RootName,
 
 		SecretKey: m.SecretKey,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -497,6 +487,8 @@ func (m AWSNetscan) MarshalJSON() ([]byte, error) {
 
 		ID int32 `json:"id,omitempty"`
 
+		IgnoreSystemIPsDuplicates bool `json:"ignoreSystemIPsDuplicates,omitempty"`
+
 		Method string `json:"method"`
 
 		Name *string `json:"name"`
@@ -507,7 +499,7 @@ func (m AWSNetscan) MarshalJSON() ([]byte, error) {
 
 		NsgID int32 `json:"nsgId,omitempty"`
 
-		Schedule *NetScanSchedule `json:"schedule,omitempty"`
+		Schedule *RestSchedule `json:"schedule,omitempty"`
 
 		Version int32 `json:"version,omitempty"`
 	}{
@@ -530,6 +522,8 @@ func (m AWSNetscan) MarshalJSON() ([]byte, error) {
 
 		ID: m.ID(),
 
+		IgnoreSystemIPsDuplicates: m.IgnoreSystemIPsDuplicates(),
+
 		Method: m.Method(),
 
 		Name: m.Name(),
@@ -543,8 +537,7 @@ func (m AWSNetscan) MarshalJSON() ([]byte, error) {
 		Schedule: m.Schedule(),
 
 		Version: m.Version(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -579,6 +572,7 @@ func (m *AWSNetscan) Validate(formats strfmt.Registry) error {
 }
 
 func (m *AWSNetscan) validateCollector(formats strfmt.Registry) error {
+
 	if err := validate.Required("collector", "body", m.Collector()); err != nil {
 		return err
 	}
@@ -587,6 +581,7 @@ func (m *AWSNetscan) validateCollector(formats strfmt.Registry) error {
 }
 
 func (m *AWSNetscan) validateDuplicate(formats strfmt.Registry) error {
+
 	if err := validate.Required("duplicate", "body", m.Duplicate()); err != nil {
 		return err
 	}
@@ -604,6 +599,7 @@ func (m *AWSNetscan) validateDuplicate(formats strfmt.Registry) error {
 }
 
 func (m *AWSNetscan) validateName(formats strfmt.Registry) error {
+
 	if err := validate.Required("name", "body", m.Name()); err != nil {
 		return err
 	}
@@ -612,6 +608,7 @@ func (m *AWSNetscan) validateName(formats strfmt.Registry) error {
 }
 
 func (m *AWSNetscan) validateSchedule(formats strfmt.Registry) error {
+
 	if swag.IsZero(m.Schedule()) { // not required
 		return nil
 	}
@@ -623,6 +620,169 @@ func (m *AWSNetscan) validateSchedule(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this a w s netscan based on the context it is used
+func (m *AWSNetscan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDuplicate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSchedule(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAccessID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAccountID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAssumedRoleArn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAwsAZ(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAwsService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateExternalID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateGroupID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRootName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSecretKey(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateDuplicate(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Duplicate() != nil {
+		if err := m.Duplicate().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("duplicate")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateSchedule(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Schedule() != nil {
+		if err := m.Schedule().ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("schedule")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateAccessID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "accessId", "body", string(m.AccessID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateAccountID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "accountId", "body", string(m.AccountID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateAssumedRoleArn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "assumedRoleArn", "body", string(m.AssumedRoleArn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateAwsAZ(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "awsAZ", "body", string(m.AwsAZ)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateAwsService(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "awsService", "body", string(m.AwsService)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateExternalID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "externalId", "body", string(m.ExternalID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateGroupID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "groupId", "body", int32(m.GroupID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateRootName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rootName", "body", string(m.RootName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AWSNetscan) contextValidateSecretKey(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "secretKey", "body", string(m.SecretKey)); err != nil {
+		return err
 	}
 
 	return nil

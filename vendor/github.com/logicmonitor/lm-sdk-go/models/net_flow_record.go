@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetFlowRecord net flow record
+//
 // swagger:model NetFlowRecord
 type NetFlowRecord struct {
 
@@ -81,6 +86,224 @@ type NetFlowRecord struct {
 
 // Validate validates this net flow record
 func (m *NetFlowRecord) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this net flow record based on the context it is used
+func (m *NetFlowRecord) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDataType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDestinationMBytes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDstDNS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDstIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDstPort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFirstEpochInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIfIn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateIfOut(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastEpochInSec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProtocol(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSourceMBytes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSrcDNS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSrcIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSrcPort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateDataType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataType", "body", string(m.DataType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateDestinationMBytes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "destinationMBytes", "body", float64(m.DestinationMBytes)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateDstDNS(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dstDNS", "body", string(m.DstDNS)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateDstIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dstIP", "body", string(m.DstIP)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateDstPort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dstPort", "body", int32(m.DstPort)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateFirstEpochInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "firstEpochInSec", "body", int64(m.FirstEpochInSec)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateIfIn(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ifIn", "body", int64(m.IfIn)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateIfOut(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ifOut", "body", int64(m.IfOut)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateLastEpochInSec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastEpochInSec", "body", int64(m.LastEpochInSec)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidatePercentUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "percentUsage", "body", float64(m.PercentUsage)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateProtocol(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "protocol", "body", string(m.Protocol)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateSourceMBytes(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "sourceMBytes", "body", float64(m.SourceMBytes)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateSrcDNS(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "srcDNS", "body", string(m.SrcDNS)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateSrcIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "srcIP", "body", string(m.SrcIP)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateSrcPort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "srcPort", "body", int32(m.SrcPort)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetFlowRecord) contextValidateUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "usage", "body", float64(m.Usage)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

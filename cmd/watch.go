@@ -100,6 +100,9 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 			return
 		}
 
+		userAgent := constants.UserAgentBase + constants.Version
+		lmClient.LM.SetUserAgent(&userAgent)
+
 		if util.IsLocal() {
 			logrus.SetFormatter(&logrus.TextFormatter{ // nolint: exhaustivestruct
 				ForceColors: false,

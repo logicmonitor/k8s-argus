@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ErrorResponse error response
+//
 // swagger:model ErrorResponse
 type ErrorResponse struct {
 
@@ -29,6 +34,42 @@ type ErrorResponse struct {
 
 // Validate validates this error response
 func (m *ErrorResponse) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this error response based on the context it is used
+func (m *ErrorResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateErrorCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateErrorMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ErrorResponse) contextValidateErrorCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "errorCode", "body", int32(m.ErrorCode)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ErrorResponse) contextValidateErrorMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "errorMessage", "body", string(m.ErrorMessage)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

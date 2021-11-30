@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // BigNumberData big number data
+//
 // swagger:model BigNumberData
 type BigNumberData struct {
 
@@ -64,7 +67,109 @@ func (m *BigNumberData) Validate(formats strfmt.Registry) error {
 }
 
 func (m *BigNumberData) validateUseCommaSeparators(formats strfmt.Registry) error {
+
 	if err := validate.Required("useCommaSeparators", "body", m.UseCommaSeparators); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this big number data based on the context it is used
+func (m *BigNumberData) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBottomLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColorLevel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateErrorMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePosition(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRightLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRounding(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateValue(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *BigNumberData) contextValidateBottomLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "bottomLabel", "body", string(m.BottomLabel)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberData) contextValidateColorLevel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "colorLevel", "body", int32(m.ColorLevel)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberData) contextValidateErrorMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "errorMessage", "body", string(m.ErrorMessage)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberData) contextValidatePosition(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "position", "body", int32(m.Position)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberData) contextValidateRightLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rightLabel", "body", string(m.RightLabel)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberData) contextValidateRounding(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rounding", "body", int32(m.Rounding)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *BigNumberData) contextValidateValue(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "value", "body", float64(m.Value)); err != nil {
 		return err
 	}
 

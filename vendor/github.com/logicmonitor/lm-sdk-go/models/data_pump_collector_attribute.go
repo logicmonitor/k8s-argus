@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DataPumpCollectorAttribute data pump collector attribute
+//
 // swagger:model DataPumpCollectorAttribute
 type DataPumpCollectorAttribute struct {
 	DataPumpCollectorAttributeAllOf1
@@ -61,7 +63,6 @@ func (m *DataPumpCollectorAttribute) UnmarshalJSON(raw []byte) error {
 		/* Not the type we're looking for. */
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
-
 	result.DataPumpCollectorAttributeAllOf1 = data.DataPumpCollectorAttributeAllOf1
 
 	*m = result
@@ -78,8 +79,7 @@ func (m DataPumpCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		DataPumpCollectorAttributeAllOf1: m.DataPumpCollectorAttributeAllOf1,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,7 @@ func (m DataPumpCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +98,18 @@ func (m DataPumpCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this data pump collector attribute
 func (m *DataPumpCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with DataPumpCollectorAttributeAllOf1
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this data pump collector attribute based on the context it is used
+func (m *DataPumpCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	// validation for a type composition with DataPumpCollectorAttributeAllOf1
@@ -128,5 +139,6 @@ func (m *DataPumpCollectorAttribute) UnmarshalBinary(b []byte) error {
 }
 
 // DataPumpCollectorAttributeAllOf1 data pump collector attribute all of1
+//
 // swagger:model DataPumpCollectorAttributeAllOf1
 type DataPumpCollectorAttributeAllOf1 interface{}

@@ -6,39 +6,52 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DeviceClusterAlertConfig device cluster alert config
+//
 // swagger:model DeviceClusterAlertConfig
 type DeviceClusterAlertConfig struct {
 
 	// The expression that indicates the number of objects (devices or instances) that need to be in alert to trigger the cluster alert. E.g. > 5
+	// Example: \u003e=2
 	AlertExpr string `json:"alertExpr,omitempty"`
 
 	// host | instance - Whether the cluster alert is based on an alert count across devices or instances
+	// Example: host
 	CountBy string `json:"countBy,omitempty"`
 
 	// The description of the dataPoint you want to base the cluster alert on
+	// Example: Inbound throughput, in megabits per second.\n\nBest choice for reports, etc.
 	// Read Only: true
 	DataPointDescription string `json:"dataPointDescription,omitempty"`
 
 	// The id of the dataPoint you want to base the cluster alert on
+	// Example: 2016
 	// Read Only: true
 	DataPointID int32 `json:"dataPointId,omitempty"`
 
 	// The name of the dataPoint you want to base the cluster alert on
+	// Example: InMbps
 	// Read Only: true
 	DataPointName string `json:"dataPointName,omitempty"`
 
 	// The display name of the dataSource you want to base the cluster alert on
+	// Example: Interfaces (64 bit)-
 	DataSourceDisplayName string `json:"dataSourceDisplayName,omitempty"`
 
 	// The id of the dataSource you want to base the cluster alert on
+	// Example: 396
 	DataSourceID int32 `json:"dataSourceId,omitempty"`
 
 	// Whether or not alerting will be disabled
+	// Example: false
 	DisableAlerting bool `json:"disableAlerting,omitempty"`
 
 	// The id of the cluster alert configuration
@@ -46,17 +59,82 @@ type DeviceClusterAlertConfig struct {
 	ID int32 `json:"id,omitempty"`
 
 	// The alert level that must be present for the devices or instances to trigger the cluster alert. Acceptable values are: 2, 3, 4
+	// Example: 4
 	MinAlertLevel int32 `json:"minAlertLevel,omitempty"`
 
-	// Whether or not alerting will be suppressed for individual alerts
-	SuppressIndAlert bool `json:"suppressIndAlert,omitempty"`
+	// Whether or not alerting will be suppressed for individual alerts, the default value is true
+	// Example: true
+	SuppressIndAlert interface{} `json:"suppressIndAlert,omitempty"`
 
 	// whether the alert expression should be evaluated as a total number of devices or instances (absolute) or as a percentage of devices or instances (percentage). Acceptable values are: absolute, percentage
+	// Example: absolute
 	ThresholdType string `json:"thresholdType,omitempty"`
 }
 
 // Validate validates this device cluster alert config
 func (m *DeviceClusterAlertConfig) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this device cluster alert config based on the context it is used
+func (m *DeviceClusterAlertConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDataPointDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPointID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataPointName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceClusterAlertConfig) contextValidateDataPointDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointDescription", "body", string(m.DataPointDescription)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertConfig) contextValidateDataPointID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointId", "body", int32(m.DataPointID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertConfig) contextValidateDataPointName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataPointName", "body", string(m.DataPointName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceClusterAlertConfig) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

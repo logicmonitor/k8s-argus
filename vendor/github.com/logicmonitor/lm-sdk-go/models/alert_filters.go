@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AlertFilters alert filters
+//
 // swagger:model AlertFilters
 type AlertFilters struct {
 
@@ -20,7 +23,7 @@ type AlertFilters struct {
 	// Displayed alerts must be routed to an escalation chain that satisfies this filter. Glob is accepted, and * and an empty string both match all escalation chains
 	Chain string `json:"chain,omitempty"`
 
-	// Displayed alerts must be active if cleared=no, and must have cleared in the past 7 days if cleared=all
+	// Displayed alerts must be active if cleared=no,  display alerts must be closed if cleared=yes, and must have cleared in the past 7 days if cleared=all
 	Cleared string `json:"cleared,omitempty"`
 
 	// Displayed alerts must be associated with datapoints that meet this filter criteria. Glob is accepted, and * and an empty string both match all datapoints
@@ -45,7 +48,7 @@ type AlertFilters struct {
 	Rule string `json:"rule,omitempty"`
 
 	// Displayed alerts must have an SDT status that meets this criteria
-	SDTED string `json:"sdted,omitempty"`
+	Sdted string `json:"sdted,omitempty"`
 
 	// Displayed alerts must have a severity that satisfies this criteria. Multiple severities are separated by commas
 	Severity string `json:"severity,omitempty"`
@@ -53,6 +56,11 @@ type AlertFilters struct {
 
 // Validate validates this alert filters
 func (m *AlertFilters) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this alert filters based on context it is used
+func (m *AlertFilters) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -163,6 +163,10 @@ type ResourceBuilder interface {
 	// DeletedOn adds kubernetes.resourceDeletedOn property to the resource.
 	DeletedOn(time.Time) ResourceOption
 
+	// DisableResourceAlerting disable alerting
+	DisableResourceAlerting(bool) ResourceOption
+
+	// GetMarkDeleteOptions get deleted options
 	GetMarkDeleteOptions(*lmctx.LMContext, enums.ResourceType, *metav1.PartialObjectMetadata) []ResourceOption
 }
 
@@ -332,7 +336,7 @@ type LMFacade interface {
 // RateLimits struct to send new rate limits received from server to manager
 type RateLimits struct {
 	Limit  int64
-	Window int
+	Window int64
 }
 
 // WorkerRateLimitsUpdate struct to send new rate limits received from server to manager

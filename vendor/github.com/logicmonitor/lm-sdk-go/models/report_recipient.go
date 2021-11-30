@@ -6,13 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // ReportRecipient report recipient
+//
 // swagger:model ReportRecipient
 type ReportRecipient struct {
 
@@ -21,13 +24,16 @@ type ReportRecipient struct {
 	AdditionInfo string `json:"additionInfo,omitempty"`
 
 	// This should be a username if type=admin, or an email address if type=arbitrary
+	// Example: sarah
 	// Required: true
 	Addr *string `json:"addr"`
 
 	// This should always be email
+	// Example: email
 	Method string `json:"method,omitempty"`
 
 	// Where admin refers to a user in the account and arbitrary refers to an email address not associated with a user account.Acceptable values are: admin, arbitrary
+	// Example: admin
 	// Required: true
 	Type *string `json:"type"`
 }
@@ -51,6 +57,7 @@ func (m *ReportRecipient) Validate(formats strfmt.Registry) error {
 }
 
 func (m *ReportRecipient) validateAddr(formats strfmt.Registry) error {
+
 	if err := validate.Required("addr", "body", m.Addr); err != nil {
 		return err
 	}
@@ -59,7 +66,31 @@ func (m *ReportRecipient) validateAddr(formats strfmt.Registry) error {
 }
 
 func (m *ReportRecipient) validateType(formats strfmt.Registry) error {
+
 	if err := validate.Required("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this report recipient based on the context it is used
+func (m *ReportRecipient) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdditionInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ReportRecipient) contextValidateAdditionInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "additionInfo", "body", string(m.AdditionInfo)); err != nil {
 		return err
 	}
 

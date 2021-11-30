@@ -6,15 +6,17 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Chain chain
+//
 // swagger:model Chain
 type Chain struct {
 
@@ -70,11 +72,13 @@ func (m *Chain) validatePeriod(formats strfmt.Registry) error {
 }
 
 func (m *Chain) validateStages(formats strfmt.Registry) error {
+
 	if err := validate.Required("stages", "body", m.Stages); err != nil {
 		return err
 	}
 
 	for i := 0; i < len(m.Stages); i++ {
+
 		for ii := 0; ii < len(m.Stages[i]); ii++ {
 			if swag.IsZero(m.Stages[i][ii]) { // not required
 				continue
@@ -90,14 +94,70 @@ func (m *Chain) validateStages(formats strfmt.Registry) error {
 			}
 
 		}
+
 	}
 
 	return nil
 }
 
 func (m *Chain) validateType(formats strfmt.Registry) error {
+
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this chain based on the context it is used
+func (m *Chain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePeriod(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Chain) contextValidatePeriod(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Period != nil {
+		if err := m.Period.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("period")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Chain) contextValidateStages(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Stages); i++ {
+
+		for ii := 0; ii < len(m.Stages[i]); ii++ {
+
+			if m.Stages[i][ii] != nil {
+				if err := m.Stages[i][ii].ContextValidate(ctx, formats); err != nil {
+					if ve, ok := err.(*errors.Validation); ok {
+						return ve.ValidateName("stages" + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii))
+					}
+					return err
+				}
+			}
+
+		}
+
 	}
 
 	return nil

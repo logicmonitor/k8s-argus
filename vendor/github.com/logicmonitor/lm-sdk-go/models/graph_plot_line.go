@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // GraphPlotLine graph plot line
+//
 // swagger:model GraphPlotLine
 type GraphPlotLine struct {
 
@@ -73,6 +78,146 @@ type GraphPlotLine struct {
 
 // Validate validates this graph plot line
 func (m *GraphPlotLine) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this graph plot line based on the context it is used
+func (m *GraphPlotLine) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateColor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateColorName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDecimal(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDescription(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLegend(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUseYMax(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVisible(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateColor(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "color", "body", string(m.Color)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateColorName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "colorName", "body", string(m.ColorName)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "data", "body", []interface{}(m.Data)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateDecimal(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "decimal", "body", int32(m.Decimal)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateDescription(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "description", "body", string(m.Description)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "label", "body", string(m.Label)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateLegend(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "legend", "body", string(m.Legend)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateUseYMax(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "useYMax", "body", m.UseYMax); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GraphPlotLine) contextValidateVisible(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "visible", "body", m.Visible); err != nil {
+		return err
+	}
+
 	return nil
 }
 

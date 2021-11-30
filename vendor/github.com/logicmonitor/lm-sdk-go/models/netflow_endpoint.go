@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NetflowEndpoint netflow endpoint
+//
 // swagger:model NetflowEndpoint
 type NetflowEndpoint struct {
 
@@ -45,6 +50,107 @@ type NetflowEndpoint struct {
 
 // Validate validates this netflow endpoint
 func (m *NetflowEndpoint) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this netflow endpoint based on the context it is used
+func (m *NetflowEndpoint) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateIP(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDNS(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastSeen(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePercentUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NetflowEndpoint) contextValidateIP(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "IP", "body", string(m.IP)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowEndpoint) contextValidateDataType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dataType", "body", string(m.DataType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowEndpoint) contextValidateDNS(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "dns", "body", string(m.DNS)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowEndpoint) contextValidateLastSeen(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastSeen", "body", int64(m.LastSeen)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowEndpoint) contextValidatePercentUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "percentUsage", "body", float64(m.PercentUsage)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowEndpoint) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *NetflowEndpoint) contextValidateUsage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "usage", "body", float64(m.Usage)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

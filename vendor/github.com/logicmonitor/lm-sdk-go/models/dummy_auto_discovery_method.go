@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // DummyAutoDiscoveryMethod dummy auto discovery method
+//
 // swagger:model DummyAutoDiscoveryMethod
 type DummyAutoDiscoveryMethod struct {
 
@@ -40,12 +42,6 @@ func (m *DummyAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *DummyAutoDiscoveryMethod) SetName(val string) {
 }
-
-// GenerateCount gets the generate count of this subtype
-
-// GetGenerateCount2 gets the get generate count2 of this subtype
-
-// MaxNumber gets the max number of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *DummyAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -92,9 +88,7 @@ func (m *DummyAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.GenerateCount = data.GenerateCount
-
 	result.GetGenerateCount2 = data.GetGenerateCount2
-
 	result.MaxNumber = data.MaxNumber
 
 	*m = result
@@ -126,8 +120,7 @@ func (m DummyAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		GetGenerateCount2: m.GetGenerateCount2,
 
 		MaxNumber: m.MaxNumber,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +129,7 @@ func (m DummyAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -168,6 +160,7 @@ func (m *DummyAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *DummyAutoDiscoveryMethod) validateGenerateCount(formats strfmt.Registry) error {
+
 	if err := validate.Required("generateCount", "body", m.GenerateCount); err != nil {
 		return err
 	}
@@ -176,6 +169,7 @@ func (m *DummyAutoDiscoveryMethod) validateGenerateCount(formats strfmt.Registry
 }
 
 func (m *DummyAutoDiscoveryMethod) validateGetGenerateCount2(formats strfmt.Registry) error {
+
 	if err := validate.Required("getGenerateCount2", "body", m.GetGenerateCount2); err != nil {
 		return err
 	}
@@ -184,10 +178,21 @@ func (m *DummyAutoDiscoveryMethod) validateGetGenerateCount2(formats strfmt.Regi
 }
 
 func (m *DummyAutoDiscoveryMethod) validateMaxNumber(formats strfmt.Registry) error {
+
 	if err := validate.Required("maxNumber", "body", m.MaxNumber); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this dummy auto discovery method based on the context it is used
+func (m *DummyAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

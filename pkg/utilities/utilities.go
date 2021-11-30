@@ -65,20 +65,27 @@ func GetShortUUID() uint32 {
 }
 
 // GetK8sRESTClient get the K8s RESTClient by apiVersion, use the default V1 version if there is no match
+// nolint: cyclop
 func GetK8sRESTClient(clientset *kubernetes.Clientset, apiVersion string) rest.Interface {
 	switch apiVersion {
 	case constants.K8sAPIVersionV1:
-
 		return clientset.CoreV1().RESTClient()
 	case constants.K8sAPIVersionAppsV1beta2:
-
 		return clientset.AppsV1beta2().RESTClient()
 	case constants.K8sAPIVersionAppsV1:
-
 		return clientset.AppsV1().RESTClient()
 	case constants.K8sAutoscalingV1:
-
 		return clientset.AutoscalingV1().RESTClient()
+	case constants.K8sAPIVersionBatchV1:
+		return clientset.BatchV1().RESTClient()
+	case constants.K8sAPIVersionBatchV1Beta1:
+		return clientset.BatchV1beta1().RESTClient()
+	case constants.K8sAPIVersionExtensionsV1Beta1:
+		return clientset.ExtensionsV1beta1().RESTClient()
+	case constants.K8sAPIVersionNetworkingV1:
+		return clientset.NetworkingV1().RESTClient()
+	case constants.K8sAPIVersionNetworkingV1Beta1:
+		return clientset.NetworkingV1beta1().RESTClient()
 	default:
 
 		return clientset.CoreV1().RESTClient()
@@ -275,7 +282,7 @@ func BuildResource(lctx *lmctx.LMContext, c *config.Config, d *models.Device, op
 				},
 			},
 			DisableAlerting: c.DisableAlerting,
-			HostGroupIds:    &hostGroupIds,
+			HostGroupIds:    hostGroupIds,
 			DeviceType:      constants.K8sResourceType,
 		}
 

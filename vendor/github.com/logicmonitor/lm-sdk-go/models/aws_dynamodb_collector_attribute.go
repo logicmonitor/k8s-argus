@@ -7,14 +7,16 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AwsDynamodbCollectorAttribute aws dynamodb collector attribute
+//
 // swagger:model AwsDynamodbCollectorAttribute
 type AwsDynamodbCollectorAttribute struct {
 
@@ -54,24 +56,6 @@ func (m *AwsDynamodbCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *AwsDynamodbCollectorAttribute) SetName(val string) {
 }
-
-// AwsAttributeName gets the aws attribute name of this subtype
-
-// AwsDynamodbAttrType gets the aws dynamodb attr type of this subtype
-
-// AwsKeyValue gets the aws key value of this subtype
-
-// AwsQueryIndexName gets the aws query index name of this subtype
-
-// AwsQueryIndexType gets the aws query index type of this subtype
-
-// AwsQueryKeyValue gets the aws query key value of this subtype
-
-// AwsQueryRangeOp gets the aws query range op of this subtype
-
-// AwsQueryRangeValue gets the aws query range value of this subtype
-
-// AwsRangeValue gets the aws range value of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *AwsDynamodbCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -133,21 +117,13 @@ func (m *AwsDynamodbCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.AwsAttributeName = data.AwsAttributeName
-
 	result.AwsDynamodbAttrType = data.AwsDynamodbAttrType
-
 	result.AwsKeyValue = data.AwsKeyValue
-
 	result.AwsQueryIndexName = data.AwsQueryIndexName
-
 	result.AwsQueryIndexType = data.AwsQueryIndexType
-
 	result.AwsQueryKeyValue = data.AwsQueryKeyValue
-
 	result.AwsQueryRangeOp = data.AwsQueryRangeOp
-
 	result.AwsQueryRangeValue = data.AwsQueryRangeValue
-
 	result.AwsRangeValue = data.AwsRangeValue
 
 	*m = result
@@ -206,8 +182,7 @@ func (m AwsDynamodbCollectorAttribute) MarshalJSON() ([]byte, error) {
 		AwsQueryRangeValue: m.AwsQueryRangeValue,
 
 		AwsRangeValue: m.AwsRangeValue,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -216,8 +191,7 @@ func (m AwsDynamodbCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -227,6 +201,16 @@ func (m AwsDynamodbCollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this aws dynamodb collector attribute
 func (m *AwsDynamodbCollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this aws dynamodb collector attribute based on the context it is used
+func (m *AwsDynamodbCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

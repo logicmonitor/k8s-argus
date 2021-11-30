@@ -7,19 +7,21 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // IPMICollectorAttribute IP m i collector attribute
+//
 // swagger:model IPMICollectorAttribute
 type IPMICollectorAttribute struct {
 
 	// ipmi sensor
-	IPMISensor string `json:"ipmiSensor,omitempty"`
+	IpmiSensor string `json:"ipmiSensor,omitempty"`
 }
 
 // Name gets the name of this subtype
@@ -31,14 +33,12 @@ func (m *IPMICollectorAttribute) Name() string {
 func (m *IPMICollectorAttribute) SetName(val string) {
 }
 
-// IPMISensor gets the ipmi sensor of this subtype
-
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *IPMICollectorAttribute) UnmarshalJSON(raw []byte) error {
 	var data struct {
 
 		// ipmi sensor
-		IPMISensor string `json:"ipmiSensor,omitempty"`
+		IpmiSensor string `json:"ipmiSensor,omitempty"`
 	}
 	buf := bytes.NewBuffer(raw)
 	dec := json.NewDecoder(buf)
@@ -68,7 +68,7 @@ func (m *IPMICollectorAttribute) UnmarshalJSON(raw []byte) error {
 		return errors.New(422, "invalid name value: %q", base.Name)
 	}
 
-	result.IPMISensor = data.IPMISensor
+	result.IpmiSensor = data.IpmiSensor
 
 	*m = result
 
@@ -82,12 +82,11 @@ func (m IPMICollectorAttribute) MarshalJSON() ([]byte, error) {
 	b1, err = json.Marshal(struct {
 
 		// ipmi sensor
-		IPMISensor string `json:"ipmiSensor,omitempty"`
+		IpmiSensor string `json:"ipmiSensor,omitempty"`
 	}{
 
-		IPMISensor: m.IPMISensor,
-	},
-	)
+		IpmiSensor: m.IpmiSensor,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +95,7 @@ func (m IPMICollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +105,16 @@ func (m IPMICollectorAttribute) MarshalJSON() ([]byte, error) {
 
 // Validate validates this IP m i collector attribute
 func (m *IPMICollectorAttribute) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// ContextValidate validate this IP m i collector attribute based on the context it is used
+func (m *IPMICollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {

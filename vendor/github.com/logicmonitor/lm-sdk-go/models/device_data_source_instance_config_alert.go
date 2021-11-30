@@ -6,11 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // DeviceDataSourceInstanceConfigAlert device data source instance config alert
+//
 // swagger:model DeviceDataSourceInstanceConfigAlert
 type DeviceDataSourceInstanceConfigAlert struct {
 
@@ -32,6 +35,11 @@ type DeviceDataSourceInstanceConfigAlert struct {
 
 // Validate validates this device data source instance config alert
 func (m *DeviceDataSourceInstanceConfigAlert) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this device data source instance config alert based on context it is used
+func (m *DeviceDataSourceInstanceConfigAlert) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

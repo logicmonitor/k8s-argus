@@ -9,8 +9,8 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
-	github.com/go-openapi/runtime v0.19.28
-	github.com/go-openapi/strfmt v0.20.1
+	github.com/go-openapi/runtime v0.19.31
+	github.com/go-openapi/strfmt v0.20.2
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-cmp v0.5.4
@@ -23,10 +23,11 @@ require (
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/logicmonitor/k8s-collectorset-controller v2.0.0+incompatible
-	github.com/logicmonitor/lm-sdk-go v2.0.0-argus5+incompatible
+	github.com/logicmonitor/lm-sdk-go v1.0.0-argus1
 	github.com/pkg/profile v1.6.0
 	github.com/prometheus/client_golang v0.9.3
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/sirupsen/logrus v1.4.2
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spf13/cobra v0.0.3
@@ -37,7 +38,6 @@ require (
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	google.golang.org/grpc v1.29.1
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.17.0
 	k8s.io/apimachinery v0.17.0

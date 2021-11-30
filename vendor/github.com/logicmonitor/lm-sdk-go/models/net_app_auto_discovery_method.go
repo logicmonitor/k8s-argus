@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // NetAppAutoDiscoveryMethod net app auto discovery method
+//
 // swagger:model NetAppAutoDiscoveryMethod
 type NetAppAutoDiscoveryMethod struct {
 
@@ -53,22 +55,6 @@ func (m *NetAppAutoDiscoveryMethod) Name() string {
 // SetName sets the name of this subtype
 func (m *NetAppAutoDiscoveryMethod) SetName(val string) {
 }
-
-// InstanceDescription gets the instance description of this subtype
-
-// InstanceGroupName gets the instance group name of this subtype
-
-// InstanceLocator gets the instance locator of this subtype
-
-// InstanceName gets the instance name of this subtype
-
-// InstanceValue gets the instance value of this subtype
-
-// Object gets the object of this subtype
-
-// Request gets the request of this subtype
-
-// Type gets the type of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *NetAppAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
@@ -128,19 +114,12 @@ func (m *NetAppAutoDiscoveryMethod) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.InstanceDescription = data.InstanceDescription
-
 	result.InstanceGroupName = data.InstanceGroupName
-
 	result.InstanceLocator = data.InstanceLocator
-
 	result.InstanceName = data.InstanceName
-
 	result.InstanceValue = data.InstanceValue
-
 	result.Object = data.Object
-
 	result.Request = data.Request
-
 	result.Type = data.Type
 
 	*m = result
@@ -195,8 +174,7 @@ func (m NetAppAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 		Request: m.Request,
 
 		Type: m.Type,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -205,8 +183,7 @@ func (m NetAppAutoDiscoveryMethod) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -229,10 +206,21 @@ func (m *NetAppAutoDiscoveryMethod) Validate(formats strfmt.Registry) error {
 }
 
 func (m *NetAppAutoDiscoveryMethod) validateType(formats strfmt.Registry) error {
+
 	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this net app auto discovery method based on the context it is used
+func (m *NetAppAutoDiscoveryMethod) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 

@@ -6,11 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DeviceDatasourceGraph device datasource graph
+//
 // swagger:model DeviceDatasourceGraph
 type DeviceDatasourceGraph struct {
 
@@ -33,6 +38,68 @@ type DeviceDatasourceGraph struct {
 
 // Validate validates this device datasource graph
 func (m *DeviceDatasourceGraph) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this device datasource graph based on the context it is used
+func (m *DeviceDatasourceGraph) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateDisplayPrio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTitle(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DeviceDatasourceGraph) contextValidateDisplayPrio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "displayPrio", "body", int32(m.DisplayPrio)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDatasourceGraph) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int32(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDatasourceGraph) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DeviceDatasourceGraph) contextValidateTitle(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "title", "body", string(m.Title)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

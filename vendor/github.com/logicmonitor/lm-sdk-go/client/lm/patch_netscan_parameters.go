@@ -6,72 +6,110 @@ package lm
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	models "github.com/logicmonitor/lm-sdk-go/models"
-	"golang.org/x/net/context"
+
+	"github.com/logicmonitor/lm-sdk-go/models"
 )
 
-// NewPatchNetscanParams creates a new PatchNetscanParams object
-// with the default values initialized.
+// NewPatchNetscanParams creates a new PatchNetscanParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPatchNetscanParams() *PatchNetscanParams {
-	var ()
 	return &PatchNetscanParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPatchNetscanParamsWithTimeout creates a new PatchNetscanParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPatchNetscanParamsWithTimeout(timeout time.Duration) *PatchNetscanParams {
-	var ()
 	return &PatchNetscanParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPatchNetscanParamsWithContext creates a new PatchNetscanParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPatchNetscanParamsWithContext(ctx context.Context) *PatchNetscanParams {
-	var ()
 	return &PatchNetscanParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPatchNetscanParamsWithHTTPClient creates a new PatchNetscanParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPatchNetscanParamsWithHTTPClient(client *http.Client) *PatchNetscanParams {
-	var ()
 	return &PatchNetscanParams{
 		HTTPClient: client,
 	}
 }
 
-/*PatchNetscanParams contains all the parameters to send to the API endpoint
-for the patch netscan operation typically these are written to a http.Request
+/* PatchNetscanParams contains all the parameters to send to the API endpoint
+   for the patch netscan operation.
+
+   Typically these are written to a http.Request.
 */
 type PatchNetscanParams struct {
 
-	/*Body*/
+	// PatchFields.
+	PatchFields *string
+
+	// UserAgent.
+	//
+	// Default: "Logicmonitor/SDK: Argus Dist-v1.0.0-argus1"
+	UserAgent *string
+
+	// Body.
 	Body models.Netscan
-	/*ID*/
+
+	// ID.
+	//
+	// Format: int32
 	ID int32
-	/*Reason*/
+
+	// Reason.
 	Reason *string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the patch netscan params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchNetscanParams) WithDefaults() *PatchNetscanParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the patch netscan params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PatchNetscanParams) SetDefaults() {
+	var (
+		userAgentDefault = string("Logicmonitor/SDK: Argus Dist-v1.0.0-argus1")
+	)
+
+	val := PatchNetscanParams{
+		UserAgent: &userAgentDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the patch netscan params
@@ -105,6 +143,28 @@ func (o *PatchNetscanParams) WithHTTPClient(client *http.Client) *PatchNetscanPa
 // SetHTTPClient adds the HTTPClient to the patch netscan params
 func (o *PatchNetscanParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithPatchFields adds the patchFields to the patch netscan params
+func (o *PatchNetscanParams) WithPatchFields(patchFields *string) *PatchNetscanParams {
+	o.SetPatchFields(patchFields)
+	return o
+}
+
+// SetPatchFields adds the patchFields to the patch netscan params
+func (o *PatchNetscanParams) SetPatchFields(patchFields *string) {
+	o.PatchFields = patchFields
+}
+
+// WithUserAgent adds the userAgent to the patch netscan params
+func (o *PatchNetscanParams) WithUserAgent(userAgent *string) *PatchNetscanParams {
+	o.SetUserAgent(userAgent)
+	return o
+}
+
+// SetUserAgent adds the userAgent to the patch netscan params
+func (o *PatchNetscanParams) SetUserAgent(userAgent *string) {
+	o.UserAgent = userAgent
 }
 
 // WithBody adds the body to the patch netscan params
@@ -142,11 +202,36 @@ func (o *PatchNetscanParams) SetReason(reason *string) {
 
 // WriteToRequest writes these params to a swagger request
 func (o *PatchNetscanParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
+
 	if err := r.SetTimeout(o.timeout); err != nil {
 		return err
 	}
 	var res []error
 
+	if o.PatchFields != nil {
+
+		// query param PatchFields
+		var qrPatchFields string
+
+		if o.PatchFields != nil {
+			qrPatchFields = *o.PatchFields
+		}
+		qPatchFields := qrPatchFields
+		if qPatchFields != "" {
+
+			if err := r.SetQueryParam("PatchFields", qPatchFields); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UserAgent != nil {
+
+		// header param User-Agent
+		if err := r.SetHeaderParam("User-Agent", *o.UserAgent); err != nil {
+			return err
+		}
+	}
 	if err := r.SetBodyParam(o.Body); err != nil {
 		return err
 	}
@@ -160,16 +245,17 @@ func (o *PatchNetscanParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 
 		// query param reason
 		var qrReason string
+
 		if o.Reason != nil {
 			qrReason = *o.Reason
 		}
 		qReason := qrReason
 		if qReason != "" {
+
 			if err := r.SetQueryParam("reason", qReason); err != nil {
 				return err
 			}
 		}
-
 	}
 
 	if len(res) > 0 {

@@ -7,15 +7,17 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // SDKScriptCollectorAttribute s d k script collector attribute
+//
 // swagger:model SDKScriptCollectorAttribute
 type SDKScriptCollectorAttribute struct {
 
@@ -40,12 +42,6 @@ func (m *SDKScriptCollectorAttribute) Name() string {
 // SetName sets the name of this subtype
 func (m *SDKScriptCollectorAttribute) SetName(val string) {
 }
-
-// GroovyScript gets the groovy script of this subtype
-
-// SdkName gets the sdk name of this subtype
-
-// SdkVersion gets the sdk version of this subtype
 
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func (m *SDKScriptCollectorAttribute) UnmarshalJSON(raw []byte) error {
@@ -92,9 +88,7 @@ func (m *SDKScriptCollectorAttribute) UnmarshalJSON(raw []byte) error {
 	}
 
 	result.GroovyScript = data.GroovyScript
-
 	result.SdkName = data.SdkName
-
 	result.SdkVersion = data.SdkVersion
 
 	*m = result
@@ -126,8 +120,7 @@ func (m SDKScriptCollectorAttribute) MarshalJSON() ([]byte, error) {
 		SdkName: m.SdkName,
 
 		SdkVersion: m.SdkVersion,
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +129,7 @@ func (m SDKScriptCollectorAttribute) MarshalJSON() ([]byte, error) {
 	}{
 
 		Name: m.Name(),
-	},
-	)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -168,6 +160,7 @@ func (m *SDKScriptCollectorAttribute) Validate(formats strfmt.Registry) error {
 }
 
 func (m *SDKScriptCollectorAttribute) validateGroovyScript(formats strfmt.Registry) error {
+
 	if err := validate.Required("groovyScript", "body", m.GroovyScript); err != nil {
 		return err
 	}
@@ -176,6 +169,7 @@ func (m *SDKScriptCollectorAttribute) validateGroovyScript(formats strfmt.Regist
 }
 
 func (m *SDKScriptCollectorAttribute) validateSdkName(formats strfmt.Registry) error {
+
 	if err := validate.Required("sdkName", "body", m.SdkName); err != nil {
 		return err
 	}
@@ -184,10 +178,21 @@ func (m *SDKScriptCollectorAttribute) validateSdkName(formats strfmt.Registry) e
 }
 
 func (m *SDKScriptCollectorAttribute) validateSdkVersion(formats strfmt.Registry) error {
+
 	if err := validate.Required("sdkVersion", "body", m.SdkVersion); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validate this s d k script collector attribute based on the context it is used
+func (m *SDKScriptCollectorAttribute) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
