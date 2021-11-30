@@ -27,6 +27,7 @@ require (
 	github.com/pkg/profile v1.6.0
 	github.com/prometheus/client_golang v0.9.3
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/sirupsen/logrus v1.4.2
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spf13/cobra v0.0.3

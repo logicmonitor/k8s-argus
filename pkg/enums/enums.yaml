@@ -60,6 +60,7 @@ resources:
   - hpa
   longName: Hpas
   lowerCase: horizontalpodautoscalers
+  titlePlural: HorizontalPodAutoscalers
   parsedResourceType:
   - horizontalpodautoscalers
   - horizontalpodautoscaler
@@ -83,7 +84,7 @@ resources:
   shortName:
   - etcd
   longName: ETCD
-  titlePlural: Etcds
+  titlePlural: Etcd
   lowerCase: etcd
   parsedResourceType:
   - etcd
