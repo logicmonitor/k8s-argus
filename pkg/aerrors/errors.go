@@ -20,3 +20,6 @@ var ErrResourceGroupIsNotEmpty = errors.New("resource group is not empty, it has
 
 // ErrResourceGroupParentIsNotValid parent resource group is not valid
 var ErrResourceGroupParentIsNotValid = errors.New("parent of resource group is not valid")
+
+// ErrPodSucceeded when pod is in succeeded state
+var ErrPodSucceeded = errors.New("pod status is [Succeeded]")
