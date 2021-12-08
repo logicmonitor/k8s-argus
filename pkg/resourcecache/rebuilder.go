@@ -26,14 +26,34 @@ func (rc *ResourceCache) rebuildCache() {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"debug_id": debugID}))
 	log := lmlog.Logger(lctx)
 	log.Infof("Resource cache fetching resources")
-	resources, err := rc.getAllResources(lctx)
+	resources, groupsToRetain, err := rc.getAllResources(lctx)
 	if resources == nil || err != nil {
 		log.Errorf("Failed to fetch resources: %s", err)
-	} else {
-		log.Debugf("Resync cache map")
-		rc.resetCacheStore(resources)
-		log.Debugf("Resync cache done")
+		return
 	}
+	log.Tracef("groups to retain: %v", groupsToRetain)
+	list := rc.ListWithFilter(func(k types.ResourceName, v types.ResourceMeta) bool {
+		_, ok := groupsToRetain[v.LMID]
+		return k.Resource == enums.Namespaces && ok
+	})
+	log.Tracef("groups meta from old cache: %v", list)
+	nsName := map[string]interface{}{}
+	for _, nsCache := range list {
+		nsName[nsCache.V.Container] = nsCache.K.Name
+	}
+	retainedResources := rc.ListWithFilter(func(k types.ResourceName, v types.ResourceMeta) bool {
+		_, ok := nsName[v.Container]
+		return ok
+	})
+	log.Tracef("retained resources from old cache: %v", retainedResources)
+
+	for _, entry := range retainedResources {
+		entry.V.IsInvalid = true
+		resources.Set(lctx, entry.K, entry.V)
+	}
+	log.Debugf("Resync cache map")
+	rc.resetCacheStore(resources)
+	log.Debugf("Resync cache done")
 
 	if err := rc.Save(lctx); err != nil {
 		log.Errorf("cache to cm failed: %s", err)
@@ -50,32 +70,33 @@ type DeviceGroupData struct {
 	CustomProps   []*models.NameAndValue
 }
 
-func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) {
+func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, map[int32]struct{}, error) {
 	log := lmlog.Logger(lctx)
 	clusterGroupID, err := util.GetClusterGroupID(lctx, rc.LMRequester)
 	if err != nil {
 		log.Error(err.Error())
 
-		return nil, err
+		return nil, nil, err
 	}
 	tmpStore := NewStore()
 	resourceChan := make(chan *models.Device)
 	resourceGroupChan := make(chan DeviceGroupData)
 	resourceFinished := make(chan bool)
 	resourceGroupFinished := make(chan bool)
+	groupsToRetain := make(map[int32]struct{}, 10)
 
 	go rc.accumulateDeviceCache(lctx, resourceChan, tmpStore, resourceFinished)
 	go rc.accumulateDeviceGroupCache(lctx, resourceGroupChan, tmpStore, resourceGroupFinished)
 
 	grpIDChan := make(chan int32)
 
-	go rc.fetchGroupDevices(lctx, grpIDChan, resourceChan)
+	go rc.fetchGroupDevices(lctx, grpIDChan, resourceChan, groupsToRetain)
 
 	grpIDChan <- clusterGroupID
 	if conf, err := config.GetConfig(lctx); err == nil {
 		g, err := rc.getDeviceGroupByID(lctx, clusterGroupID)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resourceGroupChan <- DeviceGroupData{
 			ResourceName:  util.ClusterGroupName(conf.ClusterName),
@@ -96,7 +117,7 @@ func (rc *ResourceCache) getAllResources(lctx *lmctx.LMContext) (*Store, error) 
 	<-resourceGroupFinished
 	<-resourceFinished
 
-	return tmpStore, nil
+	return tmpStore, groupsToRetain, nil
 }
 
 func (rc *ResourceCache) getDevices(lctx *lmctx.LMContext, grpID int32) ([]*models.Device, error) {
@@ -126,7 +147,7 @@ func (rc *ResourceCache) getDevices(lctx *lmctx.LMContext, grpID int32) ([]*mode
 	return result, nil
 }
 
-func (rc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, inChan <-chan int32, outChan chan<- *models.Device) {
+func (rc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, inChan <-chan int32, outChan chan<- *models.Device, groupsToRetain map[int32]struct{}) {
 	log := lmlog.Logger(lctx)
 	start := time.Now()
 	defer func() {
@@ -138,12 +159,12 @@ func (rc *ResourceCache) fetchGroupDevices(lctx *lmctx.LMContext, inChan <-chan 
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 
-		go rc.ResourceGroupProcessor(lctx, inChan, outChan, &wg)
+		go rc.ResourceGroupProcessor(lctx, inChan, outChan, &wg, groupsToRetain)
 	}
 	wg.Wait()
 }
 
-func (rc *ResourceCache) ResourceGroupProcessor(lctx *lmctx.LMContext, inChan <-chan int32, outChan chan<- *models.Device, wg *sync.WaitGroup) {
+func (rc *ResourceCache) ResourceGroupProcessor(lctx *lmctx.LMContext, inChan <-chan int32, outChan chan<- *models.Device, wg *sync.WaitGroup, groupsToRetain map[int32]struct{}) {
 	log := lmlog.Logger(lctx)
 	defer func() {
 		wg.Done()
@@ -154,6 +175,7 @@ func (rc *ResourceCache) ResourceGroupProcessor(lctx *lmctx.LMContext, inChan <-
 		resp, err := rc.getDevices(lctx, grpID)
 		if err != nil {
 			log.Warnf("fetch resources for %v failed with %v", grpID, err)
+			groupsToRetain[grpID] = struct{}{}
 		}
 		for _, resource := range resp {
 			outChan <- resource

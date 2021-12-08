@@ -173,7 +173,7 @@ func GetResourceMetaFromResource(resource *models.Device) (types.ResourceMeta, e
 	categories := strings.Split(categoriesStr, ",")
 
 	return types.ResourceMeta{
-		Container:     GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey),
+		Container:     ResourceCacheContainerValue(resource),
 		LMID:          resource.ID,
 		DisplayName:   *resource.DisplayName,
 		Name:          *resource.Name,
