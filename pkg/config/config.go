@@ -206,7 +206,6 @@ func (c *config) UpdateConfig(value string) error {
 	if pconf == nil {
 		pconf = uconf
 	}
-	postProcess(uconf)
 
 	postLoad(pconf, uconf)
 

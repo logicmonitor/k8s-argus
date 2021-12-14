@@ -138,7 +138,12 @@ func UpsertBasedOnCache(
 			log.Debugf("Missing resource, adding it")
 			resourceOptions, err := configurer.AddFuncOptions()(lctx, rt, newObj, b)
 			if err != nil {
-				log.Errorf("add: failed to get resource additional options: %s", err)
+				if errors.Is(err, aerrors.ErrPodSucceeded) {
+					log.Warnf("add: pod having succeeded status will not be considered for monitoring: %s", err)
+					return
+				} else {
+					log.Errorf("add: failed to get resource additional options: %s", err)
+				}
 			}
 
 			options := append(options, resourceOptions...)
@@ -162,6 +167,8 @@ func UpsertBasedOnCache(
 		if err != nil {
 			if errors.Is(err, aerrors.ErrNoChangeInUpdateOptions) {
 				log.Warnf("%s", err)
+			} else if errors.Is(err, aerrors.ErrPodSucceeded) {
+				log.Warnf("update: pod having succeeded status will not be considered for monitoring: %s", err)
 			} else {
 				log.Errorf("%s", err)
 			}

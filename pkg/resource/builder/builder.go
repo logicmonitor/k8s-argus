@@ -1,10 +1,12 @@
 package builder
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -269,8 +271,11 @@ func (b *Builder) AddFuncWithDefaults(
 		options := b.GetDefaultsResourceOptions(rt, meta.AsPartialObjectMetadata(accessor), conf)
 		additionalOptions, err := configurer.AddFuncOptions()(lctx, rt, obj, b)
 		if err != nil {
-			log.Errorf("failed to get resource additional options: %s", err)
-
+			if errors.Is(err, aerrors.ErrPodSucceeded) {
+				log.Warnf("pod having succeeded status will not be considered for monitoring: %s", err)
+			} else {
+				log.Errorf("failed to get resource additional options: %s", err)
+			}
 			return
 		}
 
