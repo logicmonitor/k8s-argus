@@ -115,6 +115,7 @@ func PreprocessUpdateEventForOldUID(
 }
 
 // UpsertBasedOnCache upsert
+// nolint: cyclop
 func UpsertBasedOnCache(
 	resourceCache types.ResourceCache,
 	configurer types.WatcherConfigurer,
@@ -141,9 +142,9 @@ func UpsertBasedOnCache(
 				if errors.Is(err, aerrors.ErrPodSucceeded) {
 					log.Warnf("add: pod having succeeded status will not be considered for monitoring: %s", err)
 					return
-				} else {
-					log.Errorf("add: failed to get resource additional options: %s", err)
 				}
+				log.Errorf("add: failed to get resource additional options: %s", err)
+
 			}
 
 			options := append(options, resourceOptions...)
@@ -165,11 +166,12 @@ func UpsertBasedOnCache(
 		}
 
 		if err != nil {
-			if errors.Is(err, aerrors.ErrNoChangeInUpdateOptions) {
+			switch {
+			case errors.Is(err, aerrors.ErrNoChangeInUpdateOptions):
 				log.Warnf("%s", err)
-			} else if errors.Is(err, aerrors.ErrPodSucceeded) {
+			case errors.Is(err, aerrors.ErrPodSucceeded):
 				log.Warnf("update: pod having succeeded status will not be considered for monitoring: %s", err)
-			} else {
+			default:
 				log.Errorf("%s", err)
 			}
 
