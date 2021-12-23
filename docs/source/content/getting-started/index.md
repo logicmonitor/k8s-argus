@@ -9,7 +9,7 @@ The simplest way to get started with Argus is to install it using [Helm](https:/
 You'll need to add the LogicMonitor chart repository:
 
 ```bash
-$ helm repo add logicmonitor https://logicmonitor.github.com/k8s-helm-charts
+$ helm repo add logicmonitor https://logicmonitor.github.io/k8s-helm-charts
 ```
 
 > Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:
