@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>How It Works - Argus</title>
-    <meta name="generator" content="Hugo 0.76.5" />
+    <meta name="generator" content="Hugo 0.90.1" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">4.2.0</span></strong>
+        <strong>Argus <span class="version">6.1.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -320,50 +320,74 @@
 <p>The concept of a <code>Controller</code> is fundamental to Kubernetes and is at the core of its design. While Argus isn&rsquo;t a <code>Controller</code> in the sense that it <em>&ldquo;makes changes [to the state of the cluster] attempting to move the current state towards the desired state&rdquo;</em>, it <em>is</em> a <code>Controller</code> in the sense that it moves a LogicMonitor account&rsquo;s state to match that of a cluster&rsquo;s state. Argus abstracts this into the notion of a <code>Watcher</code> that is responsible for watching Kubernetes events for a given resource and syncing the state to LogicMonitor.</p>
 <h1 id="implementing-a-watcher">Implementing a Watcher</h1>
 <p>Now that we know about this event stream, let&rsquo;s look at what it takes to map resources in Kubernetes to objects in LogicMonitor. We start by first implenting the <code>Watcher</code> interface and then embedding a <code>Manager</code> in the concrete type implementing said interface. A <code>Watcher</code> is a simple interface that makes a concrete type compatible with the <code>NewInformer</code> function:</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">Argus</span><span class="p">)</span> <span class="nf">Watch</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">getter</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">K8sClient</span><span class="p">.</span><span class="nf">Core</span><span class="p">().</span><span class="nf">RESTClient</span><span class="p">()</span>
-    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">w</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span><span class="p">.</span><span class="nx">Watchers</span> <span class="p">{</span>
-        <span class="nx">watchlist</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nf">NewListWatchFromClient</span><span class="p">(</span><span class="nx">getter</span><span class="p">,</span> <span class="nx">w</span><span class="p">.</span><span class="nf">Resource</span><span class="p">(),</span> <span class="nx">v1</span><span class="p">.</span><span class="nx">NamespaceAll</span><span class="p">,</span> <span class="nx">fields</span><span class="p">.</span><span class="nf">Everything</span><span class="p">())</span>
-        <span class="nx">_</span><span class="p">,</span> <span class="nx">controller</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nf">NewInformer</span><span class="p">(</span>
-            <span class="nx">watchlist</span><span class="p">,</span>
-            <span class="nx">w</span><span class="p">.</span><span class="nf">ObjType</span><span class="p">(),</span>
-            <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="o">*</span><span class="mi">0</span><span class="p">,</span>
-            <span class="nx">cache</span><span class="p">.</span><span class="nx">ResourceEventHandlerFuncs</span><span class="p">{</span>
-                <span class="nx">AddFunc</span><span class="p">:</span>    <span class="nx">w</span><span class="p">.</span><span class="nf">AddFunc</span><span class="p">(),</span>
-                <span class="nx">DeleteFunc</span><span class="p">:</span> <span class="nx">w</span><span class="p">.</span><span class="nf">DeleteFunc</span><span class="p">(),</span>
-                <span class="nx">UpdateFunc</span><span class="p">:</span> <span class="nx">w</span><span class="p">.</span><span class="nf">UpdateFunc</span><span class="p">(),</span>
-            <span class="p">},</span>
-        <span class="p">)</span>
-        <span class="nx">stop</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
-        <span class="k">go</span> <span class="nx">controller</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">stop</span><span class="p">)</span>
-    <span class="p">}</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">Argus</span><span class="p">)</span> <span class="nf">Watch</span><span class="p">(</span><span class="nx">lctx</span> <span class="o">*</span><span class="nx">lmctx</span><span class="p">.</span><span class="nx">LMContext</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="nx">log</span> <span class="o">:=</span> <span class="nx">lmlog</span><span class="p">.</span><span class="nf">Logger</span><span class="p">(</span><span class="nx">lctx</span><span class="p">)</span>
+	<span class="nx">conf</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">config</span><span class="p">.</span><span class="nf">GetConfig</span><span class="p">(</span><span class="nx">lctx</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+	<span class="nx">syncInterval</span> <span class="o">:=</span> <span class="o">*</span><span class="nx">conf</span><span class="p">.</span><span class="nx">Intervals</span><span class="p">.</span><span class="nx">PeriodicSyncInterval</span>
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Debugf</span><span class="p">(</span><span class="s">&#34;Starting watchers&#34;</span><span class="p">)</span>
+	<span class="nx">b</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">builder</span><span class="p">.</span><span class="nx">Builder</span><span class="p">{}</span>
+
+	<span class="nx">nsRT</span><span class="p">,</span> <span class="nx">controller</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nf">RunNSWatcher</span><span class="p">(</span><span class="nx">syncInterval</span><span class="p">)</span>
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Debugf</span><span class="p">(</span><span class="s">&#34;Starting ns watcher of %v&#34;</span><span class="p">,</span> <span class="nx">nsRT</span><span class="p">.</span><span class="nf">String</span><span class="p">())</span>
+	<span class="nx">stop</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+	<span class="k">go</span> <span class="nx">controller</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">stop</span><span class="p">)</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">w</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span><span class="p">.</span><span class="nx">Watchers</span> <span class="p">{</span>
+		<span class="nx">rt</span> <span class="o">:=</span> <span class="nx">w</span><span class="p">.</span><span class="nf">ResourceType</span><span class="p">()</span>
+		<span class="c1">// TODO: has permission and check for enabled flag in case if user wants to avoid all resource of specific type
+</span><span class="c1"></span>		<span class="c1">//  earlier all resources used to ignore from filter config but still it used to put pressure on k8s api-server to unnecessary polls
+</span><span class="c1"></span>		<span class="k">if</span> <span class="p">!</span><span class="nx">permission</span><span class="p">.</span><span class="nf">HasPermissions</span><span class="p">(</span><span class="nx">rt</span><span class="p">)</span> <span class="p">{</span>
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Warnf</span><span class="p">(</span><span class="s">&#34;Have no permission for resource %s&#34;</span><span class="p">,</span> <span class="nx">rt</span><span class="p">.</span><span class="nf">String</span><span class="p">())</span>
+
+			<span class="k">continue</span>
+		<span class="p">}</span>
+		<span class="nx">watchlist</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nf">NewListWatchFromClient</span><span class="p">(</span><span class="nx">util</span><span class="p">.</span><span class="nf">GetK8sRESTClient</span><span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nf">GetClientSet</span><span class="p">(),</span> <span class="nx">rt</span><span class="p">.</span><span class="nf">K8SAPIVersion</span><span class="p">()),</span> <span class="nx">rt</span><span class="p">.</span><span class="nf">String</span><span class="p">(),</span> <span class="nx">corev1</span><span class="p">.</span><span class="nx">NamespaceAll</span><span class="p">,</span> <span class="nx">fields</span><span class="p">.</span><span class="nf">Everything</span><span class="p">())</span>
+		<span class="nx">clientState</span><span class="p">,</span> <span class="nx">controller</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nf">createNewInformer</span><span class="p">(</span><span class="nx">watchlist</span><span class="p">,</span> <span class="nx">rt</span><span class="p">,</span> <span class="nx">syncInterval</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span>
+		<span class="k">go</span> <span class="nf">watchForFilterRuleChange</span><span class="p">(</span><span class="nx">rt</span><span class="p">,</span> <span class="nx">clientState</span><span class="p">)</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Debugf</span><span class="p">(</span><span class="s">&#34;Starting watcher of %s&#34;</span><span class="p">,</span> <span class="nx">rt</span><span class="p">)</span>
+		<span class="nx">stop</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+		<span class="nx">stateHolder</span> <span class="o">:=</span> <span class="nx">types</span><span class="p">.</span><span class="nf">NewControllerInitSyncStateHolder</span><span class="p">(</span><span class="nx">rt</span><span class="p">,</span> <span class="nx">controller</span><span class="p">)</span>
+		<span class="nx">stateHolder</span><span class="p">.</span><span class="nf">Run</span><span class="p">()</span>
+		<span class="nx">a</span><span class="p">.</span><span class="nx">controllerStateHolders</span><span class="p">[</span><span class="nx">rt</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">stateHolder</span>
+		<span class="k">go</span> <span class="nx">controller</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">stop</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="kc">nil</span>
 <span class="p">}</span>
 </code></pre></div><p>And we can see that the <code>Watcher</code> is defined as:</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Watcher</span> <span class="kd">interface</span> <span class="p">{</span>
-    <span class="nf">Resource</span><span class="p">()</span> <span class="kt">string</span> <span class="c1">// The Kubernetes resource that we want to watch (nodes, pods, services, etc.)
-</span><span class="c1"></span>    <span class="nf">ObjType</span><span class="p">()</span> <span class="nx">runtime</span><span class="p">.</span><span class="nx">Object</span> <span class="c1">// A concrete type that is used for type assertion to an interface&#39;s underlying concrete value (Pod{}, Node{}, Service{}, etc.).
-</span><span class="c1"></span>    <span class="nf">AddFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">obj</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling add events for the given resource.
-</span><span class="c1"></span>    <span class="nf">UpdateFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">oldObj</span><span class="p">,</span> <span class="nx">newObj</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling update events for the given resource.
-</span><span class="c1"></span>    <span class="nf">DeleteFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">obj</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling delete events for the given resource.
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Watcher</span> <span class="kd">interface</span> <span class="p">{</span>
+	<span class="nf">AddFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">lmctx</span><span class="p">.</span><span class="nx">LMContext</span><span class="p">,</span> <span class="nx">enums</span><span class="p">.</span><span class="nx">ResourceType</span><span class="p">,</span> <span class="kd">interface</span><span class="p">{},</span> <span class="p">[]</span><span class="nx">ResourceOption</span><span class="p">)</span> <span class="c1">// A function that is responsible for handling add events for the given resource.
+</span><span class="c1"></span>	<span class="nf">DeleteFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling delete events for the given resource.
+</span><span class="c1"></span>	<span class="nf">UpdateFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="nx">oldObj</span><span class="p">,</span> <span class="nx">newObj</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// A function that is responsible for handling update events for the given resource.
+</span><span class="c1"></span>	<span class="nf">GetConfig</span><span class="p">()</span> <span class="o">*</span><span class="nx">WConfig</span> <span class="c1">// A function that provides config object.
+</span><span class="c1"></span>	<span class="nf">ResourceType</span><span class="p">()</span> <span class="nx">enums</span><span class="p">.</span><span class="nx">ResourceType</span> <span class="c1">// A function that is responsible for providing resource type.
 </span><span class="c1"></span><span class="p">}</span>
 </code></pre></div><p>With this simple function we can watch each Kubernetes resource we are interested in monitoring and provide custom logic for mapping it into LogicMonitor.</p>
 <h2 id="the-manager">The Manager</h2>
-<p>Now that we can watch events for a given resource, we need to implement the logic behind the add, update, and delete events. This is where we introduce the concept of a <code>Manager</code>. There are two functions of a <code>Manager</code>. First, a <code>Manager</code> must provide a way to build a LogicMonitor object given a Kubernetes resource object. Second, a <code>Manager</code> must ensure that the built object gets created in LogicMonitor. These concepts are abstracted into two interfaces, a <code>Builder</code> and a <code>Mapper</code>.</p>
-<p>Let&rsquo;s imagine that we want to map a Kubernetes <code>Foo</code> resource into LogicMonitor as a <code>Bar</code> object.</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">FooWatcher</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">BarManager</span>
+<p>Now that we can watch events for a given resource, we need to implement the logic behind the add, update, and delete events. This is where we introduce the concept of a <code>ResourceManager</code>. <code>ResourceManager</code> is an interface that provides a way to build a LogicMonitor object given a Kubernetes resource object and describes how resources in Kubernetes are mapped into LogicMonitor as resources. These concepts are abstracted into two interfaces, a <code>Builder</code> and a <code>Mapper</code>. <code>Actions</code> interface includes methods to add, update and delete resources.</p>
+<p><code>ResourceManager</code> is defined as:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">ResourceManager</span> <span class="kd">interface</span> <span class="p">{</span>
+	<span class="nx">ResourceMapper</span>
+	<span class="nx">ResourceBuilder</span>
+	<span class="nx">Actions</span>
+	<span class="nx">ResourceGroupManager</span>
+	<span class="nf">GetResourceCache</span><span class="p">()</span> <span class="nx">ResourceCache</span>
 <span class="p">}</span>
 
-<span class="kd">type</span> <span class="nx">BarManager</span> <span class="kd">interface</span> <span class="p">{</span>
-    <span class="nx">BarBuilder</span>
-    <span class="nx">BarMapper</span>
+<span class="kd">type</span> <span class="nx">Actions</span> <span class="kd">interface</span> <span class="p">{</span>
+	<span class="c1">// AddFunc wrapper
+</span><span class="c1"></span>	<span class="nf">AddFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">lmctx</span><span class="p">.</span><span class="nx">LMContext</span><span class="p">,</span> <span class="nx">enums</span><span class="p">.</span><span class="nx">ResourceType</span><span class="p">,</span> <span class="kd">interface</span><span class="p">{},</span> <span class="o">...</span><span class="nx">ResourceOption</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">Device</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+	<span class="nf">UpdateFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">lmctx</span><span class="p">.</span><span class="nx">LMContext</span><span class="p">,</span> <span class="nx">enums</span><span class="p">.</span><span class="nx">ResourceType</span><span class="p">,</span> <span class="kd">interface</span><span class="p">{},</span> <span class="kd">interface</span><span class="p">{},</span> <span class="o">...</span><span class="nx">ResourceOption</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">Device</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+	<span class="nf">DeleteFunc</span><span class="p">()</span> <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">lmctx</span><span class="p">.</span><span class="nx">LMContext</span><span class="p">,</span> <span class="nx">enums</span><span class="p">.</span><span class="nx">ResourceType</span><span class="p">,</span> <span class="kd">interface</span><span class="p">{},</span> <span class="o">...</span><span class="nx">ResourceOption</span><span class="p">)</span> <span class="kt">error</span>
 <span class="p">}</span>
-</code></pre></div><p>Here we can see that the Kuberentes <code>Foo</code> resource is mapped into LogicMonitor via a <code>Watcher</code> that implements the <code>BarManager</code> interface.</p>
+</code></pre></div><p>Here we can see that the Kuberentes resources are mapped into LogicMonitor through <code>ResourceManager</code> interface.</p>
 
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2021 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>

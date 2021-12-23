@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Configuration - Argus</title>
-    <meta name="generator" content="Hugo 0.76.5" />
+    <meta name="generator" content="Hugo 0.90.1" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">4.2.0</span></strong>
+        <strong>Argus <span class="version">6.1.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -320,9 +320,9 @@
 <ul>
 <li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</li>
 <li><strong>etcdDiscoveryToken (default: <code>&quot;&quot;</code>):</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
-<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Collectorset-controller container.</li>
 <li><strong>imageRepository (default: <code>&quot;logicmonitor/collectorset-controller&quot;</code>):</strong> The image repository of the <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller">Collectorset-controller</a> container.</li>
 <li><strong>imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/collectorset-controller/tags">Collectorset-controller</a> container.</li>
+<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Collectorset-controller container.</li>
 <li><strong>proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url.</li>
 <li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
 <li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
@@ -330,16 +330,19 @@
 <li><strong>affinity (default: <code>{}</code>):</strong> It allows you to constrain which nodes your pod is eligible to be scheduled on.</li>
 <li><strong>priorityClassName (default: <code>&quot;&quot;</code>):</strong> The priority class name for Pod priority. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.</li>
 <li><strong>tolerations (default: <code>[]</code>):</strong> Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.</li>
+<li><strong>labels (default: <code>{}</code>):</strong> Labels to apply on all objects created by Collectorset controller.</li>
+<li><strong>annotations (default: <code>{}</code>):</strong> Annotations to apply on all objects created by Collectorset controller.</li>
+<li><strong>ignore_ssl (default: <code>false</code>):</strong> Set flag to ignore ssl/tls validation.</li>
 </ul>
 <h1 id="configuring-argus-via-the-helm-chart">Configuring Argus via the Helm Chart</h1>
-<p>The Argus Helm chart supports the fololowing values:</p>
+<p>The Argus Helm chart supports the following values:</p>
 <p>Required Values:</p>
 <ul>
 <li><strong>accessID (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key ID.</li>
 <li><strong>accessKey (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor API key.</li>
 <li><strong>account (default: <code>&quot;&quot;</code>):</strong> The LogicMonitor account name.</li>
 <li><strong>clusterName (default: <code>&quot;&quot;</code>):</strong> A unique name given to the cluster&rsquo;s device group.</li>
-<li><strong>debug (default: <code>false</code>):</strong> To enable verbose logging at debug level.</li>
+<li><strong>logLevel (default: <code>&quot;info&quot;</code>):</strong> Set Argus Log Level.</li>
 <li><strong>deleteDevices (default: <code>true</code>):</strong> On a delete event, either delete from LogicMonitor or move the device to the <code>_deleted</code> device group.</li>
 <li><strong>disableAlerting (default: <code>false</code>):</strong> Disables LogicMonitor alerting for all the cluster resources.</li>
 <li><strong>collector.replicas (default: <code>1</code>):</strong> The number of collectors to create and use with Argus.</li>
@@ -354,9 +357,9 @@
 <li><strong>enableRBAC (default: <code>true</code>):</strong> Enable RBAC. If your cluster does not have RBAC enabled, this value should be set to false.</li>
 <li><strong>clusterGroupID (default: <code>0</code>):</strong> A parent group id of the cluster&rsquo;s device group.</li>
 <li><strong>etcdDiscoveryToken (default: <code>&quot;&quot;</code>):</strong> The public etcd discovery token used to add etcd hosts to the cluster device group.</li>
-<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Argus container.</li>
 <li><strong>imageRepository (default: <code>&quot;logicmonitor/argus&quot;</code>):</strong> The image respository of the <a href="https://hub.docker.com/r/logicmonitor/argus">Argus</a> container.</li>
 <li><strong>imageTag:</strong> The image tag of the <a href="https://hub.docker.com/r/logicmonitor/argus/tags">Argus</a> container.</li>
+<li><strong>imagePullPolicy (default: <code>&quot;Always&quot;</code>):</strong> The image pull policy of the Argus container.</li>
 <li><strong>proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url.</li>
 <li><strong>proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username.</li>
 <li><strong>proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password.</li>
@@ -364,10 +367,28 @@
 <li><strong>affinity (default: <code>{}</code>):</strong> It allows you to constrain which nodes your pod is eligible to be scheduled on.</li>
 <li><strong>priorityClassName (default: <code>&quot;&quot;</code>):</strong> The priority class name for Pod priority. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.</li>
 <li><strong>tolerations (default: <code>[]</code>):</strong> Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.</li>
-<li><strong>filters.pod (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Pod device type. Based on this parameter, Pods would be added/deleted for discovery on LM.</li>
-<li><strong>filters.service (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Service device type. Based on this parameter, Services would be added/deleted for discovery on LM.</li>
-<li><strong>filters.node (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Node device type. Based on this parameter, Nodes would be added/deleted for discovery on LM.</li>
-<li><strong>filters.deployment (default: <code>&quot;&quot;</code>):</strong> The filtered expression for Deployment device type. Based on this parameter, Deployments would be added/deleted for discovery on LM.</li>
+<li><strong>labels (default: <code>{}</code>):</strong> Labels to apply on all objects created by Argus.</li>
+<li><strong>annotations (default: <code>{}</code>):</strong> Annotations to apply on all objects created by Argus.</li>
+<li><strong>ignore_ssl (default: <code>false</code>):</strong> Set flag to ignore ssl/tls validation.</li>
+<li><strong>enableNewResourceTree (default: <code>false</code>):</strong> Flag to enable new resource tree to put all resources of a namespace in a single resource group.</li>
+<li><strong>enableNamespacesDeletedGroups (default: <code>false</code>):</strong> Flag is used when #enableNewResourceTree is true - to create _deleted group in its individual namespace groups when scheduled delete is enabled.</li>
+<li><strong>registerGenericFilter (default: <code>false</code>):</strong>  Flag to register generic filter based on resource label =&gt; &ldquo;logicmonitor/monitoring&rdquo;: &ldquo;disable&rdquo;.</li>
+<li><strong>app_intervals.periodic_sync_interval (default: <code>30m</code>):</strong> AppIntervals defines time intervals for periodic sync, periodic delete and in memory cache resync operations.</li>
+<li><strong>app_intervals.periodic_delete_interval (default: <code>10m</code>):</strong>  AppIntervals defines time intervals for periodic sync, periodic delete and in memory cache resync operations.</li>
+<li><strong>app_intervals.cache_sync_interval (default: <code>1h</code>):</strong>  AppIntervals defines time intervals for periodic sync, periodic delete and in memory cache resync operations.</li>
+<li><strong>device_group_props.cluster:</strong> Device group properties for cluster.</li>
+<li><strong>device_group_props.pods:</strong> Device group properties for pods.</li>
+<li><strong>device_group_props.services (default: <code>[]</code>):</strong> Contains device group properties for services.</li>
+<li><strong>device_group_props.deployments (default: <code>[]</code>):</strong> Contains device group properties for deployments.</li>
+<li><strong>device_group_props.nodes (default: <code>[]</code>):</strong> Contains device group properties for nodes.</li>
+<li><strong>device_group_props.etcd (default: <code>[]</code>):</strong> Contains device group properties for etcd.</li>
+<li><strong>device_group_props.hpas (default: <code>[]</code>):</strong> Contains device group properties for HorizontalPodAutoscalers.</li>
+<li><strong>filters.pod (default: <code>[]</code>):</strong> The filtered expression for Pod device type. Based on this parameter, Pods would be added/deleted for discovery on LM.</li>
+<li><strong>filters.service (default: <code>[]</code>):</strong> The filtered expression for Service device type. Based on this parameter, Services would be added/deleted for discovery on LM.</li>
+<li><strong>filters.node (default: <code>[]</code>):</strong> The filtered expression for Node device type. Based on this parameter, Nodes would be added/deleted for discovery on LM.</li>
+<li><strong>filters.deployment (default: <code>[]</code>):</strong> The filtered expression for Deployment device type. Based on this parameter, Deployments would be added/deleted for discovery on LM.</li>
+<li><strong>filters.hpa (default: <code>[]</code>):</strong> The filtered expression for HorizontalPodAutoscaler resource type. Based on this parameter,HorizontalPodAutoscalers would be added/deleted for discovery on LM.</li>
+<li><strong>openmetrics.port (default: <code>2112</code>):</strong> Openmetrics config for Argus metrics collection.</li>
 <li><strong>collector.groupID (default: <code>0</code>):</strong> The ID of the group of the collectors.</li>
 <li><strong>collector.escalationChainID (default: <code>0</code>):</strong> The ID of the escalation chain of the collectors.</li>
 <li><strong>collector.collectorVersion (default: <code>0</code>):</strong> The version of the collectors.</li>
@@ -375,8 +396,12 @@
 <li><strong>collector.proxyURL (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy url of the collectors.</li>
 <li><strong>collector.proxyUser (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy username of the collectors.</li>
 <li><strong>collector.proxyPass (default: <code>&quot;&quot;</code>):</strong> The Http/s proxy password of the collectors.</li>
-<li><strong>collector.priorityClassName (default: <code>&quot;&quot;</code>):</strong> The priority class name for Pod priority of the collector. If this parameter is set then user must have PriorityClass resource created otherwise Pod will be rejected.</li>
-<li><strong>collector.tolerations (default: <code>[]</code>):</strong> Tolerations are applied to pods, and allow the pods to schedule onto nodes with matching taints.</li>
+<li><strong>collector.annotations (default: <code>{}</code>):</strong> annotations to add on collector statefulset.</li>
+<li><strong>collector.labels (default: <code>{}</code>):</strong> labels to add on collector statefulset.</li>
+<li><strong>collector.statefulsetspec:</strong> Holds statefulset specification template which contains nodeSelector, tolerations and priorityClassName.</li>
+<li><strong>disableResourceMonitoring:</strong> List of resources to disable monitoring.</li>
+<li><strong>disableResourceAlerting:</strong> List of resources to disable alerting.</li>
+<li><strong>replicas (default: <code>1</code>):</strong> Argus replicas.</li>
 </ul>
 <h1 id="configuring-argus-manually">Configuring Argus Manually</h1>
 <p>In most applications there are generally two types of configuration options
@@ -387,14 +412,13 @@ different sources for each of these types.</p>
 For sensitive information, Argus will read from environment variables.</p>
 <p>To configure the non-sensitive information, create a YAML file located at
 <code>/etc/argus/config.yaml</code>. Here is an example file you can modify to your needs:</p>
-<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nt">cluster_group_id</span><span class="p">:</span><span class="w">
-</span><span class="w"></span><span class="nt">cluster_name</span><span class="p">:</span><span class="w">
-</span><span class="w"></span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
-</span><span class="w"></span><span class="nt">delete_devices</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
-</span><span class="w"></span><span class="nt">disable_alerting</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nt">clusterGroupID</span><span class="p">:</span><span class="w">
+</span><span class="w"></span><span class="nt">clusterName</span><span class="p">:</span><span class="w">
+</span><span class="w"></span><span class="nt">deleteDevices</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span><span class="nt">disableAlerting</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
 </span></code></pre></div><p>To configure the sensitive information, export the following environment
 variables:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">ACCESS_ID
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ACCESS_ID
 ACCESS_KEY
 ACCOUNT
 ETCD_DISCOVERY_TOKEN
@@ -402,7 +426,7 @@ ETCD_DISCOVERY_TOKEN
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2021 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
