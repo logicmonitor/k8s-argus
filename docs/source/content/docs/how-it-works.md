@@ -32,23 +32,41 @@ The concept of a `Controller` is fundamental to Kubernetes and is at the core of
 Now that we know about this event stream, let's look at what it takes to map resources in Kubernetes to objects in LogicMonitor. We start by first implenting the `Watcher` interface and then embedding a `Manager` in the concrete type implementing said interface. A `Watcher` is a simple interface that makes a concrete type compatible with the `NewInformer` function:
 
 ```go
-func (a *Argus) Watch() {
-    getter := a.K8sClient.Core().RESTClient()
-    for _, w := range a.Watchers {
-        watchlist := cache.NewListWatchFromClient(getter, w.Resource(), v1.NamespaceAll, fields.Everything())
-        _, controller := cache.NewInformer(
-            watchlist,
-            w.ObjType(),
-            time.Second*0,
-            cache.ResourceEventHandlerFuncs{
-                AddFunc:    w.AddFunc(),
-                DeleteFunc: w.DeleteFunc(),
-                UpdateFunc: w.UpdateFunc(),
-            },
-        )
-        stop := make(chan struct{})
-        go controller.Run(stop)
-    }
+func (a *Argus) Watch(lctx *lmctx.LMContext) error {
+	log := lmlog.Logger(lctx)
+	conf, err := config.GetConfig(lctx)
+	if err != nil {
+		return err
+	}
+	syncInterval := *conf.Intervals.PeriodicSyncInterval
+	log.Debugf("Starting watchers")
+	b := &builder.Builder{}
+
+	nsRT, controller := a.RunNSWatcher(syncInterval)
+	log.Debugf("Starting ns watcher of %v", nsRT.String())
+	stop := make(chan struct{})
+	go controller.Run(stop)
+
+	for _, w := range a.Watchers {
+		rt := w.ResourceType()
+		// TODO: has permission and check for enabled flag in case if user wants to avoid all resource of specific type
+		//  earlier all resources used to ignore from filter config but still it used to put pressure on k8s api-server to unnecessary polls
+		if !permission.HasPermissions(rt) {
+			log.Warnf("Have no permission for resource %s", rt.String())
+
+			continue
+		}
+		watchlist := cache.NewListWatchFromClient(util.GetK8sRESTClient(config.GetClientSet(), rt.K8SAPIVersion()), rt.String(), corev1.NamespaceAll, fields.Everything())
+		clientState, controller := a.createNewInformer(watchlist, rt, syncInterval, b)
+		go watchForFilterRuleChange(rt, clientState)
+		log.Debugf("Starting watcher of %s", rt)
+		stop := make(chan struct{})
+		stateHolder := types.NewControllerInitSyncStateHolder(rt, controller)
+		stateHolder.Run()
+		a.controllerStateHolders[rt] = &stateHolder
+		go controller.Run(stop)
+	}
+	return nil
 }
 ```
 
@@ -56,11 +74,11 @@ And we can see that the `Watcher` is defined as:
 
 ```go
 type Watcher interface {
-    Resource() string // The Kubernetes resource that we want to watch (nodes, pods, services, etc.)
-    ObjType() runtime.Object // A concrete type that is used for type assertion to an interface's underlying concrete value (Pod{}, Node{}, Service{}, etc.).
-    AddFunc() func(obj interface{}) // A function that is responsible for handling add events for the given resource.
-    UpdateFunc() func(oldObj, newObj interface{}) // A function that is responsible for handling update events for the given resource.
-    DeleteFunc() func(obj interface{}) // A function that is responsible for handling delete events for the given resource.
+	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, []ResourceOption) // A function that is responsible for handling add events for the given resource.
+	DeleteFunc() func(interface{}) // A function that is responsible for handling delete events for the given resource.
+	UpdateFunc() func(oldObj, newObj interface{}) // A function that is responsible for handling update events for the given resource.
+	GetConfig() *WConfig // A function that provides config object.
+	ResourceType() enums.ResourceType // A function that is responsible for providing resource type.
 }
 ```
 
@@ -68,19 +86,25 @@ With this simple function we can watch each Kubernetes resource we are intereste
 
 ## The Manager
 
-Now that we can watch events for a given resource, we need to implement the logic behind the add, update, and delete events. This is where we introduce the concept of a `Manager`. There are two functions of a `Manager`. First, a `Manager` must provide a way to build a LogicMonitor object given a Kubernetes resource object. Second, a `Manager` must ensure that the built object gets created in LogicMonitor. These concepts are abstracted into two interfaces, a `Builder` and a `Mapper`.
+Now that we can watch events for a given resource, we need to implement the logic behind the add, update, and delete events. This is where we introduce the concept of a `ResourceManager`. `ResourceManager` is an interface that provides a way to build a LogicMonitor object given a Kubernetes resource object and describes how resources in Kubernetes are mapped into LogicMonitor as resources. These concepts are abstracted into two interfaces, a `Builder` and a `Mapper`. `Actions` interface includes methods to add, update and delete resources.
 
-Let's imagine that we want to map a Kubernetes `Foo` resource into LogicMonitor as a `Bar` object.
+`ResourceManager` is defined as:
 
 ```go
-type FooWatcher struct {
-    BarManager
+type ResourceManager interface {
+	ResourceMapper
+	ResourceBuilder
+	Actions
+	ResourceGroupManager
+	GetResourceCache() ResourceCache
 }
 
-type BarManager interface {
-    BarBuilder
-    BarMapper
+type Actions interface {
+	// AddFunc wrapper
+	AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption) (*models.Device, error)
+	UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, ...ResourceOption) (*models.Device, error)
+	DeleteFunc() func(*lmctx.LMContext, enums.ResourceType, interface{}, ...ResourceOption) error
 }
 ```
 
-Here we can see that the Kuberentes `Foo` resource is mapped into LogicMonitor via a `Watcher` that implements the `BarManager` interface.
+Here we can see that the Kuberentes resources are mapped into LogicMonitor through `ResourceManager` interface.
