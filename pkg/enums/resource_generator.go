@@ -48,6 +48,9 @@ type Resources struct {
 
 const ApiRegex string = "([a-z0-9.-]+)"
 
+// K8s core API Group
+const K8sCoreAPIGroup string = "core"
+
 var r *regexp.Regexp = regexp.MustCompile(ApiRegex)
 
 func readConf(filename string) (*Resources, error) {
@@ -179,7 +182,7 @@ var lastFunc = template.FuncMap{
 	},
 	"api": func(api Apis) string {
 		s := api.ApiGroup
-		if s == "" {
+		if s == "" || s == K8sCoreAPIGroup {
 			return api.ApiVersion
 		} else {
 			return s + "/" + api.ApiVersion
