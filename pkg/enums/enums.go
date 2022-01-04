@@ -4,7 +4,6 @@ package enums
 import (
 	"fmt"
 	"strings"
-
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -254,7 +253,7 @@ func ParseShortResourceType(shortResourceType string) (ShortResourceType, error)
 		l = NetworkPolicies
 	default:
 
-		return ShortResourceType(Unknown), fmt.Errorf("not a valid ShortResourceType to parse: %q", shortResourceType)
+	return ShortResourceType(Unknown), fmt.Errorf("not a valid ShortResourceType to parse: %q", shortResourceType)
 	}
 
 	return ShortResourceType(l), nil
@@ -417,7 +416,7 @@ func (resourceType *ResourceType) K8SAPIVersion() string {
 	case CronJobs:
 		return "batch/v1beta1"
 	case Pods, Services, Nodes, Namespaces, ConfigMaps, PersistentVolumes, PersistentVolumeClaims, Secrets, EndPoints:
-		return "core/v1"
+		return "v1"
 	case NetworkPolicies:
 		return "networking/v1"
 	case Ingresses:
@@ -440,10 +439,6 @@ func (resourceType *ResourceType) IsNamespaceScopedResource() bool {
 
 func (resourceType *ResourceType) APIGroup() string {
 	switch *resourceType {
-	case Pods, Services, Nodes, Namespaces, ConfigMaps, PersistentVolumes, PersistentVolumeClaims, Secrets, EndPoints:
-		return ""
-	case Ingresses, NetworkPolicies:
-		return "networking"
 	case Unknown, ETCD:
 		return ""
 	case Deployments, DaemonSets, ReplicaSets, StatefulSets:
@@ -452,6 +447,10 @@ func (resourceType *ResourceType) APIGroup() string {
 		return "autoscaling"
 	case CronJobs, Jobs:
 		return "batch"
+	case Pods, Services, Nodes, Namespaces, ConfigMaps, PersistentVolumes, PersistentVolumeClaims, Secrets, EndPoints:
+		return ""
+	case Ingresses, NetworkPolicies:
+		return "networking"
 	default:
 		return ""
 	}
