@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Getting Started - Argus</title>
-    <meta name="generator" content="Hugo 0.76.5" />
+    <meta name="generator" content="Hugo 0.90.1" />
 
     
     <meta name="description" content="Automated Kubernetes monitoring.">
@@ -142,7 +142,7 @@
         </div>
       
       <div class="name">
-        <strong>Argus <span class="version">4.2.0</span></strong>
+        <strong>Argus <span class="version">6.1.0</span></strong>
         
           <br>
           logicmonitor/k8s-argus
@@ -312,17 +312,17 @@
 
 			<p>The simplest way to get started with Argus is to install it using <a href="https://helm.sh/docs">Helm</a> version 3.</p>
 <p>You&rsquo;ll need to add the LogicMonitor chart repository:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ helm repo add logicmonitor https://logicmonitor.github.io/k8s-helm-charts
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ helm repo add logicmonitor https://logicmonitor.github.io/k8s-helm-charts
 </code></pre></div><blockquote>
 <p>Note: Argus helm charts will only be installed using Helm 3 on Kubernetes clusters newer than version 1.14.0. For any reason, if you are using Helm 2 on Kubernetes cluster older than 1.14.0, you will need to make tiller available on cluster using following steps:</p>
 </blockquote>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ kubectl create serviceaccount tiller --namespace<span class="o">=</span><span class="s2">&#34;kube-system&#34;</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ kubectl create serviceaccount tiller --namespace<span class="o">=</span><span class="s2">&#34;kube-system&#34;</span>
 $ kubectl create clusterrolebinding tiller --clusterrole<span class="o">=</span>cluster-admin --serviceaccount<span class="o">=</span>kube-system:tiller
 $ helm init --service-account<span class="o">=</span>tiller
 </code></pre></div><p>Now you can install the LogicMonitor Collectorset controller:</p>
 <p>Get the configuration file downloaded from the LogicMonitor UI or you can create from the template <a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#collectorset-controller">here</a>.</p>
 <p>Update configuration parameters in configuration file.</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Export the configuration file path &amp; use it in the helm command.</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Export the configuration file path &amp; use it in the helm command.</span>
 $ <span class="nb">export</span> <span class="nv">COLLECTORSET_CONTROLLER_CONF_FILE</span><span class="o">=</span>&lt;collectorset-controller-configuration-file-path&gt;
 
 $ helm upgrade <span class="se">\
@@ -340,7 +340,7 @@ descriptions.</p>
 <p>Next, install Argus:</p>
 <p>Get the configuration file downloaded from the LogicMonitor UI or you can create from the template <a href="https://github.com/logicmonitor/k8s-helm-charts/blob/master/config-templates/Configuration.md#argus">here</a>.</p>
 <p>Update configuration parameters in configuration file.</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Export the configuration file path &amp; use it in the helm command.</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Export the configuration file path &amp; use it in the helm command.</span>
 $ <span class="nb">export</span> <span class="nv">ARGUS_CONF_FILE</span><span class="o">=</span>&lt;argus-configuration-file-path&gt;
 
 $ helm upgrade <span class="se">\
@@ -364,7 +364,7 @@ that will start monitoring the resources in your cluster.</p>
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2020 Released under Mozilla Public License 2.0 &ndash;
+				&copy; 2021 Released under Mozilla Public License 2.0 &ndash;
 				
 				Documentation built with
 				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
