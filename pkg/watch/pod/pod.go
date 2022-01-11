@@ -5,6 +5,7 @@ package pod
 import (
 	"fmt"
 
+	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -28,7 +29,7 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		// If pod is in succeeded state, means it completed it execution
 		// perhaps pods created for jobs, goes in succeeded state
 		if p.Status.Phase == corev1.PodSucceeded {
-			return []types.ResourceOption{}, fmt.Errorf("pod status is \"Succeeded\", not adding it into monitoring")
+			return []types.ResourceOption{}, aerrors.ErrPodSucceeded
 		}
 		options := []types.ResourceOption{
 			b.Name(getPodDNSName(p)),
@@ -55,7 +56,7 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		// If pod is in succeeded state, means it completed it execution
 		// perhaps pods created for jobs, goes in succeeded state
 		if p.Status.Phase == corev1.PodSucceeded {
-			return options, true, fmt.Errorf("pod status is \"Succeeded\", not adding it into monitoring")
+			return options, true, aerrors.ErrPodSucceeded
 		}
 		if p.Status.PodIP == "" {
 			return options, false, fmt.Errorf("empty Status.PodIP")
