@@ -9,6 +9,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/config"
 	"github.com/logicmonitor/lm-sdk-go/client"
 	"github.com/logicmonitor/lm-sdk-go/client/lm"
+	"github.com/sirupsen/logrus"
 )
 
 func NewLMClient(argusConfig *config.Config) (*client.LMSdkGo, error) {
@@ -41,6 +42,7 @@ func newLMClientWithProxy(config *client.Config, argusConfig *config.Config) (*c
 			proxyURL.User = url.User(argusConfig.ProxyUser)
 		}
 	}
+	logrus.Infof("Using http/s proxy: %s with username: %s", argusConfig.ProxyURL, argusConfig.ProxyUser)
 	httpClient := http.Client{
 		Transport: &http.Transport{ // nolint: exhaustivestruct
 			Proxy: http.ProxyURL(proxyURL),
