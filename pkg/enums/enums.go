@@ -4,6 +4,7 @@ package enums
 import (
 	"fmt"
 	"strings"
+
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -253,7 +254,7 @@ func ParseShortResourceType(shortResourceType string) (ShortResourceType, error)
 		l = NetworkPolicies
 	default:
 
-	return ShortResourceType(Unknown), fmt.Errorf("not a valid ShortResourceType to parse: %q", shortResourceType)
+		return ShortResourceType(Unknown), fmt.Errorf("not a valid ShortResourceType to parse: %q", shortResourceType)
 	}
 
 	return ShortResourceType(l), nil

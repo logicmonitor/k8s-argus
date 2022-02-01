@@ -105,13 +105,22 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		}
 		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
 		// Delete resource if no more exists or delete if UID does not match.
-		if !ok ||
-			clusterPresentMeta.UID != cacheResourceMeta.UID ||
-			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) {
-			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
-		} else if resolveConflicts {
-			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
+		switch {
+		case !ok || clusterPresentMeta.UID != cacheResourceMeta.UID ||
+			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)):
+			{
+				log.Tracef("Deleting dangling resource %s", cacheResourceName)
+				i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
+			}
+		case resolveConflicts:
+			{
+				log.Tracef("Resolving conflicts for resource %s", cacheResourceName)
+				i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
+			}
+		default:
+			log.Tracef("Resource is neither selected for deletion nor for resolving conflicts: %s", cacheResourceName)
 		}
+
 	}
 
 	// Flush updated cache to configmaps

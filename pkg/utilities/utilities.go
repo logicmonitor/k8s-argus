@@ -260,7 +260,7 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) (int32,
 		}
 	}
 	if clusterGrpID <= 0 {
-		return clusterGrpID, fmt.Errorf("no child resource group present of name [%s] under resource group [%d]", clusterGroupName, conf.ClusterGroupID)
+		return clusterGrpID, fmt.Errorf("no child resource group present of name [%s] under cluster group [%d]", clusterGroupName, conf.ClusterGroupID)
 	}
 	clusterGroupID = clusterGrpID
 
