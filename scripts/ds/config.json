@@ -2,19 +2,7 @@
   "apis": [
     {
       "verb": "post",
-      "status_code": "1XX"
-    },
-    {
-      "verb": "post",
-      "status_code": "2XX"
-    },
-    {
-      "verb": "post",
-      "status_code": "3XX"
-    },
-    {
-      "verb": "post",
-      "status_code": "4XX"
+      "status_code": "200"
     },
     {
       "verb": "post",
@@ -22,19 +10,7 @@
     },
     {
       "verb": "get",
-      "status_code": "1XX"
-    },
-    {
-      "verb": "get",
-      "status_code": "2XX"
-    },
-    {
-      "verb": "get",
-      "status_code": "3XX"
-    },
-    {
-      "verb": "get",
-      "status_code": "4XX"
+      "status_code": "200"
     },
     {
       "verb": "get",
@@ -42,19 +18,7 @@
     },
     {
       "verb": "delete",
-      "status_code": "1XX"
-    },
-    {
-      "verb": "delete",
-      "status_code": "2XX"
-    },
-    {
-      "verb": "delete",
-      "status_code": "3XX"
-    },
-    {
-      "verb": "delete",
-      "status_code": "4XX"
+      "status_code": "200"
     },
     {
       "verb": "delete",
@@ -62,19 +26,7 @@
     },
     {
       "verb": "put",
-      "status_code": "1XX"
-    },
-    {
-      "verb": "put",
-      "status_code": "2XX"
-    },
-    {
-      "verb": "put",
-      "status_code": "3XX"
-    },
-    {
-      "verb": "put",
-      "status_code": "4XX"
+      "status_code": "200"
     },
     {
       "verb": "put",
@@ -108,26 +60,26 @@
   "graphs": [
     {
       "verb": "get",
-      "status_code": "2XX",
-      "title": "GET 2XX Success",
+      "status_code": "200",
+      "title": "GET 200 Success",
       "disp_prio": "100"
     },
     {
       "verb": "delete",
-      "status_code": "2XX",
-      "title": "DELETE 2XX Success",
+      "status_code": "200",
+      "title": "DELETE 200 Success",
       "disp_prio": "100"
     },
     {
       "verb": "post",
-      "status_code": "2XX",
-      "title": "POST 2XX Success",
+      "status_code": "200",
+      "title": "POST 200 Success",
       "disp_prio": "100"
     },
     {
       "verb": "put",
-      "status_code": "2XX",
-      "title": "PUT 2XX Success",
+      "status_code": "200",
+      "title": "PUT 200 Success",
       "disp_prio": "100"
     },
     {
@@ -159,6 +111,32 @@
       "status_code": "400",
       "title": "POST 400 Conflicts",
       "disp_prio": "1"
+    }
+  ],
+  "overviewgrapherror": [
+    {
+      "verb": "post",
+      "status_code": "409"
+    },
+    {
+      "verb": "delete",
+      "status_code": "404"
+    },
+    {
+      "verb": "update",
+      "status_code": "404"
+    },
+    {
+      "verb": "*",
+      "status_code": "408"
+    },
+    {
+      "verb": "*",
+      "status_code": "429"
+    },
+    {
+      "verb": "post",
+      "status_code": "400"
     }
   ]
 }
