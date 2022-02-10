@@ -31,7 +31,7 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 		}
 		all, err := GetAndStoreAll(lctx, rt)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		for _, metaObject := range all {
 			displayName := util.GetDisplayName(rt, metaObject, conf) //nolint:gosec
@@ -61,6 +61,8 @@ func GetAndStoreAll(lctx *lmctx.LMContext, rt enums.ResourceType) ([]*metav1.Par
 	listWatch.DisableChunking = true
 	list, err := listWatch.List(constants.DefaultListOptions)
 	if err != nil {
+		// TODO need better handling for permissions issue errors. DEVTS-12056
+		log.Warnf("error while extracting resources from cluster:  %v", err)
 		return result, err
 	}
 	items, err := meta.ExtractList(list)
