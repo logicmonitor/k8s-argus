@@ -8,6 +8,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcecache"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -20,6 +21,7 @@ import (
 
 // GetAllK8SResources get all k8s resources present in cluster
 func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
+	log := lmlog.Logger(lctx)
 	tmpStore := resourcecache.NewStore()
 	conf, err := config.GetConfig(lctx)
 	if err != nil {
@@ -29,9 +31,16 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 		if conf.IsMonitoringDisabled(rt) {
 			continue
 		}
+
+		// check if we have enabled permission for resource type.
+		if !permission.HasPermissions(rt) {
+			log.Warnf("no permission for resource type %s", rt.String())
+			continue
+		}
+
 		all, err := GetAndStoreAll(lctx, rt)
 		if err != nil {
-			continue
+			return nil, err
 		}
 		for _, metaObject := range all {
 			displayName := util.GetDisplayName(rt, metaObject, conf) //nolint:gosec
@@ -61,7 +70,6 @@ func GetAndStoreAll(lctx *lmctx.LMContext, rt enums.ResourceType) ([]*metav1.Par
 	listWatch.DisableChunking = true
 	list, err := listWatch.List(constants.DefaultListOptions)
 	if err != nil {
-		// TODO need better handling for permissions issue errors. DEVTS-12056
 		log.Warnf("error while extracting resources from cluster:  %v", err)
 		return result, err
 	}
