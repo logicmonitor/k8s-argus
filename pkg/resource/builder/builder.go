@@ -355,7 +355,6 @@ func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *
 		return []types.ResourceOption{}
 	}
 	options := []types.ResourceOption{
-		b.Name(rt.LMName(objectMeta)),
 		b.ResourceLabels(objectMeta.Labels),
 		b.ResourceAnnotations(objectMeta.Annotations),
 		b.DisplayName(util.GetDisplayName(rt, objectMeta, conf)),
@@ -367,6 +366,10 @@ func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *
 	}
 	if rt.IsNamespaceScopedResource() {
 		options = append(options, b.Auto("namespace", objectMeta.Namespace))
+	}
+	// tentative fix - make sure this is the root cause - need to fix at appropriate place
+	if rt != enums.Nodes {
+		options = append(options, b.Name(rt.LMName(objectMeta)))
 	}
 
 	return options
