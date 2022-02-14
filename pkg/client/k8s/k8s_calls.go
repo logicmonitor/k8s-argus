@@ -73,7 +73,6 @@ func GetAndStoreAll(lctx *lmctx.LMContext, rt enums.ResourceType) ([]*metav1.Par
 		log.Warnf("error while extracting resources from cluster:  %v", err)
 		return result, err
 	}
-
 	items, err := meta.ExtractList(list)
 	if err != nil {
 		return result, fmt.Errorf("%s: Unable to understand list result %#v (%w)", rt, list, err)
@@ -95,5 +94,4 @@ func GetAndStoreAll(lctx *lmctx.LMContext, rt enums.ResourceType) ([]*metav1.Par
 	}
 
 	return result, nil
-
 }
