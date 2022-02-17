@@ -9,7 +9,9 @@ go generate
 */
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"io/ioutil"
 	"log"
 	"os"
@@ -32,6 +34,7 @@ type Resource struct {
 	PingResource       bool     `yaml:"pingResource"`
 	ObjectType         string   `yaml:"objectType"`
 	TitlePlural        string   `yaml:"titlePlural"`
+	AdditionalHostname bool     `yaml:"additionalHostname"`
 }
 
 type Apis struct {
@@ -107,13 +110,21 @@ func main() {
 
 	tmpl := template.Must(template.New("enum_template.tmpl").Funcs(lastFunc).ParseFiles("enum_template.tmpl"))
 
-	tmpl.Execute(f, struct {
+	var buf bytes.Buffer
+	tmpl.Execute(&buf, struct {
 		Resources Resources
 		Timestamp time.Time
 	}{
 		Resources: *c,
 		Timestamp: time.Now(),
 	})
+
+	p, err := format.Source(buf.Bytes())
+	if err != nil {
+		die(err)
+	}
+
+	f.Write(p)
 }
 
 func die(err error) {
@@ -151,6 +162,15 @@ var lastFunc = template.FuncMap{
 		s := ""
 		for _, c := range cases {
 			if pingResource == c.PingResource {
+				s = s + c.LongName + ", "
+			}
+		}
+		return s[:len(s)-2]
+	},
+	"additionalHostname": func(cases []Resource, additionalHostname bool) string {
+		s := ""
+		for _, c := range cases {
+			if additionalHostname == c.AdditionalHostname {
 				s = s + c.LongName + ", "
 			}
 		}

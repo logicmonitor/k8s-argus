@@ -24,7 +24,7 @@ func SanitiseEvalInput(expression string) string {
 }
 
 // Eval evaluates filtering expression based on specified evaluation parameters
-func Eval(lctx *lmctx.LMContext, resource enums.ResourceType, evaluationParams map[string]interface{}) (bool, error) {
+func Eval(lctx *lmctx.LMContext, resource enums.ResourceType, evaluationParams govaluate.MapParameters) (bool, error) {
 	log := lmlog.Logger(lctx)
 	rules, exists := conf.getConf().Filters[resource]
 
@@ -225,7 +225,7 @@ func (rule *Rule) UnmarshalText(text []byte) error {
 }
 
 // Evaluate eval
-func (rule *Rule) Evaluate(parameters map[string]interface{}) (interface{}, error) {
+func (rule *Rule) Evaluate(parameters govaluate.MapParameters) (interface{}, error) {
 	return govaluate.EvaluableExpression(*rule).Evaluate(parameters)
 }
 

@@ -355,7 +355,6 @@ func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *
 		return []types.ResourceOption{}
 	}
 	options := []types.ResourceOption{
-		b.Name(rt.LMName(objectMeta)),
 		b.ResourceLabels(objectMeta.Labels),
 		b.ResourceAnnotations(objectMeta.Annotations),
 		b.DisplayName(util.GetDisplayName(rt, objectMeta, conf)),
@@ -367,6 +366,10 @@ func (b *Builder) GetDefaultsResourceOptions(rt enums.ResourceType, objectMeta *
 	}
 	if rt.IsNamespaceScopedResource() {
 		options = append(options, b.Auto("namespace", objectMeta.Namespace))
+	}
+	// resources having additional hostname that comes from outside Objec
+	if !rt.HasAdditionalHostname() {
+		options = append(options, b.Name(rt.LMName(objectMeta)))
 	}
 
 	return options

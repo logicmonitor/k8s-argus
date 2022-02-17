@@ -173,3 +173,12 @@ func (resourceType *ResourceType) IsK8SPingResource() bool {
 		return true
 	}
 }
+
+func (resourceType *ResourceType) HasAdditionalHostname() bool {
+	switch *resourceType {
+	case {{ additionalHostname .Resources.Resources true }}:
+		return true
+	default:
+		return false
+	}
+}
