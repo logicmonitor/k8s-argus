@@ -106,7 +106,8 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
 		// Delete resource if no more exists or delete if UID does not match.
 		switch {
-		case !ok || clusterPresentMeta.UID != cacheResourceMeta.UID ||
+		case !ok ||
+			clusterPresentMeta.UID != cacheResourceMeta.UID ||
 			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)):
 			{
 				log.Tracef("Deleting dangling resource %s", cacheResourceName)
@@ -222,8 +223,19 @@ func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.Re
 		log.Errorf("Failed to parse delete argus after parameter to duration as per ISO 8601 format: %s", err)
 		return
 	}
-	if (conf.DeleteResources && !util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta)) ||
-		(util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta) && argusDeleteAfter.IsZero() && conf.DeleteResources) {
+	val, deleteAfterLabelExists := resourceMeta.Labels["logicmonitor/deleteafterduration"]
+	d := duration.Duration{}
+	if deleteAfterLabelExists {
+		du, err := duration.ParseISO8601(val)
+		if err != nil {
+			deleteAfterLabelExists = false
+		} else {
+			d = du
+		}
+	}
+	if deleteAfterLabelExists && d.IsZero() ||
+		(conf.DeleteResources && !util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta)) ||
+		(util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta) && argusDeleteAfter.IsZero()) {
 		log.Info("Deleting resource")
 		err := i.ResourceManager.DeleteResourceByID(lctx, resourceName.Resource, resourceMeta.LMID)
 		if err != nil {

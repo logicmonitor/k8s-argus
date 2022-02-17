@@ -82,7 +82,6 @@ func GetAndStoreAll(lctx *lmctx.LMContext, rt enums.ResourceType) ([]*metav1.Par
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, meta.AsPartialObjectMetadata(accessor))
 		metadata := meta.AsPartialObjectMetadata(accessor)
 		now := metav1.Now()
 		if metadata.DeletionTimestamp.Before(&now) {

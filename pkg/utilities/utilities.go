@@ -173,7 +173,7 @@ func GetResourceMetaFromResource(resource *models.Device) (types.ResourceMeta, e
 	categories := strings.Split(categoriesStr, ",")
 
 	return types.ResourceMeta{
-		Container:     GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey),
+		Container:     ResourceCacheContainerValue(resource),
 		LMID:          resource.ID,
 		DisplayName:   *resource.DisplayName,
 		Name:          *resource.Name,
@@ -325,7 +325,7 @@ func DoesResourceExistInCacheUtil(lctx *lmctx.LMContext, rt enums.ResourceType, 
 		return types.ResourceMeta{}, false // nolint: exhaustivestruct
 	}
 
-	return resourceCache.Exists(lctx, resourceName, GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey), softRefresh)
+	return resourceCache.Exists(lctx, resourceName, ResourceCacheContainerValue(resource), softRefresh)
 }
 
 // GetResourceNameFromResource get

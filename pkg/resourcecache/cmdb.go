@@ -21,9 +21,16 @@ import (
 
 func (rc *ResourceCache) populateCacheStore(lctx *lmctx.LMContext, cmList *corev1.ConfigMapList, selectedDumpID int64, tmpCache *Store) error {
 	log := lmlog.Logger(lctx)
+	conf, err := config.GetConfig(lctx)
+	if err != nil {
+		return err
+	}
 	for _, cm := range cmList.Items {
 		dumpID, err2 := strconv.ParseInt(cm.Labels["dumpID"], 10, 64)
-		if err2 != nil || (selectedDumpID != -1 && dumpID != selectedDumpID) {
+		if err2 != nil || (selectedDumpID != -1 && dumpID != selectedDumpID) ||
+			conf.ClusterName != cm.Annotations["clusterName"] ||
+			cm.Labels["version"] != Version {
+			log.Warnf("Failed to load cache chunk with dumpID: %v, selectedDumpID %v, clusterName: %v, version: %v", cm.Labels["dumpID"], selectedDumpID, cm.Annotations["clusterName"], cm.Labels["version"])
 			continue
 		}
 		m := make(map[types.ResourceName][]types.ResourceMeta)
@@ -91,6 +98,10 @@ func (rc *ResourceCache) Save(lctx *lmctx.LMContext) error {
 	if err != nil {
 		ns = "argus"
 	}
+	conf, err := config.GetConfig(lctx)
+	if err != nil {
+		return err
+	}
 	dumpID := time.Now().Unix()
 	dumpIDStr := fmt.Sprintf("%v", dumpID)
 	for idx, chunk := range chunks {
@@ -107,7 +118,8 @@ func (rc *ResourceCache) Save(lctx *lmctx.LMContext) error {
 					"version":     Version,
 				},
 				Annotations: map[string]string{
-					"content_size": fmt.Sprintf("%v", rc.store.Size()),
+					"contentSize": fmt.Sprintf("%v", rc.store.Size()),
+					"clusterName": conf.ClusterName,
 				},
 			},
 			Data:       m,

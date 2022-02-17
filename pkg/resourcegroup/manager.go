@@ -51,6 +51,7 @@ func (m *Manager) CreateResourceGroupTree(lctx *lmctx.LMContext, tree *types.Res
 	if meta, ok := m.ResourceCache.Exists(lctx, key, fmt.Sprintf("%d", resourceGroup.ParentID), false); ok {
 		resourceGroupID = meta.LMID
 		if update {
+			log.Debugf("Updating resource group: %v", *resourceGroup.Name)
 			err2 := m.updateResourceGroup(clctx, tree, update, resourceGroupID, meta, key, resourceGroup)
 			if err2 != nil {
 				if util.GetHTTPStatusCodeFromLMSDKError(err2) == http.StatusNotFound {
@@ -61,8 +62,11 @@ func (m *Manager) CreateResourceGroupTree(lctx *lmctx.LMContext, tree *types.Res
 				}
 				return fmt.Errorf("failed to retrieve resource group for updation %d: %w", meta.LMID, err2)
 			}
+		} else {
+			log.Debugf("Resource group has not set to update, if exist")
 		}
 	} else {
+		log.Infof("Could not find resource group: %v in cache inside container: %v", *resourceGroup.Name, resourceGroup.ParentID)
 		resourceGroupID, err = m.createResourceGroup(log, clctx, resourceGroup)
 		if err != nil {
 			return err
