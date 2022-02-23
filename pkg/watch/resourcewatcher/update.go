@@ -101,7 +101,10 @@ func PreprocessUpdateEventForOldUID(
 			if err == nil {
 				log.Infof("Deleting previous resource (%d) with old UID (%s)", cacheMeta.LMID, cacheMeta.UID)
 				options := b.GetDefaultsResourceOptions(rt, meta, conf)
-				options = append(options, b.Auto("uid", string(cacheMeta.UID)))
+				options = append(options,
+					b.Auto("uid", string(cacheMeta.UID)),
+					b.Name(cacheMeta.Name),
+				)
 				delLctx := lmlog.LMContextWithLMResourceID(lctx, cacheMeta.LMID)
 				err = deleteFun(delLctx, rt, newObj, options...)
 				if err != nil {

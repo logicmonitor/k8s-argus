@@ -113,7 +113,10 @@ func PreprocessAddEventForOldUID(
 			if err == nil {
 				log.Infof("Deleting previous resource (%d) with obj UID (%s)", cacheMeta.LMID, cacheMeta.UID)
 				options := b.GetDefaultsResourceOptions(rt, meta, conf)
-				options = append(options, b.Auto("uid", string(cacheMeta.UID)))
+				options = append(options,
+					b.Auto("uid", string(cacheMeta.UID)),
+					b.Name(cacheMeta.Name),
+				)
 				err = deleteFun(lctx, rt, obj, options...)
 				if err != nil {
 					log.Errorf("Failed to delete previous resource: %s", err)
