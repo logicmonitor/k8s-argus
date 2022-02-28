@@ -71,8 +71,9 @@ func (w *Worker) Run() {
 			w.running = false
 			prometheus.Unregister(workerQueueCount)
 		}()
+		timeout := time.NewTicker(workerIdleNotifyTimeout)
+		defer timeout.Stop()
 		for {
-			timeout := time.NewTicker(workerIdleNotifyTimeout)
 			select {
 			case command := <-inch:
 				metrics.WorkerCommandsTotal.WithLabelValues(fmt.Sprintf("%d", w.config.ID)).Inc()

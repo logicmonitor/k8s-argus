@@ -48,7 +48,7 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 				Name:     metaObject.Name,
 				Resource: rt,
 			}, types.ResourceMeta{ // nolint: exhaustivestruct
-				Container:   metaObject.Namespace,
+				Container:   util.ResourceContainerValueFromMeta(rt, metaObject),
 				Labels:      metaObject.Labels,
 				DisplayName: displayName,
 				UID:         metaObject.UID,

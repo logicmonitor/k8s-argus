@@ -269,6 +269,7 @@ func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.Re
 func (i *InitSyncer) RunPeriodicSync() {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "periodic-sync"}))
 
+	var j int64 = 1
 	go func() {
 		for {
 			conf, err := config.GetConfig(lctx)
@@ -277,7 +278,9 @@ func (i *InitSyncer) RunPeriodicSync() {
 			} else {
 				time.Sleep(*conf.Intervals.PeriodicDeleteInterval)
 			}
-			i.Sync(lctx)
+			ilctx := lmlog.LMContextWithFields(lctx, logrus.Fields{"run": j})
+			i.Sync(ilctx)
+			j++
 		}
 	}()
 }

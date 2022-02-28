@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
+	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/lm-sdk-go/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -40,6 +41,13 @@ func ResourceCacheContainerValue(resource *models.Device) string {
 	}
 	if rt.IsNamespaceScopedResource() {
 		return GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey)
+	}
+	return constants.ClusterScopedGroupName
+}
+
+func ResourceContainerValueFromMeta(rt enums.ResourceType, metaObject *metav1.PartialObjectMetadata) string {
+	if rt.IsNamespaceScopedResource() {
+		return metaObject.Namespace
 	}
 	return constants.ClusterScopedGroupName
 }
