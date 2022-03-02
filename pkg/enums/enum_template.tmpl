@@ -4,7 +4,7 @@ package enums
 import (
 	"fmt"
 	"strings"
-
+	
 	{{- range $value := .Resources.Apis}}{{- if ne $value.Alias "" }}
 	{{ $value.Alias }} "{{ $value.PackageName }}"
 	{{- end}}{{- end }}

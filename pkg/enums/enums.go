@@ -440,18 +440,18 @@ func (resourceType *ResourceType) IsNamespaceScopedResource() bool {
 
 func (resourceType *ResourceType) APIGroup() string {
 	switch *resourceType {
-	case CronJobs, Jobs:
-		return "batch"
-	case Pods, Services, Nodes, Namespaces, ConfigMaps, PersistentVolumes, PersistentVolumeClaims, Secrets, EndPoints:
-		return ""
-	case Ingresses, NetworkPolicies:
-		return "networking"
 	case Unknown, ETCD:
 		return ""
 	case Deployments, DaemonSets, ReplicaSets, StatefulSets:
 		return "apps"
 	case Hpas:
 		return "autoscaling"
+	case CronJobs, Jobs:
+		return "batch"
+	case Pods, Services, Nodes, Namespaces, ConfigMaps, PersistentVolumes, PersistentVolumeClaims, Secrets, EndPoints:
+		return ""
+	case Ingresses, NetworkPolicies:
+		return "networking"
 	default:
 		return ""
 	}

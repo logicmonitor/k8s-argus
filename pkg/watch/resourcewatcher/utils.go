@@ -17,14 +17,21 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/metrics"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/daemonset"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/deployment"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/networkpolicy"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/node"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/persistentvolumeclaim"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/pod"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/replicaset"
 	"github.com/logicmonitor/k8s-argus/pkg/watch/service"
+	"github.com/logicmonitor/k8s-argus/pkg/watch/statefulset"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // WatcherConfigurer to provide custom options provider to put extra props on resource
+// nolint: cyclop
 func WatcherConfigurer(resourceType enums.ResourceType) types.WatcherConfigurer {
 	// nolint: exhaustive
 	switch resourceType {
@@ -37,6 +44,24 @@ func WatcherConfigurer(resourceType enums.ResourceType) types.WatcherConfigurer 
 	case enums.Nodes:
 
 		return &node.Watcher{}
+	case enums.Deployments:
+
+		return &deployment.Watcher{}
+	case enums.DaemonSets:
+
+		return &daemonset.Watcher{}
+	case enums.ReplicaSets:
+
+		return &replicaset.Watcher{}
+	case enums.StatefulSets:
+
+		return &statefulset.Watcher{}
+	case enums.PersistentVolumeClaims:
+
+		return &persistentvolumeclaim.Watcher{}
+	case enums.NetworkPolicies:
+
+		return &networkpolicy.Watcher{}
 	default:
 
 		return &emptyWatcher{}

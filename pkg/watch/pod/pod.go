@@ -4,12 +4,14 @@ package pod
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
+	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -34,6 +36,10 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		options := []types.ResourceOption{
 			b.Name(getPodDNSName(p)),
 			b.System("ips", p.Status.PodIP),
+			b.Custom(
+				constants.SelectorCustomPropertyPrefix+constants.NodeSelectorKey,
+				utilities.CoalesceMatchLabels(p.Spec.NodeSelector),
+			),
 		}
 
 		// Pod running on fargate doesn't support HostNetwork so check fargate profile label, if label exists then mark hostNetwork as true
@@ -48,6 +54,7 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 }
 
 // UpdateFuncOptions update
+// nolint: cyclop
 func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceMeta, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, cacheMeta types.ResourceMeta, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 		oldPod := oldObj.(*corev1.Pod) // nolint: forcetypeassert
@@ -66,6 +73,14 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 				b.Name(getPodDNSName(p)),
 				b.System("ips", p.Status.PodIP),
 			}...)
+		}
+
+		// If NodeSelectors of new & old pods are different, add in appended options
+		if !reflect.DeepEqual(oldPod.Spec.NodeSelector, p.Spec.NodeSelector) {
+			options = append(options, b.Custom(
+				constants.SelectorCustomPropertyPrefix+constants.NodeSelectorKey,
+				utilities.CoalesceMatchLabels(p.Spec.NodeSelector),
+			))
 		}
 
 		if oldPod.Spec.HostNetwork != p.Spec.HostNetwork {
