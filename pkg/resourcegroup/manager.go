@@ -51,12 +51,22 @@ func (m *Manager) CreateResourceGroupTree(lctx *lmctx.LMContext, tree *types.Res
 	if meta, ok := m.ResourceCache.Exists(lctx, key, fmt.Sprintf("%d", resourceGroup.ParentID), false); ok {
 		resourceGroupID = meta.LMID
 		if update {
+			log.Debugf("Updating resource group: %v", *resourceGroup.Name)
 			err2 := m.updateResourceGroup(clctx, tree, update, resourceGroupID, meta, key, resourceGroup)
 			if err2 != nil {
-				return err2
+				if util.GetHTTPStatusCodeFromLMSDKError(err2) == http.StatusNotFound {
+					// if group not found, invalidate cache and call again
+					log.Errorf("resource group with ID (%d) does not exist, invalidating cache and performing create resourcegroup", meta.LMID)
+					m.ResourceCache.Unset(lctx, key, fmt.Sprintf("%d", resourceGroup.ParentID))
+					return m.CreateResourceGroupTree(lctx, tree, update)
+				}
+				return fmt.Errorf("failed to retrieve resource group for updation %d: %w", meta.LMID, err2)
 			}
+		} else {
+			log.Debugf("Resource group has not set to update, if exist")
 		}
 	} else {
+		log.Infof("Could not find resource group: %v in cache inside container: %v", *resourceGroup.Name, resourceGroup.ParentID)
 		resourceGroupID, err = m.createResourceGroup(log, clctx, resourceGroup)
 		if err != nil {
 			return err
@@ -87,6 +97,7 @@ func (m *Manager) createResourceGroup(log *logrus.Entry, clctx *lmctx.LMContext,
 		log.Warnf("seems resource group with same name is already present (%s) [parent ID: %d]: %s", *resourceGroup.Name, resourceGroup.ParentID, err)
 		resp, err := m.getResourceGroupByName(clctx, resourceGroup.ParentID, *resourceGroup.Name)
 		if err != nil {
+			log.Errorf("error while getting resourceGroup by name %v", err)
 			return -1, err
 		}
 		return resp.ID, nil
@@ -97,27 +108,21 @@ func (m *Manager) createResourceGroup(log *logrus.Entry, clctx *lmctx.LMContext,
 
 func (m *Manager) updateResourceGroup(lctx *lmctx.LMContext, tree *types.ResourceGroupTree, update bool, resourceGroupID int32, meta types.ResourceMeta, key types.ResourceName, resourceGroup *models.DeviceGroup) error {
 	log := lmlog.Logger(lctx)
-	log.Infof("Updating existing resource group [%d]", resourceGroupID)
-	resp, err := m.getResourceGroupByID(meta.LMID, lctx)
+	log.Infof("Updating existing resource group [%d] %s ", resourceGroupID, meta.Name)
+	resp, err := m.getResourceGroupByID(resourceGroupID, lctx)
 	if err != nil {
-		if util.GetHTTPStatusCodeFromLMSDKError(err) == http.StatusNotFound {
-			// if group not found, invalidate cache and call again
-			log.Errorf("resource group with ID (%d) does not exist, invalidating cache and performing create resourcegroup", meta.LMID)
-			m.ResourceCache.Unset(lctx, key, fmt.Sprintf("%d", resourceGroup.ParentID))
-			return m.CreateResourceGroupTree(lctx, tree, update)
-		}
-		return fmt.Errorf("failed to retrieve resource group for updation %d: %w", meta.LMID, err)
+		return err
 	}
 	existingResourceGroup := resp.(*lm.GetDeviceGroupByIDOK).Payload
 	log.Tracef("Existing resource group: %v", existingResourceGroup)
 	existingResourceGroup, err = util.BuildResourceGroup(lctx, existingResourceGroup, tree.Options...)
 	log.Tracef("Updated existing resource group: %v", existingResourceGroup)
 	if err != nil {
-		return fmt.Errorf("failed to modify resource group for updation %d: %w", meta.LMID, err)
+		return fmt.Errorf("failed to modify resource group for updation %d: %w", resourceGroupID, err)
 	}
 	err = m.updateResourceGroupByID(lctx, meta, existingResourceGroup)
 	if err != nil {
-		return fmt.Errorf("failed to update resource group %d: %w", meta.LMID, err)
+		return fmt.Errorf("failed to update resource group %d: %w", resourceGroupID, err)
 	}
 	log.Debugf("Updated resource group [%d]", resourceGroupID)
 	return nil

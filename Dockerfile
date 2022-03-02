@@ -22,9 +22,7 @@ RUN cp coverage.txt /coverage.txt
 
 FROM alpine:3.6
 LABEL maintainer="LogicMonitor <argus@logicmonitor.com>"
-RUN apk --update add ca-certificates \
-    && rm -rf /var/cache/apk/* \
-    && rm -rf /var/lib/apk/*
+RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=test /coverage.txt /coverage.txt
 COPY --from=lint /marker /marker

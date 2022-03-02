@@ -4,6 +4,12 @@ VERSION       ?= $(shell git describe --tags --always --dirty)
 
 default: build
 
+buildenums:
+	cd pkg/enums && go run resource_generator.go
+	find pkg/enums/ -type f | grep go | egrep -v "mocks|gomock" | xargs gofmt -l -d -s -w; sync
+	find pkg/enums/ -type f | grep go | egrep -v "mocks|gomock" | xargs gofumpt -l -d -s -w; sync
+	find pkg/enums/ -type f | grep go | egrep -v "mocks|gomock" | xargs gci -w; sync
+	find pkg/enums/ -type f | grep go | egrep -v "mocks|gomock" | xargs goimports -l -d -w; sync
 gofmt:
 ifeq ($(shell uname -s), Darwin)
 	find pkg/ -type f | grep go | egrep -v "mocks|gomock" | xargs gofmt -l -d -s -w; sync
@@ -20,10 +26,10 @@ ifeq ($(shell uname -s), Darwin)
 	goimports -l -d -w main.go; sync
 endif
 
-build: gofmt
+build: buildenums gofmt
 	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) .
 
-dev: gofmt
+dev: buildenums gofmt
 	docker build --build-arg VERSION=$(VERSION) -t $(NAMESPACE)/$(REPOSITORY):$(VERSION) -f Dockerfile.dev .
 
 lint: gofmt

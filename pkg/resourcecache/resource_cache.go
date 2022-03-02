@@ -20,7 +20,7 @@ import (
 var (
 	// Version to differentiate cache flushed to configmap is with previous datastructures or not.
 	// Whenever cache.ResourceName and cache.ResourceMeta struct modifies, increase the version so that it will easier to parse previously created CMs and convert it to newer data structure
-	Version = "v1"
+	Version = "v2"
 
 	// CMMaxBytes constant to set max threshold for byte size of configmap
 	// 1MiB is the capacity of configmap data, but we are storing 80% of the data in a chunk
@@ -45,7 +45,7 @@ type ResourceCache struct {
 
 	// soft refresh last time
 	softRefreshLast map[string]time.Time
-	softRefreshMu   sync.Mutex
+	softRefreshMu   sync.RWMutex
 
 	hooks   []types.CacheHook
 	hookrwm sync.RWMutex
@@ -54,14 +54,16 @@ type ResourceCache struct {
 // NewResourceCache create new ResourceCache object
 func NewResourceCache(facadeObj *types.LMRequester) *ResourceCache {
 	resourceCache := &ResourceCache{
-		store:         NewStore(),
-		rwm:           sync.RWMutex{},
-		flushTimeToCM: 1 * time.Minute,
-		flushMU:       sync.Mutex{},
-		LMRequester:   facadeObj,
-		clusterGrpID:  -1,
-		stateLoaded:   false,
-		rebuildMutex:  sync.Mutex{},
+		store:           NewStore(),
+		rwm:             sync.RWMutex{},
+		flushTimeToCM:   1 * time.Minute,
+		flushMU:         sync.Mutex{},
+		LMRequester:     facadeObj,
+		clusterGrpID:    -1,
+		stateLoaded:     false,
+		rebuildMutex:    sync.Mutex{},
+		softRefreshMu:   sync.RWMutex{},
+		softRefreshLast: make(map[string]time.Time),
 	}
 
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"resource_cache": "init"}))
@@ -166,8 +168,10 @@ func (rc *ResourceCache) Set(lctx *lmctx.LMContext, name types.ResourceName, met
 	log := lmlog.Logger(lctx)
 	rc.rwm.RLock()
 	defer rc.rwm.RUnlock()
-	log.Tracef("Deleting previous entry if any...")
-	rc.unsetInternal(lctx, name, meta.Container)
+	if name.Resource != enums.Namespaces {
+		log.Tracef("Deleting previous entry if any...")
+		rc.unsetInternal(lctx, name, meta.Container)
+	}
 	log.Tracef("Setting cache entry %v: %v", name, meta)
 	ok := rc.store.Set(lctx, name, meta)
 	if ok {
@@ -191,7 +195,8 @@ func (rc *ResourceCache) Exists(lctx *lmctx.LMContext, name types.ResourceName, 
 	log := lmlog.Logger(lctx)
 	log.Tracef("Checking cache entry %v: %v", name, container)
 	meta, ok := rc.store.Exists(lctx, name, container)
-	if !ok && softRefresh {
+	if meta.IsInvalid && softRefresh {
+		log.Debugf("Invalid cache entry hence refreshing its container...")
 		rc.SoftRefresh(lctx, container)
 	}
 	if softRefresh {
@@ -212,9 +217,12 @@ func (rc *ResourceCache) Get(lctx *lmctx.LMContext, name types.ResourceName) ([]
 
 // Unset checks entry into cache map
 func (rc *ResourceCache) Unset(lctx *lmctx.LMContext, name types.ResourceName, container string) bool {
+	log := lmlog.Logger(lctx)
 	rc.rwm.RLock()
 	defer rc.rwm.RUnlock()
-	meta, ok := rc.unsetInternal(lctx, name, container)
+	rc.unsetInternal(lctx, name, container)
+	log.Tracef("Deleting cache entry %v: %v", name, container)
+	meta, ok := rc.store.Unset(lctx, name, container)
 	if ok {
 		go func() {
 			rc.hookrwm.RLock()
@@ -229,25 +237,37 @@ func (rc *ResourceCache) Unset(lctx *lmctx.LMContext, name types.ResourceName, c
 	return ok
 }
 
-func (rc *ResourceCache) unsetInternal(lctx *lmctx.LMContext, name types.ResourceName, container string) (types.ResourceMeta, bool) {
+func (rc *ResourceCache) unsetInternal(lctx *lmctx.LMContext, name types.ResourceName, container string) bool {
 	log := lmlog.Logger(lctx)
-	/*// Special handling for resource groups, do not add another.
+	// Special handling for resource groups, do not add another.
 	// when parent resource group is deleted its all child hierarchy gets deleted from portal, hence
 	if name.Resource == enums.Namespaces {
-		if exists, ok := rc.store.Exists(lctx, name, container); ok {
-			list := rc.store.ListWithFilter(func(k cache.ResourceName, v cache.ResourceMeta) bool {
+		/*if exists, ok := rc.store.Exists(lctx, name, container); ok {
+			list := rc.store.ListWithFilter(func(k types.ResourceName, v types.ResourceMeta) bool {
 				return v.Container == exists.Container ||
-					(k.Resource.IsNamespaceScopedResource() && v.Container == name.GroupName)
+					(k.Resource.IsNamespaceScopedResource() && v.Container == name.Name)
 			})
 			log.Infof("Removing dependent (%d) container cache entries from cache of %s", len(list), container)
 			for _, item := range list {
 				rc.store.Unset(item.K, item.V.Container)
 			}
-		}
-	}*/
-	log.Tracef("Deleting cache entry %v: %v", name, container)
+		}*/
 
-	return rc.store.Unset(lctx, name, container)
+		// delete child groups cache entries if parent got deleted
+		if exists, ok := rc.store.Exists(lctx, name, container); ok {
+			list := rc.store.ListWithFilter(func(k types.ResourceName, v types.ResourceMeta) bool {
+				return k.Resource == enums.Namespaces && v.Container == fmt.Sprintf("%v", exists.LMID)
+			})
+			if len(list) > 0 { // check to avoid excessive logs at info level
+				log.Infof("Removing (%d) child group cache entries having container (%v) ", len(list), exists.LMID)
+				for _, item := range list {
+					rc.store.Unset(lctx, item.K, item.V.Container)
+				}
+			}
+		}
+	}
+
+	return true
 }
 
 // Load loads cache from configmaps
@@ -293,22 +313,35 @@ func (rc *ResourceCache) UnsetLMID(lctx *lmctx.LMContext, rt enums.ResourceType,
 }
 
 func (rc *ResourceCache) SoftRefresh(lctx *lmctx.LMContext, container string) {
+	log := lmlog.Logger(lctx)
 	conf, err := config.GetConfig(lctx)
 	if err != nil {
+		log.Tracef("soft refresh: get config failed: %s", err)
 		return
 	}
-	if t, ok := rc.getSoftRefreshLastTime(container); ok && t.Before(time.Now().Add(-time.Minute)) {
+	log.Tracef("soft refresh: starting...")
+	SoftRefreshMinDuration := time.Minute
+	if t, ok := rc.getSoftRefreshLastTime(container); ok && t.Before(time.Now().Add(-SoftRefreshMinDuration)) {
+		log.Tracef("soft refresh: valid for soft refresh")
 		list, ok := rc.Get(lctx, types.ResourceName{Name: container, Resource: enums.Namespaces})
+		log.Tracef("soft refresh: container details: %v: %v", list, ok)
 		if ok {
 			for _, meta := range list {
 				resp, err := rc.getDevices(lctx, meta.LMID)
-				if err != nil && resp != nil {
+				log.Tracef("soft refresh: resources fetched of %v: %v", meta.LMID, resp)
+				if err == nil && resp != nil {
+					log.Tracef("soft refresh: storing resources in cache: %v", resp)
 					for _, resource := range resp {
+						log.Tracef("soft refresh: storing resource in cache: %v", resource)
 						rc.storeDevice(lctx, resource, conf.ClusterName, rc.store)
 					}
 				}
 			}
+		} else {
+			log.Tracef("soft refresh: no cache entry found for container")
 		}
+	} else {
+		log.Tracef("soft refresh: ignoring soft refresh less than %v", SoftRefreshMinDuration)
 	}
 }
 
@@ -320,4 +353,11 @@ func (rc *ResourceCache) getSoftRefreshLastTime(key string) (time.Time, bool) {
 	}
 
 	return time.Time{}, false
+}
+
+func (rc *ResourceCache) setLastUpdateTime(key types.ResourceName) {
+	rc.softRefreshMu.Lock()
+	defer rc.softRefreshMu.Unlock()
+	t := time.Now()
+	rc.softRefreshLast[key.Name] = t
 }

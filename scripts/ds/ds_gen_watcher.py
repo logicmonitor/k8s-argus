@@ -16,7 +16,7 @@ colors = ['gray', 'purple', 'yellow', 'orange', 'red']
 
 for event in events:
     graph = eT.SubElement(datapoints, "datapoint")
-    eT.SubElement(graph, "name").text = "argus_watcher_processing_time_" + event + "_rate"
+    eT.SubElement(graph, "name").text = "ArgusWatcherProcessingTime" + event.title() + "Rate"
     eT.SubElement(graph, "dataType").text = str(7)
     eT.SubElement(graph, "type").text = str(1)
     eT.SubElement(graph, "postprocessormethod").text = "regex"
@@ -31,9 +31,9 @@ for event in events:
     eT.SubElement(graph, "warnadadvsetting")
     eT.SubElement(graph, "erroradadvsetting")
     eT.SubElement(graph, "criticaladadvsetting")
-    eT.SubElement(graph, "description")
+    eT.SubElement(graph, "description").text = "Rate of total " + event + " events processed"
     eT.SubElement(graph, "maxvalue")
-    eT.SubElement(graph, "minvalue")
+    eT.SubElement(graph, "minvalue").text = "0"
     eT.SubElement(graph, "userparam1").text = "argus_watcher_processing_time"
     eT.SubElement(graph, "userparam2").text = "event=\"" + event + "\",resource=\"##WILDVALUE##\""
     eT.SubElement(graph, "userparam3").text = "none"
@@ -44,7 +44,7 @@ for event in events:
 
     for quantile in quantiles:
         graph = eT.SubElement(datapoints, "datapoint")
-        eT.SubElement(graph, "name").text = "argus_watcher_processing_time_" + event + "_" + str(quantile)
+        eT.SubElement(graph, "name").text = "ArgusWatcherProcessingTime" + event.title() + str(quantile)
         eT.SubElement(graph, "dataType").text = str(7)
         eT.SubElement(graph, "type").text = str(2)
         eT.SubElement(graph, "postprocessormethod").text = "regex"
@@ -61,9 +61,9 @@ for event in events:
         eT.SubElement(graph, "warnadadvsetting")
         eT.SubElement(graph, "erroradadvsetting")
         eT.SubElement(graph, "criticaladadvsetting")
-        eT.SubElement(graph, "description")
+        eT.SubElement(graph, "description").text = "Average time taken to complete " +str(quantile/100) + " quantile of "  + event + " event in last 1 minute"
         eT.SubElement(graph, "maxvalue")
-        eT.SubElement(graph, "minvalue")
+        eT.SubElement(graph, "minvalue").text = "0"
         eT.SubElement(graph, "userparam1").text = "argus_watcher_processing_time"
         eT.SubElement(graph,
                       "userparam2").text = "event=\"" + event + "\",resource=\"##WILDVALUE##\",quantile=\"" + str(
@@ -76,7 +76,7 @@ for event in events:
 
 for event in latency_events:
     graph = eT.SubElement(datapoints, "datapoint")
-    eT.SubElement(graph, "name").text = "argus_watcher_event_latency_" + event + "_rate"
+    eT.SubElement(graph, "name").text = "ArgusWatcherEventLatency" + event.title() + "Rate"
     eT.SubElement(graph, "dataType").text = str(7)
     eT.SubElement(graph, "type").text = str(1)
     eT.SubElement(graph, "postprocessormethod").text = "regex"
@@ -91,9 +91,9 @@ for event in latency_events:
     eT.SubElement(graph, "warnadadvsetting")
     eT.SubElement(graph, "erroradadvsetting")
     eT.SubElement(graph, "criticaladadvsetting")
-    eT.SubElement(graph, "description")
+    eT.SubElement(graph, "description").text = "Rate of total " + event + " events completed"
     eT.SubElement(graph, "maxvalue")
-    eT.SubElement(graph, "minvalue")
+    eT.SubElement(graph, "minvalue").text = "0"
     eT.SubElement(graph, "userparam1").text = "argus_watcher_event_latency"
     eT.SubElement(graph, "userparam2").text = "event=\"" + event + "\",resource=\"##WILDVALUE##\""
     eT.SubElement(graph, "userparam3").text = "none"
@@ -104,7 +104,7 @@ for event in latency_events:
 
     for quantile in quantiles:
         graph = eT.SubElement(datapoints, "datapoint")
-        eT.SubElement(graph, "name").text = "argus_watcher_event_latency_" + event + "_" + str(quantile)
+        eT.SubElement(graph, "name").text = "ArgusWatcherEventLatency" + event.title() + str(quantile)
         eT.SubElement(graph, "dataType").text = str(7)
         eT.SubElement(graph, "type").text = str(2)
         eT.SubElement(graph, "postprocessormethod").text = "regex"
@@ -121,9 +121,9 @@ for event in latency_events:
         eT.SubElement(graph, "warnadadvsetting")
         eT.SubElement(graph, "erroradadvsetting")
         eT.SubElement(graph, "criticaladadvsetting")
-        eT.SubElement(graph, "description")
+        eT.SubElement(graph, "description").text = "Completed " +str(quantile/100) + " quantile of " + event + " events in last 1 minute"
         eT.SubElement(graph, "maxvalue")
-        eT.SubElement(graph, "minvalue")
+        eT.SubElement(graph, "minvalue").text = "0"
         eT.SubElement(graph, "userparam1").text = "argus_watcher_event_latency"
         eT.SubElement(graph,
                       "userparam2").text = "event=\"" + event + "\",resource=\"##WILDVALUE##\",quantile=\"" + str(
@@ -145,29 +145,29 @@ for event in events:
     eT.SubElement(graph, "verticallabel").text = "milliseconds"
     eT.SubElement(graph, "rigid").text = "false"
     eT.SubElement(graph, "maxvalue").text = "NaN"
-    eT.SubElement(graph, "minvalue").text = "NaN"
+    eT.SubElement(graph, "minvalue").text = "0.0"
     eT.SubElement(graph, "displayprio").text = "1"
     eT.SubElement(graph, "timescale").text = "1day"
     eT.SubElement(graph, "base1024").text = "false"
     gps = eT.SubElement(graph, "graphdatapoints")
     for quantile in quantiles:
         dp = eT.SubElement(gps, "graphdatapoint")
-        eT.SubElement(dp, "name").text = "argus_watcher_processing_time_" + event + "_" + str(quantile)
-        eT.SubElement(dp, "datapointname").text = "argus_watcher_processing_time_" + event + "_" + str(
+        eT.SubElement(dp, "name").text = "ArgusWatcherProcessingTime" + event.title() + str(quantile)
+        eT.SubElement(dp, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + str(
             quantile)
     eT.SubElement(graph, "cf").text = "1"
     vgps = eT.SubElement(graph, "graphvirtualdatapoints")
     for quantile in quantiles:
         dp = eT.SubElement(vgps, "graphvirtualdatapoint")
-        eT.SubElement(dp, "name").text = "argus_watcher_processing_time_" + event + "_" + str(
+        eT.SubElement(dp, "name").text = "ArgusWatcherProcessingTime" + event.title() + str(
             quantile) + "_ms"
-        eT.SubElement(dp, "rpn").text = "argus_watcher_processing_time_" + event + "_" + str(
+        eT.SubElement(dp, "rpn").text = "ArgusWatcherProcessingTime" + event.title() + str(
             quantile) + "/1000000"
     gdatas = eT.SubElement(graph, "graphdatas")
     i = 0
     for quantile in quantiles:
         dp = eT.SubElement(gdatas, "graphdata")
-        eT.SubElement(dp, "datapointname").text = "argus_watcher_processing_time_" + event + "_" + str(
+        eT.SubElement(dp, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + str(
             quantile) + "_ms"
         eT.SubElement(dp, "legend").text = "P" + str(
             quantile)
@@ -178,34 +178,34 @@ for event in events:
 
 for event in latency_events:
     graph = eT.SubElement(graphs, "graph")
-    eT.SubElement(graph, "name").text = event.upper() + " event latency"
-    eT.SubElement(graph, "title").text = event.upper() + " event latency"
+    eT.SubElement(graph, "name").text = event.upper() + " Event Latency"
+    eT.SubElement(graph, "title").text = event.upper() + " Event Latency"
     eT.SubElement(graph, "verticallabel").text = "milliseconds"
     eT.SubElement(graph, "rigid").text = "false"
     eT.SubElement(graph, "maxvalue").text = "NaN"
-    eT.SubElement(graph, "minvalue").text = "NaN"
+    eT.SubElement(graph, "minvalue").text = "0"
     eT.SubElement(graph, "displayprio").text = "100"
     eT.SubElement(graph, "timescale").text = "1day"
     eT.SubElement(graph, "base1024").text = "false"
     gps = eT.SubElement(graph, "graphdatapoints")
     for quantile in quantiles:
         dp = eT.SubElement(gps, "graphdatapoint")
-        eT.SubElement(dp, "name").text = "argus_watcher_event_latency_" + event + "_" + str(quantile)
-        eT.SubElement(dp, "datapointname").text = "argus_watcher_event_latency_" + event + "_" + str(
+        eT.SubElement(dp, "name").text = "ArgusWatcherEventLatency" + event.title() + str(quantile)
+        eT.SubElement(dp, "datapointname").text = "ArgusWatcherEventLatency" + event.title() + str(
             quantile)
     eT.SubElement(graph, "cf").text = "1"
     vgps = eT.SubElement(graph, "graphvirtualdatapoints")
     for quantile in quantiles:
         dp = eT.SubElement(vgps, "graphvirtualdatapoint")
-        eT.SubElement(dp, "name").text = "argus_watcher_event_latency_" + event + "_" + str(
+        eT.SubElement(dp, "name").text = "ArgusWatcherEventLatency" + event.title() + str(
             quantile) + "_ms"
-        eT.SubElement(dp, "rpn").text = "argus_watcher_event_latency_" + event + "_" + str(
+        eT.SubElement(dp, "rpn").text = "ArgusWatcherEventLatency" + event.title() + str(
             quantile) + "/1000000"
     gdatas = eT.SubElement(graph, "graphdatas")
     i = 0
     for quantile in quantiles:
         dp = eT.SubElement(gdatas, "graphdata")
-        eT.SubElement(dp, "datapointname").text = "argus_watcher_event_latency_" + event + "_" + str(
+        eT.SubElement(dp, "datapointname").text = "ArgusWatcherEventLatency" + event.title() + str(
             quantile) + "_ms"
         eT.SubElement(dp, "legend").text = "P" + str(
             quantile)
@@ -217,14 +217,14 @@ for event in latency_events:
 ographs = tree.find(".//entry/overviewgraphs")
 
 ograph = eT.SubElement(ographs, "overviewgraph")
-eT.SubElement(ograph, "name").text = "P99 Processing Time"
-eT.SubElement(ograph, "title").text = "P99 Processing Time"
+eT.SubElement(ograph, "name").text = "P99 ADD Events Processing Time"
+eT.SubElement(ograph, "title").text = "P99 ADD Events Processing Time"
 eT.SubElement(ograph, "verticallabel").text = "milliseconds"
 eT.SubElement(ograph, "rigid").text = "false"
 eT.SubElement(ograph, "maxvalue").text = "NaN"
-eT.SubElement(ograph, "minvalue").text = "NaN"
+eT.SubElement(ograph, "minvalue").text = "0.0"
 eT.SubElement(ograph, "displayprio").text = "1"
-eT.SubElement(ograph, "timescale").text = "1day"
+eT.SubElement(ograph, "timescale").text = "1hour"
 eT.SubElement(ograph, "base1024").text = "false"
 eT.SubElement(ograph, "aggregated").text = "false"
 
@@ -233,22 +233,93 @@ ovdps = eT.SubElement(ograph, "virtualdatapoints")
 olines = eT.SubElement(ograph, "lines")
 
 for event in events:
-    odp = eT.SubElement(odps, "overviewgraphdatapoint")
-    eT.SubElement(odp, "name").text = "argus_watcher_processing_time_" + event + "_99"
-    eT.SubElement(odp, "datapointname").text = "argus_watcher_processing_time_" + event + "_99"
-    eT.SubElement(odp, "cf").text = "1"
-    eT.SubElement(odp, "aggregateMethod").text = "average"
+    if event == 'add':
+        odp = eT.SubElement(odps, "overviewgraphdatapoint")
+        eT.SubElement(odp, "name").text = "ArgusWatcherProcessingTime" + event.title() + "99"
+        eT.SubElement(odp, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + "99"
+        eT.SubElement(odp, "cf").text = "1"
+        eT.SubElement(odp, "aggregateMethod").text = "average"
 
-    ovdp = eT.SubElement(ovdps, "overviewgraphvirtualdatapoint")
-    eT.SubElement(ovdp, "name").text = "argus_watcher_processing_time_" + event + "_99_ms"
-    eT.SubElement(ovdp, "rpn").text = "argus_watcher_processing_time_" + event + "_99/1000000"
+        ovdp = eT.SubElement(ovdps, "overviewgraphvirtualdatapoint")
+        eT.SubElement(ovdp, "name").text = "ArgusWatcherProcessingTime" + event.title() + "99_ms"
+        eT.SubElement(ovdp, "rpn").text = "ArgusWatcherProcessingTime" + event.title() + "99/1000000"
 
-    line = eT.SubElement(olines, "overviewgraphline")
-    eT.SubElement(line, "type").text = "1"
-    eT.SubElement(line, "legend").text = event.upper() + " ##INSTANCE##"
-    eT.SubElement(line, "datapointname").text = "argus_watcher_processing_time_" + event + "_99_ms"
-    eT.SubElement(line, "isvirtualdatapoint").text = "true"
-    eT.SubElement(line, "color").text = "silver"
+        line = eT.SubElement(olines, "overviewgraphline")
+        eT.SubElement(line, "type").text = "1"
+        eT.SubElement(line, "legend").text = event.upper() + " ##INSTANCE##"
+        eT.SubElement(line, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + "99_ms"
+        eT.SubElement(line, "isvirtualdatapoint").text = "true"
+        eT.SubElement(line, "color").text = "silver"
+
+ograph = eT.SubElement(ographs, "overviewgraph")
+eT.SubElement(ograph, "name").text = "P99 UPDATE Events Processing Time"
+eT.SubElement(ograph, "title").text = "P99 UPDATE Events Processing Time"
+eT.SubElement(ograph, "verticallabel").text = "milliseconds"
+eT.SubElement(ograph, "rigid").text = "false"
+eT.SubElement(ograph, "maxvalue").text = "NaN"
+eT.SubElement(ograph, "minvalue").text = "0.0"
+eT.SubElement(ograph, "displayprio").text = "1"
+eT.SubElement(ograph, "timescale").text = "1hour"
+eT.SubElement(ograph, "base1024").text = "false"
+eT.SubElement(ograph, "aggregated").text = "false"
+
+odps = eT.SubElement(ograph, "datapoints")
+ovdps = eT.SubElement(ograph, "virtualdatapoints")
+olines = eT.SubElement(ograph, "lines")
+
+for event in events:
+    if event == 'update':
+        odp = eT.SubElement(odps, "overviewgraphdatapoint")
+        eT.SubElement(odp, "name").text = "ArgusWatcherProcessingTime" + event.title() + "99"
+        eT.SubElement(odp, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + "99"
+        eT.SubElement(odp, "cf").text = "1"
+        eT.SubElement(odp, "aggregateMethod").text = "average"
+
+        ovdp = eT.SubElement(ovdps, "overviewgraphvirtualdatapoint")
+        eT.SubElement(ovdp, "name").text = "ArgusWatcherProcessingTime" + event.title() + "99_ms"
+        eT.SubElement(ovdp, "rpn").text = "ArgusWatcherProcessingTime" + event.title() + "99/1000000"
+
+        line = eT.SubElement(olines, "overviewgraphline")
+        eT.SubElement(line, "type").text = "1"
+        eT.SubElement(line, "legend").text = event.upper() + " ##INSTANCE##"
+        eT.SubElement(line, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + "99_ms"
+        eT.SubElement(line, "isvirtualdatapoint").text = "true"
+        eT.SubElement(line, "color").text = "silver"
+
+ograph = eT.SubElement(ographs, "overviewgraph")
+eT.SubElement(ograph, "name").text = "P99 DELETE Events Processing Time"
+eT.SubElement(ograph, "title").text = "P99 DELETE Events Processing Time"
+eT.SubElement(ograph, "verticallabel").text = "milliseconds"
+eT.SubElement(ograph, "rigid").text = "false"
+eT.SubElement(ograph, "maxvalue").text = "NaN"
+eT.SubElement(ograph, "minvalue").text = "0.0"
+eT.SubElement(ograph, "displayprio").text = "1"
+eT.SubElement(ograph, "timescale").text = "1hour"
+eT.SubElement(ograph, "base1024").text = "false"
+eT.SubElement(ograph, "aggregated").text = "false"
+
+odps = eT.SubElement(ograph, "datapoints")
+ovdps = eT.SubElement(ograph, "virtualdatapoints")
+olines = eT.SubElement(ograph, "lines")
+
+for event in events:
+    if event == 'delete':
+        odp = eT.SubElement(odps, "overviewgraphdatapoint")
+        eT.SubElement(odp, "name").text = "ArgusWatcherProcessingTime" + event.title() + "99"
+        eT.SubElement(odp, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + "99"
+        eT.SubElement(odp, "cf").text = "1"
+        eT.SubElement(odp, "aggregateMethod").text = "average"
+
+        ovdp = eT.SubElement(ovdps, "overviewgraphvirtualdatapoint")
+        eT.SubElement(ovdp, "name").text = "ArgusWatcherProcessingTime" + event.title() + "99_ms"
+        eT.SubElement(ovdp, "rpn").text = "ArgusWatcherProcessingTime" + event.title() + "99/1000000"
+
+        line = eT.SubElement(olines, "overviewgraphline")
+        eT.SubElement(line, "type").text = "1"
+        eT.SubElement(line, "legend").text = event.upper() + " ##INSTANCE##"
+        eT.SubElement(line, "datapointname").text = "ArgusWatcherProcessingTime" + event.title() + "99_ms"
+        eT.SubElement(line, "isvirtualdatapoint").text = "true"
+        eT.SubElement(line, "color").text = "silver"
 
 ograph = eT.SubElement(ographs, "overviewgraph")
 eT.SubElement(ograph, "name").text = "P99 Event Listener Latency"
@@ -256,7 +327,7 @@ eT.SubElement(ograph, "title").text = "P99 Event Listener Latency"
 eT.SubElement(ograph, "verticallabel").text = "milliseconds"
 eT.SubElement(ograph, "rigid").text = "false"
 eT.SubElement(ograph, "maxvalue").text = "NaN"
-eT.SubElement(ograph, "minvalue").text = "NaN"
+eT.SubElement(ograph, "minvalue").text = "0.0"
 eT.SubElement(ograph, "displayprio").text = "100"
 eT.SubElement(ograph, "timescale").text = "1day"
 eT.SubElement(ograph, "base1024").text = "false"
@@ -268,19 +339,19 @@ olines = eT.SubElement(ograph, "lines")
 
 for event in latency_events:
     odp = eT.SubElement(odps, "overviewgraphdatapoint")
-    eT.SubElement(odp, "name").text = "argus_watcher_event_latency_" + event + "_99"
-    eT.SubElement(odp, "datapointname").text = "argus_watcher_event_latency_" + event + "_99"
+    eT.SubElement(odp, "name").text = "ArgusWatcherEventLatency" + event.title() + "99"
+    eT.SubElement(odp, "datapointname").text = "ArgusWatcherEventLatency" + event.title() + "99"
     eT.SubElement(odp, "cf").text = "1"
     eT.SubElement(odp, "aggregateMethod").text = "average"
 
     ovdp = eT.SubElement(ovdps, "overviewgraphvirtualdatapoint")
-    eT.SubElement(ovdp, "name").text = "argus_watcher_event_latency_" + event + "_99_ms"
-    eT.SubElement(ovdp, "rpn").text = "argus_watcher_event_latency_" + event + "_99/1000000"
+    eT.SubElement(ovdp, "name").text = "ArgusWatcherEventLatency" + event.title() + "99_ms"
+    eT.SubElement(ovdp, "rpn").text = "ArgusWatcherEventLatency" + event.title() + "99/1000000"
 
     line = eT.SubElement(olines, "overviewgraphline")
     eT.SubElement(line, "type").text = "1"
     eT.SubElement(line, "legend").text = event.upper() + " ##INSTANCE##"
-    eT.SubElement(line, "datapointname").text = "argus_watcher_event_latency_" + event + "_99_ms"
+    eT.SubElement(line, "datapointname").text = "ArgusWatcherEventLatency" + event.title() + "99_ms"
     eT.SubElement(line, "isvirtualdatapoint").text = "true"
     eT.SubElement(line, "color").text = "silver"
 

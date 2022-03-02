@@ -105,13 +105,23 @@ func (i *InitSyncer) Sync(lctx *lmctx.LMContext) {
 		}
 		clusterPresentMeta, ok := allK8SResourcesStore.Exists(childLctx, cacheResourceName, cacheResourceMeta.Container)
 		// Delete resource if no more exists or delete if UID does not match.
-		if !ok ||
+		switch {
+		case !ok ||
 			clusterPresentMeta.UID != cacheResourceMeta.UID ||
-			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)) {
-			i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
-		} else if resolveConflicts {
-			i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
+			(conf.RegisterGenericFilter && !util.EvaluateExclusion(clusterPresentMeta.Labels)):
+			{
+				log.Tracef("Deleting dangling resource %s", cacheResourceName)
+				i.deleteResource(childLctx, cacheResourceName, cacheResourceMeta)
+			}
+		case resolveConflicts:
+			{
+				log.Tracef("Resolving conflicts for resource %s", cacheResourceName)
+				i.resolveConflicts(childLctx, cacheResourceMeta, clusterPresentMeta, cacheResourceName)
+			}
+		default:
+			log.Tracef("Resource is neither selected for deletion nor for resolving conflicts: %s", cacheResourceName)
 		}
+
 	}
 
 	// Flush updated cache to configmaps
@@ -213,8 +223,19 @@ func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.Re
 		log.Errorf("Failed to parse delete argus after parameter to duration as per ISO 8601 format: %s", err)
 		return
 	}
-	if (conf.DeleteResources && !util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta)) ||
-		(util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta) && argusDeleteAfter.IsZero() && conf.DeleteResources) {
+	val, deleteAfterLabelExists := resourceMeta.Labels["logicmonitor/deleteafterduration"]
+	d := duration.Duration{}
+	if deleteAfterLabelExists {
+		du, err := duration.ParseISO8601(val)
+		if err != nil {
+			deleteAfterLabelExists = false
+		} else {
+			d = du
+		}
+	}
+	if deleteAfterLabelExists && d.IsZero() ||
+		(conf.DeleteResources && !util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta)) ||
+		(util.IsArgusPodCacheMeta(lctx, resourceName.Resource, resourceMeta) && argusDeleteAfter.IsZero()) {
 		log.Info("Deleting resource")
 		err := i.ResourceManager.DeleteResourceByID(lctx, resourceName.Resource, resourceMeta.LMID)
 		if err != nil {
@@ -248,6 +269,7 @@ func (i *InitSyncer) deleteResource(lctx *lmctx.LMContext, resourceName types.Re
 func (i *InitSyncer) RunPeriodicSync() {
 	lctx := lmlog.NewLMContextWith(logrus.WithFields(logrus.Fields{"name": "periodic-sync"}))
 
+	var j int64 = 1
 	go func() {
 		for {
 			conf, err := config.GetConfig(lctx)
@@ -256,7 +278,9 @@ func (i *InitSyncer) RunPeriodicSync() {
 			} else {
 				time.Sleep(*conf.Intervals.PeriodicDeleteInterval)
 			}
-			i.Sync(lctx)
+			ilctx := lmlog.LMContextWithFields(lctx, logrus.Fields{"run": j})
+			i.Sync(ilctx)
+			j++
 		}
 	}()
 }

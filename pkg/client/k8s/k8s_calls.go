@@ -7,6 +7,8 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
+	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
+	"github.com/logicmonitor/k8s-argus/pkg/permission"
 	"github.com/logicmonitor/k8s-argus/pkg/resourcecache"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
@@ -19,6 +21,7 @@ import (
 
 // GetAllK8SResources get all k8s resources present in cluster
 func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
+	log := lmlog.Logger(lctx)
 	tmpStore := resourcecache.NewStore()
 	conf, err := config.GetConfig(lctx)
 	if err != nil {
@@ -28,7 +31,14 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 		if conf.IsMonitoringDisabled(rt) {
 			continue
 		}
-		all, err := GetAndStoreAll(rt)
+
+		// check if we have enabled permission for resource type.
+		if !permission.HasPermissions(rt) {
+			log.Warnf("no permission for resource type %s", rt.String())
+			continue
+		}
+
+		all, err := GetAndStoreAll(lctx, rt)
 		if err != nil {
 			return nil, err
 		}
@@ -38,7 +48,7 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 				Name:     metaObject.Name,
 				Resource: rt,
 			}, types.ResourceMeta{ // nolint: exhaustivestruct
-				Container:   metaObject.Namespace,
+				Container:   util.ResourceContainerValueFromMeta(rt, metaObject),
 				Labels:      metaObject.Labels,
 				DisplayName: displayName,
 				UID:         metaObject.UID,
@@ -50,7 +60,8 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 }
 
 // GetAndStoreAll get
-func GetAndStoreAll(rt enums.ResourceType) ([]*metav1.PartialObjectMetadata, error) {
+func GetAndStoreAll(lctx *lmctx.LMContext, rt enums.ResourceType) ([]*metav1.PartialObjectMetadata, error) {
+	log := lmlog.Logger(lctx)
 	result := make([]*metav1.PartialObjectMetadata, 0)
 	if rt == enums.ETCD || rt == enums.Unknown {
 		return result, nil
@@ -59,6 +70,7 @@ func GetAndStoreAll(rt enums.ResourceType) ([]*metav1.PartialObjectMetadata, err
 	listWatch.DisableChunking = true
 	list, err := listWatch.List(constants.DefaultListOptions)
 	if err != nil {
+		log.Warnf("error while extracting resources from cluster:  %v", err)
 		return result, err
 	}
 	items, err := meta.ExtractList(list)
@@ -70,7 +82,14 @@ func GetAndStoreAll(rt enums.ResourceType) ([]*metav1.PartialObjectMetadata, err
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, meta.AsPartialObjectMetadata(accessor))
+		metadata := meta.AsPartialObjectMetadata(accessor)
+		now := metav1.Now()
+		if metadata.DeletionTimestamp.Before(&now) {
+			log.Infof("Ignoring already deleted resource: %v", rt.LMName(metadata))
+			continue
+		}
+		result = append(result, metadata)
+
 	}
 
 	return result, nil

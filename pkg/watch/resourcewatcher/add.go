@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/eventprocessor"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -100,15 +101,22 @@ func PreprocessAddEventForOldUID(
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) {
 		log := lmlog.Logger(lctx)
 		meta, _ := rt.ObjectMeta(obj)
+		container := meta.Namespace
+		if !rt.IsNamespaceScopedResource() {
+			container = constants.ClusterScopedGroupName
+		}
 		if cacheMeta, ok := resourceCache.Exists(lctx, types.ResourceName{
 			Name:     meta.Name,
 			Resource: rt,
-		}, meta.Namespace, false); ok && cacheMeta.UID != meta.UID {
+		}, container, true); ok && cacheMeta.UID != meta.UID {
 			conf, err := config.GetConfig(lctx)
 			if err == nil {
 				log.Infof("Deleting previous resource (%d) with obj UID (%s)", cacheMeta.LMID, cacheMeta.UID)
 				options := b.GetDefaultsResourceOptions(rt, meta, conf)
-				options = append(options, b.Auto("uid", string(cacheMeta.UID)))
+				options = append(options,
+					b.Auto("uid", string(cacheMeta.UID)),
+					b.Name(cacheMeta.Name),
+				)
 				err = deleteFun(lctx, rt, obj, options...)
 				if err != nil {
 					log.Errorf("Failed to delete previous resource: %s", err)

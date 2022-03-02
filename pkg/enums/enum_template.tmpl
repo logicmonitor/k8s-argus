@@ -4,7 +4,7 @@ package enums
 import (
 	"fmt"
 	"strings"
-
+	
 	{{- range $value := .Resources.Apis}}{{- if ne $value.Alias "" }}
 	{{ $value.Alias }} "{{ $value.PackageName }}"
 	{{- end}}{{- end }}
@@ -171,5 +171,14 @@ func (resourceType *ResourceType) IsK8SPingResource() bool {
 		return false
 	default:
 		return true
+	}
+}
+
+func (resourceType *ResourceType) HasAdditionalHostname() bool {
+	switch *resourceType {
+	case {{ additionalHostname .Resources.Resources true }}:
+		return true
+	default:
+		return false
 	}
 }

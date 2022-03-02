@@ -45,6 +45,7 @@ type ResourceMeta struct {
 	SysCategories []string          `json:"sys_categories"`
 	UID           k8stypes.UID      `json:"uid"`
 	CreatedOn     int64             `json:"created_on"`
+	IsInvalid     bool              `json:"is_invalid"`
 }
 
 func (resourceMeta ResourceMeta) HasSysCategory(category string) bool {

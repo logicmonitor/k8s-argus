@@ -8,6 +8,7 @@ import (
 
 	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
 	"github.com/logicmonitor/k8s-argus/pkg/config"
+	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/eventprocessor"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -88,15 +89,22 @@ func PreprocessUpdateEventForOldUID(
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj interface{}, newObj interface{}) {
 		log := lmlog.Logger(lctx)
 		meta, _ := rt.ObjectMeta(newObj)
+		container := meta.Namespace
+		if !rt.IsNamespaceScopedResource() {
+			container = constants.ClusterScopedGroupName
+		}
 		if cacheMeta, ok := resourceCache.Exists(lctx, types.ResourceName{
 			Name:     meta.Name,
 			Resource: rt,
-		}, meta.Namespace, false); ok && cacheMeta.UID != meta.UID {
+		}, container, true); ok && cacheMeta.UID != meta.UID {
 			conf, err := config.GetConfig(lctx)
 			if err == nil {
 				log.Infof("Deleting previous resource (%d) with old UID (%s)", cacheMeta.LMID, cacheMeta.UID)
 				options := b.GetDefaultsResourceOptions(rt, meta, conf)
-				options = append(options, b.Auto("uid", string(cacheMeta.UID)))
+				options = append(options,
+					b.Auto("uid", string(cacheMeta.UID)),
+					b.Name(cacheMeta.Name),
+				)
 				delLctx := lmlog.LMContextWithLMResourceID(lctx, cacheMeta.LMID)
 				err = deleteFun(delLctx, rt, newObj, options...)
 				if err != nil {
@@ -115,8 +123,7 @@ func PreprocessUpdateEventForOldUID(
 }
 
 // UpsertBasedOnCache upsert
-// nolint: cyclop
-func UpsertBasedOnCache(
+func UpsertBasedOnCache( //nolint:cyclop
 	resourceCache types.ResourceCache,
 	configurer types.WatcherConfigurer,
 	actions types.Actions,
@@ -168,11 +175,11 @@ func UpsertBasedOnCache(
 		if err != nil {
 			switch {
 			case errors.Is(err, aerrors.ErrNoChangeInUpdateOptions):
-				log.Warnf("%s", err)
+				log.Warnf("update: no change in update options: %s", err)
 			case errors.Is(err, aerrors.ErrPodSucceeded):
 				log.Warnf("update: pod having succeeded status will not be considered for monitoring: %s", err)
 			default:
-				log.Errorf("%s", err)
+				log.Errorf("update: failed to get additional options: %s", err)
 			}
 
 			return

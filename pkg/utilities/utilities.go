@@ -173,7 +173,7 @@ func GetResourceMetaFromResource(resource *models.Device) (types.ResourceMeta, e
 	categories := strings.Split(categoriesStr, ",")
 
 	return types.ResourceMeta{
-		Container:     GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey),
+		Container:     ResourceCacheContainerValue(resource),
 		LMID:          resource.ID,
 		DisplayName:   *resource.DisplayName,
 		Name:          *resource.Name,
@@ -260,7 +260,7 @@ func GetClusterGroupID(lctx *lmctx.LMContext, client *types.LMRequester) (int32,
 		}
 	}
 	if clusterGrpID <= 0 {
-		return clusterGrpID, fmt.Errorf("no child resource group present of name [%s] under resource group [%d]", clusterGroupName, conf.ClusterGroupID)
+		return clusterGrpID, fmt.Errorf("no child resource group present of name [%s] under cluster group [%d]", clusterGroupName, conf.ClusterGroupID)
 	}
 	clusterGroupID = clusterGrpID
 
@@ -325,7 +325,7 @@ func DoesResourceExistInCacheUtil(lctx *lmctx.LMContext, rt enums.ResourceType, 
 		return types.ResourceMeta{}, false // nolint: exhaustivestruct
 	}
 
-	return resourceCache.Exists(lctx, resourceName, GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey), softRefresh)
+	return resourceCache.Exists(lctx, resourceName, ResourceCacheContainerValue(resource), softRefresh)
 }
 
 // GetResourceNameFromResource get
@@ -368,4 +368,23 @@ func IsArgusPodCacheMeta(lctx *lmctx.LMContext, rt enums.ResourceType, meta type
 		}
 	}
 	return false
+}
+
+// nolint: revive
+// Coalesce all matchLabel selectors for a specific resource.
+// e.g abc=xyz, mno=pqr are two selectors for a service s1
+// this function will club those like abc=xyz && mno=pqr
+func CoalesceMatchLabels(selector map[string]string) string {
+	var response string
+	for k, v := range selector {
+		response = response + k + "=" + v + " && "
+	}
+	// If resource doesn't have an selector, return null placeholder
+	if len(response) == 0 {
+		return constants.LabelNullPlaceholder
+	} else {
+		// trim the response to exclude " && " added at the end of response
+		response = response[:len(response)-4]
+	}
+	return response
 }

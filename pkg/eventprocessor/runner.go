@@ -57,8 +57,9 @@ func (r *Runner) Run() {
 			r.running = false
 			prometheus.Unregister(g)
 		}()
+		timeout := time.NewTicker(idleNotifyTimeout)
+		defer timeout.Stop()
 		for {
-			timeout := time.NewTicker(idleNotifyTimeout)
 			select {
 			case command := <-inch:
 				metrics.RunnerEventsReceivedCount.WithLabelValues(fmt.Sprintf("%d", r.config.ID)).Inc()

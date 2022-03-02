@@ -466,3 +466,12 @@ func (resourceType *ResourceType) IsK8SPingResource() bool {
 		return true
 	}
 }
+
+func (resourceType *ResourceType) HasAdditionalHostname() bool {
+	switch *resourceType {
+	case Pods, Services, Nodes:
+		return true
+	default:
+		return false
+	}
+}

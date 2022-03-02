@@ -1,7 +1,6 @@
 package resource
 
 import (
-	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
@@ -40,7 +39,7 @@ func (m *Manager) UnsetResourceInCache(lctx *lmctx.LMContext, rt enums.ResourceT
 		return false
 	}
 
-	return m.ResourceCache.Unset(lctx, resourceName, util.GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey))
+	return m.ResourceCache.Unset(lctx, resourceName, util.ResourceCacheContainerValue(resource))
 }
 
 // UnsetLMIDInCache unset , costly and performance impacting operation, use this cautiously - where it will get called very rarely.
@@ -71,7 +70,7 @@ func (m *Manager) DoesResourceConflictInCluster(lctx *lmctx.LMContext, rt enums.
 
 		return []types.ResourceMeta{}, false
 	}
-	namespace := util.GetResourcePropertyValue(resource, constants.K8sResourceNamespacePropertyKey)
+	namespace := util.ResourceCacheContainerValue(resource)
 	log.Debugf("List of meta for %s: %v", resourceName, list)
 	for idx, v := range list {
 		if v.Container == namespace {

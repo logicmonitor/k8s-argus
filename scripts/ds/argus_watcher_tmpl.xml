@@ -8,11 +8,11 @@
         <version>1627399406</version>
         <name>Argus_Watcher</name>
         <displayedas>Argus Watcher-</displayedas>
-        <description></description>
+        <description>Watches kubernetes resources required for monitoring</description>
         <collector>openmetrics</collector>
         <hasMultiInstances>true</hasMultiInstances>
         <schedule>60</schedule>
-        <appliesTo>kubernetes.label.app == &#34;argus&#34; &#38;&#38; hasCategory(&#34;KubernetesService&#34;)
+        <appliesTo>hasCategory(&#34;KubernetesService&#34;) &#38;&#38; kubernetes.label.app == &#34;argus&#34;
         </appliesTo>
         <wildcardauto>true</wildcardauto>
         <wildcardpersist>false</wildcardpersist>
@@ -68,7 +68,7 @@
         </attributes>
         <datapoints>
             <datapoint>
-                <name>argus_watcher_init_discovery_time</name>
+                <name>ArgusWatcherInitDiscoveryTime</name>
                 <dataType>7</dataType>
                 <type>2</type>
                 <postprocessormethod>regex</postprocessormethod>
@@ -83,10 +83,10 @@
                 <warnadadvsetting></warnadadvsetting>
                 <erroradadvsetting></erroradadvsetting>
                 <criticaladadvsetting></criticaladadvsetting>
-                <description></description>
+                <description>Time taken to initialize discovery</description>
                 <maxvalue></maxvalue>
-                <minvalue></minvalue>
-                <userparam1>argus_watcher_init_discovery_time</userparam1>
+                <minvalue>0</minvalue>
+                <userparam1>ArgusWatcherInitDiscoveryTime</userparam1>
                 <userparam2>resource=&#34;##WILDVALUE##&#34;</userparam2>
                 <userparam3>none</userparam3>
                 <iscomposite>false</iscomposite>
@@ -99,17 +99,17 @@
             <graph>
                 <name>Watcher Init Discovery Time</name>
                 <title>Watcher Init Discovery Time</title>
-                <verticallabel>ms</verticallabel>
+                <verticallabel>milliseconds</verticallabel>
                 <rigid>false</rigid>
                 <maxvalue>NaN</maxvalue>
-                <minvalue>NaN</minvalue>
+                <minvalue>0.0</minvalue>
                 <displayprio>1</displayprio>
                 <timescale>1day</timescale>
                 <base1024>false</base1024>
                 <graphdatapoints>
                     <graphdatapoint>
-                        <name>argus_watcher_init_discovery_time</name>
-                        <datapointname>argus_watcher_init_discovery_time</datapointname>
+                        <name>ArgusWatcherInitDiscoveryTime</name>
+                        <datapointname>ArgusWatcherInitDiscoveryTime</datapointname>
                         <cf>1</cf>
                     </graphdatapoint>
                 </graphdatapoints>
@@ -118,9 +118,9 @@
                 <graphdatas>
                     <graphdata>
                         <type>1</type>
-                        <legend>argus_watcher_init_discovery_time</legend>
+                        <legend>ArgusWatcherInitDiscoveryTime</legend>
                         <color>blue</color>
-                        <datapointname>argus_watcher_init_discovery_time</datapointname>
+                        <datapointname>ArgusWatcherInitDiscoveryTime</datapointname>
                         <isvirtualdatapoint>false</isvirtualdatapoint>
                     </graphdata>
                 </graphdatas>
@@ -133,15 +133,15 @@
                 <verticallabel>milliseconds</verticallabel>
                 <rigid>false</rigid>
                 <maxvalue>NaN</maxvalue>
-                <minvalue>NaN</minvalue>
+                <minvalue>0.0</minvalue>
                 <displayprio>1</displayprio>
                 <timescale>1day</timescale>
                 <base1024>false</base1024>
                 <aggregated>false</aggregated>
                 <datapoints>
                     <overviewgraphdatapoint>
-                        <name>argus_watcher_init_discovery_time</name>
-                        <datapointname>argus_watcher_init_discovery_time</datapointname>
+                        <name>ArgusWatcherInitDiscoveryTime</name>
+                        <datapointname>ArgusWatcherInitDiscoveryTime</datapointname>
                         <cf>1</cf>
                         <aggregateMethod>sum</aggregateMethod>
                     </overviewgraphdatapoint>
@@ -152,7 +152,7 @@
                     <overviewgraphline>
                         <type>1</type>
                         <legend>##INSTANCE##</legend>
-                        <datapointname>argus_watcher_init_discovery_time</datapointname>
+                        <datapointname>ArgusWatcherInitDiscoveryTime</datapointname>
                         <isvirtualdatapoint>false</isvirtualdatapoint>
                         <color>AUTO</color>
                     </overviewgraphline>

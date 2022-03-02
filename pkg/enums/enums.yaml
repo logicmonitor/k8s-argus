@@ -1,248 +1,251 @@
 apis:
-- packageName: "unknown"
-  alias: ""
-  apiGroup: ""
-  apiVersion: ""
-- packageName: "k8s.io/api/apps/v1"
-- packageName: "k8s.io/api/autoscaling/v1"
-- packageName: "k8s.io/api/batch/v1"
-- packageName: "k8s.io/api/batch/v1beta1"
-- packageName: "k8s.io/api/core/v1"
-# - packageName: "k8s.io/api/extensions/v1beta1"
-- packageName: "k8s.io/api/networking/v1"
-- packageName: "k8s.io/api/networking/v1beta1"
+  - packageName: "unknown"
+    alias: ""
+    apiGroup: ""
+    apiVersion: ""
+  - packageName: "k8s.io/api/apps/v1"
+  - packageName: "k8s.io/api/autoscaling/v1"
+  - packageName: "k8s.io/api/batch/v1"
+  - packageName: "k8s.io/api/batch/v1beta1"
+  - packageName: "k8s.io/api/core/v1"
+  # - packageName: "k8s.io/api/extensions/v1beta1"
+  - packageName: "k8s.io/api/networking/v1"
+  - packageName: "k8s.io/api/networking/v1beta1"
 resources:
-- displayName: Unknown
-  shortName:
-  - unknown
-  longName: Unknown
-  lowerCase: unknown
-  namespaced: false
-  pingResource: true
-- displayName: Pod
-  shortName:
-  - pod
-  longName: Pods
-  lowerCase: pods
-  parsedResourceType:
-  - pods
-  - pod
-  - po
-  apis: corev1
-  namespaced: true
-  pingResource: true
-- displayName: Deployment
-  shortName:
-  - deploy
-  longName: Deployments
-  lowerCase: deployments
-  parsedResourceType:
-  - deployments
-  - deployment
-  - deploy
-  apis: appsv1
-  namespaced: true
-  pingResource: false
-- displayName: Service
-  shortName:
-  - svc
-  longName: Services
-  lowerCase: services
-  parsedResourceType:
-  - services
-  - service
-  - svc
-  apis: corev1
-  namespaced: true
-  pingResource: false
-- displayName: HorizontalPodAutoscaler
-  shortName:
-  - hpa
-  longName: Hpas
-  lowerCase: horizontalpodautoscalers
-  titlePlural: HorizontalPodAutoscalers
-  parsedResourceType:
-  - horizontalpodautoscalers
-  - horizontalpodautoscaler
-  - hpas
-  - hpa
-  apis: autoscalingv1
-  namespaced: true
-  pingResource: false
-- displayName: Node
-  shortName:
-  - node
-  longName: Nodes
-  lowerCase: nodes
-  parsedResourceType:
-  - node
-  - nodes
-  apis: corev1
-  namespaced: false
-  pingResource: false
-- displayName: Etcd
-  shortName:
-  - etcd
-  longName: ETCD
-  titlePlural: Etcd
-  lowerCase: etcd
-  parsedResourceType:
-  - etcd
-  namespaced: false
-  pingResource: false
-- displayName: Namespace
-  shortName:
-  - ns
-  longName: Namespaces
-  lowerCase: namespaces
-  parsedResourceType:
-  - namespaces
-  - namespace
-  - ns
-  apis: corev1
-  namespaced: true
-  pingResource: false
-- displayName: DaemonSet
-  shortName:
-  - ds
-  longName: DaemonSets
-  lowerCase: daemonsets
-  parsedResourceType:
-  - daemonsets
-  - daemonset
-  - ds
-  apis: appsv1
-  namespaced: true
-  pingResource: false
-- displayName: ReplicaSet
-  shortName:
-  - rs
-  longName: ReplicaSets
-  lowerCase: replicasets
-  parsedResourceType:
-  - replicasets
-  - replicaset
-  - rs
-  apis: appsv1
-  namespaced: true
-  pingResource: false
-- displayName: StatefulSet
-  shortName:
-  - sts
-  longName: StatefulSets
-  lowerCase: statefulsets
-  parsedResourceType:
-  - statefulsets
-  - statefulset
-  - sts
-  apis: appsv1
-  namespaced: true
-  pingResource: false
-- displayName: ConfigMap
-  shortName:
-  - cm
-  longName: ConfigMaps
-  lowerCase: configmaps
-  parsedResourceType:
-  - configmaps
-  - configmap
-  - cm
-  apis: corev1
-  namespaced: true
-  pingResource: false
-- displayName: PersistentVolume
-  shortName:
-  - pv
-  longName: PersistentVolumes
-  lowerCase: persistentvolumes
-  parsedResourceType:
-  - persistentvolumes
-  - persistentvolume
-  - pv
-  apis: corev1
-  namespaced: false
-  pingResource: false
-- displayName: PersistentVolumeClaim
-  shortName:
-  - pvc
-  longName: PersistentVolumeClaims
-  lowerCase: persistentvolumeclaims
-  parsedResourceType:
-  - persistentvolumeclaims
-  - persistentvolumeclaim
-  - pvc
-  apis: corev1
-  namespaced: true
-  pingResource: false
-- displayName: CronJob
-  shortName:
-  - cj
-  longName: CronJobs
-  lowerCase: cronjobs
-  parsedResourceType:
-  - cronjobs
-  - cronjob
-  - cj
-  apis: batchv1beta1
-  namespaced: true
-  pingResource: false
-- displayName: Job
-  shortName:
-  - job
-  longName: Jobs
-  lowerCase: jobs
-  parsedResourceType:
-  - jobs
-  - job
-  apis: batchv1
-  namespaced: true
-  pingResource: false
-- displayName: Ingress
-  shortName:
-  - ing
-  longName: Ingresses
-  lowerCase: ingresses
-  parsedResourceType:
-  - ingresses
-  - ingress
-  - ing
-  objectType: Ingress
-  apis: networkingv1beta1
-  namespaced: true
-  pingResource: false
-- displayName: Secret
-  shortName:
-  - secret
-  longName: Secrets
-  lowerCase: secrets
-  parsedResourceType:
-  - secrets
-  - secret
-  apis: corev1
-  namespaced: true
-  pingResource: false
-- displayName: EndPoint
-  shortName:
-  - ep
-  longName: EndPoints
-  lowerCase: endpoints
-  parsedResourceType:
-  - endpoints
-  - endpoint
-  apis: corev1
-  objectType: Endpoints
-  namespaced: true
-  pingResource: false
-- displayName: NetworkPolicy
-  shortName:
-  - netpol
-  longName: NetworkPolicies
-  lowerCase: networkpolicies
-  parsedResourceType:
-  - networkpolicies
-  - networkpolicy
-  - netpol
-  apis: networkingv1
-  objectType: NetworkPolicy
-  namespaced: true
-  pingResource: false
+  - displayName: Unknown
+    shortName:
+      - unknown
+    longName: Unknown
+    lowerCase: unknown
+    namespaced: false
+    pingResource: true
+  - displayName: Pod
+    shortName:
+      - pod
+    longName: Pods
+    lowerCase: pods
+    parsedResourceType:
+      - pods
+      - pod
+      - po
+    apis: corev1
+    namespaced: true
+    pingResource: true
+    additionalHostname: true
+  - displayName: Deployment
+    shortName:
+      - deploy
+    longName: Deployments
+    lowerCase: deployments
+    parsedResourceType:
+      - deployments
+      - deployment
+      - deploy
+    apis: appsv1
+    namespaced: true
+    pingResource: false
+  - displayName: Service
+    shortName:
+      - svc
+    longName: Services
+    lowerCase: services
+    parsedResourceType:
+      - services
+      - service
+      - svc
+    apis: corev1
+    namespaced: true
+    pingResource: false
+    additionalHostname: true
+  - displayName: HorizontalPodAutoscaler
+    shortName:
+      - hpa
+    longName: Hpas
+    lowerCase: horizontalpodautoscalers
+    titlePlural: HorizontalPodAutoscalers
+    parsedResourceType:
+      - horizontalpodautoscalers
+      - horizontalpodautoscaler
+      - hpas
+      - hpa
+    apis: autoscalingv1
+    namespaced: true
+    pingResource: false
+  - displayName: Node
+    shortName:
+      - node
+    longName: Nodes
+    lowerCase: nodes
+    parsedResourceType:
+      - node
+      - nodes
+    apis: corev1
+    namespaced: false
+    pingResource: false
+    additionalHostname: true
+  - displayName: Etcd
+    shortName:
+      - etcd
+    longName: ETCD
+    titlePlural: Etcd
+    lowerCase: etcd
+    parsedResourceType:
+      - etcd
+    namespaced: false
+    pingResource: false
+  - displayName: Namespace
+    shortName:
+      - ns
+    longName: Namespaces
+    lowerCase: namespaces
+    parsedResourceType:
+      - namespaces
+      - namespace
+      - ns
+    apis: corev1
+    namespaced: true
+    pingResource: false
+  - displayName: DaemonSet
+    shortName:
+      - ds
+    longName: DaemonSets
+    lowerCase: daemonsets
+    parsedResourceType:
+      - daemonsets
+      - daemonset
+      - ds
+    apis: appsv1
+    namespaced: true
+    pingResource: false
+  - displayName: ReplicaSet
+    shortName:
+      - rs
+    longName: ReplicaSets
+    lowerCase: replicasets
+    parsedResourceType:
+      - replicasets
+      - replicaset
+      - rs
+    apis: appsv1
+    namespaced: true
+    pingResource: false
+  - displayName: StatefulSet
+    shortName:
+      - sts
+    longName: StatefulSets
+    lowerCase: statefulsets
+    parsedResourceType:
+      - statefulsets
+      - statefulset
+      - sts
+    apis: appsv1
+    namespaced: true
+    pingResource: false
+  - displayName: ConfigMap
+    shortName:
+      - cm
+    longName: ConfigMaps
+    lowerCase: configmaps
+    parsedResourceType:
+      - configmaps
+      - configmap
+      - cm
+    apis: corev1
+    namespaced: true
+    pingResource: false
+  - displayName: PersistentVolume
+    shortName:
+      - pv
+    longName: PersistentVolumes
+    lowerCase: persistentvolumes
+    parsedResourceType:
+      - persistentvolumes
+      - persistentvolume
+      - pv
+    apis: corev1
+    namespaced: false
+    pingResource: false
+  - displayName: PersistentVolumeClaim
+    shortName:
+      - pvc
+    longName: PersistentVolumeClaims
+    lowerCase: persistentvolumeclaims
+    parsedResourceType:
+      - persistentvolumeclaims
+      - persistentvolumeclaim
+      - pvc
+    apis: corev1
+    namespaced: true
+    pingResource: false
+  - displayName: CronJob
+    shortName:
+      - cj
+    longName: CronJobs
+    lowerCase: cronjobs
+    parsedResourceType:
+      - cronjobs
+      - cronjob
+      - cj
+    apis: batchv1beta1
+    namespaced: true
+    pingResource: false
+  - displayName: Job
+    shortName:
+      - job
+    longName: Jobs
+    lowerCase: jobs
+    parsedResourceType:
+      - jobs
+      - job
+    apis: batchv1
+    namespaced: true
+    pingResource: false
+  - displayName: Ingress
+    shortName:
+      - ing
+    longName: Ingresses
+    lowerCase: ingresses
+    parsedResourceType:
+      - ingresses
+      - ingress
+      - ing
+    objectType: Ingress
+    apis: networkingv1beta1
+    namespaced: true
+    pingResource: false
+  - displayName: Secret
+    shortName:
+      - secret
+    longName: Secrets
+    lowerCase: secrets
+    parsedResourceType:
+      - secrets
+      - secret
+    apis: corev1
+    namespaced: true
+    pingResource: false
+  - displayName: EndPoint
+    shortName:
+      - ep
+    longName: EndPoints
+    lowerCase: endpoints
+    parsedResourceType:
+      - endpoints
+      - endpoint
+    apis: corev1
+    objectType: Endpoints
+    namespaced: true
+    pingResource: false
+  - displayName: NetworkPolicy
+    shortName:
+      - netpol
+    longName: NetworkPolicies
+    lowerCase: networkpolicies
+    parsedResourceType:
+      - networkpolicies
+      - networkpolicy
+      - netpol
+    apis: networkingv1
+    objectType: NetworkPolicy
+    namespaced: true
+    pingResource: false

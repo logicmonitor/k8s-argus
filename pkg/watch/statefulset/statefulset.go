@@ -1,6 +1,4 @@
-// Package service provides the logic for mapping a Kubernetes Service to a
-// LogicMonitor w.
-package service
+package statefulset
 
 import (
 	"fmt"
@@ -11,62 +9,51 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
-	corev1 "k8s.io/api/core/v1"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
-// Watcher represents a watcher type that watches services.
+// Watcher represents a watcher type that watches statefulsets.
 type Watcher struct{}
 
 // AddFuncOptions addfunc options
 func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}, b types.ResourceBuilder) ([]types.ResourceOption, error) {
-		if rt != enums.Services {
-			return []types.ResourceOption{}, fmt.Errorf("resourceType is not of type services")
+		if rt != enums.StatefulSets {
+			return []types.ResourceOption{}, fmt.Errorf("resourceType is not of type statefulsets")
 		}
-		svc := obj.(*corev1.Service) // nolint: forcetypeassert
-		if svc.Spec.ClusterIP == "" {
-			return []types.ResourceOption{}, fmt.Errorf("empty Spec.ClusterIP")
-		}
+		sts := obj.(*appsv1.StatefulSet)
 
 		options := []types.ResourceOption{
 			b.Custom(
 				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(svc.Spec.Selector),
+				utilities.CoalesceMatchLabels(sts.Spec.Selector.MatchLabels),
 			),
-		}
-
-		// headless services set clusterip to None: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
-		// do not replace Name property, keep it as default name-svc-namespace
-		if svc.Spec.ClusterIP != "None" {
-			options = append(options, b.Name(svc.Spec.ClusterIP))
 		}
 
 		return options, nil
 	}
 }
 
-// UpdateFuncOptions update options
+// UpdateFuncOptions update
 func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceMeta, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, cacheMeta types.ResourceMeta, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
-		oldService := oldObj.(*corev1.Service) // nolint: forcetypeassert
-		svc := newObj.(*corev1.Service)        // nolint: forcetypeassert
-		var options []types.ResourceOption
-		if svc.Spec.ClusterIP != "None" && cacheMeta.Name != svc.Spec.ClusterIP {
-			options = append(options, b.Name(svc.Spec.ClusterIP))
-		}
+		oldStatefulset := oldObj.(*appsv1.StatefulSet) // nolint: forcetypeassert
+		sts := newObj.(*appsv1.StatefulSet)            // nolint: forcetypeassert
+		options := make([]types.ResourceOption, 0)
 
-		// If Selectors of new & old services are different, add in options
-		if !reflect.DeepEqual(oldService.Spec.Selector, svc.Spec.Selector) {
+		// If MatchLabels of new & old statefulsets are different, add in append
+		if !reflect.DeepEqual(oldStatefulset.Spec.Selector.MatchLabels, sts.Spec.Selector.MatchLabels) {
 			options = append(options, b.Custom(
 				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(svc.Spec.Selector),
+				utilities.CoalesceMatchLabels(sts.Spec.Selector.MatchLabels),
 			))
 		}
+
 		return options, false, nil
 	}
 }
 
-// DeleteFuncOptions delete options
+// DeleteFuncOptions delete
 func (w *Watcher) DeleteFuncOptions() func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, obj interface{}) []types.ResourceOption {
 		return []types.ResourceOption{}
