@@ -12,6 +12,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 )
 
 // Watcher represents a watcher type that watches services.
@@ -37,8 +38,10 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 
 		// headless services set clusterip to None: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
 		// do not replace Name property, keep it as default name-svc-namespace
-		if svc.Spec.ClusterIP != "None" {
+		if svc.Spec.ClusterIP != constants.HeadlessServiceIPNone {
 			options = append(options, b.Name(svc.Spec.ClusterIP))
+		} else {
+			options = append(options, b.Name(rt.LMName(meta.AsPartialObjectMetadata(&svc.ObjectMeta))))
 		}
 
 		return options, nil
@@ -51,8 +54,10 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		oldService := oldObj.(*corev1.Service) // nolint: forcetypeassert
 		svc := newObj.(*corev1.Service)        // nolint: forcetypeassert
 		var options []types.ResourceOption
-		if svc.Spec.ClusterIP != "None" && cacheMeta.Name != svc.Spec.ClusterIP {
+		if svc.Spec.ClusterIP != constants.HeadlessServiceIPNone && cacheMeta.Name != svc.Spec.ClusterIP {
 			options = append(options, b.Name(svc.Spec.ClusterIP))
+		} else if svc.Spec.ClusterIP == constants.HeadlessServiceIPNone && cacheMeta.Name != rt.LMName(meta.AsPartialObjectMetadata(&svc.ObjectMeta)) {
+			options = append(options, b.Name(rt.LMName(meta.AsPartialObjectMetadata(&svc.ObjectMeta))))
 		}
 
 		// If Selectors of new & old services are different, add in options

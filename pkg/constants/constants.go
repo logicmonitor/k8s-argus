@@ -204,3 +204,5 @@ const (
 	// NameFieldName is the field name for a device's name.
 	NameFieldName = "name"
 )
+
+const HeadlessServiceIPNone = "None"

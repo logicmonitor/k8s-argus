@@ -15,6 +15,9 @@ func validateNewResource(lctx *lmctx.LMContext, resourceType enums.ResourceType,
 	if resourceType.IsK8SPingResource() && util.GetResourcePropertyValue(resource, constants.K8sSystemIPsPropertyKey) == "" {
 		return false, false, fmt.Errorf("property '%s' is empty for resource '%s'", constants.K8sSystemIPsPropertyKey, resourceType.FQName(meta.Name))
 	}
+	if resource.Name == nil {
+		return false, false, fmt.Errorf("name (i.e. Hostname/IP) is empty for resource '%s'", resourceType.FQName(meta.Name))
+	}
 
 	return false, true, nil
 }

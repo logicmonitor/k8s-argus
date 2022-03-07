@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"runtime/debug"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
@@ -101,6 +102,12 @@ func (w *Worker) popRLToken(command *types.WorkerCommand) {
 
 func (w *Worker) handleCommand(lctx *lmctx.LMContext, command *types.WorkerCommand) {
 	log := lmlog.Logger(lctx)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Panic for %s: %s", util.GetCurrentFunctionName(), r)
+			log.Errorf("Panic stack trace: %s", debug.Stack())
+		}
+	}()
 	log.Tracef("Poping token")
 	w.popRLToken(command)
 	log.Tracef("Token popped")
