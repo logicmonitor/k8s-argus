@@ -59,3 +59,19 @@ func TestGetLabelByPrefix(t *testing.T) {
 		})
 	}
 }
+
+func TestCoalesceMatchLabels(t *testing.T) {
+	input := map[string]string{
+		"abc": "xyz",
+		"mno": "pqr",
+	}
+	assertObj := assert.New(t)
+	result := util.CoalesceMatchLabels(input)
+	assertObj.Equal("abc == \"xyz\" && mno == \"pqr\"", result)
+}
+
+func TestCoalesceMatchLabelsNil(t *testing.T) {
+	assertObj := assert.New(t)
+	result := util.CoalesceMatchLabels(nil)
+	assertObj.Equal("null", result)
+}

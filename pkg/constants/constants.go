@@ -41,6 +41,10 @@ const (
 	NodeSelectorKey = "nodeSelector"
 	// PodSelectorKey is the prefix for NetworkPolicies
 	PodSelectorKey = "podSelector"
+	// LogicalEQUALS used for LogicalEquals
+	LogicalEQUALS = " == "
+	// LogicalAND used for LogicalAND
+	LogicalAND = " && "
 	// LabelNullPlaceholder is the string used to represent null values in custom properties
 	LabelNullPlaceholder = "null"
 	// LabelFargateProfile is the label name used for fargate profile to distinguish between fargate & other Pods
