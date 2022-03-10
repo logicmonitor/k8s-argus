@@ -80,6 +80,7 @@ func (c *Controller) DiscoverByToken() ([]*Member, error) {
 
 func (c *Controller) addResource(lctx *lmctx.LMContext, member *Member) {
 	log := lmlog.Logger(lctx)
+	log.Tracef("Adding ETCD member: %s", member.Name)
 	// Check if the etcd member has already been added.
 	d, err := c.FindByDisplayName(lctx, enums.ETCD, fmtMemberDisplayName(member))
 	if err != nil {
@@ -89,6 +90,7 @@ func (c *Controller) addResource(lctx *lmctx.LMContext, member *Member) {
 	}
 
 	if d != nil {
+		log.Warnf("ETCD member with name %s already exists", member.Name)
 		return
 	}
 
