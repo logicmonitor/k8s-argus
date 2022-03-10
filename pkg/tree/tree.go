@@ -200,7 +200,6 @@ func GetResourceGroupTree2(lctx *lmctx.LMContext, dgBuilder types.ResourceManage
 				},
 				ChildGroups: []*types.ResourceGroupTree{
 					{
-						DontCreate: doNotCreateDeletedGroup,
 						Options: []types.ResourceGroupOption{
 							dgBuilder.GroupName(constants.DeletedResourceGroup),
 							dgBuilder.DisableAlerting(true),
