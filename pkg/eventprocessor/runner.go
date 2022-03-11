@@ -68,7 +68,7 @@ func (r *Runner) Run() {
 				lctx2 := command.Lctx
 				commandCtx := lmlog.LMContextWithFields(lctx2, logrus.Fields{"runner": r.config.ID})
 				log2 := lmlog.Logger(commandCtx)
-				log2.Debugf("Received runner command")
+				log2.Tracef("Received runner command")
 				r.handleCommand(commandCtx, command)
 			case <-timeout.C:
 				// log.Tracef("%v runner is idle", r.config.ID)

@@ -33,20 +33,24 @@ const (
 	LabelCustomPropertyPrefix = "kubernetes.label."
 	// AnnotationCustomPropertyPrefix is the prefix to use for custom properties based of labels
 	AnnotationCustomPropertyPrefix = "kubernetes.annotation."
-	// SelectorCustomPropertyPrefix is the prefix to use for custom properties based of labels
-	SelectorCustomPropertyPrefix = "kubernetes.selector."
-	// MatchLabelsKey is prefix for MatchLabels
-	MatchLabelsKey = "matchLabels"
-	// NodeSelectorKey is the prefix for NodeSelector
-	NodeSelectorKey = "nodeSelector"
-	// PodSelectorKey is the prefix for NetworkPolicies
-	PodSelectorKey = "podSelector"
-	// LogicalEQUALS used for LogicalEquals
-	LogicalEQUALS = " == "
+
 	// LogicalAND used for LogicalAND
 	LogicalAND = " && "
 	// LabelNullPlaceholder is the string used to represent null values in custom properties
 	LabelNullPlaceholder = "null"
+	// FalseAppliesTo is the string used to represent null values in custom properties
+	FalseAppliesTo = "false()"
+
+	// KubernetesDotSpecPrefix k8s spec prop
+	KubernetesDotSpecPrefix = "kubernetes.spec."
+	// SelectorCustomProperty selector
+	SelectorCustomProperty = KubernetesDotSpecPrefix + "selector"
+	// PodSelectorCustomProperty podSelector
+	PodSelectorCustomProperty = KubernetesDotSpecPrefix + "podSelector"
+	// NodeSelectorCustomProperty nodeSelector
+	NodeSelectorCustomProperty = KubernetesDotSpecPrefix + "nodeSelector"
+	// AppliesToPropSuffix k8s spec prop
+	AppliesToPropSuffix = ".appliesto"
 	// LabelFargateProfile is the label name used for fargate profile to distinguish between fargate & other Pods
 	LabelFargateProfile = "eks.amazonaws.com/fargate-profile"
 )

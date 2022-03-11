@@ -2,7 +2,6 @@ package persistentvolumeclaim
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -24,10 +23,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		pvc := obj.(*corev1.PersistentVolumeClaim)
 
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(pvc.Spec.Selector.MatchLabels),
-			),
+			b.Custom(constants.SelectorCustomProperty, utilities.GenerateSelectorExpression(pvc.Spec.Selector)),
+			b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(pvc.Spec.Selector)),
 		}
 
 		return options, nil
@@ -41,12 +38,17 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		pvc := newObj.(*corev1.PersistentVolumeClaim)    // nolint: forcetypeassert
 		options := make([]types.ResourceOption, 0)
 
-		// If MatchLabels of new & old persistentVolumeClaims are different, add in append
-		if !reflect.DeepEqual(oldPvc.Spec.Selector.MatchLabels, pvc.Spec.Selector.MatchLabels) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(pvc.Spec.Selector.MatchLabels),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldPvc.Spec.Selector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(pvc.Spec.Selector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorExpr))
+		}
+
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldPvc.Spec.Selector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(pvc.Spec.Selector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, newSelectorAppliesTo))
 		}
 
 		return options, false, nil

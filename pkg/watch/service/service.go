@@ -4,7 +4,6 @@ package service
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -30,10 +29,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		}
 
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(svc.Spec.Selector),
-			),
+			b.Custom(constants.SelectorCustomProperty, utilities.GenerateSelectorExpression(svc.Spec.Selector)),
+			b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(svc.Spec.Selector)),
 		}
 
 		// headless services set clusterip to None: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
@@ -60,12 +57,16 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 			options = append(options, b.Name(rt.LMName(meta.AsPartialObjectMetadata(&svc.ObjectMeta))))
 		}
 
-		// If Selectors of new & old services are different, add in options
-		if !reflect.DeepEqual(oldService.Spec.Selector, svc.Spec.Selector) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(svc.Spec.Selector),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldService.Spec.Selector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(svc.Spec.Selector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorExpr))
+		}
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldService.Spec.Selector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(svc.Spec.Selector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorAppliesTo))
 		}
 		return options, false, nil
 	}

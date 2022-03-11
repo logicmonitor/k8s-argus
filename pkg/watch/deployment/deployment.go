@@ -2,7 +2,6 @@ package deployment
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -24,10 +23,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		deploy := obj.(*appsv1.Deployment)
 
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(deploy.Spec.Selector.MatchLabels),
-			),
+			b.Custom(constants.SelectorCustomProperty, utilities.GenerateSelectorExpression(deploy.Spec.Selector)),
+			b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(deploy.Spec.Selector)),
 		}
 		return options, nil
 	}
@@ -40,14 +37,17 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		deploy := newObj.(*appsv1.Deployment)        // nolint: forcetypeassert
 		options := make([]types.ResourceOption, 0)
 
-		// If MatchLabels of new & old deployments are different, add in options
-		if !reflect.DeepEqual(oldDeployment.Spec.Selector.MatchLabels, deploy.Spec.Selector.MatchLabels) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(deploy.Spec.Selector.MatchLabels),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldDeployment.Spec.Selector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(deploy.Spec.Selector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorExpr))
 		}
-
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldDeployment.Spec.Selector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(deploy.Spec.Selector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, newSelectorAppliesTo))
+		}
 		return options, false, nil
 	}
 }

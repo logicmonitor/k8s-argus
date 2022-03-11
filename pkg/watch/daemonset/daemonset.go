@@ -2,7 +2,6 @@ package daemonset
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -22,12 +21,9 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 			return []types.ResourceOption{}, fmt.Errorf("resourceType is not of type daemonsets")
 		}
 		ds := obj.(*appsv1.DaemonSet)
-
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(ds.Spec.Selector.MatchLabels),
-			),
+			b.Custom(constants.SelectorCustomProperty, utilities.GenerateSelectorExpression(ds.Spec.Selector)),
+			b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(ds.Spec.Selector)),
 		}
 		return options, nil
 	}
@@ -36,16 +32,21 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 // UpdateFuncOptions update
 func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType, interface{}, interface{}, types.ResourceMeta, types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
 	return func(lctx *lmctx.LMContext, rt enums.ResourceType, oldObj, newObj interface{}, cacheMeta types.ResourceMeta, b types.ResourceBuilder) ([]types.ResourceOption, bool, error) {
-		oldDaemonset := oldObj.(*appsv1.DaemonSet) // nolint: forcetypeassert
+		oldDaemonSet := oldObj.(*appsv1.DaemonSet) // nolint: forcetypeassert
 		ds := newObj.(*appsv1.DaemonSet)           // nolint: forcetypeassert
 		options := make([]types.ResourceOption, 0)
 
-		// If MatchLabels of new & old daemonsets are different, add in append
-		if !reflect.DeepEqual(oldDaemonset.Spec.Selector.MatchLabels, ds.Spec.Selector.MatchLabels) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(ds.Spec.Selector.MatchLabels),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldDaemonSet.Spec.Selector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(ds.Spec.Selector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorExpr))
+		}
+
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldDaemonSet.Spec.Selector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(ds.Spec.Selector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, newSelectorAppliesTo))
 		}
 
 		return options, false, nil

@@ -8,7 +8,6 @@ import (
 	"os"
 	"regexp"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -369,26 +368,4 @@ func IsArgusPodCacheMeta(lctx *lmctx.LMContext, rt enums.ResourceType, meta type
 		}
 	}
 	return false
-}
-
-// CoalesceMatchLabels all matchLabel selectors for a specific resource.
-// e.g abc=xyz, mno=pqr are two selectors for a service s1
-// this function will club those like abc=xyz && mno=pqr
-func CoalesceMatchLabels(selector map[string]string) string {
-	var response string
-	keys := make([]string, 0, len(selector))
-	for k := range selector {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, key := range keys {
-		response = response + key + constants.LogicalEQUALS + "\"" + selector[key] + "\"" + constants.LogicalAND
-	}
-	// If resource doesn't have an selector, return null placeholder
-	if len(response) == 0 {
-		return constants.LabelNullPlaceholder
-	}
-	// trim the response to exclude " && " added at the end of response
-	response = strings.TrimSuffix(strings.TrimSpace(response), "&&")
-	return strings.TrimSpace(response)
 }
