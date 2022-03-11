@@ -29,6 +29,7 @@ func GetAllK8SResources(lctx *lmctx.LMContext) (*resourcecache.Store, error) {
 	}
 	for _, rt := range enums.ALLResourceTypes {
 		if conf.IsMonitoringDisabled(rt) {
+			log.Debugf("Ignoring present resource collection from cluster for monitoring disabled resource type: %s", rt.String())
 			continue
 		}
 

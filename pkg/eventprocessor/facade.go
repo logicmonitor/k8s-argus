@@ -54,7 +54,7 @@ func (rf *RFacade) Send(lctx *lmctx.LMContext, runnerCommand *RunnerCommand) err
 		return fmt.Errorf("no runner available to execute command [%s]", key)
 	}
 
-	log.Debugf("Sending to runner: %d on %v", workerID, rf.RunnerConf[workerID].GetChannel())
+	log.Tracef("Sending to runner: %d on %v", workerID, rf.RunnerConf[workerID].GetChannel())
 
 	rf.RunnerConf[workerID].GetChannel() <- runnerCommand
 

@@ -2,7 +2,6 @@ package replicaset
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -24,10 +23,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		rs := obj.(*appsv1.ReplicaSet)
 
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(rs.Spec.Selector.MatchLabels),
-			),
+			b.Custom(constants.SelectorCustomProperty, utilities.GenerateSelectorExpression(rs.Spec.Selector)),
+			b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(rs.Spec.Selector)),
 		}
 
 		return options, nil
@@ -41,14 +38,17 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		rs := newObj.(*appsv1.ReplicaSet)            // nolint: forcetypeassert
 		options := make([]types.ResourceOption, 0)
 
-		// If MatchLabels of new & old replicasets are different, add in append
-		if !reflect.DeepEqual(oldReplicaset.Spec.Selector.MatchLabels, rs.Spec.Selector.MatchLabels) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(rs.Spec.Selector.MatchLabels),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldReplicaset.Spec.Selector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(rs.Spec.Selector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorExpr))
 		}
-
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldReplicaset.Spec.Selector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(rs.Spec.Selector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, newSelectorAppliesTo))
+		}
 		return options, false, nil
 	}
 }

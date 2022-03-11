@@ -42,7 +42,7 @@ var watchCmd = &cobra.Command{ // nolint: exhaustivestruct
 		if kubeConfigFile != "" {
 			err := os.Setenv(constants.IsLocal, "true")
 			if err != nil {
-				logrus.Errorf("Failed to set IsLocal environment")
+				logrus.Errorf("Failed to set IsLocal environment: %s", err)
 			}
 		}
 

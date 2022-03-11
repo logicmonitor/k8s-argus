@@ -4,7 +4,6 @@ package service
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -12,6 +11,7 @@ import (
 	"github.com/logicmonitor/k8s-argus/pkg/types"
 	"github.com/logicmonitor/k8s-argus/pkg/utilities"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 )
 
 // Watcher represents a watcher type that watches services.
@@ -29,16 +29,16 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		}
 
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(svc.Spec.Selector),
-			),
+			b.Custom(constants.SelectorCustomProperty, utilities.GenerateSelectorExpression(svc.Spec.Selector)),
+			b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(svc.Spec.Selector)),
 		}
 
 		// headless services set clusterip to None: https://kubernetes.io/docs/concepts/services-networking/service/#headless-services
 		// do not replace Name property, keep it as default name-svc-namespace
-		if svc.Spec.ClusterIP != "None" {
+		if svc.Spec.ClusterIP != constants.HeadlessServiceIPNone {
 			options = append(options, b.Name(svc.Spec.ClusterIP))
+		} else {
+			options = append(options, b.Name(rt.LMName(meta.AsPartialObjectMetadata(&svc.ObjectMeta))))
 		}
 
 		return options, nil
@@ -51,16 +51,22 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		oldService := oldObj.(*corev1.Service) // nolint: forcetypeassert
 		svc := newObj.(*corev1.Service)        // nolint: forcetypeassert
 		var options []types.ResourceOption
-		if svc.Spec.ClusterIP != "None" && cacheMeta.Name != svc.Spec.ClusterIP {
+		if svc.Spec.ClusterIP != constants.HeadlessServiceIPNone && cacheMeta.Name != svc.Spec.ClusterIP {
 			options = append(options, b.Name(svc.Spec.ClusterIP))
+		} else if svc.Spec.ClusterIP == constants.HeadlessServiceIPNone && cacheMeta.Name != rt.LMName(meta.AsPartialObjectMetadata(&svc.ObjectMeta)) {
+			options = append(options, b.Name(rt.LMName(meta.AsPartialObjectMetadata(&svc.ObjectMeta))))
 		}
 
-		// If Selectors of new & old services are different, add in options
-		if !reflect.DeepEqual(oldService.Spec.Selector, svc.Spec.Selector) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(svc.Spec.Selector),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldService.Spec.Selector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(svc.Spec.Selector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorExpr))
+		}
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldService.Spec.Selector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(svc.Spec.Selector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorAppliesTo))
 		}
 		return options, false, nil
 	}

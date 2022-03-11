@@ -2,11 +2,13 @@ package eventprocessor
 
 import (
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/logicmonitor/k8s-argus/pkg/lmctx"
 	lmlog "github.com/logicmonitor/k8s-argus/pkg/log"
 	"github.com/logicmonitor/k8s-argus/pkg/metrics"
+	util "github.com/logicmonitor/k8s-argus/pkg/utilities"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -66,7 +68,7 @@ func (r *Runner) Run() {
 				lctx2 := command.Lctx
 				commandCtx := lmlog.LMContextWithFields(lctx2, logrus.Fields{"runner": r.config.ID})
 				log2 := lmlog.Logger(commandCtx)
-				log2.Debugf("Received runner command")
+				log2.Tracef("Received runner command")
 				r.handleCommand(commandCtx, command)
 			case <-timeout.C:
 				// log.Tracef("%v runner is idle", r.config.ID)
@@ -80,6 +82,12 @@ func (r *Runner) Run() {
 
 func (r *Runner) handleCommand(lctx *lmctx.LMContext, command *RunnerCommand) {
 	log := lmlog.Logger(lctx)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Panic for %s: %s", util.GetCurrentFunctionName(), r)
+			log.Errorf("Panic stack trace: %s", debug.Stack())
+		}
+	}()
 	log.Debugf("Executing runner command")
 	command.Execute()
 	log.Debugf("runner command execution completed")

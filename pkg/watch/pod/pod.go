@@ -4,7 +4,6 @@ package pod
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/aerrors"
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
@@ -36,10 +35,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		options := []types.ResourceOption{
 			b.Name(getPodDNSName(p)),
 			b.System("ips", p.Status.PodIP),
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.NodeSelectorKey,
-				utilities.CoalesceMatchLabels(p.Spec.NodeSelector),
-			),
+			b.Custom(constants.NodeSelectorCustomProperty, utilities.GenerateSelectorExpression(p.Spec.NodeSelector)),
+			b.Custom(constants.NodeSelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(p.Spec.NodeSelector)),
 		}
 
 		// Pod running on fargate doesn't support HostNetwork so check fargate profile label, if label exists then mark hostNetwork as true
@@ -76,11 +73,16 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		}
 
 		// If NodeSelectors of new & old pods are different, add in appended options
-		if !reflect.DeepEqual(oldPod.Spec.NodeSelector, p.Spec.NodeSelector) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.NodeSelectorKey,
-				utilities.CoalesceMatchLabels(p.Spec.NodeSelector),
-			))
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldPod.Spec.NodeSelector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(p.Spec.NodeSelector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.NodeSelectorCustomProperty, newSelectorExpr))
+		}
+
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldPod.Spec.NodeSelector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(p.Spec.NodeSelector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.NodeSelectorCustomProperty+constants.AppliesToPropSuffix, newSelectorAppliesTo))
 		}
 
 		if oldPod.Spec.HostNetwork != p.Spec.HostNetwork {

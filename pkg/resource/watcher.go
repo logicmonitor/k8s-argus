@@ -26,6 +26,7 @@ func (m *Manager) AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface
 		d, err := m.Add(lctx, rt, obj, options...)
 		if err != nil {
 			if !errors.Is(err, aerrors.ErrResourceExists) {
+				log.Errorf("Failed to add resource: %s", err)
 				return nil, err
 			}
 			log.Warnf("%s", err)
@@ -36,7 +37,7 @@ func (m *Manager) AddFunc() func(*lmctx.LMContext, enums.ResourceType, interface
 		if rt == enums.Nodes {
 			m.createNodeRoleGroups(lctx, rt, obj)
 		}
-		return d, err
+		return d, nil
 	}
 }
 
@@ -55,7 +56,7 @@ func (m *Manager) UpdateFunc() func(*lmctx.LMContext, enums.ResourceType, interf
 		if rt == enums.Nodes {
 			m.createNodeRoleGroups(lctx, rt, newObj)
 		}
-		return d, err
+		return d, nil
 	}
 }
 

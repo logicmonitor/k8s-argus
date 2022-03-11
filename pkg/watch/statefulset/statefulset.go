@@ -2,7 +2,6 @@ package statefulset
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -24,10 +23,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		sts := obj.(*appsv1.StatefulSet)
 
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(sts.Spec.Selector.MatchLabels),
-			),
+			b.Custom(constants.SelectorCustomProperty, utilities.GenerateSelectorExpression(sts.Spec.Selector)),
+			b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(sts.Spec.Selector)),
 		}
 
 		return options, nil
@@ -41,14 +38,17 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		sts := newObj.(*appsv1.StatefulSet)            // nolint: forcetypeassert
 		options := make([]types.ResourceOption, 0)
 
-		// If MatchLabels of new & old statefulsets are different, add in append
-		if !reflect.DeepEqual(oldStatefulset.Spec.Selector.MatchLabels, sts.Spec.Selector.MatchLabels) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.MatchLabelsKey,
-				utilities.CoalesceMatchLabels(sts.Spec.Selector.MatchLabels),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldStatefulset.Spec.Selector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(sts.Spec.Selector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.SelectorCustomProperty, newSelectorExpr))
 		}
-
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldStatefulset.Spec.Selector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(sts.Spec.Selector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.SelectorCustomProperty+constants.AppliesToPropSuffix, newSelectorAppliesTo))
+		}
 		return options, false, nil
 	}
 }

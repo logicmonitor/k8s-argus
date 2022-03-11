@@ -2,7 +2,6 @@ package networkpolicy
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/logicmonitor/k8s-argus/pkg/constants"
 	"github.com/logicmonitor/k8s-argus/pkg/enums"
@@ -24,10 +23,8 @@ func (w *Watcher) AddFuncOptions() func(lctx *lmctx.LMContext, rt enums.Resource
 		netpol := obj.(*networkingv1.NetworkPolicy)
 
 		options := []types.ResourceOption{
-			b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.PodSelectorKey,
-				utilities.CoalesceMatchLabels(netpol.Spec.PodSelector.MatchLabels),
-			),
+			b.Custom(constants.PodSelectorCustomProperty, utilities.GenerateSelectorExpression(netpol.Spec.PodSelector)),
+			b.Custom(constants.PodSelectorCustomProperty+constants.AppliesToPropSuffix, utilities.GenerateSelectorAppliesTo(netpol.Spec.PodSelector)),
 		}
 
 		return options, nil
@@ -41,12 +38,17 @@ func (w *Watcher) UpdateFuncOptions() func(*lmctx.LMContext, enums.ResourceType,
 		netpol := newObj.(*networkingv1.NetworkPolicy)           // nolint: forcetypeassert
 		options := make([]types.ResourceOption, 0)
 
-		// If MatchLabels of new & old daemonsets are different, add in append
-		if !reflect.DeepEqual(oldNetworkPolicy.Spec.PodSelector.MatchLabels, netpol.Spec.PodSelector.MatchLabels) {
-			options = append(options, b.Custom(
-				constants.SelectorCustomPropertyPrefix+constants.PodSelectorKey,
-				utilities.CoalesceMatchLabels(netpol.Spec.PodSelector.MatchLabels),
-			))
+		// If MatchLabels of new & old daemonsets are different, append in options
+		oldSelectorExpr := utilities.GenerateSelectorExpression(oldNetworkPolicy.Spec.PodSelector)
+		newSelectorExpr := utilities.GenerateSelectorExpression(netpol.Spec.PodSelector)
+		if oldSelectorExpr != newSelectorExpr {
+			options = append(options, b.Custom(constants.PodSelectorCustomProperty, newSelectorExpr))
+		}
+
+		oldSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(oldNetworkPolicy.Spec.PodSelector)
+		newSelectorAppliesTo := utilities.GenerateSelectorAppliesTo(netpol.Spec.PodSelector)
+		if oldSelectorAppliesTo != newSelectorAppliesTo {
+			options = append(options, b.Custom(constants.PodSelectorCustomProperty, newSelectorAppliesTo))
 		}
 
 		return options, false, nil
